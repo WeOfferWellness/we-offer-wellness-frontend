@@ -37,8 +37,12 @@ button#wowsearch-desktop-clear-where, button#wowsearch-desktop-clear-what {
     background: none !important;
 }
 
-.wowsearch-component-scope {
-    background: none !important;
+ul.wowsearch-py-1 {
+    padding-left: 0;
+}
+
+ul.wowsearch-pb-1\.5 {
+    padding-left: 0px;
 }
 
   </style>
