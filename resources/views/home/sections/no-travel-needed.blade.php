@@ -57,9 +57,11 @@
         <div data-v-f43bb09d="">
             <div data-v-f43bb09d="" id="comfort-cards"
                  class="flex gap-6 overflow-x-auto overflow-y-visible no-scrollbar snap-x snap-mandatory pt-2 pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 bg-transparent">
-                @for($i = 0; $i < 4; $i++)
-                    @include('partials.product_card_v4_1_ghost')
-                @endfor
+                @forelse(($onlineUnder50 ?? collect()) as $product)
+                    @include('partials.product_card_v4_1', ['product' => $product, 'preferredLocation' => null, 'forceNewCard' => true])
+                @empty
+                    <div class="text-muted">No online offerings are available right now.</div>
+                @endforelse
             </div>
         </div>
     </div>

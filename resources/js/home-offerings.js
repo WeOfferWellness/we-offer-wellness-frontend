@@ -323,7 +323,9 @@ function initComfortRail() {
   function showLoading() {
     list.setAttribute('aria-busy', 'true');
     list.dataset.loadingState = 'true';
-    list.innerHTML = loadingHtml;
+    // Keep server-rendered cards visible while a preference refresh is in
+    // flight. If a client-side blocker cancels it, visitors still have a rail.
+    if (!list.querySelector('article')) list.innerHTML = loadingHtml;
   }
 
   function renderHtml(html) {
@@ -335,7 +337,7 @@ function initComfortRail() {
     const activeController = controller;
     return swapHtmlWhenReady(list, loadingHtml, trimmed, activeController?.signal)
       .catch(() => {
-        list.innerHTML = loadingHtml;
+        if (!list.querySelector('article')) list.innerHTML = loadingHtml;
       });
   }
 
