@@ -29,9 +29,10 @@ class HomeRailsController extends Controller
         if ($section === 'gifts') {
             $limit = max(1, min((int) $request->integer('limit', 12), 24));
             $page = max(1, (int) $request->integer('page', 1));
-            $items = ProductRanking::sortCollection($this->catalogue()->filter(fn (array $item) => $this->isGift($item) && $this->price($item) !== null && $this->price($item) <= 50), 'review_count_desc');
+            $catalogue = $this->catalogue(['max_price' => 50], 6);
+            $items = ProductRanking::sortCollection($catalogue->filter(fn (array $item) => $this->isGift($item) && $this->price($item) !== null), 'review_count_desc');
             if ($items->isEmpty()) {
-                $items = ProductRanking::sortCollection($this->catalogue()->filter(fn (array $item) => $this->price($item) !== null && $this->price($item) <= 50), 'review_count_desc');
+                $items = ProductRanking::sortCollection($catalogue->filter(fn (array $item) => $this->price($item) !== null), 'review_count_desc');
             }
             $offset = ($page - 1) * $limit;
 
@@ -49,8 +50,8 @@ class HomeRailsController extends Controller
             $groupType = Str::lower(trim((string) $request->input('group_type', 'solo')));
             $mode = Str::lower(trim((string) $request->input('mode', 'online')));
 
-            $items = $this->catalogue()
-                ->filter(fn (array $item) => $this->price($item) !== null && $this->price($item) <= $priceMax)
+            $items = $this->catalogue(['max_price' => $priceMax], 6)
+                ->filter(fn (array $item) => $this->price($item) !== null)
                 ->filter(fn (array $item) => $this->matchesMode($item, $mode))
                 ->filter(fn (array $item) => $this->matchesGroupType($item, $groupType));
 
@@ -61,9 +62,9 @@ class HomeRailsController extends Controller
         return response('', 404);
     }
 
-    private function catalogue(): Collection
+    private function catalogue(array $filters = [], int $maxPages = 2): Collection
     {
-        return $this->offeringsClient->catalogue()
+        return $this->offeringsClient->catalogue($filters, $maxPages)
             ->reject(fn (array $item) => EventListing::isPast($item))
             ->values();
     }

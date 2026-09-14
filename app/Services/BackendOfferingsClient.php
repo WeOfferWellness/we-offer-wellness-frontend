@@ -52,7 +52,7 @@ class BackendOfferingsClient
                 $payload = $response->json();
                 $vendorDetails = data_get($payload, 'included.vendor_details', []);
                 $rows = collect(data_get($payload, 'data', []))
-                    ->filter('is_array')
+                    ->filter(fn ($offering): bool => is_array($offering))
                     ->map(function (array $offering) use ($vendorDetails): array {
                         $vendorId = (string) data_get($offering, 'vendor_id', '');
                         $vendor = is_array($vendorDetails) ? ($vendorDetails[$vendorId] ?? null) : null;

@@ -2,7 +2,7 @@
     $value = fn ($key, $default = null) => data_get($product, $key, $default);
     $title = trim((string) $value('title', $value('name', 'Untitled')));
     $url = app(\App\Services\SeoStructureService::class)->canonicalProductUrl($product);
-    $image = method_exists($product, 'getFirstImageUrl')
+    $image = is_object($product) && method_exists($product, 'getFirstImageUrl')
         ? $product->getFirstImageUrl()
         : (string) ($value('image', $value('image_url', $value('featured_image', ''))));
     $price = $value('variants_min_price', $value('price_min', $value('price', $value('base_price'))));
@@ -33,7 +33,7 @@
     $gift = (bool) preg_match('/gift\s*card|giftcard|voucher|e-?gift/i', strtolower(implode(' ', [$title, $categoryRaw, $typeRaw, (string) $value('slug', '')])));
     $eventStyle = in_array($kind, ['event', 'workshop', 'retreat'], true);
     $provider = trim((string) $value('vendor_name', $value('practitioner_name', $value('vendor.name', $value('vendor_details.name', '')))));
-    $locations = method_exists($product, 'getLocations') ? $product->getLocations() : (array) $value('locations', [$value('location', $value('location_name', $value('venue', '')))]);
+    $locations = is_object($product) && method_exists($product, 'getLocations') ? $product->getLocations() : (array) $value('locations', [$value('location', $value('location_name', $value('venue', '')))]);
     $locations = collect($locations)->map(function ($location) {
         return is_object($location) || is_array($location)
             ? trim((string) data_get($location, 'formatted_address', data_get($location, 'label', data_get($location, 'name', data_get($location, 'city', '')))))
@@ -74,7 +74,16 @@
     $businessAccelerator = in_array(str_replace(['_', ' '], '-', $planKey), ['business-accelerator', 'businessaccelerator', 'core'], true);
     $rating = (float) $value('rating', $value('reviews_avg_rating', 0));
     $reviews = (int) $value('review_count', $value('reviews_count', 0));
-    $description = trim((string) $value('benefit', $value('summary', $value('description', $value('excerpt', '')))));
+    $description = collect([
+        $value('benefit'),
+        $value('summary'),
+        $value('description_short'),
+        $value('description'),
+        $value('excerpt'),
+        $value('body_html'),
+        $value('what_to_expect'),
+        $value('included'),
+    ])->map(fn ($text) => trim(strip_tags((string) $text)))->first(fn (string $text): bool => $text !== '') ?? '';
     $start = $eventStyle ? \App\Support\EventListing::startAt($product) : null;
     $isPastEvent = $eventStyle && (bool) $value('is_past_event', \App\Support\EventListing::isPast($product));
     $eventMonth = $start?->format('M');
@@ -83,7 +92,9 @@
     $dayMap = ['mon' => 1, 'monday' => 1, 'tue' => 2, 'tuesday' => 2, 'wed' => 3, 'wednesday' => 3, 'thu' => 4, 'thursday' => 4, 'fri' => 5, 'friday' => 5, 'sat' => 6, 'saturday' => 6, 'sun' => 0, 'sunday' => 0];
     $availableDays = [];
     $vendorUser = $value('vendor.user');
-    $weeklyWindows = \App\Services\AvailabilityWindowService::buildWeeklyWindows($vendorUser);
+    $weeklyWindows = $vendorUser instanceof \App\Models\User
+        ? \App\Services\AvailabilityWindowService::buildWeeklyWindows($vendorUser)
+        : [];
     foreach ($weeklyWindows as $dayName => $rule) {
         if (data_get($rule, 'enabled') === true && count((array) data_get($rule, 'windows', []))) {
             $availableDays[] = $dayMap[strtolower($dayName)] ?? null;
