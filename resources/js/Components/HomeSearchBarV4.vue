@@ -72,7 +72,11 @@ function submit() {
   }
   const params = new URLSearchParams()
   if (what.value.trim()) params.set('what', what.value.trim())
-  if (where.value.trim()) params.set('where', where.value.trim())
+  if (where.value === 'Near me') {
+    params.set('mode', 'near-me')
+  } else if (where.value.trim()) {
+    params.set('where', where.value.trim())
+  }
   closeMenus()
   router.visit(`${props.searchUrl}${params.size ? `?${params.toString()}` : ''}`, { method: 'get' })
 }
@@ -119,7 +123,7 @@ watch(isMenuOpen, (open) => {
 onMounted(async () => {
   const params = new URLSearchParams(window.location.search)
   what.value = params.get('what') || ''
-  where.value = params.get('where') || ''
+  where.value = params.get('mode') === 'near-me' ? 'Near me' : (params.get('where') || '')
   document.addEventListener('keydown', handleKeydown)
   document.addEventListener('click', handleDocumentClick)
 })

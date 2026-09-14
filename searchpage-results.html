@@ -1,0 +1,2524 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>We Offer Wellness — Search Results</title>
+<meta content="noindex,nofollow" name="robots"/>
+<style>
+    @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap");
+
+    :root {
+      --wow-green:#4f9a86;
+      --wow-green-dark:#2f7464;
+      --wow-green-pale:#e4f2ee;
+
+      --wow-ink:#141a2a;
+      --wow-copy:#53627a;
+      --wow-muted:#8c98aa;
+
+      --wow-line:#dfe5ea;
+      --wow-soft:#f5f7f8;
+      --wow-page:#fbfaf8;
+      --wow-white:#fff;
+
+      --wow-radius:14px;
+      --wow-button-radius:6px;
+
+      --tag-yellow:#ffe3a6;
+      --tag-yellow-text:#7b5714;
+      --tag-blue:#dce9ff;
+      --tag-blue-text:#315b9b;
+    }
+
+    * {
+      box-sizing:border-box;
+    }
+
+    html {
+      min-height:100%;
+    }
+
+    body {
+      margin:0;
+      min-height:100%;
+      background:var(--wow-page);
+      color:var(--wow-ink);
+      font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      font-size:14px;
+      line-height:1.45;
+    }
+
+    body.no-scroll {
+      overflow:hidden;
+    }
+
+    button,
+    input,
+    select {
+      font:inherit;
+    }
+
+    button {
+      color:inherit;
+    }
+
+    img,
+    svg {
+      display:block;
+    }
+
+    [hidden] {
+      display:none !important;
+    }
+
+    /* =========================================================
+       PAGE
+       No search bar is included.
+       ========================================================= */
+
+    .results-page {
+      width:100%;
+      padding:18px 0 48px;
+    }
+
+    .results-container {
+      width:min(1286px,calc(100% - 48px));
+      margin:0 auto;
+    }
+
+    .desktop-results-header {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:24px;
+      margin-bottom:22px;
+    }
+
+    .results-title {
+      margin:0;
+      font-family:"DM Serif Display",Georgia,serif;
+      font-size:31px;
+      line-height:1;
+      font-weight:400;
+      color:#111827;
+      letter-spacing:-.015em;
+    }
+
+    .results-title em {
+      color:#7b8598;
+      font-weight:400;
+    }
+
+    .view-toggle-button {
+      min-height:37px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      padding:0 14px;
+      border:1px solid #d5dde4;
+      border-radius:9px;
+      background:#fff;
+      color:#26334a;
+      font-size:12px;
+      font-weight:500;
+      cursor:pointer;
+      transition:background .15s ease,border-color .15s ease;
+    }
+
+    .view-toggle-button:hover {
+      background:#f7faf9;
+      border-color:#bfd3cd;
+    }
+
+    .mobile-toolbar {
+      display:none;
+    }
+
+    /* =========================================================
+       MAIN LAYOUT
+       ========================================================= */
+
+    .results-layout {
+      display:grid;
+      grid-template-columns:250px minmax(0,1fr);
+      gap:25px;
+      align-items:start;
+    }
+
+    .results-sidebar {
+      position:sticky;
+      top:20px;
+    }
+
+    .results-content {
+      min-width:0;
+    }
+
+    .results-grid {
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:20px;
+      align-items:start;
+    }
+
+    /* =========================================================
+       DESKTOP FILTER SIDEBAR
+       ========================================================= */
+
+    .filter-card {
+      overflow:hidden;
+      border:1px solid #dfe5ea;
+      border-radius:20px;
+      background:#fff;
+    }
+
+    .filter-card-inner {
+      padding:15px 14px 20px;
+    }
+
+    .filter-card-title {
+      min-height:46px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:0 11px;
+      border-radius:12px;
+      background:#f4f8f7;
+      font-size:13px;
+      font-weight:700;
+    }
+
+    .filter-card-title .count {
+      margin-left:auto;
+      width:28px;
+      height:28px;
+      display:grid;
+      place-items:center;
+      border-radius:50%;
+      background:#fff;
+      color:var(--wow-green-dark);
+      font-size:11px;
+      font-weight:700;
+    }
+
+    .filter-section {
+      padding:17px 0;
+      border-bottom:1px solid #e6ebef;
+    }
+
+    .filter-section:last-child {
+      border-bottom:0;
+      padding-bottom:0;
+    }
+
+    .filter-section-head {
+      width:100%;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0;
+      border:0;
+      background:transparent;
+      text-align:left;
+      font-size:12px;
+      font-weight:700;
+      cursor:pointer;
+    }
+
+    .filter-chevron {
+      width:25px;
+      height:25px;
+      display:grid;
+      place-items:center;
+      border-radius:50%;
+      background:#f5f7f9;
+      color:#7e8a9c;
+      transition:transform .18s ease;
+    }
+
+    .filter-section.is-collapsed .filter-chevron {
+      transform:rotate(180deg);
+    }
+
+    .filter-section-body {
+      margin-top:12px;
+    }
+
+    .filter-section.is-collapsed .filter-section-body {
+      display:none;
+    }
+
+    .sort-list,
+    .rating-list {
+      display:grid;
+      gap:3px;
+    }
+
+    .choice-row {
+      min-height:36px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:0 9px;
+      border-radius:8px;
+      color:#334057;
+      font-size:12px;
+      cursor:pointer;
+    }
+
+    .choice-row.is-selected {
+      background:var(--wow-green-pale);
+      color:#2d6e60;
+      font-weight:600;
+    }
+
+    .choice-box {
+      width:16px;
+      height:16px;
+      flex:0 0 16px;
+      display:grid;
+      place-items:center;
+      border:1px solid #cad3dc;
+      border-radius:4px;
+      background:#fff;
+      color:#fff;
+      font-size:10px;
+    }
+
+    .choice-row.is-selected .choice-box {
+      border-color:var(--wow-green);
+      background:var(--wow-green);
+    }
+
+    .price-slider {
+      position:relative;
+      height:16px;
+      margin:1px 0 2px;
+    }
+
+    .price-slider::before {
+      content:"";
+      position:absolute;
+      left:0;
+      right:0;
+      top:7px;
+      height:4px;
+      border-radius:99px;
+      background:#e1e6ea;
+    }
+
+    .price-slider::after {
+      content:"";
+      position:absolute;
+      right:0;
+      top:0;
+      width:19px;
+      height:19px;
+      border-radius:50%;
+      border:2px solid var(--wow-green);
+      background:#fff;
+      box-shadow:0 1px 3px rgba(16,24,40,.14);
+    }
+
+    .price-labels {
+      display:grid;
+      grid-template-columns:1fr auto 1fr;
+      align-items:center;
+      margin-top:1px;
+      color:#94a0b0;
+      font-size:10px;
+    }
+
+    .price-labels strong {
+      color:#303a4d;
+      font-size:10px;
+      font-weight:700;
+      text-align:center;
+    }
+
+    .price-labels span:last-child {
+      text-align:right;
+    }
+
+    .chip-grid {
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:7px;
+      margin-top:9px;
+    }
+
+    .filter-chip {
+      min-height:35px;
+      border:1px solid #d6dfe7;
+      border-radius:999px;
+      background:#fff;
+      color:#34435b;
+      font-size:11px;
+      cursor:pointer;
+    }
+
+    .filter-chip.is-selected {
+      border-color:#9ec8bc;
+      background:var(--wow-green-pale);
+      color:#2f7464;
+      font-weight:600;
+    }
+
+    /* =========================================================
+       CARDS
+       ========================================================= */
+
+    .result-card {
+      position:relative;
+      min-width:0;
+      overflow:hidden;
+      border:1px solid #e0e4e7;
+      border-radius:13px;
+      background:#fff;
+      box-shadow:0 8px 22px rgba(16,24,40,.035);
+    }
+
+    .standard-card {
+      display:flex;
+      min-height:430px;
+      flex-direction:column;
+    }
+
+    .card-image {
+      position:relative;
+      height:145px;
+      overflow:hidden;
+      background:#e9eceb;
+    }
+
+    .card-image img {
+      width:100%;
+      height:100%;
+      object-fit:cover;
+    }
+
+    .card-ribbon {
+      position:absolute;
+      top:12px;
+      left:11px;
+      z-index:2;
+      padding:6px 11px;
+      border-radius:999px;
+      background:#fff8ed;
+      color:#c24914;
+      font-size:10px;
+      font-weight:700;
+      box-shadow:0 2px 7px rgba(16,24,40,.07);
+    }
+
+    .card-tags {
+      position:absolute;
+      left:11px;
+      bottom:8px;
+      z-index:2;
+      display:flex;
+      align-items:center;
+      gap:6px;
+    }
+
+    .tag {
+      display:inline-flex;
+      align-items:center;
+      min-height:23px;
+      padding:0 9px;
+      border-radius:999px;
+      font-size:9px;
+      font-weight:700;
+    }
+
+    .tag-yellow {
+      background:var(--tag-yellow);
+      color:var(--tag-yellow-text);
+    }
+
+    .tag-blue {
+      background:var(--tag-blue);
+      color:var(--tag-blue-text);
+    }
+
+    .card-body {
+      display:flex;
+      flex:1;
+      flex-direction:column;
+      padding:12px 13px 10px;
+    }
+
+    .card-title {
+      margin:0;
+      min-height:48px;
+      font-size:16px;
+      line-height:1.23;
+      font-weight:500;
+      letter-spacing:-.025em;
+      color:#151b2a;
+    }
+
+    .provider {
+      margin:5px 0 7px;
+      color:#687790;
+      font-size:11px;
+    }
+
+    .rating-row {
+      display:flex;
+      align-items:center;
+      flex-wrap:wrap;
+      gap:4px;
+      color:#364158;
+      font-size:10px;
+    }
+
+    .stars {
+      color:#f2b827;
+      letter-spacing:1px;
+      white-space:nowrap;
+    }
+
+    .location-row {
+      display:flex;
+      align-items:center;
+      gap:4px;
+      margin-top:6px;
+      color:#61708a;
+      font-size:10px;
+    }
+
+    .description {
+      margin:7px 0 8px;
+      color:#607089;
+      font-size:11px;
+      line-height:1.45;
+      display:-webkit-box;
+      -webkit-box-orient:vertical;
+      -webkit-line-clamp:3;
+      overflow:hidden;
+    }
+
+    .availability {
+      min-height:30px;
+      display:flex;
+      align-items:center;
+      gap:6px;
+      margin-top:auto;
+      padding:0 9px;
+      border-radius:7px;
+      background:#f4f6f8;
+      color:#314057;
+      font-size:10px;
+      font-weight:600;
+    }
+
+    .availability.available-green {
+      color:#28735f;
+    }
+
+    .card-footer {
+      min-height:62px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:10px 13px;
+      border-top:1px solid #e3e8ec;
+    }
+
+    .price small {
+      display:block;
+      color:#92a0b2;
+      font-size:10px;
+      line-height:1;
+    }
+
+    .price strong {
+      display:block;
+      margin-top:3px;
+      font-size:19px;
+      line-height:1;
+      font-weight:500;
+      color:#162033;
+    }
+
+    .book-button {
+      min-height:36px;
+      padding:0 14px;
+      border:0;
+      border-radius:4px;
+      background:var(--wow-green);
+      color:#fff;
+      font-size:10px;
+      font-weight:600;
+      cursor:pointer;
+    }
+
+    .book-button:hover {
+      background:#3f8875;
+    }
+
+    .mobile-book-label {
+      display:none;
+    }
+
+    /* full image event / retreat card */
+
+    .overlay-card {
+      min-height:430px;
+      border:0;
+      background:#152430;
+      color:#fff;
+    }
+
+    .overlay-card > img {
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      object-fit:cover;
+    }
+
+    .overlay-card::after {
+      content:"";
+      position:absolute;
+      inset:0;
+      background:linear-gradient(to bottom,rgba(9,16,22,0) 35%,rgba(9,16,22,.20) 52%,rgba(9,16,22,.91) 100%);
+    }
+
+    .date-tile {
+      position:absolute;
+      top:12px;
+      left:12px;
+      z-index:2;
+      width:48px;
+      height:54px;
+      display:grid;
+      place-items:center;
+      align-content:center;
+      border-radius:12px;
+      background:rgba(255,255,255,.95);
+      color:#1a2533;
+      box-shadow:0 4px 12px rgba(16,24,40,.08);
+    }
+
+    .date-tile span {
+      color:#3b917c;
+      font-size:8px;
+      font-weight:800;
+      letter-spacing:.08em;
+    }
+
+    .date-tile strong {
+      font-size:18px;
+      line-height:1;
+    }
+
+    .overlay-content {
+      position:absolute;
+      z-index:3;
+      left:14px;
+      right:14px;
+      bottom:15px;
+    }
+
+    .overlay-tags {
+      display:flex;
+      gap:6px;
+      margin-bottom:7px;
+    }
+
+    .overlay-title {
+      margin:0;
+      font-size:17px;
+      line-height:1.23;
+      font-weight:500;
+      letter-spacing:-.025em;
+    }
+
+    .overlay-provider {
+      margin:5px 0;
+      color:rgba(255,255,255,.78);
+      font-size:10px;
+    }
+
+    .overlay-location {
+      display:flex;
+      align-items:center;
+      gap:4px;
+      color:rgba(255,255,255,.91);
+      font-size:10px;
+    }
+
+    .overlay-bottom {
+      display:flex;
+      align-items:end;
+      justify-content:space-between;
+      gap:12px;
+      margin-top:14px;
+    }
+
+    .overlay-price small {
+      display:block;
+      color:rgba(255,255,255,.66);
+      font-size:9px;
+    }
+
+    .overlay-price strong {
+      display:block;
+      font-size:20px;
+      line-height:1.1;
+      font-weight:500;
+    }
+
+    .overlay-card .book-button {
+      min-width:108px;
+    }
+
+    /* =========================================================
+       MAP VIEW
+       ========================================================= */
+
+    .map-panel {
+      display:none;
+      position:relative;
+      min-height:830px;
+      overflow:hidden;
+      border-left:1px solid #e6eaed;
+      background:#eef0f2;
+    }
+
+    .map-panel img {
+      width:100%;
+      height:100%;
+      min-height:830px;
+      object-fit:cover;
+      filter:saturate(.45) contrast(.95) brightness(1.03);
+    }
+
+    .map-controls {
+      position:absolute;
+      top:13px;
+      right:15px;
+      display:grid;
+      gap:2px;
+    }
+
+    .map-control-button {
+      width:32px;
+      height:32px;
+      display:grid;
+      place-items:center;
+      border:1px solid #d8dde1;
+      background:#fff;
+      color:#263247;
+      font-weight:700;
+      box-shadow:0 2px 6px rgba(16,24,40,.08);
+      cursor:pointer;
+    }
+
+    .map-control-button:first-child {
+      border-radius:6px 6px 0 0;
+    }
+
+    .map-control-button:last-child {
+      border-radius:0 0 6px 6px;
+    }
+
+    body.map-mode .results-container {
+      width:100%;
+    }
+
+    body.map-mode .desktop-results-header {
+      padding:0 26px;
+    }
+
+    body.map-mode .results-sidebar {
+      display:none;
+    }
+
+    body.map-mode .results-layout {
+      grid-template-columns:640px minmax(0,1fr);
+      gap:0;
+    }
+
+    body.map-mode .results-content {
+      max-height:830px;
+      overflow:auto;
+      padding:0 22px 30px 26px;
+    }
+
+    body.map-mode .results-grid {
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:16px;
+    }
+
+    body.map-mode .map-panel {
+      display:block;
+    }
+
+    body.map-mode .desktop-results-header {
+      margin-bottom:12px;
+    }
+
+    /* =========================================================
+       MOBILE FILTER BOTTOM SHEET
+       Based on the supplied search component:
+       24px top radius, black/40 overlay, 2px blur, 40x4 handle.
+       ========================================================= */
+
+    .mobile-filter-modal {
+      position:fixed;
+      inset:0;
+      z-index:100;
+      display:flex;
+      flex-direction:column;
+      justify-content:flex-end;
+    }
+
+    .mobile-filter-backdrop {
+      position:absolute;
+      inset:0;
+      background:rgba(0,0,0,.40);
+      -webkit-backdrop-filter:blur(2px);
+      backdrop-filter:blur(2px);
+    }
+
+    .mobile-filter-sheet {
+      position:relative;
+      height:88dvh;
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+      border-radius:24px 24px 0 0;
+      background:#fff;
+      box-shadow:0 -8px 40px rgba(0,0,0,.18);
+    }
+
+    .sheet-handle {
+      display:flex;
+      justify-content:center;
+      flex:0 0 auto;
+      padding:12px 0 4px;
+      cursor:grab;
+      touch-action:none;
+    }
+
+    .sheet-handle::before {
+      content:"";
+      width:40px;
+      height:4px;
+      border-radius:999px;
+      background:#d3d7de;
+    }
+
+    .sheet-header {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      flex:0 0 auto;
+      padding:11px 19px 14px;
+      border-bottom:1px solid #e8ebef;
+    }
+
+    .sheet-kicker {
+      margin:0 0 4px;
+      color:#98a2b3;
+      font-size:10px;
+      font-weight:700;
+      letter-spacing:.11em;
+      text-transform:uppercase;
+    }
+
+    .sheet-title {
+      margin:0;
+      color:#101828;
+      font-size:20px;
+      line-height:1.15;
+      font-weight:700;
+      letter-spacing:-.02em;
+    }
+
+    .sheet-close {
+      width:38px;
+      height:38px;
+      display:grid;
+      place-items:center;
+      border:0;
+      border-radius:50%;
+      background:#f2f4f7;
+      color:#455268;
+      cursor:pointer;
+    }
+
+    .sheet-body {
+      flex:1;
+      overflow-y:auto;
+      padding:0 17px 100px;
+    }
+
+    .mobile-filter-section {
+      padding:19px 0 16px;
+      border-bottom:1px solid #e8ebef;
+    }
+
+    .mobile-filter-section-head {
+      width:100%;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0;
+      border:0;
+      background:transparent;
+      color:#111827;
+      text-align:left;
+      font-size:13px;
+      font-weight:700;
+      cursor:pointer;
+    }
+
+    .mobile-filter-section-body {
+      margin-top:13px;
+    }
+
+    .mobile-filter-section.is-collapsed .mobile-filter-section-body {
+      display:none;
+    }
+
+    .mobile-filter-section.is-collapsed .filter-chevron {
+      transform:rotate(180deg);
+    }
+
+    .mobile-choice-row {
+      min-height:36px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:0 9px;
+      border-radius:7px;
+      color:#28354b;
+      font-size:13px;
+    }
+
+    .mobile-choice-row.is-selected {
+      background:var(--wow-green-pale);
+      color:#296c5c;
+      font-weight:500;
+    }
+
+    .mobile-chip-row {
+      display:flex;
+      flex-wrap:wrap;
+      gap:7px;
+    }
+
+    .mobile-chip {
+      min-height:34px;
+      padding:0 13px;
+      border:1px solid #d5dde5;
+      border-radius:999px;
+      background:#fff;
+      color:#34435a;
+      font-size:12px;
+      cursor:pointer;
+    }
+
+    .mobile-chip.is-selected {
+      border-color:#9cc8bc;
+      background:#edf7f4;
+      color:#2c7564;
+    }
+
+    .sheet-footer {
+      position:absolute;
+      left:0;
+      right:0;
+      bottom:0;
+      display:grid;
+      grid-template-columns:151px minmax(0,1fr);
+      gap:10px;
+      padding:10px 17px 16px;
+      border-top:1px solid #e7ebef;
+      background:#fff;
+      box-shadow:0 -4px 16px rgba(16,24,40,.03);
+    }
+
+    .clear-button,
+    .apply-button {
+      min-height:46px;
+      border-radius:8px;
+      font-size:13px;
+      font-weight:700;
+      cursor:pointer;
+    }
+
+    .clear-button {
+      border:1px solid #d4dce4;
+      background:#f8fafb;
+      color:#6b778b;
+    }
+
+    .apply-button {
+      border:0;
+      background:var(--wow-green);
+      color:#fff;
+    }
+
+    /* =========================================================
+       MOBILE
+       ========================================================= */
+
+    @media (max-width:767px) {
+      .results-page {
+        padding:0 0 32px;
+      }
+
+      .results-container {
+        width:100%;
+      }
+
+      .desktop-results-header,
+      .results-sidebar {
+        display:none;
+      }
+
+      .mobile-toolbar {
+        position:sticky;
+        top:0;
+        z-index:30;
+        min-height:57px;
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:12px;
+        padding:0 11px;
+        border-top:1px solid #eceff1;
+        border-bottom:1px solid #eceff1;
+        background:rgba(251,250,248,.97);
+        -webkit-backdrop-filter:blur(7px);
+        backdrop-filter:blur(7px);
+      }
+
+      .mobile-result-count {
+        color:#202b3b;
+        font-size:13px;
+        font-weight:700;
+      }
+
+      .mobile-result-count strong {
+        color:var(--wow-green);
+      }
+
+      .mobile-toolbar-actions {
+        display:flex;
+        align-items:center;
+        gap:7px;
+      }
+
+      .mobile-toolbar-button {
+        min-height:35px;
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        gap:7px;
+        padding:0 12px;
+        border:1px solid #d6dee5;
+        border-radius:999px;
+        background:#fff;
+        color:#2d394e;
+        font-size:11px;
+        font-weight:600;
+        cursor:pointer;
+      }
+
+      .results-layout {
+        display:block;
+      }
+
+      .results-content {
+        padding:13px 10px 0;
+      }
+
+      .results-grid {
+        grid-template-columns:repeat(2,minmax(0,1fr));
+        gap:10px 11px;
+      }
+
+      .result-card,
+      .standard-card,
+      .overlay-card {
+        min-height:0;
+        border-radius:12px;
+      }
+
+      .standard-card {
+        height:auto;
+      }
+
+      .card-image {
+        height:139px;
+      }
+
+      .card-ribbon {
+        top:10px;
+        left:9px;
+        padding:6px 10px;
+        font-size:9px;
+      }
+
+      .card-tags {
+        left:9px;
+        bottom:7px;
+        gap:5px;
+      }
+
+      .tag {
+        min-height:21px;
+        padding:0 8px;
+        font-size:8px;
+      }
+
+      .card-body {
+        min-height:160px;
+        padding:10px 12px 9px;
+      }
+
+      .card-title {
+        min-height:0;
+        font-size:14px;
+        line-height:1.22;
+      }
+
+      .provider {
+        margin:5px 0 7px;
+        font-size:10px;
+      }
+
+      .rating-row,
+      .location-row {
+        font-size:9px;
+      }
+
+      .description {
+        display:none;
+      }
+
+      .availability {
+        min-height:29px;
+        margin-top:8px;
+        padding:0 8px;
+        font-size:9px;
+      }
+
+      .card-footer {
+        min-height:58px;
+        padding:9px 12px;
+      }
+
+      .price small {
+        font-size:9px;
+      }
+
+      .price strong {
+        font-size:18px;
+      }
+
+      .book-button {
+        min-width:60px;
+        min-height:36px;
+        padding:0 11px;
+        font-size:9px;
+      }
+
+      .desktop-book-label {
+        display:none;
+      }
+
+      .mobile-book-label {
+        display:inline;
+      }
+
+      .overlay-card {
+        min-height:358px;
+      }
+
+      .date-tile {
+        top:12px;
+        left:11px;
+        width:47px;
+        height:56px;
+        border-radius:11px;
+      }
+
+      .date-tile strong {
+        font-size:18px;
+      }
+
+      .overlay-content {
+        left:12px;
+        right:12px;
+        bottom:14px;
+      }
+
+      .overlay-title {
+        font-size:14px;
+      }
+
+      .overlay-provider,
+      .overlay-location {
+        font-size:9px;
+      }
+
+      .overlay-bottom {
+        margin-top:13px;
+      }
+
+      .overlay-card .book-button {
+        min-width:63px;
+      }
+
+      .overlay-price strong {
+        font-size:18px;
+      }
+
+      .map-panel {
+        min-height:calc(100dvh - 57px);
+        border:0;
+      }
+
+      .map-panel img {
+        min-height:calc(100dvh - 57px);
+      }
+
+      body.map-mode .results-container {
+        width:100%;
+      }
+
+      body.map-mode .results-layout {
+        display:block;
+      }
+
+      body.map-mode .results-content {
+        display:none;
+      }
+
+      body.map-mode .map-panel {
+        display:block;
+      }
+
+      body.map-mode .desktop-results-header {
+        display:none;
+      }
+    }
+
+    @media (max-width:380px) {
+      .results-grid {
+        gap:8px;
+      }
+
+      .card-image {
+        height:120px;
+      }
+
+      .card-body {
+        padding-left:9px;
+        padding-right:9px;
+      }
+
+      .card-title {
+        font-size:12px;
+      }
+
+      .provider,
+      .rating-row,
+      .location-row,
+      .availability {
+        font-size:8px;
+      }
+
+      .card-footer {
+        padding-left:9px;
+        padding-right:9px;
+      }
+    }
+
+    /* =========================================================
+       FILTER POLISH / REAL CONTROLS
+       ========================================================= */
+
+    .filter-card {
+      border-color:#dce3e8;
+      box-shadow:0 12px 30px rgba(16,24,40,.045);
+    }
+
+    .filter-card-inner {
+      padding:14px 14px 18px;
+    }
+
+    .filter-card-title {
+      min-height:58px;
+      gap:10px;
+      padding:9px 10px;
+      border:1px solid #e7efec;
+      border-radius:13px;
+      background:#f4f9f7;
+    }
+
+    .filter-card-title-icon {
+      width:34px;
+      height:34px;
+      flex:0 0 34px;
+      display:grid;
+      place-items:center;
+      border-radius:9px;
+      background:#fff;
+      color:var(--wow-green-dark);
+      box-shadow:0 1px 2px rgba(16,24,40,.05);
+    }
+
+    .filter-card-heading {
+      min-width:0;
+      display:flex;
+      flex:1;
+      flex-direction:column;
+      gap:1px;
+    }
+
+    .filter-card-heading strong {
+      color:#172033;
+      font-size:12px;
+      line-height:1.2;
+      font-weight:750;
+      letter-spacing:-.01em;
+    }
+
+    .filter-card-heading small {
+      color:#8b98a8;
+      font-size:9px;
+      line-height:1.2;
+      font-weight:600;
+      letter-spacing:.02em;
+    }
+
+    .filter-card-title .count {
+      width:30px;
+      height:30px;
+      flex:0 0 30px;
+      border:1px solid #e3ece9;
+      box-shadow:0 1px 2px rgba(16,24,40,.04);
+    }
+
+    .filter-section {
+      padding:16px 0;
+    }
+
+    .filter-section-head,
+    .mobile-filter-section-head {
+      -webkit-appearance:none;
+      appearance:none;
+      outline:0;
+    }
+
+    .filter-section-head {
+      min-height:30px;
+      border-radius:8px;
+      transition:background .15s ease;
+    }
+
+    .filter-section-head:hover {
+      background:#f8faf9;
+    }
+
+    .filter-section-label {
+      display:flex;
+      align-items:center;
+      gap:8px;
+      min-width:0;
+    }
+
+    .filter-section-icon {
+      width:25px;
+      height:25px;
+      flex:0 0 25px;
+      display:grid;
+      place-items:center;
+      border-radius:7px;
+      background:#f2f6f5;
+      color:#5f746e;
+    }
+
+    .filter-section-name {
+      color:#1b2434;
+      font-size:12px;
+      font-weight:750;
+      letter-spacing:-.005em;
+    }
+
+    .filter-chevron {
+      width:27px;
+      height:27px;
+      flex:0 0 27px;
+      background:#f4f6f8;
+      transition:transform .2s ease,background .15s ease,color .15s ease;
+    }
+
+    .filter-section-head:hover .filter-chevron,
+    .mobile-filter-section-head:hover .filter-chevron {
+      background:#eaf3f0;
+      color:var(--wow-green-dark);
+    }
+
+    .filter-section-body {
+      margin-top:10px;
+    }
+
+    .sort-list,
+    .rating-list {
+      gap:5px;
+    }
+
+    .choice-row,
+    .mobile-choice-row {
+      -webkit-appearance:none;
+      appearance:none;
+      width:100%;
+      border:1px solid transparent;
+      outline:0;
+      background:transparent;
+      text-align:left;
+      transition:
+        background .15s ease,
+        border-color .15s ease,
+        box-shadow .15s ease,
+        transform .1s ease;
+    }
+
+    .choice-row {
+      min-height:38px;
+      padding:0 9px;
+      border-radius:9px;
+      color:#425068;
+    }
+
+    .choice-row:hover {
+      border-color:#e4e9ed;
+      background:#f8faf9;
+    }
+
+    .choice-row:active,
+    .mobile-choice-row:active {
+      transform:scale(.992);
+    }
+
+    .choice-row.is-selected {
+      border-color:#d5e9e3;
+      background:#e5f3ef;
+      color:#2f7464;
+      box-shadow:inset 3px 0 0 var(--wow-green);
+    }
+
+    .choice-box {
+      position:relative;
+      width:17px;
+      height:17px;
+      flex:0 0 17px;
+      border-radius:5px;
+      transition:background .15s ease,border-color .15s ease,box-shadow .15s ease;
+    }
+
+    .choice-box::after {
+      content:"";
+      width:7px;
+      height:4px;
+      border-left:1.8px solid #fff;
+      border-bottom:1.8px solid #fff;
+      transform:rotate(-45deg) translate(1px,-1px);
+      opacity:0;
+    }
+
+    .choice-row.is-selected .choice-box,
+    .mobile-choice-row.is-selected .choice-box {
+      display:grid;
+      place-items:center;
+      border-color:var(--wow-green);
+      background:var(--wow-green);
+      box-shadow:0 0 0 3px rgba(79,154,134,.10);
+      color:transparent;
+    }
+
+    .choice-row.is-selected .choice-box::after,
+    .mobile-choice-row.is-selected .choice-box::after {
+      opacity:1;
+    }
+
+    .choice-copy {
+      min-width:0;
+      display:flex;
+      flex:1;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+    }
+
+    .choice-copy strong {
+      font-size:11px;
+      font-weight:600;
+    }
+
+    .choice-note {
+      color:#9aa5b3;
+      font-size:9px;
+      font-weight:600;
+    }
+
+    .rating-stars-mini {
+      color:#f2b827;
+      font-size:9px;
+      letter-spacing:.5px;
+      white-space:nowrap;
+    }
+
+    /* Real range input */
+    .price-control {
+      margin-top:2px;
+    }
+
+    .price-range-row {
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    .price-range {
+      --range-progress:100%;
+      width:100%;
+      height:24px;
+      margin:0;
+      padding:0;
+      -webkit-appearance:none;
+      appearance:none;
+      background:transparent;
+      cursor:pointer;
+      outline:none;
+    }
+
+    .price-range::-webkit-slider-runnable-track {
+      height:5px;
+      border-radius:999px;
+      background:
+        linear-gradient(
+          90deg,
+          var(--wow-green) 0 var(--range-progress),
+          #e0e6ea var(--range-progress) 100%
+        );
+    }
+
+    .price-range::-moz-range-track {
+      height:5px;
+      border-radius:999px;
+      background:#e0e6ea;
+    }
+
+    .price-range::-moz-range-progress {
+      height:5px;
+      border-radius:999px;
+      background:var(--wow-green);
+    }
+
+    .price-range::-webkit-slider-thumb {
+      width:20px;
+      height:20px;
+      margin-top:-7.5px;
+      -webkit-appearance:none;
+      appearance:none;
+      border:2px solid var(--wow-green);
+      border-radius:50%;
+      background:#fff;
+      box-shadow:
+        0 2px 6px rgba(16,24,40,.16),
+        0 0 0 3px rgba(79,154,134,.08);
+      transition:transform .12s ease,box-shadow .12s ease;
+    }
+
+    .price-range::-moz-range-thumb {
+      width:18px;
+      height:18px;
+      border:2px solid var(--wow-green);
+      border-radius:50%;
+      background:#fff;
+      box-shadow:0 2px 6px rgba(16,24,40,.16);
+    }
+
+    .price-range:hover::-webkit-slider-thumb {
+      transform:scale(1.08);
+      box-shadow:
+        0 3px 8px rgba(16,24,40,.18),
+        0 0 0 5px rgba(79,154,134,.10);
+    }
+
+    .price-range:focus-visible::-webkit-slider-thumb {
+      box-shadow:
+        0 3px 8px rgba(16,24,40,.18),
+        0 0 0 5px rgba(79,154,134,.16);
+    }
+
+    .price-labels {
+      grid-template-columns:1fr auto 1fr;
+      margin-top:-1px;
+    }
+
+    .price-value {
+      min-width:70px;
+      padding:3px 8px;
+      border:1px solid #e1e7eb;
+      border-radius:999px;
+      background:#f8faf9;
+      color:#2f3b50 !important;
+      font-size:9px !important;
+      line-height:1.3;
+      text-align:center;
+    }
+
+    .filter-chip {
+      -webkit-appearance:none;
+      appearance:none;
+      transition:
+        border-color .15s ease,
+        background .15s ease,
+        color .15s ease,
+        transform .1s ease,
+        box-shadow .15s ease;
+    }
+
+    .filter-chip:hover {
+      border-color:#b9d5cc;
+      background:#f7fbfa;
+    }
+
+    .filter-chip:active {
+      transform:scale(.98);
+    }
+
+    .filter-chip.is-selected {
+      border-color:#9dcbbf;
+      background:#e7f4f0;
+      box-shadow:0 0 0 2px rgba(79,154,134,.07);
+    }
+
+    /* Mobile filter header */
+    .sheet-header {
+      padding:13px 17px 15px;
+    }
+
+    .sheet-heading {
+      display:flex;
+      align-items:center;
+      gap:11px;
+      min-width:0;
+    }
+
+    .sheet-heading-icon {
+      width:38px;
+      height:38px;
+      flex:0 0 38px;
+      display:grid;
+      place-items:center;
+      border-radius:11px;
+      background:#edf7f4;
+      color:var(--wow-green-dark);
+    }
+
+    .sheet-kicker {
+      margin-bottom:2px;
+      font-size:9px;
+      letter-spacing:.12em;
+    }
+
+    .sheet-title {
+      font-size:20px;
+      letter-spacing:-.035em;
+    }
+
+    .sheet-close {
+      transition:background .15s ease,transform .12s ease;
+    }
+
+    .sheet-close:hover {
+      background:#e9edf1;
+    }
+
+    .sheet-close:active {
+      transform:scale(.94);
+    }
+
+    .mobile-filter-section-head {
+      min-height:31px;
+      border-radius:8px;
+      transition:background .15s ease;
+    }
+
+    .mobile-filter-section-head:hover {
+      background:#f8faf9;
+    }
+
+    .mobile-filter-section .filter-section-label {
+      gap:9px;
+    }
+
+    .mobile-filter-section .filter-section-icon {
+      width:27px;
+      height:27px;
+      flex-basis:27px;
+    }
+
+    .mobile-filter-section .filter-section-name {
+      font-size:13px;
+    }
+
+    .mobile-choice-row {
+      min-height:38px;
+      gap:10px;
+      padding:0 9px;
+      border-radius:9px;
+      color:#344158;
+      font-size:12px;
+      cursor:pointer;
+    }
+
+    .mobile-choice-row:hover {
+      border-color:#e4e9ed;
+      background:#f8faf9;
+    }
+
+    .mobile-choice-row.is-selected {
+      border-color:#d5e9e3;
+      background:#e5f3ef;
+      color:#2f7464;
+      box-shadow:inset 3px 0 0 var(--wow-green);
+    }
+
+    .mobile-price-summary {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin:0 0 5px;
+      color:#96a1af;
+      font-size:10px;
+    }
+
+    .mobile-price-summary strong {
+      color:#2e3a4d;
+      font-size:10px;
+    }
+
+    .mobile-chip {
+      -webkit-appearance:none;
+      appearance:none;
+      transition:all .15s ease;
+    }
+
+    .mobile-chip:hover {
+      border-color:#b8d4cc;
+      background:#f8fbfa;
+    }
+
+    .mobile-chip.is-selected {
+      box-shadow:0 0 0 2px rgba(79,154,134,.07);
+    }
+
+    @media (max-width:767px) {
+      .sheet-body {
+        padding-left:17px;
+        padding-right:17px;
+      }
+    }
+
+  
+/* =========================================================
+   USER REFINEMENT:
+   Selected filter rows use no left accent and no tick.
+   The square itself fills green to show selection.
+   ========================================================= */
+
+.choice-row.is-selected,
+.mobile-choice-row.is-selected {
+  box-shadow:none !important;
+}
+
+.choice-box::after {
+  content:none !important;
+  display:none !important;
+}
+
+.choice-row.is-selected .choice-box,
+.mobile-choice-row.is-selected .choice-box {
+  border-color:var(--wow-green) !important;
+  background:var(--wow-green) !important;
+  color:transparent !important;
+  box-shadow:none !important;
+}
+</style>
+</head>
+<body>
+<main class="results-page">
+<!-- =======================================================
+         MOBILE TOOLBAR
+         ======================================================= -->
+<div class="mobile-toolbar">
+<div class="mobile-result-count"><strong>9</strong> results</div>
+<div class="mobile-toolbar-actions">
+<button class="mobile-toolbar-button" id="open-mobile-filters" type="button">
+<svg aria-hidden="true" fill="none" height="14" viewbox="0 0 24 24" width="14">
+<path d="M4 7h16M7 12h10M10 17h4" stroke="currentColor" stroke-linecap="round" stroke-width="1.8"></path>
+</svg>
+          Filters
+        </button>
+<button class="mobile-toolbar-button js-map-toggle" type="button">
+<svg aria-hidden="true" class="map-icon" fill="none" height="15" viewbox="0 0 24 24" width="15">
+<path d="m3 6 5-2 8 3 5-2v13l-5 2-8-3-5 2V6Z" stroke="currentColor" stroke-linejoin="round" stroke-width="1.6"></path>
+<path d="M8 4v13M16 7v13" stroke="currentColor" stroke-width="1.6"></path>
+</svg>
+<span class="js-map-label">Map</span>
+</button>
+</div>
+</div>
+<div class="results-container">
+<!-- =====================================================
+           DESKTOP TITLE / MAP TOGGLE
+           ===================================================== -->
+<header class="desktop-results-header">
+<h1 class="results-title">9 results <em>near you</em></h1>
+<button class="view-toggle-button js-map-toggle" type="button">
+<svg aria-hidden="true" class="map-icon" fill="none" height="15" viewbox="0 0 24 24" width="15">
+<path d="m3 6 5-2 8 3 5-2v13l-5 2-8-3-5 2V6Z" stroke="currentColor" stroke-linejoin="round" stroke-width="1.6"></path>
+<path d="M8 4v13M16 7v13" stroke="currentColor" stroke-width="1.6"></path>
+</svg>
+<span class="js-map-label">Map</span>
+</button>
+</header>
+<div class="results-layout">
+<!-- ===================================================
+             DESKTOP FILTERS
+             =================================================== -->
+<aside aria-label="Refine search results" class="results-sidebar">
+<div class="filter-card">
+<div class="filter-card-inner">
+<div class="filter-card-title">
+<span aria-hidden="true" class="filter-card-title-icon">
+<svg fill="none" height="16" viewbox="0 0 24 24" width="16">
+<path d="M4 7h10M18 7h2M4 12h3M11 12h9M4 17h7M15 17h5" stroke="currentColor" stroke-linecap="round" stroke-width="1.8"></path>
+<circle cx="16" cy="7" r="2" stroke="currentColor" stroke-width="1.6"></circle>
+<circle cx="9" cy="12" r="2" stroke="currentColor" stroke-width="1.6"></circle>
+<circle cx="13" cy="17" r="2" stroke="currentColor" stroke-width="1.6"></circle>
+</svg>
+</span>
+<span class="filter-card-heading">
+<strong>Refine results</strong>
+<small>Filters &amp; Sort</small>
+</span>
+<span class="count">9</span>
+</div>
+<section class="filter-section">
+<button aria-expanded="true" class="filter-section-head js-filter-section-toggle" type="button">
+<span class="filter-section-label">
+<span aria-hidden="true" class="filter-section-icon"><svg fill="none" height="14" viewbox="0 0 24 24" width="14"><path d="M8 6h10M8 12h7M8 18h4M5 5v14M3 17l2 2 2-2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"></path></svg></span>
+<span class="filter-section-name">Sort by</span>
+</span>
+<span class="filter-chevron">
+<svg fill="none" height="13" viewbox="0 0 24 24" width="13"><path d="m7 14 5-5 5 5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+</span>
+</button>
+<div class="filter-section-body sort-list">
+<button class="choice-row is-selected js-choice" type="button">
+<span aria-hidden="true" class="choice-box"></span>
+<span class="choice-copy"><strong>Recommended</strong><span class="choice-note">Best match</span></span>
+</button>
+<button class="choice-row js-choice" type="button">
+<span aria-hidden="true" class="choice-box"></span>
+<span class="choice-copy"><strong>Highest rated</strong><span class="choice-note">Top reviews</span></span>
+</button>
+<button class="choice-row js-choice" type="button">
+<span aria-hidden="true" class="choice-box"></span>
+<span class="choice-copy"><strong>Price: low to high</strong></span>
+</button>
+<button class="choice-row js-choice" type="button">
+<span aria-hidden="true" class="choice-box"></span>
+<span class="choice-copy"><strong>Price: high to low</strong></span>
+</button>
+</div>
+</section>
+<section class="filter-section">
+<button aria-expanded="true" class="filter-section-head js-filter-section-toggle" type="button">
+<span class="filter-section-label">
+<span aria-hidden="true" class="filter-section-icon"><svg fill="none" height="14" viewbox="0 0 24 24" width="14"><path d="M14.5 6.5c-.7-1-1.8-1.5-3.2-1.5-2 0-3.3 1-3.3 2.5 0 4 7 1.5 7 5.5 0 1.7-1.5 3-3.8 3-1.5 0-2.8-.5-3.7-1.6M11 3v16" stroke="currentColor" stroke-linecap="round" stroke-width="1.7"></path></svg></span>
+<span class="filter-section-name">Price</span>
+</span>
+<span class="filter-chevron">
+<svg fill="none" height="13" viewbox="0 0 24 24" width="13"><path d="m7 14 5-5 5 5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+</span>
+</button>
+<div class="filter-section-body">
+<div class="price-control">
+<input aria-label="Maximum price" class="price-range js-price-range" id="desktop-price-range" max="500" min="10" step="10" type="range" value="500"/>
+<div class="price-labels">
+<span>£10</span>
+<strong class="price-value js-price-value">Any price</strong>
+<span>£500+</span>
+</div>
+</div>
+<div class="chip-grid">
+<button class="filter-chip js-price-chip" data-price="50" type="button">Under £50</button>
+<button class="filter-chip js-price-chip" data-price="100" type="button">Under £100</button>
+<button class="filter-chip js-price-chip" data-price="170" type="button">Under £170</button>
+<button class="filter-chip js-price-chip" data-price="250" type="button">Under £250</button>
+</div>
+</div>
+</section>
+<section class="filter-section is-collapsed">
+<button aria-expanded="false" class="filter-section-head js-filter-section-toggle" type="button">
+<span class="filter-section-label">
+<span aria-hidden="true" class="filter-section-icon"><svg fill="none" height="14" viewbox="0 0 24 24" width="14"><rect height="6" rx="1.5" stroke="currentColor" stroke-width="1.6" width="6" x="4" y="4"></rect><rect height="6" rx="1.5" stroke="currentColor" stroke-width="1.6" width="6" x="14" y="4"></rect><rect height="6" rx="1.5" stroke="currentColor" stroke-width="1.6" width="6" x="4" y="14"></rect><rect height="6" rx="1.5" stroke="currentColor" stroke-width="1.6" width="6" x="14" y="14"></rect></svg></span>
+<span class="filter-section-name">Type</span>
+</span>
+<span class="filter-chevron">
+<svg fill="none" height="13" viewbox="0 0 24 24" width="13"><path d="m7 14 5-5 5 5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+</span>
+</button>
+<div class="filter-section-body">
+<div class="chip-grid">
+<button class="filter-chip js-chip" type="button">Therapy</button>
+<button class="filter-chip js-chip" type="button">Class</button>
+<button class="filter-chip js-chip" type="button">Event</button>
+<button class="filter-chip js-chip" type="button">Retreat</button>
+</div>
+</div>
+</section>
+<section class="filter-section is-collapsed">
+<button aria-expanded="false" class="filter-section-head js-filter-section-toggle" type="button">
+<span class="filter-section-label">
+<span aria-hidden="true" class="filter-section-icon"><svg fill="none" height="14" viewbox="0 0 24 24" width="14"><path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9L12 3Z" stroke="currentColor" stroke-linejoin="round" stroke-width="1.6"></path></svg></span>
+<span class="filter-section-name">Rating</span>
+</span>
+<span class="filter-chevron">
+<svg fill="none" height="13" viewbox="0 0 24 24" width="13"><path d="m7 14 5-5 5 5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+</span>
+</button>
+<div class="filter-section-body rating-list">
+<button class="choice-row is-selected js-choice" type="button">
+<span aria-hidden="true" class="choice-box"></span>
+<span class="choice-copy"><strong>Any rating</strong><span class="choice-note">All results</span></span>
+</button>
+<button class="choice-row js-choice" type="button">
+<span aria-hidden="true" class="choice-box"></span>
+<span class="choice-copy"><strong>4.5+ stars</strong><span class="rating-stars-mini">★★★★★</span></span>
+</button>
+<button class="choice-row js-choice" type="button">
+<span aria-hidden="true" class="choice-box"></span>
+<span class="choice-copy"><strong>4.0+ stars</strong><span class="rating-stars-mini">★★★★☆</span></span>
+</button>
+<button class="choice-row js-choice" type="button">
+<span aria-hidden="true" class="choice-box"></span>
+<span class="choice-copy"><strong>Reviewed only</strong><span class="choice-note">1+ review</span></span>
+</button>
+</div>
+</section>
+</div>
+</div>
+</aside>
+<!-- ===================================================
+             RESULT CARDS
+             All cards are real HTML articles.
+             =================================================== -->
+<section aria-label="Search results" class="results-content">
+<div class="results-grid">
+<!-- 1 -->
+<article class="result-card standard-card">
+<div class="card-image">
+<img alt="A bright massage therapy room" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcREeidoNtXhdASmbpqw2BRjfVL2SGnQUL-iozp7Db_quw&amp;s"/>
+<span class="card-ribbon">Popular this week</span>
+<div class="card-tags">
+<span class="tag tag-yellow">Therapy</span>
+<span class="tag tag-blue">Therapy</span>
+</div>
+</div>
+<div class="card-body">
+<h2 class="card-title">Deep Tissue Massage &amp; Myofascial Release</h2>
+<p class="provider">with Sarah Thornton</p>
+<div class="rating-row">
+<span class="stars">★★★★★</span>
+<span>4.8 · 34 reviews</span>
+</div>
+<div class="location-row">
+<svg fill="none" height="12" viewbox="0 0 24 24" width="12"><path d="M12 21s6-5.2 6-11a6 6 0 1 0-12 0c0 5.8 6 11 6 11Z" stroke="currentColor" stroke-width="1.8"></path><circle cx="12" cy="10" r="2" stroke="currentColor" stroke-width="1.8"></circle></svg>
+                  Shoreditch, London · 1.2 miles
+                </div>
+<p class="description">
+                  A deeply restorative full-body treatment combining deep tissue techniques with targeted myofascial release to ease chronic tension.
+                </p>
+<div class="availability">
+<svg fill="none" height="13" viewbox="0 0 24 24" width="13"><path d="M6 4v3M18 4v3M4 9h16M5 6h14v14H5V6Z" stroke="currentColor" stroke-linecap="round" stroke-width="1.6"></path></svg>
+                  Available tomorrow
+                </div>
+</div>
+<div class="card-footer">
+<div class="price"><small>From</small><strong>£65</strong></div>
+<button class="book-button" type="button"><span class="desktop-book-label">VIEW &amp; BOOK</span><span class="mobile-book-label">BOOK</span></button>
+</div>
+</article>
+<!-- 2 -->
+<article class="result-card overlay-card">
+<img alt="A person practising yoga outdoors" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcREeidoNtXhdASmbpqw2BRjfVL2SGnQUL-iozp7Db_quw&amp;s"/>
+<div class="date-tile"><span>JUL</span><strong>19</strong></div>
+<div class="overlay-content">
+<div class="overlay-tags">
+<span class="tag tag-yellow">Wellness</span>
+<span class="tag tag-blue">Event</span>
+</div>
+<h2 class="overlay-title">Summer Sound Bath &amp; Meditation Evening</h2>
+<p class="overlay-provider">with Amara Singh</p>
+<div class="overlay-location">
+<svg fill="none" height="12" viewbox="0 0 24 24" width="12"><path d="M12 21s6-5.2 6-11a6 6 0 1 0-12 0c0 5.8 6 11 6 11Z" stroke="currentColor" stroke-width="1.8"></path><circle cx="12" cy="10" r="2" stroke="currentColor" stroke-width="1.8"></circle></svg>
+                  Hackney, London · 2.8 miles
+                </div>
+<div class="overlay-bottom">
+<div class="overlay-price"><small>From</small><strong>£28</strong></div>
+<button class="book-button" type="button"><span class="desktop-book-label">VIEW &amp; BOOK</span><span class="mobile-book-label">BOOK</span></button>
+</div>
+</div>
+</article>
+<!-- 3 -->
+<article class="result-card standard-card">
+<div class="card-image">
+<img alt="Reflexology treatment" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcREeidoNtXhdASmbpqw2BRjfVL2SGnQUL-iozp7Db_quw&amp;s"/>
+<div class="card-tags">
+<span class="tag tag-yellow">Reflexology</span>
+<span class="tag tag-blue">Therapy</span>
+</div>
+</div>
+<div class="card-body">
+<h2 class="card-title">Holistic Reflexology &amp; Energy Work</h2>
+<p class="provider">with Priya Kapoor</p>
+<div class="rating-row">
+<span class="stars">★★★★★</span>
+<span>4.7 · 19 reviews</span>
+</div>
+<div class="location-row">
+<svg fill="none" height="12" viewbox="0 0 24 24" width="12"><path d="M12 21s6-5.2 6-11a6 6 0 1 0-12 0c0 5.8 6 11 6 11Z" stroke="currentColor" stroke-width="1.8"></path><circle cx="12" cy="10" r="2" stroke="currentColor" stroke-width="1.8"></circle></svg>
+                  Islington, London · 3.5 miles
+                </div>
+<p class="description">
+                  A holistic session combining reflexology foot mapping with chakra energy balancing to promote systemic wellbeing and deep calm.
+                </p>
+<div class="availability">
+<svg fill="none" height="13" viewbox="0 0 24 24" width="13"><path d="M6 4v3M18 4v3M4 9h16M5 6h14v14H5V6Z" stroke="currentColor" stroke-linecap="round" stroke-width="1.6"></path></svg>
+                  Next available: Tue
+                </div>
+</div>
+<div class="card-footer">
+<div class="price"><small>From</small><strong>£75</strong></div>
+<button class="book-button" type="button"><span class="desktop-book-label">VIEW &amp; BOOK</span><span class="mobile-book-label">BOOK</span></button>
+</div>
+</article>
+<!-- 4 -->
+<article class="result-card standard-card">
+<div class="card-image">
+<img alt="Guided yoga in a green outdoor setting" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcREeidoNtXhdASmbpqw2BRjfVL2SGnQUL-iozp7Db_quw&amp;s"/>
+<span class="card-ribbon">Exclusively online</span>
+<div class="card-tags">
+<span class="tag tag-yellow">Yoga</span>
+<span class="tag tag-blue">Class</span>
+</div>
+</div>
+<div class="card-body">
+<h2 class="card-title">Yin Yoga &amp; Guided Breathwork</h2>
+<p class="provider">with Lena Schmidt</p>
+<div class="rating-row">
+<span class="stars">★★★★★</span>
+<span>4.9 · 87 reviews</span>
+</div>
+<div class="location-row">
+<svg fill="none" height="12" viewbox="0 0 24 24" width="12"><path d="M2 8.8a15 15 0 0 1 20 0M5 12.8a10 10 0 0 1 14 0M8.5 16.4a5 5 0 0 1 7 0M12 20h.01" stroke="currentColor" stroke-linecap="round" stroke-width="1.7"></path></svg>
+                  Online
+                </div>
+<p class="description">
+                  A slow, meditative yoga practice paired with conscious breathwork to release deep connective tissue tension.
+                </p>
+<div class="availability available-green">
+<svg fill="none" height="13" viewbox="0 0 24 24" width="13"><path d="M6 4v3M18 4v3M4 9h16M5 6h14v14H5V6Z" stroke="currentColor" stroke-linecap="round" stroke-width="1.6"></path></svg>
+                  Available every day
+                </div>
+</div>
+<div class="card-footer">
+<div class="price"><small>From</small><strong>£18</strong></div>
+<button class="book-button" type="button"><span class="desktop-book-label">VIEW &amp; BOOK</span><span class="mobile-book-label">BOOK</span></button>
+</div>
+</article>
+<!-- 5 -->
+<article class="result-card standard-card">
+<div class="card-image">
+<img alt="Hot stone massage treatment" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcREeidoNtXhdASmbpqw2BRjfVL2SGnQUL-iozp7Db_quw&amp;s"/>
+<div class="card-tags">
+<span class="tag tag-yellow">Massage</span>
+<span class="tag tag-blue">Therapy</span>
+</div>
+</div>
+<div class="card-body">
+<h2 class="card-title">Hot Stone &amp; Swedish Massage</h2>
+<p class="provider">with Clare Williams</p>
+<div class="rating-row">
+<span class="stars">★★★★★</span>
+<span>5.0 · 11 reviews</span>
+</div>
+<div class="location-row">
+<svg fill="none" height="12" viewbox="0 0 24 24" width="12"><path d="M12 21s6-5.2 6-11a6 6 0 1 0-12 0c0 5.8 6 11 6 11Z" stroke="currentColor" stroke-width="1.8"></path><circle cx="12" cy="10" r="2" stroke="currentColor" stroke-width="1.8"></circle></svg>
+                  Tonbridge, Kent · 28 miles
+                </div>
+<p class="description">
+                  Heated volcanic stones are placed over muscles to melt tension while Swedish strokes promote circulation and deep relaxation.
+                </p>
+<div class="availability">
+<svg fill="none" height="13" viewbox="0 0 24 24" width="13"><path d="M6 4v3M18 4v3M4 9h16M5 6h14v14H5V6Z" stroke="currentColor" stroke-linecap="round" stroke-width="1.6"></path></svg>
+                  Available tomorrow
+                </div>
+</div>
+<div class="card-footer">
+<div class="price"><small>From</small><strong>£90</strong></div>
+<button class="book-button" type="button"><span class="desktop-book-label">VIEW &amp; BOOK</span><span class="mobile-book-label">BOOK</span></button>
+</div>
+</article>
+<!-- 6 -->
+<article class="result-card overlay-card">
+<img alt="A tranquil forest retreat location" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcREeidoNtXhdASmbpqw2BRjfVL2SGnQUL-iozp7Db_quw&amp;s"/>
+<div class="date-tile"><span>AUG</span><strong>09</strong></div>
+<div class="overlay-content">
+<div class="overlay-tags">
+<span class="tag tag-yellow">Retreat</span>
+<span class="tag tag-blue">Retreat</span>
+</div>
+<h2 class="overlay-title">Weekend Nature Retreat — Stillness &amp; Forest Bathing</h2>
+<p class="overlay-provider">with The Grove Collective</p>
+<div class="overlay-location">
+<svg fill="none" height="12" viewbox="0 0 24 24" width="12"><path d="M12 21s6-5.2 6-11a6 6 0 1 0-12 0c0 5.8 6 11 6 11Z" stroke="currentColor" stroke-width="1.8"></path><circle cx="12" cy="10" r="2" stroke="currentColor" stroke-width="1.8"></circle></svg>
+                  Surrey Hills · 22 miles
+                </div>
+<div class="overlay-bottom">
+<div class="overlay-price"><small>From</small><strong>£350</strong></div>
+<button class="book-button" type="button"><span class="desktop-book-label">VIEW &amp; BOOK</span><span class="mobile-book-label">BOOK</span></button>
+</div>
+</div>
+</article>
+<!-- 7 -->
+<article class="result-card standard-card">
+<div class="card-image">
+<img alt="Calm therapy room" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcREeidoNtXhdASmbpqw2BRjfVL2SGnQUL-iozp7Db_quw&amp;s"/>
+<div class="card-tags">
+<span class="tag tag-yellow">Reiki</span>
+<span class="tag tag-blue">Therapy</span>
+</div>
+</div>
+<div class="card-body">
+<h2 class="card-title">Reiki &amp; Chakra Balancing Session</h2>
+<p class="provider">with Maya Bennett</p>
+<div class="rating-row"><span class="stars">★★★★★</span><span>4.9 · 42 reviews</span></div>
+<div class="location-row">
+<svg fill="none" height="12" viewbox="0 0 24 24" width="12"><path d="M12 21s6-5.2 6-11a6 6 0 1 0-12 0c0 5.8 6 11 6 11Z" stroke="currentColor" stroke-width="1.8"></path><circle cx="12" cy="10" r="2" stroke="currentColor" stroke-width="1.8"></circle></svg>
+                  Greenwich, London · 7.4 miles
+                </div>
+<p class="description">A calming energy session designed to rebalance, settle the nervous system and create space for deeper rest.</p>
+<div class="availability"><svg fill="none" height="13" viewbox="0 0 24 24" width="13"><path d="M6 4v3M18 4v3M4 9h16M5 6h14v14H5V6Z" stroke="currentColor" stroke-width="1.6"></path></svg>Available Friday</div>
+</div>
+<div class="card-footer">
+<div class="price"><small>From</small><strong>£55</strong></div>
+<button class="book-button" type="button"><span class="desktop-book-label">VIEW &amp; BOOK</span><span class="mobile-book-label">BOOK</span></button>
+</div>
+</article>
+<!-- 8 -->
+<article class="result-card standard-card">
+<div class="card-image">
+<img alt="Gentle movement class" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcREeidoNtXhdASmbpqw2BRjfVL2SGnQUL-iozp7Db_quw&amp;s"/>
+<span class="card-ribbon">Online</span>
+<div class="card-tags">
+<span class="tag tag-yellow">Pilates</span>
+<span class="tag tag-blue">Class</span>
+</div>
+</div>
+<div class="card-body">
+<h2 class="card-title">Restorative Pilates for Back Care</h2>
+<p class="provider">with Ella Moore</p>
+<div class="rating-row"><span class="stars">★★★★★</span><span>4.8 · 29 reviews</span></div>
+<div class="location-row">
+<svg fill="none" height="12" viewbox="0 0 24 24" width="12"><path d="M2 8.8a15 15 0 0 1 20 0M5 12.8a10 10 0 0 1 14 0M8.5 16.4a5 5 0 0 1 7 0M12 20h.01" stroke="currentColor" stroke-linecap="round" stroke-width="1.7"></path></svg>
+                  Online
+                </div>
+<p class="description">Low-impact movement focusing on mobility, posture and controlled strength for anyone managing back tension.</p>
+<div class="availability available-green"><svg fill="none" height="13" viewbox="0 0 24 24" width="13"><path d="M6 4v3M18 4v3M4 9h16M5 6h14v14H5V6Z" stroke="currentColor" stroke-width="1.6"></path></svg>Available today</div>
+</div>
+<div class="card-footer">
+<div class="price"><small>From</small><strong>£16</strong></div>
+<button class="book-button" type="button"><span class="desktop-book-label">VIEW &amp; BOOK</span><span class="mobile-book-label">BOOK</span></button>
+</div>
+</article>
+<!-- 9 -->
+<article class="result-card overlay-card">
+<img alt="Retreat and nature setting" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcREeidoNtXhdASmbpqw2BRjfVL2SGnQUL-iozp7Db_quw&amp;s"/>
+<div class="date-tile"><span>SEP</span><strong>26</strong></div>
+<div class="overlay-content">
+<div class="overlay-tags">
+<span class="tag tag-yellow">Wellness</span>
+<span class="tag tag-blue">Retreat</span>
+</div>
+<h2 class="overlay-title">Women's Wellness Day Retreat</h2>
+<p class="overlay-provider">with Hearth &amp; Haven</p>
+<div class="overlay-location">
+<svg fill="none" height="12" viewbox="0 0 24 24" width="12"><path d="M12 21s6-5.2 6-11a6 6 0 1 0-12 0c0 5.8 6 11 6 11Z" stroke="currentColor" stroke-width="1.8"></path><circle cx="12" cy="10" r="2" stroke="currentColor" stroke-width="1.8"></circle></svg>
+                  Sevenoaks, Kent · 20 miles
+                </div>
+<div class="overlay-bottom">
+<div class="overlay-price"><small>From</small><strong>£125</strong></div>
+<button class="book-button" type="button"><span class="desktop-book-label">VIEW &amp; BOOK</span><span class="mobile-book-label">BOOK</span></button>
+</div>
+</div>
+</article>
+</div>
+</section>
+<!-- ===================================================
+             MAP PANE
+             =================================================== -->
+<section aria-label="Map view" class="map-panel">
+<img alt="Map of London and surrounding areas" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcREeidoNtXhdASmbpqw2BRjfVL2SGnQUL-iozp7Db_quw&amp;s"/>
+<div aria-label="Map zoom controls" class="map-controls">
+<button aria-label="Zoom in" class="map-control-button" type="button">+</button>
+<button aria-label="Zoom out" class="map-control-button" type="button">−</button>
+</div>
+</section>
+</div>
+</div>
+</main>
+<!-- =========================================================
+       MOBILE FILTERS & SORT SHEET
+       ========================================================= -->
+<div class="mobile-filter-modal" hidden="" id="mobile-filter-modal">
+<button aria-label="Close filters" class="mobile-filter-backdrop" data-close-mobile-filters="" type="button"></button>
+<section aria-labelledby="mobile-filter-title" aria-modal="true" class="mobile-filter-sheet" role="dialog">
+<div aria-hidden="true" class="sheet-handle"></div>
+<header class="sheet-header">
+<div class="sheet-heading">
+<span aria-hidden="true" class="sheet-heading-icon">
+<svg fill="none" height="18" viewbox="0 0 24 24" width="18">
+<path d="M4 7h10M18 7h2M4 12h3M11 12h9M4 17h7M15 17h5" stroke="currentColor" stroke-linecap="round" stroke-width="1.8"></path>
+<circle cx="16" cy="7" r="2" stroke="currentColor" stroke-width="1.6"></circle>
+<circle cx="9" cy="12" r="2" stroke="currentColor" stroke-width="1.6"></circle>
+<circle cx="13" cy="17" r="2" stroke="currentColor" stroke-width="1.6"></circle>
+</svg>
+</span>
+<div>
+<p class="sheet-kicker">Refine results</p>
+<h2 class="sheet-title" id="mobile-filter-title">Filters &amp; Sort</h2>
+</div>
+</div>
+<button aria-label="Close filters" class="sheet-close" data-close-mobile-filters="" type="button">
+<svg fill="none" height="18" viewbox="0 0 24 24" width="18">
+<path d="M18 6 6 18M6 6l12 12" stroke="currentColor" stroke-linecap="round" stroke-width="1.8"></path>
+</svg>
+</button>
+</header>
+<div class="sheet-body">
+<section class="mobile-filter-section">
+<button aria-expanded="true" class="mobile-filter-section-head js-mobile-section-toggle" type="button">
+<span class="filter-section-label">
+<span aria-hidden="true" class="filter-section-icon"><svg fill="none" height="14" viewbox="0 0 24 24" width="14"><path d="M8 6h10M8 12h7M8 18h4M5 5v14M3 17l2 2 2-2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"></path></svg></span>
+<span class="filter-section-name">Sort by</span>
+</span>
+<span class="filter-chevron">
+<svg fill="none" height="13" viewbox="0 0 24 24" width="13"><path d="m7 14 5-5 5 5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+</span>
+</button>
+<div class="mobile-filter-section-body">
+<button class="mobile-choice-row is-selected js-mobile-choice" type="button"><span aria-hidden="true" class="choice-box"></span><span class="choice-copy"><strong>Recommended</strong><span class="choice-note">Best match</span></span></button>
+<button class="mobile-choice-row js-mobile-choice" type="button"><span aria-hidden="true" class="choice-box"></span><span class="choice-copy"><strong>Highest rated</strong><span class="choice-note">Top reviews</span></span></button>
+<button class="mobile-choice-row js-mobile-choice" type="button"><span aria-hidden="true" class="choice-box"></span><span class="choice-copy"><strong>Price: low to high</strong></span></button>
+<button class="mobile-choice-row js-mobile-choice" type="button"><span aria-hidden="true" class="choice-box"></span><span class="choice-copy"><strong>Price: high to low</strong></span></button>
+</div>
+</section>
+<section class="mobile-filter-section">
+<button aria-expanded="true" class="mobile-filter-section-head js-mobile-section-toggle" type="button">
+<span class="filter-section-label">
+<span aria-hidden="true" class="filter-section-icon"><svg fill="none" height="14" viewbox="0 0 24 24" width="14"><rect height="6" rx="1.5" stroke="currentColor" stroke-width="1.6" width="6" x="4" y="4"></rect><rect height="6" rx="1.5" stroke="currentColor" stroke-width="1.6" width="6" x="14" y="4"></rect><rect height="6" rx="1.5" stroke="currentColor" stroke-width="1.6" width="6" x="4" y="14"></rect><rect height="6" rx="1.5" stroke="currentColor" stroke-width="1.6" width="6" x="14" y="14"></rect></svg></span>
+<span class="filter-section-name">Type</span>
+</span>
+<span class="filter-chevron">
+<svg fill="none" height="13" viewbox="0 0 24 24" width="13"><path d="m7 14 5-5 5 5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+</span>
+</button>
+<div class="mobile-filter-section-body">
+<div class="mobile-chip-row">
+<button class="mobile-chip js-mobile-chip" type="button">Therapy</button>
+<button class="mobile-chip js-mobile-chip" type="button">Class</button>
+<button class="mobile-chip js-mobile-chip" type="button">Event</button>
+<button class="mobile-chip js-mobile-chip" type="button">Retreat</button>
+</div>
+</div>
+</section>
+<section class="mobile-filter-section">
+<button aria-expanded="true" class="mobile-filter-section-head js-mobile-section-toggle" type="button">
+<span class="filter-section-label">
+<span aria-hidden="true" class="filter-section-icon"><svg fill="none" height="14" viewbox="0 0 24 24" width="14"><path d="M14.5 6.5c-.7-1-1.8-1.5-3.2-1.5-2 0-3.3 1-3.3 2.5 0 4 7 1.5 7 5.5 0 1.7-1.5 3-3.8 3-1.5 0-2.8-.5-3.7-1.6M11 3v16" stroke="currentColor" stroke-linecap="round" stroke-width="1.7"></path></svg></span>
+<span class="filter-section-name">Price</span>
+</span>
+<span class="filter-chevron">
+<svg fill="none" height="13" viewbox="0 0 24 24" width="13"><path d="m7 14 5-5 5 5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+</span>
+</button>
+<div class="mobile-filter-section-body">
+<div class="price-control">
+<div class="mobile-price-summary">
+<span>£10 minimum</span>
+<strong class="js-price-value">Any price</strong>
+<span>£500+</span>
+</div>
+<input aria-label="Maximum price" class="price-range js-price-range" id="mobile-price-range" max="500" min="10" step="10" type="range" value="500"/>
+</div>
+<div class="mobile-chip-row" style="margin-top:9px">
+<button class="mobile-chip js-price-chip" data-price="50" type="button">Under £50</button>
+<button class="mobile-chip js-price-chip" data-price="100" type="button">Under £100</button>
+<button class="mobile-chip js-price-chip" data-price="170" type="button">Under £170</button>
+</div>
+</div>
+</section>
+<section class="mobile-filter-section is-collapsed">
+<button aria-expanded="false" class="mobile-filter-section-head js-mobile-section-toggle" type="button">
+<span class="filter-section-label">
+<span aria-hidden="true" class="filter-section-icon"><svg fill="none" height="14" viewbox="0 0 24 24" width="14"><path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9L12 3Z" stroke="currentColor" stroke-linejoin="round" stroke-width="1.6"></path></svg></span>
+<span class="filter-section-name">Rating</span>
+</span>
+<span class="filter-chevron">
+<svg fill="none" height="13" viewbox="0 0 24 24" width="13"><path d="m7 14 5-5 5 5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path></svg>
+</span>
+</button>
+<div class="mobile-filter-section-body">
+<button class="mobile-choice-row is-selected js-mobile-choice" type="button"><span aria-hidden="true" class="choice-box"></span><span class="choice-copy"><strong>Any rating</strong><span class="choice-note">All results</span></span></button>
+<button class="mobile-choice-row js-mobile-choice" type="button"><span aria-hidden="true" class="choice-box"></span><span class="choice-copy"><strong>4.5+ stars</strong><span class="rating-stars-mini">★★★★★</span></span></button>
+<button class="mobile-choice-row js-mobile-choice" type="button"><span aria-hidden="true" class="choice-box"></span><span class="choice-copy"><strong>4.0+ stars</strong><span class="rating-stars-mini">★★★★☆</span></span></button>
+</div>
+</section>
+</div>
+<footer class="sheet-footer">
+<button class="clear-button" id="clear-mobile-filters" type="button">Clear all</button>
+<button class="apply-button" data-close-mobile-filters="" type="button">Show 9 results</button>
+</footer>
+</section>
+</div>
+<script>
+    (() => {
+      const body = document.body;
+      const mapToggles = [...document.querySelectorAll('.js-map-toggle')];
+      const mapLabels = [...document.querySelectorAll('.js-map-label')];
+
+      function syncMapLabels() {
+        const isMap = body.classList.contains('map-mode');
+        mapLabels.forEach(label => {
+          label.textContent = isMap ? 'List view' : 'Map';
+        });
+
+        mapToggles.forEach(button => {
+          button.setAttribute('aria-pressed', String(isMap));
+        });
+      }
+
+      mapToggles.forEach(button => {
+        button.addEventListener('click', () => {
+          body.classList.toggle('map-mode');
+          syncMapLabels();
+
+      document.querySelectorAll('.filter-section').forEach(section => {
+        const toggle = section.querySelector('.js-filter-section-toggle');
+        if (toggle) {
+          toggle.setAttribute(
+            'aria-expanded',
+            String(!section.classList.contains('is-collapsed'))
+          );
+        }
+      });
+
+      document.querySelectorAll('.mobile-filter-section').forEach(section => {
+        const toggle = section.querySelector('.js-mobile-section-toggle');
+        if (toggle) {
+          toggle.setAttribute(
+            'aria-expanded',
+            String(!section.classList.contains('is-collapsed'))
+          );
+        }
+      });
+
+        });
+      });
+
+      syncMapLabels();
+
+      document.querySelectorAll('.js-filter-section-toggle').forEach(button => {
+        button.addEventListener('click', () => {
+          const section = button.closest('.filter-section');
+          if (!section) return;
+
+          section.classList.toggle('is-collapsed');
+          button.setAttribute(
+            'aria-expanded',
+            String(!section.classList.contains('is-collapsed'))
+          );
+        });
+      });
+
+      document.querySelectorAll('.filter-section .js-choice').forEach(button => {
+        button.addEventListener('click', () => {
+          const list = button.parentElement;
+          list.querySelectorAll('.js-choice').forEach(item => item.classList.remove('is-selected'));
+          button.classList.add('is-selected');
+        });
+      });
+
+      document.querySelectorAll('.js-chip').forEach(button => {
+        button.addEventListener('click', () => {
+          button.classList.toggle('is-selected');
+        });
+      });
+
+
+      /* -------------------------------------------------------
+         Real price controls — desktop and mobile stay in sync.
+         ------------------------------------------------------- */
+      const priceRanges = [...document.querySelectorAll('.js-price-range')];
+      const priceValues = [...document.querySelectorAll('.js-price-value')];
+      const priceChips = [...document.querySelectorAll('.js-price-chip')];
+
+      function formatPriceValue(value) {
+        const numeric = Number(value);
+        return numeric >= 500 ? 'Any price' : `Up to £${numeric}`;
+      }
+
+      function updateRangeVisual(range, value) {
+        const min = Number(range.min || 0);
+        const max = Number(range.max || 100);
+        const numeric = Number(value);
+        const progress = ((numeric - min) / (max - min)) * 100;
+        range.style.setProperty('--range-progress', `${progress}%`);
+      }
+
+      function setPrice(value, source = null) {
+        const numeric = Number(value);
+
+        priceRanges.forEach(range => {
+          range.value = String(numeric);
+          updateRangeVisual(range, numeric);
+        });
+
+        priceValues.forEach(label => {
+          label.textContent = formatPriceValue(numeric);
+        });
+
+        priceChips.forEach(chip => {
+          chip.classList.toggle(
+            'is-selected',
+            Number(chip.dataset.price) === numeric
+          );
+        });
+
+        if (source === 'range' && numeric >= 500) {
+          priceChips.forEach(chip => chip.classList.remove('is-selected'));
+        }
+      }
+
+      priceRanges.forEach(range => {
+        updateRangeVisual(range, range.value);
+
+        range.addEventListener('input', () => {
+          setPrice(range.value, 'range');
+        });
+
+        range.addEventListener('change', () => {
+          setPrice(range.value, 'range');
+        });
+      });
+
+      priceChips.forEach(chip => {
+        chip.addEventListener('click', () => {
+          setPrice(chip.dataset.price, 'chip');
+        });
+      });
+
+      setPrice(500);
+
+      const mobileModal = document.getElementById('mobile-filter-modal');
+      const openMobileFilters = document.getElementById('open-mobile-filters');
+
+      function openFilters() {
+        mobileModal.hidden = false;
+        body.classList.add('no-scroll');
+      }
+
+      function closeFilters() {
+        mobileModal.hidden = true;
+        body.classList.remove('no-scroll');
+      }
+
+      openMobileFilters?.addEventListener('click', openFilters);
+
+      document.querySelectorAll('[data-close-mobile-filters]').forEach(button => {
+        button.addEventListener('click', closeFilters);
+      });
+
+      document.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && !mobileModal.hidden) {
+          closeFilters();
+        }
+      });
+
+      document.querySelectorAll('.js-mobile-section-toggle').forEach(button => {
+        button.addEventListener('click', () => {
+          const section = button.closest('.mobile-filter-section');
+          if (!section) return;
+
+          section.classList.toggle('is-collapsed');
+          button.setAttribute(
+            'aria-expanded',
+            String(!section.classList.contains('is-collapsed'))
+          );
+        });
+      });
+
+      document.querySelectorAll('.mobile-filter-section .js-mobile-choice').forEach(button => {
+        button.addEventListener('click', () => {
+          const sectionBody = button.parentElement;
+          sectionBody.querySelectorAll('.js-mobile-choice').forEach(item => item.classList.remove('is-selected'));
+          button.classList.add('is-selected');
+        });
+      });
+
+      document.querySelectorAll('.js-mobile-chip').forEach(button => {
+        button.addEventListener('click', () => {
+          button.classList.toggle('is-selected');
+        });
+      });
+
+      document.getElementById('clear-mobile-filters')?.addEventListener('click', () => {
+        document.querySelectorAll('.js-mobile-chip').forEach(button => button.classList.remove('is-selected'));
+
+        document.querySelectorAll('.mobile-filter-section .js-mobile-choice').forEach(button => {
+          button.classList.remove('is-selected');
+        });
+
+        document.querySelectorAll('.mobile-filter-section').forEach(section => {
+          const firstChoice = section.querySelector('.js-mobile-choice');
+          if (firstChoice) firstChoice.classList.add('is-selected');
+        });
+
+        setPrice(500);
+      });
+    })();
+  </script>
+</body>
+</html>

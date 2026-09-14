@@ -27,6 +27,7 @@
       </main>
       @include('partials.footer')
       @include('partials.cookie-banner')
+      @include('partials.newsletter-modal')
   </div>
 
 @if($showLocationPrompt)

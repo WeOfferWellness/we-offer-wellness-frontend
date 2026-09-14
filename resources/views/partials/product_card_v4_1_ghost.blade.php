@@ -1,163 +1,103 @@
 @once
 <style>
   .product-v4-1-ghost-card-scope{
-    --pv41g-line:#dde3ea;
-    --pv41g-soft:#edf0f2;
-    --pv41g-green:#4f9381;
-    --pv41g-green-soft:#e8f5f1;
-    --pv41g-blue-soft:#e8f0ff;
-    --pv41g-gold-soft:#ffe5b3;
-    --pv41g-border:rgba(16,24,40,.18);
-    --pv41g-shadow:0 12px 34px rgba(16,24,40,.045);
-    --pv41g-radius:13px;
+    --offering-ghost-base:#edf0f2;
+    --offering-ghost-highlight:#f8fafb;
+    --offering-ghost-border:rgba(16,24,40,.1);
+    --offering-ghost-green:#eaf5f1;
+    --offering-ghost-gold:#fff0d5;
+    --offering-ghost-blue:#e8f0ff;
   }
 
   .product-v4-1-ghost-card-scope .product-v4-1-ghost-card{
-    position:relative;
     display:flex;
     flex-direction:column;
-    width:280px;
-    min-width:280px;
-    max-width:280px;
-    min-height:492px;
+    width:100%;
+    min-width:290px;
+    max-width:300px;
+    height:430px;
+    min-height:430px;
     overflow:hidden;
+    border:1px solid var(--offering-ghost-border);
+    border-radius:13px;
     background:#fff;
-    border:1px solid var(--pv41g-border);
-    border-radius:var(--pv41g-radius);
-    box-shadow:var(--pv41g-shadow);
+    box-shadow:0 4px 16px rgba(16,24,40,.05);
   }
 
   .product-v4-1-ghost-card__media{
     position:relative;
-    height:176px;
+    height:145px;
+    flex-shrink:0;
     overflow:hidden;
-    background:
-      radial-gradient(circle at 24% 28%, rgba(79,147,129,.14), transparent 30%),
-      radial-gradient(circle at 74% 70%, rgba(37,74,133,.10), transparent 32%),
-      linear-gradient(135deg, #eef2f4 0%, #f8fbfd 100%);
+    background:linear-gradient(135deg, #e9eef0, #f4f7f8);
   }
 
-  .product-v4-1-ghost-card__media::after{
-    content:"";
+  .product-v4-1-ghost-card__media::after,
+  .product-v4-1-ghost-card__fill::after{
     position:absolute;
-    inset:0 0 auto 0;
-    height:72px;
-    background:linear-gradient(180deg, rgba(16,24,40,.22), rgba(16,24,40,0));
+    inset:0;
+    content:"";
+    transform:translateX(-120%);
+    background:linear-gradient(100deg, transparent 0%, rgba(255,255,255,.18) 30%, rgba(255,255,255,.78) 50%, rgba(255,255,255,.18) 70%, transparent 100%);
+    animation:offeringGhostShimmer 1.45s ease-in-out infinite;
   }
 
-  .product-v4-1-ghost-card__shine,
-  .product-v4-1-ghost-card__shine::before,
   .product-v4-1-ghost-card__signal,
-  .product-v4-1-ghost-card__badge,
-  .product-v4-1-ghost-card__title,
-  .product-v4-1-ghost-card__line,
-  .product-v4-1-ghost-card__chip,
-  .product-v4-1-ghost-card__day,
-  .product-v4-1-ghost-card__button,
-  .product-v4-1-ghost-card__price-value,
-  .product-v4-1-ghost-card__price-label{
+  .product-v4-1-ghost-card__tag,
+  .product-v4-1-ghost-card__fill{
     position:relative;
+    display:block;
     overflow:hidden;
-    background:var(--pv41g-soft);
-  }
-
-  .product-v4-1-ghost-card__shine,
-  .product-v4-1-ghost-card__shine::before{
-    position:absolute;
-    inset:0;
-    pointer-events:none;
-  }
-
-  .product-v4-1-ghost-card__shine::before{
-    content:"";
-    transform:translateX(-120%);
-    background:linear-gradient(100deg, transparent 0%, rgba(255,255,255,.18) 28%, rgba(255,255,255,.82) 50%, rgba(255,255,255,.18) 72%, transparent 100%);
-    animation:pv41g-shimmer 1.65s ease-in-out infinite;
-  }
-
-  .product-v4-1-ghost-card__signal::before,
-  .product-v4-1-ghost-card__badge::before,
-  .product-v4-1-ghost-card__title::before,
-  .product-v4-1-ghost-card__line::before,
-  .product-v4-1-ghost-card__chip::before,
-  .product-v4-1-ghost-card__day::before,
-  .product-v4-1-ghost-card__button::before,
-  .product-v4-1-ghost-card__price-value::before,
-  .product-v4-1-ghost-card__price-label::before{
-    content:"";
-    position:absolute;
-    inset:0;
-    transform:translateX(-120%);
-    background:linear-gradient(100deg, transparent 0%, rgba(255,255,255,.16) 28%, rgba(255,255,255,.86) 50%, rgba(255,255,255,.16) 72%, transparent 100%);
-    animation:pv41g-shimmer 1.65s ease-in-out infinite;
+    background:var(--offering-ghost-base);
   }
 
   .product-v4-1-ghost-card__signal{
     position:absolute;
     top:10px;
     left:10px;
-    z-index:3;
-    width:110px;
-    height:28px;
-    border-radius:999px;
-    background:rgba(255,247,237,.94);
-  }
-
-  .product-v4-1-ghost-card__badges{
-    position:absolute;
-    left:10px;
-    bottom:10px;
-    z-index:3;
-    display:flex;
-    flex-wrap:wrap;
-    gap:6px;
-  }
-
-  .product-v4-1-ghost-card__badge{
-    width:72px;
+    width:104px;
     height:26px;
     border-radius:999px;
+    background:var(--offering-ghost-gold);
   }
 
-  .product-v4-1-ghost-card__badge--blue{
-    width:88px;
-    background:rgba(232,240,255,.96);
-  }
-
-  .product-v4-1-ghost-card__quick-view{
+  .product-v4-1-ghost-card__tags{
     position:absolute;
-    right:10px;
     bottom:10px;
-    z-index:3;
-    width:74px;
-    height:30px;
-    border-radius:4px;
-    background:rgba(255,255,255,.94);
+    left:10px;
+    display:flex;
+    gap:4px;
+  }
+
+  .product-v4-1-ghost-card__tag{
+    width:66px;
+    height:22px;
+    border-radius:999px;
+    background:var(--offering-ghost-gold);
+  }
+
+  .product-v4-1-ghost-card__tag--type{
+    width:54px;
+    background:var(--offering-ghost-blue);
   }
 
   .product-v4-1-ghost-card__body{
-    flex:1;
     display:flex;
+    flex:1;
     flex-direction:column;
-    gap:8px;
-    padding:13px 14px 12px;
-  }
-
-  .product-v4-1-ghost-card__type{
-    width:62px;
-    height:11px;
-    border-radius:999px;
-    background:rgba(79,147,129,.12);
+    gap:7px;
+    min-height:0;
+    padding:11px 13px 10px;
   }
 
   .product-v4-1-ghost-card__title{
-    width:100%;
-    height:45px;
-    border-radius:10px;
+    width:88%;
+    height:43px;
+    border-radius:7px;
   }
 
   .product-v4-1-ghost-card__provider{
-    width:140px;
+    width:42%;
     height:12px;
     border-radius:999px;
   }
@@ -166,18 +106,14 @@
     display:flex;
     align-items:center;
     gap:7px;
+    height:14px;
   }
 
   .product-v4-1-ghost-card__stars{
-    display:inline-flex;
-    gap:2px;
-  }
-
-  .product-v4-1-ghost-card__star{
-    width:14px;
-    height:14px;
+    width:56px;
+    height:12px;
     border-radius:4px;
-    background:#f3d77c;
+    background:#f5d978;
   }
 
   .product-v4-1-ghost-card__rating-copy{
@@ -186,191 +122,122 @@
     border-radius:999px;
   }
 
-  .product-v4-1-ghost-card__summary{
-    display:grid;
-    gap:5px;
-  }
-
-  .product-v4-1-ghost-card__summary .product-v4-1-ghost-card__line{
-    height:10px;
-    border-radius:999px;
-  }
-
-  .product-v4-1-ghost-card__summary .product-v4-1-ghost-card__line:nth-child(1){ width:100%; }
-  .product-v4-1-ghost-card__summary .product-v4-1-ghost-card__line:nth-child(2){ width:92%; }
-  .product-v4-1-ghost-card__summary .product-v4-1-ghost-card__line:nth-child(3){ width:72%; }
-
-  .product-v4-1-ghost-card__meta{
-    display:flex;
-    flex-wrap:wrap;
-    gap:6px;
-    min-height:26px;
-  }
-
-  .product-v4-1-ghost-card__chip{
-    width:80px;
-    height:27px;
-    border-radius:999px;
-    background:var(--pv41g-green-soft);
-  }
-
-  .product-v4-1-ghost-card__chip--blue{
-    width:92px;
-    background:var(--pv41g-blue-soft);
-  }
-
-  .product-v4-1-ghost-card__availability{
-    margin-top:4px;
-    min-height:62px;
-    border:1px solid rgba(79,147,129,.24);
-    border-radius:11px;
-    background:linear-gradient(180deg, rgba(232,245,241,.64), rgba(255,255,255,.94));
-    padding:8px;
-  }
-
-  .product-v4-1-ghost-card__availability-top{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:9px;
-    margin-bottom:7px;
-  }
-
-  .product-v4-1-ghost-card__availability-label{
-    width:112px;
+  .product-v4-1-ghost-card__location{
+    width:58%;
     height:12px;
     border-radius:999px;
   }
 
-  .product-v4-1-ghost-card__availability-note{
-    width:68px;
+  .product-v4-1-ghost-card__description{
+    display:grid;
+    gap:5px;
+    margin-top:2px;
+  }
+
+  .product-v4-1-ghost-card__description .product-v4-1-ghost-card__fill{
     height:10px;
     border-radius:999px;
   }
 
-  .product-v4-1-ghost-card__days{
-    display:grid;
-    grid-template-columns:repeat(7, minmax(0, 1fr));
-    gap:3px;
+  .product-v4-1-ghost-card__description .product-v4-1-ghost-card__fill:nth-child(2){ width:84%; }
+  .product-v4-1-ghost-card__description .product-v4-1-ghost-card__fill:nth-child(3){ width:68%; }
+
+  .product-v4-1-ghost-card__availability{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    margin-top:auto;
+    padding:5px 8px;
+    border-radius:7px;
+    background:var(--offering-ghost-green);
   }
 
-  .product-v4-1-ghost-card__day{
-    height:21px;
-    border-radius:6px;
+  .product-v4-1-ghost-card__availability-icon{
+    width:11px;
+    height:11px;
+    border-radius:3px;
+    background:#a6cfc3;
+  }
+
+  .product-v4-1-ghost-card__availability-copy{
+    width:126px;
+    height:12px;
+    border-radius:999px;
+    background:#d5ebe4;
   }
 
   .product-v4-1-ghost-card__footer{
-    display:grid;
-    gap:10px;
-    padding:12px 14px;
-    border-top:1px solid #edf0f2;
-    background:#fff;
-  }
-
-  .product-v4-1-ghost-card__price{
-    display:grid;
-    gap:5px;
-  }
-
-  .product-v4-1-ghost-card__price-label{
-    width:34px;
-    height:10px;
-    border-radius:999px;
-  }
-
-  .product-v4-1-ghost-card__price-value{
-    width:78px;
-    height:22px;
-    border-radius:999px;
-  }
-
-  .product-v4-1-ghost-card__actions{
     display:flex;
-    gap:7px;
+    flex-shrink:0;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+    padding:9px 13px 11px;
+    border-top:1px solid #edf0f2;
   }
+
+  .product-v4-1-ghost-card__price{ display:grid; gap:5px; }
+  .product-v4-1-ghost-card__price-label{ width:32px; height:10px; border-radius:999px; }
+  .product-v4-1-ghost-card__price-value{ width:74px; height:21px; border-radius:999px; }
 
   .product-v4-1-ghost-card__button{
-    flex:1;
-    height:38px;
+    width:104px;
+    height:36px;
     border-radius:4px;
+    background:#d9ece6;
   }
 
-  @keyframes pv41g-shimmer{
-    100%{ transform:translateX(115%); }
-  }
+  @keyframes offeringGhostShimmer { to { transform:translateX(120%); } }
 
-  @media (max-width: 620px){
+  @media (max-width:560px){
     .product-v4-1-ghost-card-scope .product-v4-1-ghost-card{
-      width:clamp(260px, 86vw, 280px);
-      min-width:clamp(260px, 86vw, 280px);
+      min-width:0;
       max-width:none;
-      min-height:auto;
+      height:360px;
+      min-height:360px;
     }
+    .product-v4-1-ghost-card__media{ height:138px; }
+    .product-v4-1-ghost-card__body{ padding:10px 11px 9px; }
+    .product-v4-1-ghost-card__description{ display:none; }
+    .product-v4-1-ghost-card__footer{ padding:9px 11px 10px; }
+    .product-v4-1-ghost-card__button{ height:34px; width:96px; }
   }
 </style>
 @endonce
 
-<div class="product-v4-1-ghost-card-scope" aria-busy="true" aria-label="Loading therapy card">
-  <div class="product-v4-1-ghost-card">
-    <div class="product-v4-1-ghost-card__media" aria-hidden="true">
-      <span class="product-v4-1-ghost-card__shine"></span>
+<div class="product-v4-1-ghost-card-scope" aria-busy="true" aria-label="Loading offering">
+  <article class="product-v4-1-ghost-card" aria-hidden="true">
+    <div class="product-v4-1-ghost-card__media">
       <span class="product-v4-1-ghost-card__signal"></span>
-      <div class="product-v4-1-ghost-card__badges">
-        <span class="product-v4-1-ghost-card__badge"></span>
-        <span class="product-v4-1-ghost-card__badge product-v4-1-ghost-card__badge--blue"></span>
+      <div class="product-v4-1-ghost-card__tags">
+        <span class="product-v4-1-ghost-card__tag"></span>
+        <span class="product-v4-1-ghost-card__tag product-v4-1-ghost-card__tag--type"></span>
       </div>
-      <span class="product-v4-1-ghost-card__quick-view"></span>
     </div>
-
     <div class="product-v4-1-ghost-card__body">
-      <span class="product-v4-1-ghost-card__type" aria-hidden="true"></span>
-      <span class="product-v4-1-ghost-card__title" aria-hidden="true"></span>
-      <span class="product-v4-1-ghost-card__provider" aria-hidden="true"></span>
-
-      <div class="product-v4-1-ghost-card__rating" aria-hidden="true">
-        <span class="product-v4-1-ghost-card__stars">
-          <span class="product-v4-1-ghost-card__star"></span>
-          <span class="product-v4-1-ghost-card__star"></span>
-          <span class="product-v4-1-ghost-card__star"></span>
-          <span class="product-v4-1-ghost-card__star"></span>
-          <span class="product-v4-1-ghost-card__star"></span>
-        </span>
-        <span class="product-v4-1-ghost-card__rating-copy"></span>
+      <span class="product-v4-1-ghost-card__fill product-v4-1-ghost-card__title"></span>
+      <span class="product-v4-1-ghost-card__fill product-v4-1-ghost-card__provider"></span>
+      <div class="product-v4-1-ghost-card__rating">
+        <span class="product-v4-1-ghost-card__stars"></span>
+        <span class="product-v4-1-ghost-card__fill product-v4-1-ghost-card__rating-copy"></span>
       </div>
-
-      <div class="product-v4-1-ghost-card__summary" aria-hidden="true">
-        <span class="product-v4-1-ghost-card__line"></span>
-        <span class="product-v4-1-ghost-card__line"></span>
-        <span class="product-v4-1-ghost-card__line"></span>
+      <span class="product-v4-1-ghost-card__fill product-v4-1-ghost-card__location"></span>
+      <div class="product-v4-1-ghost-card__description">
+        <span class="product-v4-1-ghost-card__fill"></span>
+        <span class="product-v4-1-ghost-card__fill"></span>
+        <span class="product-v4-1-ghost-card__fill"></span>
       </div>
-
-      <div class="product-v4-1-ghost-card__meta" aria-hidden="true">
-        <span class="product-v4-1-ghost-card__chip"></span>
-        <span class="product-v4-1-ghost-card__chip product-v4-1-ghost-card__chip--blue"></span>
-      </div>
-
-      <div class="product-v4-1-ghost-card__availability" aria-hidden="true">
-        <div class="product-v4-1-ghost-card__availability-top">
-          <span class="product-v4-1-ghost-card__availability-label"></span>
-          <span class="product-v4-1-ghost-card__availability-note"></span>
-        </div>
-        <div class="product-v4-1-ghost-card__days">
-          @for($i = 0; $i < 7; $i++)
-            <span class="product-v4-1-ghost-card__day"></span>
-          @endfor
-        </div>
+      <div class="product-v4-1-ghost-card__availability">
+        <span class="product-v4-1-ghost-card__availability-icon"></span>
+        <span class="product-v4-1-ghost-card__availability-copy"></span>
       </div>
     </div>
-
-    <footer class="product-v4-1-ghost-card__footer" aria-hidden="true">
+    <footer class="product-v4-1-ghost-card__footer">
       <div class="product-v4-1-ghost-card__price">
-        <span class="product-v4-1-ghost-card__price-label"></span>
-        <span class="product-v4-1-ghost-card__price-value"></span>
+        <span class="product-v4-1-ghost-card__fill product-v4-1-ghost-card__price-label"></span>
+        <span class="product-v4-1-ghost-card__fill product-v4-1-ghost-card__price-value"></span>
       </div>
-      <div class="product-v4-1-ghost-card__actions">
-        <span class="product-v4-1-ghost-card__button"></span>
-        <span class="product-v4-1-ghost-card__button"></span>
-      </div>
+      <span class="product-v4-1-ghost-card__fill product-v4-1-ghost-card__button"></span>
     </footer>
-  </div>
+  </article>
 </div>

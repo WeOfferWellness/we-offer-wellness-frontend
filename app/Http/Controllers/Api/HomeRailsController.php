@@ -3,532 +3,143 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\OfferingV3;
-use App\Models\Product;
+use App\Services\BackendOfferingsClient;
 use App\Support\EventListing;
 use App\Support\ProductRanking;
-use App\Support\ProductSearchFilters;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 class HomeRailsController extends Controller
 {
+    public function __construct(private readonly BackendOfferingsClient $offeringsClient)
+    {
+    }
+
     public function index(Request $request)
     {
         $section = Str::lower(trim((string) $request->input('section', '')));
 
         if ($section === 'latest') {
-            return response($this->renderCards($this->latestCatalogue(), 'partials.product_card_v4_1', true))
+            return response($this->renderCards($this->catalogue()->sortByDesc(fn (array $item) => $this->timestamp($item))->take(12), true))
                 ->header('Content-Type', 'text/html; charset=UTF-8');
         }
 
         if ($section === 'gifts') {
             $limit = max(1, min((int) $request->integer('limit', 12), 24));
             $page = max(1, (int) $request->integer('page', 1));
-            $pageData = $this->giftsUnder50Page($page, $limit);
+            $items = ProductRanking::sortCollection($this->catalogue()->filter(fn (array $item) => $this->isGift($item) && $this->price($item) !== null && $this->price($item) <= 50), 'review_count_desc');
+            if ($items->isEmpty()) {
+                $items = ProductRanking::sortCollection($this->catalogue()->filter(fn (array $item) => $this->price($item) !== null && $this->price($item) <= 50), 'review_count_desc');
+            }
+            $offset = ($page - 1) * $limit;
 
-            return response($this->renderCards($pageData['items'], 'partials.product_card_v4_1', true))
+            return response($this->renderCards($items->slice($offset, $limit)->values(), true))
                 ->header('Content-Type', 'text/html; charset=UTF-8')
                 ->header('X-Page', (string) $page)
                 ->header('X-Page-Size', (string) $limit)
-                ->header('X-Has-More', $pageData['has_more'] ? '1' : '0')
-                ->header('X-Total-Count', (string) $pageData['total']);
+                ->header('X-Has-More', ($offset + $limit) < $items->count() ? '1' : '0')
+                ->header('X-Total-Count', (string) $items->count());
         }
 
         if ($section === 'comfort') {
             $limit = max(1, min((int) $request->integer('limit', 12), 24));
-            $priceMax = (float) $request->input('price_max', 50);
+            $priceMax = max(1, (float) $request->input('price_max', 50));
             $groupType = Str::lower(trim((string) $request->input('group_type', 'solo')));
             $mode = Str::lower(trim((string) $request->input('mode', 'online')));
 
-            return response($this->renderCards($this->comfortRail($priceMax, $groupType, $mode)->take($limit)))
+            $items = $this->catalogue()
+                ->filter(fn (array $item) => $this->price($item) !== null && $this->price($item) <= $priceMax)
+                ->filter(fn (array $item) => $this->matchesMode($item, $mode))
+                ->filter(fn (array $item) => $this->matchesGroupType($item, $groupType));
+
+            return response($this->renderCards(ProductRanking::sortCollection($items)->take($limit)))
                 ->header('Content-Type', 'text/html; charset=UTF-8');
         }
 
         return response('', 404);
     }
 
-    private function renderCards(Collection $items, string $cardView = 'partials.product_card_v4_1', bool $forceNewCard = false): string
+    private function catalogue(): Collection
     {
-        $html = $items
-            ->reject(fn ($item) => EventListing::isPast($item))
+        return $this->offeringsClient->catalogue()
+            ->reject(fn (array $item) => EventListing::isPast($item))
+            ->values();
+    }
+
+    private function renderCards(Collection $items, bool $forceNewCard = false): string
+    {
+        return $items
             ->filter()
-            ->map(function ($item) use ($cardView, $forceNewCard): string {
+            ->map(function (array $item) use ($forceNewCard): string {
                 if (data_get($item, 'kind') === 'physical_product' || data_get($item, 'source_type') === 'physical_product') {
-                    return view('partials.store_product_card', ['product' => $item])->render();
+                    return view('partials.store_product_card', ['product' => (object) $item])->render();
                 }
 
-                return view($cardView, ['product' => $item, 'preferredLocation' => null, 'forceNewCard' => $forceNewCard])->render();
+                return view('partials.product_card_v4_1', ['product' => $item, 'preferredLocation' => null, 'forceNewCard' => $forceNewCard])->render();
             })
             ->implode('');
-
-        if ($html !== '') {
-            return $html;
-        }
-
-        return '';
     }
 
-    private function stampSourceVersion(Collection $items, string $sourceVersion): Collection
+    private function isGift(array $item): bool
     {
-        return $items->map(function ($item) use ($sourceVersion) {
-            if (is_object($item)) {
-                $item->source_version = $sourceVersion;
-            }
-
-            return $item;
-        })->values();
+        return Str::contains(Str::lower(implode(' ', [
+            (string) data_get($item, 'title', ''),
+            (string) data_get($item, 'summary', ''),
+            (string) data_get($item, 'category.name', ''),
+            (string) data_get($item, 'type.name', ''),
+            implode(' ', (array) data_get($item, 'tags', [])),
+        ])), ['gift', 'voucher', 'card', 'present']);
     }
 
-    private function stampVendorReviewSummary(Collection $items): Collection
+    private function price(array $item): ?float
     {
-        return $items->map(function ($item) {
-            if (! is_object($item)) {
-                return $item;
-            }
-
-            $summary = data_get($item, 'vendor.review_summary');
-            if (is_array($summary)) {
-                $item->vendor_review_count = (int) ($summary['count'] ?? 0);
-                if (array_key_exists('rating', $summary) && is_numeric($summary['rating'])) {
-                    $item->vendor_review_rating = round((float) $summary['rating'], 1);
-                }
-            }
-
-            return $item;
-        })->values();
+        return ProductRanking::priceValue($item);
     }
 
-    private function giftsUnder50(): Collection
+    private function matchesMode(array $item, string $mode): bool
     {
-        $base = Product::query()
-            ->withCount('reviews')
-            ->withAvg('reviews', 'rating')
-            ->withMin('variants', 'price')
-            ->with(['media', 'options.values', 'category', 'vendor.tiers', 'vendor.user.settings'])
-            ->whereHas('status', function ($qs): void {
-                $qs->where('status', 'live');
-            });
+        $locations = collect((array) data_get($item, 'locations', []))->map(fn ($location) => Str::lower((string) $location));
+        $online = (bool) data_get($item, 'online_only', false) || $locations->contains('online');
+        $physical = $locations->contains(fn (string $location) => $location !== 'online');
 
-        $giftProducts = (clone $base)
-            ->where(function ($q): void {
-                $q->whereRaw("LOWER(COALESCE(tags_list,'')) like '%gift%'")
-                    ->orWhereRaw("LOWER(COALESCE(tags_list,'')) like '%voucher%'")
-                    ->orWhereRaw("LOWER(COALESCE(tags_list,'')) like '%card%'")
-                    ->orWhereRaw("LOWER(COALESCE(tags_list,'')) like '%present%'")
-                    ->orWhereRaw("LOWER(COALESCE(product_type,'')) like '%gift%'");
-            })
-            ->where(function ($q): void {
-                $q->where(function ($inner): void {
-                    $inner->where('price', '<=', 50)->orWhere('price', '<=', 50 * 100);
-                })
-                    ->orWhere(function ($inner): void {
-                        $inner->where('price', '<=', 50 * 100);
-                    })
-                    ->orWhereHas('variants', function ($qv): void {
-                        $qv->where(function ($qq): void {
-                            $qq->where('price', '<=', 50)->orWhere('price', '<=', 50 * 100);
-                        })
-                            ->orWhere(function ($qq): void {
-                                $qq->where('price', '<=', 50 * 100);
-                            });
-                    });
-            })
-            ->get()
-            ->reject(fn ($product) => EventListing::isPast($product))
-            ->filter(function ($product): bool {
-                $min = $product->variants_min_price ?? $product->price;
-                if (! is_numeric($min)) {
-                    return false;
-                }
-
-                $min = (float) $min;
-                if ($min >= 1000) {
-                    $min = $min / 100;
-                }
-
-                return $min <= 50.0;
-            })
-            ->values();
-
-        $giftProducts = $this->stampVendorReviewSummary($this->stampSourceVersion($giftProducts, 'v1-v2'));
-        $giftOfferings = $this->stampVendorReviewSummary($this->stampSourceVersion($this->giftOfferings(), 'v3'));
-        $giftsUnder50 = ProductRanking::sortCollection($giftProducts->concat($giftOfferings), 'review_count_desc')
-            ->values();
-
-        if ($giftsUnder50->isEmpty()) {
-            $giftFallbackProducts = (clone $base)
-                ->where(function ($q): void {
-                    $q->where(function ($inner): void {
-                        $inner->where('price', '<=', 50)->orWhere('price', '<=', 50 * 100);
-                    })
-                        ->orWhere(function ($inner): void {
-                            $inner->where('price', '<=', 50 * 100);
-                        })
-                        ->orWhereHas('variants', function ($qv): void {
-                            $qv->where(function ($qq): void {
-                                $qq->where('price', '<=', 50)->orWhere('price', '<=', 50 * 100);
-                            })
-                                ->orWhere(function ($qq): void {
-                                    $qq->where('price', '<=', 50 * 100);
-                                });
-                        });
-                })
-                ->get()
-                ->reject(fn ($product) => EventListing::isPast($product))
-                ->filter(function ($product): bool {
-                    $min = $product->variants_min_price ?? $product->price;
-                    if (! is_numeric($min)) {
-                        return false;
-                    }
-
-                    $min = (float) $min;
-                    if ($min >= 1000) {
-                        $min = $min / 100;
-                    }
-
-                    return $min <= 50.0;
-                })
-                ->values();
-
-            $giftFallbackOfferings = OfferingV3::query()
-                ->with(['category', 'type', 'vendor.tiers', 'vendor.user.settings', 'media', 'coverMedia'])
-                ->where('status', 'live')
-                ->whereNotNull('published_at')
-                ->where('published_at', '<=', now())
-                ->get()
-                ->reject(fn ($offering) => EventListing::isPast($offering))
-                ->filter(function ($offering): bool {
-                    $min = ProductRanking::priceValue($offering);
-                    return $min !== null && $min <= 50.0;
-                })
-                ->values();
-
-            $giftFallbackProducts = $this->stampVendorReviewSummary($this->stampSourceVersion($giftFallbackProducts, 'v1-v2'));
-            $giftFallbackOfferings = $this->stampVendorReviewSummary($this->stampSourceVersion($giftFallbackOfferings, 'v3'));
-            $giftsUnder50 = ProductRanking::sortCollection($giftFallbackProducts->concat($giftFallbackOfferings), 'review_count_desc')
-                ->values();
-        }
-
-        return $giftsUnder50;
+        return match ($mode) {
+            'online' => $online && ! $physical,
+            'in-person' => $physical,
+            default => true,
+        };
     }
 
-    /**
-     * @return array{items:Collection<int, mixed>, total:int, has_more:bool}
-     */
-    private function giftsUnder50Page(int $page, int $limit): array
+    private function matchesGroupType(array $item, string $groupType): bool
     {
-        $page = max(1, $page);
-        $limit = max(1, $limit);
-
-        $items = $this->giftsUnder50();
-        $offset = ($page - 1) * $limit;
-        $slice = $items->slice($offset, $limit)->values();
-
-        return [
-            'items' => $slice,
-            'total' => $items->count(),
-            'has_more' => ($offset + $limit) < $items->count(),
-        ];
-    }
-
-    private function giftOfferings(): Collection
-    {
-        $items = OfferingV3::query()
-            ->with(['category', 'type', 'vendor.tiers', 'vendor.user.settings', 'media', 'coverMedia'])
-            ->where('status', 'live')
-            ->whereNotNull('published_at')
-            ->where('published_at', '<=', now())
-            ->where(function ($q): void {
-                $q->whereRaw("LOWER(COALESCE(title,'')) like '%gift%'")
-                    ->orWhereRaw("LOWER(COALESCE(summary,'')) like '%gift%'")
-                    ->orWhereHas('category', function ($cq): void {
-                        $cq->whereRaw("LOWER(COALESCE(name,'')) like '%gift%'");
-                    })
-                    ->orWhereHas('type', function ($tq): void {
-                        $tq->whereRaw("LOWER(COALESCE(name,'')) like '%gift%'");
-                    });
-            })
-            ->get()
-            ->reject(fn ($offering): bool => EventListing::isPast($offering))
-            ->filter(function ($offering): bool {
-                $price = ProductRanking::priceValue($offering);
-                return $price !== null && $price <= 50.0;
-            })
-            ->values();
-
-        return $this->stampSourceVersion($items, 'v3');
-    }
-
-    private function latestCatalogue(): Collection
-    {
-        $base = Product::query()
-            ->withCount('reviews')
-            ->withAvg('reviews', 'rating')
-            ->withMin('variants', 'price')
-            ->with(['media', 'options.values', 'category', 'vendor.tiers', 'vendor.user.settings'])
-            ->whereHas('status', function ($qs): void {
-                $qs->where('status', 'live');
-            });
-
-        $latestLegacyProducts = (clone $base)
-            ->latest('id')
-            ->limit(6)
-            ->get()
-            ->reject(fn ($product): bool => EventListing::isPast($product))
-            ->map(function ($product) {
-                $product->source_version = 'v1-v2';
-                $product->catalogue_rank = $product->created_at ? $product->created_at->timestamp : (int) ($product->id ?? 0);
-                return $product;
-            });
-
-        $latestV3Offerings = OfferingV3::query()
-            ->with(['category', 'type', 'vendor.tiers', 'vendor.user.settings', 'media', 'coverMedia'])
-            ->where('status', 'live')
-            ->whereNotNull('published_at')
-            ->where('published_at', '<=', now())
-            ->orderByDesc('published_at')
-            ->orderByDesc('id')
-            ->limit(6)
-            ->get()
-            ->reject(fn ($offering): bool => EventListing::isPast($offering))
-            ->map(function ($offering) {
-                $offering->source_version = 'v3';
-                $offering->created_at = $offering->published_at ?: $offering->created_at;
-                $offering->catalogue_rank = $offering->created_at ? $offering->created_at->timestamp : (int) ($offering->id ?? 0);
-                return $offering;
-            });
-
-        $physicalProducts = $this->latestPhysicalProductsFromOfferingApi();
-
-        return $latestV3Offerings
-            ->concat($latestLegacyProducts)
-            ->concat($physicalProducts)
-            ->reject(fn ($item): bool => EventListing::isPast($item))
-            ->sort(function ($left, $right): int {
-                $leftVersion = data_get($left, 'source_version') === 'v3' ? 1 : 0;
-                $rightVersion = data_get($right, 'source_version') === 'v3' ? 1 : 0;
-
-                if ($leftVersion !== $rightVersion) {
-                    return $rightVersion <=> $leftVersion;
-                }
-
-                $leftRank = (int) data_get($left, 'catalogue_rank', 0);
-                $rightRank = (int) data_get($right, 'catalogue_rank', 0);
-
-                if ($leftRank === $rightRank) {
-                    return strcasecmp((string) data_get($left, 'title', ''), (string) data_get($right, 'title', ''));
-                }
-
-                return $rightRank <=> $leftRank;
-            })
-            ->values();
-    }
-
-    /**
-     * Physical Store products are owned by the Backend. Keep this homepage rail
-     * on the same unified offering feed as the Frontend catalogue.
-     */
-    private function latestPhysicalProductsFromOfferingApi(): Collection
-    {
-        $backend = rtrim((string) env('BACKEND_URL', env('BACKEND_ASSET_URL', '')), '/');
-        if ($backend === '') {
-            return collect();
-        }
-
-        try {
-            $response = Http::acceptJson()
-                ->withHeaders([
-                    'Origin' => 'https://www.weofferwellness.co.uk',
-                    'Referer' => 'https://www.weofferwellness.co.uk/',
-                ])
-                ->timeout(8)
-                ->get($backend.'/api/offerings', [
-                    'version' => 'v3',
-                    'sort' => 'newest',
-                    'per_page' => 12,
-                ]);
-
-            if (! $response->successful()) {
-                return collect();
-            }
-
-            return collect($response->json('data', []))
-                ->filter(fn ($item): bool => data_get($item, 'kind') === 'physical_product' || data_get($item, 'source_type') === 'physical_product')
-                ->map(function (array $item): object {
-                    $publishedAt = $item['published_at'] ?? null;
-                    $createdAt = $publishedAt ?: ($item['created_at'] ?? null);
-
-                    return (object) [
-                        'id' => $item['id'] ?? null,
-                        'kind' => 'physical_product',
-                        'source_type' => 'physical_product',
-                        'source_version' => 'v3',
-                        'title' => $item['title'] ?? 'Physical product',
-                        'summary' => $item['summary'] ?? null,
-                        'brand' => $item['brand'] ?? data_get($item, 'vendor.name'),
-                        'price' => $item['price'] ?? null,
-                        'currency' => $item['currency'] ?? 'GBP',
-                        'image' => $item['image_url'] ?? null,
-                        'url' => $item['url'] ?? '/products/'.rawurlencode((string) ($item['slug'] ?? '')),
-                        'published_at' => $publishedAt,
-                        'created_at' => $createdAt,
-                        'catalogue_rank' => $createdAt ? Carbon::parse($createdAt)->timestamp : (int) ($item['id'] ?? 0),
-                    ];
-                })
-                ->values();
-        } catch (\Throwable $e) {
-            return collect();
-        }
-    }
-
-    private function comfortRail(float $priceMax, string $groupType, string $mode): Collection
-    {
-        $limit = 24;
-        $pm = max(1, $priceMax);
-
-        $productQuery = Product::query()
-            ->withCount('reviews')
-            ->withAvg('reviews', 'rating')
-            ->withMin('variants', 'price')
-            ->with(['media','options.values','category', 'vendor.tiers', 'vendor.user.settings'])
-            ->where(function ($w): void {
-                $w->whereHas('status', function ($qs): void { $qs->whereIn('status', ['live','approved']); });
-            });
-
-        if ($mode === 'online') {
-            $productQuery->whereHas('options', function ($oq): void {
-                $oq->where('meta_name', 'locations')
-                   ->whereHas('values', function ($vq): void { $vq->whereRaw("LOWER(value) = 'online'"); });
-            });
-        } elseif ($mode === 'in-person') {
-            $productQuery->whereHas('options', function ($oq): void {
-                $oq->where('meta_name', 'locations')
-                   ->whereHas('values', function ($vq): void { $vq->whereRaw("LOWER(value) <> 'online'"); });
-            });
-        }
-
-        if ($groupType) {
-            ProductSearchFilters::applyWhoFilter($productQuery, null, $groupType);
-        }
-
-        $productQuery->where(function ($qq) use ($pm): void {
-            $qq->where(function ($qp) use ($pm): void { $qp->where('price','<=',$pm)->orWhere('price','<=',$pm*100); })
-               ->orWhere(function ($qp) use ($pm): void { $qp->where('price','<=',$pm*100); })
-               ->orWhereHas('variants', function ($qv) use ($pm): void {
-                   $qv->where(function ($qq2) use ($pm): void { $qq2->where('price','<=',$pm)->orWhere('price','<=',$pm*100); })
-                      ->orWhere(function ($qq2) use ($pm): void { $qq2->where('price','<=',$pm*100); });
-               });
-        });
-
-        $products = $productQuery->get()
-            ->reject(fn ($product): bool => EventListing::isPast($product))
-            ->filter(function ($product) use ($pm): bool {
-            $min = $product->variants_min_price ?? $product->price;
-            if (! is_numeric($min)) {
-                return false;
-            }
-
-            $min = (float) $min;
-            if ($min >= 1000) {
-                $min = $min / 100;
-            }
-
-            return $min <= $pm;
-        })->values();
-
-        $offerings = OfferingV3::query()
-            ->with(['category', 'type', 'vendor.tiers', 'vendor.user.settings', 'media', 'coverMedia'])
-            ->whereIn('status', ['live', 'approved'])
-            ->get()
-            ->reject(fn ($offering): bool => EventListing::isPast($offering))
-            ->filter(function ($offering) use ($pm, $mode, $groupType): bool {
-                if (method_exists($offering, 'hasDisplayableImage') && ! $offering->hasDisplayableImage()) {
-                    return false;
-                }
-
-                $price = ProductRanking::priceValue($offering);
-                if ($price === null || $price > $pm) {
-                    return false;
-                }
-
-                $locations = method_exists($offering, 'getLocations') ? $offering->getLocations() : [];
-                $hasOnline = in_array('Online', $locations, true);
-                $physical = array_values(array_filter($locations, fn ($location) => $location !== 'Online'));
-
-                if (! $this->offeringMatchesGroupType($offering, $groupType)) {
-                    return false;
-                }
-
-                if ($mode === 'online') {
-                    return $hasOnline && count($physical) === 0;
-                }
-
-                if ($mode === 'in-person') {
-                    return count($physical) > 0;
-                }
-
-                return true;
-            })
-            ->values();
-
-        $products = $this->stampSourceVersion($products, 'v1-v2');
-        $offerings = $this->stampSourceVersion($offerings, 'v3');
-
-        return ProductRanking::sortCollection($products->concat($offerings))
-            ->take($limit)
-            ->values();
-    }
-
-    private function offeringMatchesGroupType(OfferingV3 $offering, ?string $groupType): bool
-    {
-        $groupType = strtolower(trim((string) $groupType));
         if (! in_array($groupType, ['solo', 'couple', 'group'], true)) {
             return true;
         }
 
-        $rows = \DB::table('offering_price_options')
-            ->where('offering_id', $offering->id)
-            ->select(['audience_type', 'pricing_type'])
-            ->get();
-
-        if ($rows->isNotEmpty()) {
-            foreach ($rows as $row) {
-                $audience = strtolower(trim((string) ($row->audience_type ?? '')));
-                $pricing = strtolower(trim((string) ($row->pricing_type ?? '')));
-
-                if ($groupType === 'solo' && ($audience === 'solo' || str_contains($pricing, 'solo'))) {
-                    return true;
-                }
-
-                if ($groupType === 'couple' && ($audience === 'couple' || str_contains($pricing, 'couple'))) {
-                    return true;
-                }
-
-                if ($groupType === 'group' && ($audience === 'group' || str_contains($pricing, 'group'))) {
-                    return true;
-                }
-            }
+        $audiences = collect((array) data_get($item, 'audiences', []))->map(fn ($audience) => Str::lower((string) $audience));
+        if ($audiences->contains($groupType)) {
+            return true;
         }
 
-        $haystack = strtolower(trim(implode(' ', array_filter([
-            (string) ($offering->title ?? ''),
-            (string) ($offering->summary ?? ''),
-            (string) ($offering->type?->name ?? ''),
-            (string) ($offering->category?->name ?? ''),
-        ]))));
+        $text = Str::lower(implode(' ', [
+            (string) data_get($item, 'title', ''),
+            (string) data_get($item, 'summary', ''),
+            (string) data_get($item, 'type.name', ''),
+            (string) data_get($item, 'category.name', ''),
+        ]));
 
-        if ($groupType === 'solo') {
-            return str_contains($haystack, 'solo') || str_contains($haystack, '1 person') || str_contains($haystack, '1-to-1') || str_contains($haystack, '1:1');
-        }
+        return match ($groupType) {
+            'solo' => Str::contains($text, ['solo', '1 person', '1-to-1', '1:1']),
+            'couple' => Str::contains($text, ['couple', '2 person', 'pair', 'duo']),
+            'group' => Str::contains($text, ['group', 'workshop', 'class']),
+        };
+    }
 
-        if ($groupType === 'couple') {
-            return str_contains($haystack, 'couple') || str_contains($haystack, '2 person') || str_contains($haystack, 'pair') || str_contains($haystack, 'duo');
-        }
+    private function timestamp(array $item): int
+    {
+        $value = data_get($item, 'published_at', data_get($item, 'created_at'));
 
-        return str_contains($haystack, 'group') || str_contains($haystack, 'group session') || str_contains($haystack, 'workshop') || str_contains($haystack, 'class');
+        return $value ? Carbon::parse((string) $value)->getTimestamp() : (int) data_get($item, 'id', 0);
     }
 }

@@ -116,40 +116,51 @@ function parseDate(value, time = '') {
   return Number.isNaN(date.getTime()) ? null : date
 }
 
-function firstEventDate(event, product) {
-  const candidates = [
-    event?.start_date,
-    event?.date,
-    product?.start_date,
-    product?.date,
-    product?.display_date,
-    product?.display_when,
-    ...(Array.isArray(event?.dates) ? event.dates : []),
-    ...(Array.isArray(event?.upcoming_dates) ? event.upcoming_dates : []),
-    ...(Array.isArray(event?.schedule?.days) ? event.schedule.days : []),
-    ...(Array.isArray(product?.dates) ? product.dates : []),
-    ...(Array.isArray(product?.upcoming_dates) ? product.upcoming_dates : []),
-    ...(Array.isArray(product?.schedule?.days) ? product.schedule.days : []),
-  ]
+function firstEventDate(product) {
+  const meta = product?.meta_json && typeof product.meta_json === 'object' ? product.meta_json : {}
+  const sources = [
+    product?.when?.event,
+    product?.event,
+    meta?.when?.event,
+    meta?.event,
+    product,
+    meta,
+  ].filter((source) => source && typeof source === 'object')
+  const dates = []
 
-  for (const candidate of candidates) {
-    if (!candidate) continue
-    const value = typeof candidate === 'object'
-      ? (candidate.start_date || candidate.date || candidate.starts_at || candidate.start || candidate.day)
-      : candidate
-    const time = typeof candidate === 'object'
-      ? (candidate.start_time || candidate.time || '')
-      : ''
-    const parsed = parseDate(value, time)
-    if (parsed) return parsed
+  for (const source of sources) {
+    const candidates = [
+      source,
+      ...(Array.isArray(source?.dates) ? source.dates : []),
+      ...(Array.isArray(source?.upcoming_dates) ? source.upcoming_dates : []),
+      ...(Array.isArray(source?.occurrences) ? source.occurrences : []),
+      ...(Array.isArray(source?.schedule?.days) ? source.schedule.days : []),
+      ...(Array.isArray(source?.schedule?.occurrences) ? source.schedule.occurrences : []),
+    ]
+
+    for (const candidate of candidates) {
+      if (!candidate) continue
+      const value = typeof candidate === 'object'
+        ? (candidate.starts_at || candidate.start_date || candidate.date || candidate.start || candidate.day)
+        : candidate
+      if (/^(?:mon|tue|wed|thu|fri|sat|sun)(?:day)?$/i.test(text(value)) || /^\d{1,2}$/.test(text(value))) continue
+      const time = typeof candidate === 'object'
+        ? (candidate.start_time || candidate.time || source.start_time || '')
+        : source.start_time || ''
+      const parsed = parseDate(value, time)
+      if (parsed) dates.push(parsed)
+    }
   }
 
-  return null
+  if (!dates.length) return null
+  dates.sort((left, right) => left.getTime() - right.getTime())
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  return dates.find((date) => date >= today) || dates[0]
 }
 
 function eventDate(product) {
-  const event = product?.when?.event || product?.event || product
-  return firstEventDate(event, product) || parseDate(event?.start_date || event?.date || product?.start_date || product?.date, event?.start_time || product?.start_time)
+  return firstEventDate(product)
 }
 
 function eventRange(product) {

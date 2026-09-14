@@ -6,7 +6,7 @@
         $productsCount = count($products);
     }
     $asyncBoot = (bool) ($searchAsyncBoot ?? false);
-    $ghostCount = max(1, (int) ($ghostCount ?? 3));
+    $ghostCount = max(1, (int) ($ghostCount ?? 4));
 @endphp
 
 @if($asyncBoot && $productsCount === 0)
@@ -35,8 +35,10 @@
             </div>
         </div>
     @empty
-        <div class="col-12">
-            <div class="card p-6 text-ink-600">No results matched your filters. Try widening your search.</div>
-        </div>
+        @if($showEmpty ?? true)
+            <div class="col-12">
+                <div class="card p-6 text-ink-600">No results matched your filters. Try widening your search.</div>
+            </div>
+        @endif
     @endforelse
 @endif

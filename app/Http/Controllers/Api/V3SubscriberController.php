@@ -335,7 +335,7 @@ class V3SubscriberController extends Controller
             'business_name' => $subscriber->business_name,
             'notes' => $subscriber->notes,
             'tags' => $subscriber->tags ?? null,
-            'source' => 'frontend:v3-subscribers',
+            'source' => $data['landing_path'] ?? 'frontend:v3-subscribers',
             'status' => $subscriber->status ?: 'pending',
         ];
 
@@ -395,7 +395,10 @@ class V3SubscriberController extends Controller
 
     protected function syncBackendSubscriber(V3Subscriber $subscriber, array $payload, bool $isPractitioner): void
     {
-        $backendUrl = rtrim((string) env('BACKEND_URL', env('BACKEND_ASSET_URL', '')), '/');
+        $backendUrl = rtrim((string) env(
+            'BACKEND_URL',
+            'https://studio.weofferwellness.co.uk'
+        ), '/');
         if ($backendUrl === '') {
             return;
         }

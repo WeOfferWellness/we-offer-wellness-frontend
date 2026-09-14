@@ -1,1057 +1,470 @@
 @php
-    $initialCount = (int) ($resultCount ?? ($products?->count() ?? 0));
-    $mobileWhat = trim((string) request('what', ''));
-    $mobileWhere = trim((string) request('where', ''));
-    $mobileWhen = trim((string) request('when', ''));
-    $mobileAdults = (int) request('adults', 0);
-    $mobileGroupType = trim((string) request('group_type', ''));
-    $mobileFilterCount = collect([
-        $mobileWhat,
-        $mobileWhere,
-        $mobileWhen,
-        $mobileAdults > 0 ? 'adults' : '',
-        $mobileGroupType,
-    ])->filter(function ($value) {
-        return trim((string) $value) !== '';
-    })->count();
-    $mobileMapData = $searchMapData ?? [];
+    $mobileResultsCount = method_exists($products, 'total') ? $products->total() : $products->count();
 @endphp
-
-<section id="wowMobileSearch" class="wow-mobile-search-page" aria-label="Search results">
-    <div id="search-v4-root">
-        <div class="container-fluid px-3 px-sm-4">
-            <div class="wow-search-bottom-row wow-mobile-search-page__summary" aria-label="Search filters">
-                <div class="wow-active-chips wow-mobile-search-page__chips" data-chip-list>
-                    @if($mobileFilterCount > 0)
-                        <button type="button" class="wow-chip wow-chip--clear-all" data-clear-all-filters aria-label="Clear all filters">
-                            <strong>Clear all filters</strong>
-                            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                                <path d="M6.7 6.7a1 1 0 0 1 1.4 0L12 10.6l3.9-3.9a1 1 0 1 1 1.4 1.4L13.4 12l3.9 3.9a1 1 0 1 1-1.4 1.4L12 13.4l-3.9 3.9a1 1 0 0 1-1.4-1.4l3.9-3.9-3.9-3.9a1 1 0 0 1 0-1.4Z"></path>
-                            </svg>
-                        </button>
-                    @endif
-                    @if($mobileWhat !== '')
-                        <span class="wow-chip">
-                            <strong>What:</strong>
-                            <span>{{ $mobileWhat }}</span>
-                            <button type="button" class="wow-chip-remove" aria-label="Remove What">
-                                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                                    <path d="M6.7 6.7a1 1 0 0 1 1.4 0L12 10.6l3.9-3.9a1 1 0 1 1 1.4 1.4L13.4 12l3.9 3.9a1 1 0 1 1-1.4 1.4L12 13.4l-3.9 3.9a1 1 0 0 1-1.4-1.4l3.9-3.9-3.9-3.9a1 1 0 0 1 0-1.4Z"></path>
-                                </svg>
-                            </button>
-                        </span>
-                    @endif
-
-                    @if($mobileWhen !== '')
-                        <span class="wow-chip">
-                            <strong>When:</strong>
-                            <span>{{ $mobileWhen }}</span>
-                            <button type="button" class="wow-chip-remove" aria-label="Remove When">
-                                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                                    <path d="M6.7 6.7a1 1 0 0 1 1.4 0L12 10.6l3.9-3.9a1 1 0 1 1 1.4 1.4L13.4 12l3.9 3.9a1 1 0 1 1-1.4 1.4L12 13.4l-3.9 3.9a1 1 0 0 1-1.4-1.4l3.9-3.9-3.9-3.9a1 1 0 0 1 0-1.4Z"></path>
-                                </svg>
-                            </button>
-                        </span>
-                    @endif
-
-                    @if($mobileWhere !== '')
-                        <span class="wow-chip">
-                            <strong>Where:</strong>
-                            <span>{{ $mobileWhere }}</span>
-                            <button type="button" class="wow-chip-remove" aria-label="Remove Where">
-                                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                                    <path d="M6.7 6.7a1 1 0 0 1 1.4 0L12 10.6l3.9-3.9a1 1 0 1 1 1.4 1.4L13.4 12l3.9 3.9a1 1 0 1 1-1.4 1.4L12 13.4l-3.9 3.9a1 1 0 0 1-1.4-1.4l3.9-3.9-3.9-3.9a1 1 0 0 1 0-1.4Z"></path>
-                                </svg>
-                            </button>
-                        </span>
-                    @endif
-
-                    @if($mobileAdults > 0 || $mobileGroupType !== '')
-                        <span class="wow-chip">
-                            <strong>Who:</strong>
-                            <span>{{ $mobileAdults > 0 ? $mobileAdults . ' ' . ($mobileAdults === 1 ? 'guest' : 'guests') : $mobileGroupType }}</span>
-                            <button type="button" class="wow-chip-remove" aria-label="Remove Who">
-                                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                                    <path d="M6.7 6.7a1 1 0 0 1 1.4 0L12 10.6l3.9-3.9a1 1 0 1 1 1.4 1.4L13.4 12l3.9 3.9a1 1 0 1 1-1.4 1.4L12 13.4l-3.9 3.9a1 1 0 0 1-1.4-1.4l3.9-3.9-3.9-3.9a1 1 0 0 1 0-1.4Z"></path>
-                                </svg>
-                            </button>
-                        </span>
-                    @endif
-                </div>
-
-                <div class="wow-filter-actions">
-                    <div class="wow-results-count wow-results-count--compact">
-                        <strong id="wowMobileResultsCount">{{ number_format($initialCount) }}</strong>
-                        <span>results</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="wow-mobile-search-page__map-wrap" aria-hidden="true">
-                <div id="wowMobileSearchMap" class="wow-mobile-search-page__map"></div>
-                <div class="wow-mobile-search-page__map-overlay" aria-hidden="true">
-                    <span class="wow-mobile-search-page__map-spinner"></span>
-                    <span class="wow-mobile-search-page__map-overlay-text">Updating map</span>
-                </div>
-            </div>
-
-            <div class="wow-mobile-search-page__results">
-                <div class="row g-3" id="wowMobileResultsGrid" data-ghost-count="3" aria-live="polite">
-                    @include('search.partials.results_cards', ['products' => $products])
-                </div>
-            </div>
-
-            <div id="wowMobileResultsPagination" class="wow-mobile-search-page__pagination">
-                @if($products instanceof \Illuminate\Pagination\Paginator || $products instanceof \Illuminate\Pagination\LengthAwarePaginator)
-                    {{ $products->withQueryString()->onEachSide(1)->links('pagination::bootstrap-4') }}
-                @endif
-            </div>
-        </div>
-    </div>
-</section>
 
 @once
     <style>
-        .wow-mobile-search-page{
-            --wow-mobile-results-offset: 38px;
-            --wow-mobile-map-height: 220px;
-            --wow-mobile-map-width: calc(100vw - 24px);
-            padding-top: 40px;
-            margin-top: 50px;
+        .wow-sr-v5-mobile {
+            --sr-green: #4f9a86;
+            --sr-green-dark: #2f7464;
+            --sr-green-pale: #e4f2ee;
+            --sr-ink: #141a2a;
+            --sr-line: #dfe5ea;
+            --sr-page: #fbfaf8;
+            background: var(--sr-page);
+            color: var(--sr-ink);
             padding-bottom: 32px;
-            position: relative;
-            z-index: 1;
         }
 
-        .wow-mobile-search-page__summary{
-            display:flex;
-            align-items:flex-start;
-            justify-content:space-between;
-            gap:12px;
-            margin-bottom:14px;
-            padding:0 26px 4px;
-            position: relative;
-            z-index: 0 !important;
-        }
-        body.wow-search-pane-open .wow-mobile-search-page__summary,
-        body.wow-search-pane-open .wow-mobile-search-page__chips,
-        body.wow-search-pane-open .wow-mobile-search-page__summary .wow-filter-actions{
-            z-index: 0 !important;
-            pointer-events: none;
-        }
-        body.wow-search-pane-open #search-v4-root,
-        body.wow-search-pane-open .wow-mobile-search-page{
-            position: relative;
-            z-index: 60000 !important;
-            isolation: isolate;
-        }
-        body.wow-search-pane-open .wow-search-filter .pane{
-            z-index: 60010 !important;
-        }
-
-        .wow-mobile-search-page__map-wrap{
+        .wow-sr-v5-mobile-toolbar {
             position: sticky;
-            top: 82px;
-            left:0;
-            right:0;
-            transform:none;
-            z-index:4;
-            pointer-events:auto;
-            width: calc(var(--wow-mobile-map-width) - 15px);
-            max-width: calc(100vw - 39px);
-            margin: 0 auto;
-            overflow: hidden;
-            border-radius:22px;
-            transition: width .24s ease, border-radius .24s ease, box-shadow .24s ease;
+            top: 0;
+            z-index: 30;
+            min-height: 57px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 0 11px;
+            border-top: 1px solid #eceff1;
+            border-bottom: 1px solid #eceff1;
+            background: rgba(251, 250, 248, .97);
+            backdrop-filter: blur(7px);
         }
 
-        .wow-mobile-search-page__map{
-            width:100%;
-            height:var(--wow-mobile-map-height);
-            border-radius:22px;
-            overflow:hidden;
-            border:1px solid rgba(16,24,40,.12);
-            box-shadow:0 16px 42px rgba(16,24,40,.14);
-            background:#fff;
-            pointer-events:auto;
-            transition: border-radius .24s ease, box-shadow .24s ease;
-        }
-
-        .wow-mobile-search-page__map-overlay{
-            position:absolute;
-            inset:0;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            gap:10px;
-            background:rgba(17,24,39,.76);
-            backdrop-filter: blur(2px);
-            -webkit-backdrop-filter: blur(2px);
-            border-radius:22px;
-            opacity:0;
-            visibility:hidden;
-            transition: opacity .16s ease, visibility .16s ease;
-            pointer-events:none;
-            z-index:6;
-        }
-
-        .wow-mobile-search-page__map-wrap.is-loading .wow-mobile-search-page__map-overlay{
-            opacity:1;
-            visibility:visible;
-        }
-
-        .wow-mobile-search-page__map-spinner{
-            width:28px;
-            height:28px;
-            border-radius:50%;
-            border:3px solid rgba(255,255,255,.22);
-            border-top-color:#fff;
-            animation:wowMobileMapSpin .8s linear infinite;
-            flex:0 0 auto;
-        }
-
-        .wow-mobile-search-page__map-overlay-text{
-            color:#fff;
-            font-size:13px;
-            font-weight:700;
-            letter-spacing:-0.01em;
-            text-shadow:none;
-        }
-
-        @keyframes wowMobileMapSpin{
-            to{ transform: rotate(360deg); }
-        }
-
-        .wow-mobile-search-page__map .mapboxgl-canvas,
-        .wow-mobile-search-page__map .mapboxgl-canvas-container{
-            pointer-events:auto;
-        }
-
-        .wow-mobile-search-page .mapboxgl-ctrl-bottom-left,
-        .wow-mobile-search-page .mapboxgl-ctrl-bottom-right{
-            display:none !important;
-        }
-
-        .wow-mobile-search-page .wow-marker{
-            position:relative;
-            cursor:pointer;
-            z-index:5;
-            transform-origin:bottom center;
-        }
-
-        .wow-mobile-search-page .wow-marker__price{
-            position:relative;
-            display:inline-flex;
-            align-items:center;
-            justify-content:center;
-            min-width:76px;
-            height:36px;
-            padding:0 13px;
-            border-radius:999px;
-            background:#fff;
-            color:#222;
-            font-size:13px;
-            line-height:1;
-            font-weight:800;
-            letter-spacing:-0.02em;
-            white-space:nowrap;
-            box-shadow:0 4px 12px rgba(15, 23, 42, 0.18), 0 1px 3px rgba(15, 23, 42, 0.12);
-            border:1px solid rgba(15, 23, 42, 0.12);
-            transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
-        }
-
-        .wow-mobile-search-page .wow-marker__price::after{
-            content:"";
-            position:absolute;
-            left:50%;
-            bottom:-5px;
-            transform:translateX(-50%) rotate(45deg);
-            width:11px;
-            height:11px;
-            background:#fff;
-            border-right:1px solid rgba(15, 23, 42, 0.12);
-            border-bottom:1px solid rgba(15, 23, 42, 0.12);
-            transition: background 0.18s ease, border-color 0.18s ease;
-        }
-
-        .wow-mobile-search-page .wow-marker.is-active{
-            z-index:50 !important;
-        }
-
-        .wow-mobile-search-page .wow-marker.is-active .wow-marker__price{
-            background:#222;
-            color:#fff;
-            border-color:#222;
-            transform: translateY(-2px) scale(1.05);
-            box-shadow:0 8px 22px rgba(0,0,0,0.32), 0 2px 6px rgba(0,0,0,0.22);
-        }
-
-        .wow-mobile-search-page .wow-marker.is-active .wow-marker__price::after{
-            background:#222;
-            border-color:#222;
-        }
-
-        .wow-mobile-search-page .mapboxgl-popup{
-            z-index: 999;
-        }
-
-        .wow-mobile-search-page .mapboxgl-popup-content{
-            border-radius: 14px;
-            box-shadow: 0 18px 40px rgba(16,24,40,.18);
-        }
-
-        .wow-mobile-search-page__results[aria-busy="true"]{
-            opacity: .72;
-            transition: opacity .15s ease;
-        }
-
-        .wow-mobile-search-page__results{
-            margin-top: 30px;
-            background: #fff;
-            border: 1px solid #aaa;
-            padding: 50px 0 30px;
-            border-radius: 20px 20px 0 0;
-            position: relative;
-            z-index: 5;
-            border-bottom: none;
-            width: min(426px, calc(100% - 24px));
-            max-width: 426px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .wow-mobile-search-page__results::before{
-            content: "";
-            position: absolute;
-            top: 19px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 90px;
-            height: 8px;
-            background: #ddd;
+        .wow-sr-v5-mobile-count { display: grid; gap: 1px; color: #202b3b; font-size: 13px; font-weight: 700; line-height: 1.15; }
+        .wow-sr-v5-mobile-count strong { color: #202b3b; }
+        .wow-sr-v5-mobile-count span { color: #8c98aa; font-size: 9px; font-weight: 650; }
+        .wow-sr-v5-mobile-count b { color: var(--sr-green); }
+        .wow-sr-v5-mobile-actions { display: flex; align-items: center; gap: 7px; }
+        .wow-sr-v5-mobile [data-map-toggle] { display: none; }
+        .wow-sr-v5-mobile-tool {
+            min-height: 35px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            padding: 0 12px;
+            border: 1px solid #d6dee5;
             border-radius: 999px;
-            z-index: 5;
-            pointer-events: none;
+            background: #fff;
+            color: #2d394e;
+            font-size: 11px;
+            font-weight: 650;
+            cursor: pointer;
         }
 
-        .wow-mobile-search-page__pagination{
-            margin-top: 20px;
-        }
+        .wow-sr-v5-mobile-results { padding: 13px 10px 0; }
+        .wow-search-recommendations { margin: 0 0 20px; }
+        .wow-search-recommendations__heading { display: flex; align-items: end; justify-content: space-between; gap: 10px; margin: 0 2px 11px; }
+        .wow-search-recommendations__kicker { margin: 0 0 2px; color: #7b8598; font-size: 8px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+        .wow-search-recommendations__heading h2 { margin: 0; color: #111827; font-family: "DM Serif Display", Georgia, serif; font-size: 23px; font-weight: 400; line-height: 1.05; }
+        .wow-search-recommendations__heading > span { color: #8c98aa; font-size: 9px; white-space: nowrap; }
+        .wow-search-recommendations__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 11px; align-items: start; }
+        .wow-search-recommendation { position: relative; min-width: 0; padding-top: 13px; }
+        .wow-search-recommendation__label { position: absolute; top: 0; left: 7px; z-index: 5; display: inline-flex; align-items: center; min-height: 22px; max-width: calc(100% - 14px); overflow: hidden; padding: 0 7px; border-radius: 999px; background: #e4f2ee; color: #2f7464; font-size: 7px; font-weight: 800; letter-spacing: .03em; text-overflow: ellipsis; white-space: nowrap; }
+        .wow-search-recommendation.is-primary .wow-search-recommendation__label { background: #2f7464; color: #fff; }
+        .wow-search-recommendation .wow49-blade-card, .wow-search-recommendation .wow49-store-blade { width: 100%; min-width: 0; max-width: none; }
+        .wow-sr-v5-mobile .wow-search-recommendation:nth-child(n + 3) { display: none; }
+        .wow-sr-v5-all-results-title { margin: 18px 2px 10px; color: #53627a; font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+        .wow-sr-v5-mobile-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 11px; align-items: start; }
+        .wow-sr-v5-mobile-grid > .col-12 { width: auto; max-width: none; padding: 0; }
+        .wow-sr-v5-mobile-grid .result-view-map { display: none; }
+        .wow-sr-v5-mobile-grid .result-view-list { display: block; }
+        .wow-sr-v5-mobile-grid .wow49-blade-card,
+        .wow-sr-v5-mobile-grid .wow49-store-blade,
+        .wow-sr-v5-mobile-grid .product-v4-1-ghost-card { width: 100%; min-width: 0; max-width: none; }
+        .wow-sr-v5-mobile-pagination { margin: 22px 0 0; }
+        .wow-sr-v5-mobile-pagination .pagination { justify-content: center; margin-bottom: 0; }
 
-        .wow-mobile-search-page #wowMobileResultsGrid > *{
+        .wow-sr-v5-mobile-map { display: none; position: relative; min-height: calc(100dvh - 57px); background: #eef0f2; }
+        .wow-sr-v5-mobile-map-canvas { width: 100%; min-height: calc(100dvh - 57px); height: calc(100dvh - 57px); }
+        .wow-sr-v5-mobile-map-empty { position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; color: #61708a; font-size: 13px; text-align: center; pointer-events: none; }
+        .wow-sr-v5-mobile-map.is-ready .wow-sr-v5-mobile-map-empty { display: none; }
+        .wow-sr-v5-mobile.is-map-mode .wow-sr-v5-mobile-results { display: none; }
+        .wow-sr-v5-mobile.is-map-mode .wow-sr-v5-mobile-map { display: block; }
+        .wow-sr-v5-mobile-map-info { max-width: 230px; color: #26334a; font-family: Inter, sans-serif; font-size: 12px; line-height: 1.4; }
+        .wow-sr-v5-mobile-map-info strong { display: block; margin-bottom: 4px; color: #141a2a; font-size: 13px; }
+        .wow-sr-v5-mobile-map-info a { color: var(--sr-green-dark); font-weight: 700; text-decoration: none; }
+
+        .wow-sr-v5-mobile-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
+            justify-content: flex-end;
         }
 
-        .wow-mobile-search-page #wowMobileResultsGrid > .col-12{
-            width: 100%;
-            display: flex;
-            justify-content: center;
-        }
-
-        .wow-mobile-search-page #wowMobileResultsGrid .wow-card-sm-wrap{
-            width: min(100%, 560px);
-            margin-inline: auto;
-        }
-
-        .wow-mobile-search-page #wowMobileResultsGrid .result-view-map{
-            display: none !important;
-        }
-
-        .wow-mobile-search-page #wowMobileResultsGrid .result-view-list{
-            display: flex !important;
-            justify-content: center;
-        }
-
-        .wow-mobile-search-page #wowMobileResultsGrid .result-view-list .wow-card.md{
-            width: 100%;
-            max-width: none;
-            margin-inline: 0;
-        }
-
-        .wow-mobile-search-page #wowMobileResultsGrid .result-view-list .wow-card.md.wow-event-card-v4{
-            width: 280px;
-            max-width: 280px;
-            flex: 0 0 280px;
-            margin-inline: auto;
-        }
-
-        .wow-mobile-search-page #wowMobileResultsGrid .product-v4-1-card-scope{
-            width: min(100%, 560px);
-            margin-inline: auto;
-        }
-
-        .wow-mobile-search-page #wowMobileResultsGrid .product-v4-1-ghost-card-scope{
-            display: flex;
-            justify-content: center;
-            width: min(100%, 560px);
-            margin-inline: auto;
-        }
-
-        .wow-mobile-search-page #wowMobileResultsGrid .product-v4-1-ghost-card{
-            margin-inline: auto;
-        }
-
-        .wow-mobile-search-page #wowMobileResultsGrid .product-v4-1-ghost-card__body,
-        .wow-mobile-search-page #wowMobileResultsGrid .product-v4-1-ghost-card__footer{
-            align-items:center;
-        }
-
-        .wow-mobile-search-page #wowMobileResultsGrid .product-v4-1-ghost-card__rating,
-        .wow-mobile-search-page #wowMobileResultsGrid .product-v4-1-ghost-card__availability-top,
-        .wow-mobile-search-page #wowMobileResultsGrid .product-v4-1-ghost-card__actions{
-            justify-content:center;
-        }
-
-        .wow-mobile-search-page #wowMobileResultsGrid .product-v4-1-ghost-card__summary,
-        .wow-mobile-search-page #wowMobileResultsGrid .product-v4-1-ghost-card__meta,
-        .wow-mobile-search-page #wowMobileResultsGrid .product-v4-1-ghost-card__price{
-            width: 100%;
-            justify-items:center;
-            justify-content:center;
-            margin-inline:auto;
-        }
-
-        .wow-mobile-search-page #wowMobileResultsGrid .product-v4-1-ghost-card__summary .product-v4-1-ghost-card__line,
-        .wow-mobile-search-page #wowMobileResultsGrid .product-v4-1-ghost-card__meta .product-v4-1-ghost-card__chip,
-        .wow-mobile-search-page #wowMobileResultsGrid .product-v4-1-ghost-card__price .product-v4-1-ghost-card__price-label,
-        .wow-mobile-search-page #wowMobileResultsGrid .product-v4-1-ghost-card__price .product-v4-1-ghost-card__price-value{
-            margin-inline: auto;
-        }
-
-        .wow-mobile-search-page #wowMobileResultsGrid .product-v4-1-card{
-            margin-inline: auto;
-        }
-
-        .wow-mobile-search-page .wow-mobile-search-page__chips{
-            display:flex !important;
-            flex-wrap:wrap;
-            gap:8px;
-            min-width:0;
+        .wow-sr-v5-mobile-modal[hidden] { display: none; }
+        .wow-sr-v5-mobile-backdrop { position: absolute; inset: 0; border: 0; background: rgba(0, 0, 0, .40); backdrop-filter: blur(2px); cursor: pointer; }
+        .wow-sr-v5-mobile-sheet {
             position: relative;
-            z-index: 0 !important;
+            height: 88dvh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border-radius: 24px 24px 0 0;
+            background: #fff;
+            box-shadow: 0 -8px 40px rgba(0, 0, 0, .18);
         }
 
-        .wow-mobile-search-page .wow-mobile-search-page__chips .wow-chip:not(.wow-chip--clear-all){
-            display:none !important;
-        }
+        .wow-sr-v5-sheet-handle { display: flex; justify-content: center; flex: 0 0 auto; padding: 12px 0 4px; }
+        .wow-sr-v5-sheet-handle::before { width: 40px; height: 4px; border-radius: 999px; background: #d3d7de; content: ''; }
+        .wow-sr-v5-sheet-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex: 0 0 auto; padding: 13px 17px 15px; border-bottom: 1px solid #e8ebef; }
+        .wow-sr-v5-sheet-heading { min-width: 0; display: flex; align-items: center; gap: 11px; }
+        .wow-sr-v5-sheet-icon { width: 38px; height: 38px; display: grid; flex: 0 0 38px; place-items: center; border-radius: 11px; background: #edf7f4; color: var(--sr-green-dark); }
+        .wow-sr-v5-sheet-kicker { margin: 0 0 2px; color: #98a2b3; font-size: 9px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+        .wow-sr-v5-sheet-title { margin: 0; color: #101828; font-size: 20px; font-weight: 700; line-height: 1.15; }
+        .wow-sr-v5-sheet-close { width: 38px; height: 38px; display: grid; flex: 0 0 38px; place-items: center; border: 0; border-radius: 50%; background: #f2f4f7; color: #455268; cursor: pointer; }
+        .wow-sr-v5-sheet-body { flex: 1; overflow-y: auto; padding: 0 17px 100px; }
 
-        .wow-mobile-search-page .wow-chip{
-            display:inline-flex;
-            align-items:center;
-            gap:6px;
-        }
+        .wow-sr-v5-mobile-filter-section { padding: 19px 0 16px; border-bottom: 1px solid #e8ebef; }
+        .wow-sr-v5-mobile-filter-section.is-collapsed .wow-sr-v5-mobile-filter-body { display: none; }
+        .wow-sr-v5-mobile-filter-section.is-collapsed .wow-sr-v5-mobile-chevron { transform: rotate(180deg); }
+        .wow-sr-v5-mobile-filter-head { width: 100%; min-height: 31px; display: flex; align-items: center; justify-content: space-between; padding: 0; border: 0; border-radius: 8px; background: transparent; color: #111827; text-align: left; cursor: pointer; }
+        .wow-sr-v5-mobile-filter-name { display: flex; align-items: center; gap: 9px; font-size: 13px; font-weight: 750; }
+        .wow-sr-v5-mobile-filter-icon { width: 27px; height: 27px; display: grid; flex: 0 0 27px; place-items: center; border-radius: 7px; background: #f2f6f5; color: #5f746e; }
+        .wow-sr-v5-mobile-chevron { width: 27px; height: 27px; display: grid; flex: 0 0 27px; place-items: center; border-radius: 50%; background: #f4f6f8; color: #7e8a9c; transition: transform .2s ease; }
+        .wow-sr-v5-mobile-filter-body { display: grid; gap: 5px; margin-top: 13px; }
+        .wow-sr-v5-mobile-choice { width: 100%; min-height: 38px; display: flex; align-items: center; gap: 10px; padding: 0 9px; border: 1px solid transparent; border-radius: 9px; background: transparent; color: #344158; font-size: 12px; text-align: left; cursor: pointer; }
+        .wow-sr-v5-mobile-choice.is-selected { border-color: #d5e9e3; background: #e5f3ef; color: var(--sr-green-dark); }
+        .wow-sr-v5-mobile-choice-box { width: 17px; height: 17px; flex: 0 0 17px; border: 1px solid #cad3dc; border-radius: 5px; background: #fff; }
+        .wow-sr-v5-mobile-choice.is-selected .wow-sr-v5-mobile-choice-box { border-color: var(--sr-green); background: var(--sr-green); }
+        .wow-sr-v5-mobile-choice-copy { min-width: 0; flex: 1; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+        .wow-sr-v5-mobile-choice-copy strong { font-size: 12px; font-weight: 650; }
+        .wow-sr-v5-mobile-choice-note { color: #9aa5b3; font-size: 9px; font-weight: 600; }
+        .wow-sr-v5-mobile-stars { color: #f2b827; font-size: 9px; letter-spacing: 0; }
+        .wow-sr-v5-mobile-chip-row { display: flex; flex-wrap: wrap; gap: 7px; }
+        .wow-sr-v5-mobile-chip { min-height: 34px; padding: 0 13px; border: 1px solid #d5dde5; border-radius: 999px; background: #fff; color: #34435a; font-size: 12px; cursor: pointer; }
+        .wow-sr-v5-mobile-chip.is-selected { border-color: #9cc8bc; background: #edf7f4; color: var(--sr-green-dark); font-weight: 650; }
+        .wow-sr-v5-mobile-price-summary { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0 0 5px; color: #96a1af; font-size: 10px; }
+        .wow-sr-v5-mobile-price-summary strong { color: #2e3a4d; font-size: 10px; }
+        .wow-sr-v5-mobile-range { width: 100%; height: 24px; margin: 0; padding: 0; appearance: none; background: transparent; cursor: pointer; }
+        .wow-sr-v5-mobile-range::-webkit-slider-runnable-track { height: 5px; border-radius: 999px; background: linear-gradient(90deg, var(--sr-green) 0 var(--range-progress, 100%), #e0e6ea var(--range-progress, 100%) 100%); }
+        .wow-sr-v5-mobile-range::-moz-range-track { height: 5px; border-radius: 999px; background: #e0e6ea; }
+        .wow-sr-v5-mobile-range::-moz-range-progress { height: 5px; border-radius: 999px; background: var(--sr-green); }
+        .wow-sr-v5-mobile-range::-webkit-slider-thumb { width: 20px; height: 20px; margin-top: -7.5px; appearance: none; border: 2px solid var(--sr-green); border-radius: 50%; background: #fff; box-shadow: 0 2px 6px rgba(16,24,40,.16); }
+        .wow-sr-v5-mobile-range::-moz-range-thumb { width: 18px; height: 18px; border: 2px solid var(--sr-green); border-radius: 50%; background: #fff; }
+        .wow-sr-v5-sheet-footer { position: absolute; right: 0; bottom: 0; left: 0; display: grid; grid-template-columns: 151px minmax(0, 1fr); gap: 10px; padding: 10px 17px 16px; border-top: 1px solid #e7ebef; background: #fff; box-shadow: 0 -4px 16px rgba(16,24,40,.03); }
+        .wow-sr-v5-sheet-footer button { min-height: 46px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; }
+        .wow-sr-v5-clear { border: 1px solid #d4dce4; background: #f8fafb; color: #6b778b; }
+        .wow-sr-v5-apply { border: 0; background: var(--sr-green); color: #fff; }
+        body.wow-sr-v5-no-scroll { overflow: hidden; }
 
-        .wow-mobile-search-page .wow-chip--clear-all{
-            appearance:none;
-            border:1px solid #dcebe5;
-            cursor:pointer;
-            padding-inline:14px;
-            font-weight:700;
-            color:#215447;
-            background:#f6fbf9;
-            gap:8px;
-        }
-
-        .wow-mobile-search-page .wow-chip--clear-all svg{
-            width:14px;
-            height:14px;
-            flex:0 0 auto;
-            fill:currentColor;
-        }
-
-        .wow-mobile-search-page .wow-chip-remove{
-            display:inline-flex;
-            align-items:center;
-            justify-content:center;
-        }
-
-        .wow-mobile-search-page .wow-chip-remove svg{
-            width:14px;
-            height:14px;
-        }
-
-        .wow-mobile-search-page .wow-filter-actions{
-            flex:0 0 auto;
-            position: relative;
-            z-index: 0 !important;
-        }
-
-        @media (min-width: 1041px){
-            .wow-mobile-search-page{
-                display: none;
-            }
+        @media (max-width: 359px) {
+            .wow-sr-v5-mobile-grid, .wow-search-recommendations__grid { grid-template-columns: minmax(0, 1fr); }
+            .wow-sr-v5-mobile-tool { padding: 0 9px; }
         }
     </style>
 @endonce
 
-<script>
-    (function () {
-        const root = document.getElementById('wowMobileSearch');
-        if (!root) return;
-        if (!window.matchMedia || !window.matchMedia('(max-width: 1040px)').matches) return;
+<section class="wow-sr-v5-mobile" id="wowMobileSearch" data-search-url="{{ url('/search') }}" data-initial-map='@json($searchMapData ?? [])'>
+    <div class="wow-sr-v5-mobile-toolbar">
+        <div class="wow-sr-v5-mobile-count"><strong>Recommended for you</strong><span><b data-result-count>{{ $mobileResultsCount }}</b> matching offerings</span></div>
+        <div class="wow-sr-v5-mobile-actions">
+            <button class="wow-sr-v5-mobile-tool" type="button" data-open-filters>
+                <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M7 12h10M10 17h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                Filters
+            </button>
+            <button class="wow-sr-v5-mobile-tool" type="button" data-map-toggle aria-pressed="false">
+                <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="m3 6 5-2 8 3 5-2v13l-5 2-8-3-5 2V6Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 4v13M16 7v13" stroke="currentColor" stroke-width="1.6"/></svg>
+                <span data-map-label>Map</span>
+            </button>
+        </div>
+    </div>
 
-        const grid = root.querySelector('#wowMobileResultsGrid');
-        const paginationEl = root.querySelector('#wowMobileResultsPagination');
-        const countEl = root.querySelector('#wowMobileResultsCount');
-        const mapEl = root.querySelector('#wowMobileSearchMap');
-        const mapWrap = root.querySelector('.wow-mobile-search-page__map-wrap');
-        const searchBar = document.querySelector('.wow-search-filter');
-        const clearAllButton = root.querySelector('[data-clear-all-filters]');
-        const mapboxToken = @json(config('services.mapbox.token'));
-        const initialMapData = @json($mobileMapData);
+    <section class="wow-sr-v5-mobile-map" aria-label="Map view" data-map-panel>
+        <div class="wow-sr-v5-mobile-map-canvas" data-map-canvas></div>
+        <div class="wow-sr-v5-mobile-map-empty" data-map-empty>Choose Map to see nearby wellbeing offerings.</div>
+    </section>
 
-        if (!grid) return;
+    <main class="wow-sr-v5-mobile-results" aria-label="Search results">
+        <div id="mobileSearchRecommendations">
+            {!! $searchRecommendationsHtml ?? '' !!}
+        </div>
+        <h2 class="wow-sr-v5-all-results-title">All results</h2>
+        <div class="wow-sr-v5-mobile-grid" id="mobileSearchResultsGrid">
+            @include('search.partials.results_cards', ['searchAsyncBoot' => (bool) ($searchAsyncBoot ?? false)])
+        </div>
+        <div class="wow-sr-v5-mobile-pagination" id="mobileSearchResultsPagination">
+            @if ($products instanceof \Illuminate\Pagination\Paginator || $products instanceof \Illuminate\Pagination\LengthAwarePaginator)
+                {{ $products->withQueryString()->onEachSide(1)->links('pagination::bootstrap-4') }}
+            @endif
+        </div>
+    </main>
 
-        let currentRequestId = 0;
-        let activeAbortController = null;
-        let lastGridHtml = grid.innerHTML;
-        let lastPaginationHtml = paginationEl ? paginationEl.innerHTML : '';
-        let lastCountText = countEl ? countEl.textContent : '';
-        let resizeObserver = null;
-        let resizeFrame = null;
-        let mapWidthFrame = null;
-        let mapWrapBaseTop = null;
-        let mapBusyTimer = null;
-        let mapboxgl = window.mapboxgl || null;
-        let mapRenderToken = 0;
-        const mapState = {
-            map: null,
-            ready: false,
-            pendingData: Array.isArray(initialMapData) ? initialMapData.slice() : [],
-            markersByPid: {},
-            activePid: '',
-        };
+    <div class="wow-sr-v5-mobile-modal" data-filter-modal hidden>
+        <button class="wow-sr-v5-mobile-backdrop" type="button" data-close-filters aria-label="Close filters"></button>
+        <section class="wow-sr-v5-mobile-sheet" role="dialog" aria-modal="true" aria-labelledby="wow-mobile-filter-title">
+            <div class="wow-sr-v5-sheet-handle" aria-hidden="true"></div>
+            <header class="wow-sr-v5-sheet-header">
+                <div class="wow-sr-v5-sheet-heading">
+                    <span class="wow-sr-v5-sheet-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 7h10M18 7h2M4 12h3M11 12h9M4 17h7M15 17h5" stroke="currentColor" stroke-linecap="round" stroke-width="1.8"/><circle cx="16" cy="7" r="2" stroke="currentColor" stroke-width="1.6"/><circle cx="9" cy="12" r="2" stroke="currentColor" stroke-width="1.6"/><circle cx="13" cy="17" r="2" stroke="currentColor" stroke-width="1.6"/></svg></span>
+                    <div><p class="wow-sr-v5-sheet-kicker">Refine results</p><h2 class="wow-sr-v5-sheet-title" id="wow-mobile-filter-title">Filters &amp; Sort</h2></div>
+                </div>
+                <button class="wow-sr-v5-sheet-close" type="button" data-close-filters aria-label="Close filters"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M18 6 6 18M6 6l12 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+            </header>
 
-        function escapeHtml(value) {
-            return String(value || '').replace(/[&<>"']/g, (match) => ({
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                '"': '&quot;',
-                "'": '&#39;',
-            })[match]);
-        }
+            <div class="wow-sr-v5-sheet-body">
+                <section class="wow-sr-v5-mobile-filter-section">
+                    <button class="wow-sr-v5-mobile-filter-head" type="button" data-mobile-section-toggle aria-expanded="true"><span class="wow-sr-v5-mobile-filter-name"><span class="wow-sr-v5-mobile-filter-icon" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M8 6h10M8 12h7M8 18h4M5 5v14M3 17l2 2 2-2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Sort by</span><span class="wow-sr-v5-mobile-chevron" aria-hidden="true"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="m7 14 5-5 5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+                    <div class="wow-sr-v5-mobile-filter-body">
+                        <button class="wow-sr-v5-mobile-choice" type="button" data-draft-name="sort" data-draft-value="popular"><span class="wow-sr-v5-mobile-choice-box" aria-hidden="true"></span><span class="wow-sr-v5-mobile-choice-copy"><strong>Recommended</strong><span class="wow-sr-v5-mobile-choice-note">Best match</span></span></button>
+                        <button class="wow-sr-v5-mobile-choice" type="button" data-draft-name="sort" data-draft-value="rating_desc"><span class="wow-sr-v5-mobile-choice-box" aria-hidden="true"></span><span class="wow-sr-v5-mobile-choice-copy"><strong>Highest rated</strong><span class="wow-sr-v5-mobile-choice-note">Top reviews</span></span></button>
+                        <button class="wow-sr-v5-mobile-choice" type="button" data-draft-name="sort" data-draft-value="price_asc"><span class="wow-sr-v5-mobile-choice-box" aria-hidden="true"></span><span class="wow-sr-v5-mobile-choice-copy"><strong>Price: low to high</strong></span></button>
+                        <button class="wow-sr-v5-mobile-choice" type="button" data-draft-name="sort" data-draft-value="price_desc"><span class="wow-sr-v5-mobile-choice-box" aria-hidden="true"></span><span class="wow-sr-v5-mobile-choice-copy"><strong>Price: high to low</strong></span></button>
+                    </div>
+                </section>
 
-        function clearMapMarkers() {
-            Object.keys(mapState.markersByPid || {}).forEach((pid) => {
-                (mapState.markersByPid[pid] || []).forEach((entry) => {
-                    try { entry.marker.remove(); } catch (_err) {}
-                });
-            });
-            mapState.markersByPid = {};
-        }
+                <section class="wow-sr-v5-mobile-filter-section">
+                    <button class="wow-sr-v5-mobile-filter-head" type="button" data-mobile-section-toggle aria-expanded="true"><span class="wow-sr-v5-mobile-filter-name"><span class="wow-sr-v5-mobile-filter-icon" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.6"/><rect x="14" y="4" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.6"/><rect x="4" y="14" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.6"/><rect x="14" y="14" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.6"/></svg></span>Type</span><span class="wow-sr-v5-mobile-chevron" aria-hidden="true"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="m7 14 5-5 5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+                    <div class="wow-sr-v5-mobile-filter-body"><div class="wow-sr-v5-mobile-chip-row">
+                        <button class="wow-sr-v5-mobile-chip" type="button" data-draft-name="type" data-draft-value="therapies">Therapy</button>
+                        <button class="wow-sr-v5-mobile-chip" type="button" data-draft-name="type" data-draft-value="classes">Class</button>
+                        <button class="wow-sr-v5-mobile-chip" type="button" data-draft-name="type" data-draft-value="events">Event</button>
+                        <button class="wow-sr-v5-mobile-chip" type="button" data-draft-name="type" data-draft-value="retreats">Retreat</button>
+                    </div></div>
+                </section>
 
-        function scheduleMapResize() {
-            if (!mapState.map) return;
+                <section class="wow-sr-v5-mobile-filter-section">
+                    <button class="wow-sr-v5-mobile-filter-head" type="button" data-mobile-section-toggle aria-expanded="true"><span class="wow-sr-v5-mobile-filter-name"><span class="wow-sr-v5-mobile-filter-icon" aria-hidden="true">£</span>Price</span><span class="wow-sr-v5-mobile-chevron" aria-hidden="true"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="m7 14 5-5 5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+                    <div class="wow-sr-v5-mobile-filter-body">
+                        <div class="wow-sr-v5-mobile-price-summary"><span>£10 minimum</span><strong data-draft-price-label>Any price</strong><span>£500+</span></div>
+                        <input class="wow-sr-v5-mobile-range" type="range" min="10" max="500" step="10" value="500" data-draft-price aria-label="Maximum price">
+                        <div class="wow-sr-v5-mobile-chip-row" style="margin-top: 9px">
+                            <button class="wow-sr-v5-mobile-chip" type="button" data-draft-price-chip="50">Under £50</button>
+                            <button class="wow-sr-v5-mobile-chip" type="button" data-draft-price-chip="100">Under £100</button>
+                            <button class="wow-sr-v5-mobile-chip" type="button" data-draft-price-chip="170">Under £170</button>
+                        </div>
+                    </div>
+                </section>
 
-            setMobileMapBusy(true);
+                <section class="wow-sr-v5-mobile-filter-section is-collapsed">
+                    <button class="wow-sr-v5-mobile-filter-head" type="button" data-mobile-section-toggle aria-expanded="false"><span class="wow-sr-v5-mobile-filter-name"><span class="wow-sr-v5-mobile-filter-icon" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9L12 3Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span>Rating</span><span class="wow-sr-v5-mobile-chevron" aria-hidden="true"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="m7 14 5-5 5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
+                    <div class="wow-sr-v5-mobile-filter-body">
+                        <button class="wow-sr-v5-mobile-choice" type="button" data-draft-name="rating" data-draft-value=""><span class="wow-sr-v5-mobile-choice-box" aria-hidden="true"></span><span class="wow-sr-v5-mobile-choice-copy"><strong>Any rating</strong><span class="wow-sr-v5-mobile-choice-note">All results</span></span></button>
+                        <button class="wow-sr-v5-mobile-choice" type="button" data-draft-name="rating" data-draft-value="4.5"><span class="wow-sr-v5-mobile-choice-box" aria-hidden="true"></span><span class="wow-sr-v5-mobile-choice-copy"><strong>4.5+ stars</strong><span class="wow-sr-v5-mobile-stars">★★★★★</span></span></button>
+                        <button class="wow-sr-v5-mobile-choice" type="button" data-draft-name="rating" data-draft-value="4"><span class="wow-sr-v5-mobile-choice-box" aria-hidden="true"></span><span class="wow-sr-v5-mobile-choice-copy"><strong>4.0+ stars</strong><span class="wow-sr-v5-mobile-stars">★★★★☆</span></span></button>
+                        <button class="wow-sr-v5-mobile-choice" type="button" data-draft-name="rating" data-draft-value="reviewed"><span class="wow-sr-v5-mobile-choice-box" aria-hidden="true"></span><span class="wow-sr-v5-mobile-choice-copy"><strong>Reviewed only</strong><span class="wow-sr-v5-mobile-choice-note">1+ review</span></span></button>
+                    </div>
+                </section>
+            </div>
+            <footer class="wow-sr-v5-sheet-footer">
+                <button class="wow-sr-v5-clear" type="button" data-clear-filters>Clear all</button>
+                <button class="wow-sr-v5-apply" type="button" data-apply-filters>Show <span data-apply-count>{{ $mobileResultsCount }}</span> results</button>
+            </footer>
+        </section>
+    </div>
+</section>
 
-            window.requestAnimationFrame(() => {
-                try { mapState.map.resize(); } catch (_err) {}
-            });
+@once
+    <script>
+        (() => {
+            const mobileQuery = window.matchMedia('(max-width: 1040px)');
+            if (!mobileQuery.matches) return;
 
-            window.clearTimeout(mapBusyTimer);
-            mapBusyTimer = window.setTimeout(() => {
-                try { mapState.map.resize(); } catch (_err) {}
-                setMobileMapBusy(false);
-            }, 280);
-        }
+            const root = document.getElementById('wowMobileSearch');
+            if (!root || root.dataset.initialized === 'true') return;
+            root.dataset.initialized = 'true';
 
-        function setMobileMapBusy(isBusy) {
-            if (!mapWrap) return;
-            mapWrap.classList.toggle('is-loading', !!isBusy);
-        }
+            const grid = root.querySelector('#mobileSearchResultsGrid');
+            const recommendations = root.querySelector('#mobileSearchRecommendations');
+            const pagination = root.querySelector('#mobileSearchResultsPagination');
+            const modal = root.querySelector('[data-filter-modal]');
+            const mapPanel = root.querySelector('[data-map-panel]');
+            const mapCanvas = root.querySelector('[data-map-canvas]');
+            const mapKey = @json(config('services.google_maps.key'));
+            const countNodes = root.querySelectorAll('[data-result-count]');
+            const applyCount = root.querySelector('[data-apply-count]');
+            let draft;
+            let activeRequest;
+            let map;
+            let infoWindow;
+            let markers = [];
+            let pendingMapData = JSON.parse(root.dataset.initialMap || '[]');
 
-        function closeMapPopups() {
-            Object.keys(mapState.markersByPid || {}).forEach((pid) => {
-                (mapState.markersByPid[pid] || []).forEach((entry) => {
-                    try {
-                        const popup = entry && entry.marker && entry.marker.getPopup ? entry.marker.getPopup() : null;
-                        if (popup) popup.remove();
-                    } catch (_err) {}
-                });
-            });
-        }
+            const escapeHtml = value => String(value || '').replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#039;', '"': '&quot;' })[char]);
+            const activeUrl = () => new URL(window.location.href);
+            const priceText = value => Number(value) >= 500 ? 'Any price' : `Under £${value}`;
 
-        function setActiveMarker(pid) {
-            Object.keys(mapState.markersByPid || {}).forEach((key) => {
-                (mapState.markersByPid[key] || []).forEach((entry) => {
-                    try {
-                        entry.el.classList.toggle('is-active', String(key) === String(pid));
-                    } catch (_err) {}
-                });
-            });
-            mapState.activePid = String(pid || '');
-        }
-
-        function setMapPanelExpanded() {
-            scheduleMapResize();
-        }
-
-        function clamp(value, min, max) {
-            return Math.max(min, Math.min(max, value));
-        }
-
-        function captureMapWrapBaseline() {
-            if (!mapWrap) return;
-            if (mapWrapBaseTop !== null) return;
-
-            const currentScrollY = window.scrollY || window.pageYOffset || 0;
-            mapWrapBaseTop = mapWrap.getBoundingClientRect().top + currentScrollY;
-        }
-
-        function updateMobileMapWidth() {
-            if (!mapWrap) return;
-            captureMapWrapBaseline();
-
-            const viewportWidth = window.innerWidth || document.documentElement.clientWidth || 0;
-            const fullWidth = Math.max(0, viewportWidth - 24);
-            const minWidth = Math.min(316, fullWidth);
-            const currentScrollY = window.scrollY || window.pageYOffset || 0;
-            const stickyTop = Math.max(
-                0,
-                Math.round(parseFloat((window.getComputedStyle(mapWrap).top || '72px')) || 72)
-            );
-            const collapseStartY = Math.max(0, Math.round((mapWrapBaseTop || 0) - stickyTop));
-            const shrinkAmount = Math.max(0, currentScrollY - collapseStartY);
-            const width = Math.max(minWidth, Math.round(fullWidth - shrinkAmount));
-            const nextWidth = `${width}px`;
-
-            if (root.style.getPropertyValue('--wow-mobile-map-width').trim() !== nextWidth) {
-                root.style.setProperty('--wow-mobile-map-width', nextWidth);
-                scheduleMapResize();
-            }
-        }
-
-        function scheduleMobileMapWidthUpdate() {
-            if (mapWidthFrame) {
-                cancelAnimationFrame(mapWidthFrame);
-            }
-
-            mapWidthFrame = window.requestAnimationFrame(() => {
-                mapWidthFrame = null;
-                updateMobileMapWidth();
-            });
-        }
-
-        function buildMarkerEntry(item, map) {
-            const el = document.createElement('div');
-            el.className = 'wow-marker';
-            el.setAttribute('role', 'button');
-            el.setAttribute('tabindex', '0');
-            el.setAttribute('aria-label', 'Map marker');
-            el.title = item.title || '';
-            el.innerHTML = '<span class="wow-marker__price">' + escapeHtml(item.price_label || 'View') + '</span>';
-            const popup = new mapboxgl.Popup({ offset: 8 });
-            const renderPopupHtml = () => {
-                let priceText = '';
-                try {
-                    priceText = el.querySelector('.wow-marker__price')?.textContent || '';
-                } catch (_err) {}
-                return (
-                    `<div style="font-weight:600">${escapeHtml(item.title || '')}</div>` +
-                    (priceText ? `<div style="margin-top:4px;color:#334155;font-size:13px;">${escapeHtml(priceText)}</div>` : '')
-                );
-            };
-
-            const marker = new mapboxgl.Marker({ element: el, anchor: 'bottom' })
-                .setLngLat([Number(item.lng), Number(item.lat)])
-                .addTo(map);
-
-            const pid = String(item.pid || item.id || '');
-            if (!mapState.markersByPid[pid]) {
-                mapState.markersByPid[pid] = [];
-            }
-            mapState.markersByPid[pid].push({ marker, el, popup, item });
-
-            el.addEventListener('click', function (event) {
-                try { event.stopPropagation(); } catch (_err) {}
-                closeMapPopups();
-                setActiveMarker(pid);
-                setMapPanelExpanded();
-                try { popup.setHTML(renderPopupHtml()); } catch (_err) {}
-                try {
-                    popup.setLngLat([Number(item.lng), Number(item.lat)]).addTo(map);
-                } catch (_err) {}
-            });
-
-            el.addEventListener('keydown', function (event) {
-                if (event.key === 'Enter' || event.key === ' ') {
-                    try { event.preventDefault(); } catch (_err) {}
-                    el.click();
-                }
-            });
-
-            popup.on('close', () => {
-                if (String(mapState.activePid || '') === pid) {
-                    setActiveMarker('');
-                }
-            });
-        }
-
-        function renderMapData(data) {
-            mapState.pendingData = Array.isArray(data) ? data.slice() : [];
-            if (!mapState.map || !mapState.ready) return;
-
-            setMobileMapBusy(true);
-
-            const token = ++mapRenderToken;
-            clearMapMarkers();
-
-            if (!mapState.pendingData.length) {
-                setMobileMapBusy(false);
-                return;
-            }
-
-            const bounds = new mapboxgl.LngLatBounds();
-            let added = 0;
-
-            mapState.pendingData.forEach((item) => {
-                if (!Number.isFinite(Number(item.lat)) || !Number.isFinite(Number(item.lng))) return;
-                buildMarkerEntry(item, mapState.map);
-                bounds.extend([Number(item.lng), Number(item.lat)]);
-                added += 1;
-            });
-
-            if (token !== mapRenderToken) return;
-
-            if (added > 1) {
-                try {
-                    mapState.map.fitBounds(bounds, { padding: 80, maxZoom: 13, duration: 500 });
-                } catch (_err) {}
-            } else if (added === 1) {
-                const only = mapState.pendingData[0];
-                try {
-                    mapState.map.setCenter([Number(only.lng), Number(only.lat)]);
-                    mapState.map.setZoom(13);
-                } catch (_err) {}
-            }
-
-            window.clearTimeout(mapBusyTimer);
-            mapBusyTimer = window.setTimeout(() => {
-                setMobileMapBusy(false);
-            }, 180);
-        }
-
-        function initMapbox(token) {
-            if (!mapEl) return;
-            if (!token) {
-                mapEl.innerHTML = '<div style="padding:12px;color:#334155;font-size:14px;">Map unavailable: missing MAPBOX_API_KEY. Set it in .env.</div>';
-                return;
-            }
-
-            const center = mapState.pendingData.length
-                ? [Number(mapState.pendingData[0].lng), Number(mapState.pendingData[0].lat)]
-                : [-0.1276, 51.5072];
-
-            mapboxgl.accessToken = token;
-            mapState.map = new mapboxgl.Map({
-                container: mapEl,
-                style: 'mapbox://styles/mapbox/streets-v12',
-                center,
-                zoom: 12,
-                pitch: 0,
-                bearing: 0,
-                antialias: true,
-                fadeDuration: 0,
-                attributionControl: false,
-            });
-            mapState.map.scrollZoom.disable();
-            mapState.map.dragPan.disable();
-            mapState.map.touchZoomRotate.disable();
-            mapState.map.doubleClickZoom.disable();
-            mapState.map.boxZoom.disable();
-            mapState.map.keyboard.disable();
-
-            mapState.map.on('load', () => {
-                try {
-                    const canvas = mapState.map.getCanvas ? mapState.map.getCanvas() : null;
-                    const canvasContainer = mapState.map.getCanvasContainer ? mapState.map.getCanvasContainer() : null;
-                    if (canvas) {
-                        canvas.style.touchAction = '';
-                        canvas.style.webkitTouchAction = '';
-                        canvas.style.msTouchAction = '';
-                    }
-                    if (canvasContainer) {
-                        canvasContainer.style.touchAction = '';
-                        canvasContainer.style.webkitTouchAction = '';
-                        canvasContainer.style.msTouchAction = '';
-                    }
-                } catch (_err) {}
-                mapState.ready = true;
-                renderMapData(mapState.pendingData);
-                setMobileMapBusy(false);
-            });
-        }
-
-        function ensureMapboxAssets(token) {
-            if (!mapEl) return;
-
-            if (!document.querySelector('link[href*="mapbox-gl.css"]')) {
-                const link = document.createElement('link');
-                link.rel = 'stylesheet';
-                link.href = 'https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.css';
-                document.head.appendChild(link);
-            }
-
-            if (!mapboxgl) {
-                const script = document.createElement('script');
-                script.src = 'https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.js';
-                script.async = true;
-                script.defer = true;
-                script.onload = () => {
-                    mapboxgl = window.mapboxgl || null;
-                    if (mapboxgl) initMapbox(token);
+            function readDraft(url = activeUrl()) {
+                return {
+                    sort: url.searchParams.get('sort') || 'popular',
+                    type: url.searchParams.get('type') || '',
+                    rating: url.searchParams.get('rating') || '',
+                    price: Math.min(500, Math.max(10, Number(url.searchParams.get('price_max') || 500))),
                 };
-                document.head.appendChild(script);
-                return;
             }
 
-            initMapbox(token);
-        }
-
-        function normalizeUrl(url) {
-            try {
-                return new URL(url || window.location.href, window.location.origin).toString();
-            } catch (_err) {
-                return String(url || window.location.href || '');
-            }
-        }
-
-        function currentCountFromText(text) {
-            const match = String(text || '').match(/^(\d+)/);
-            return match ? Number(match[1]) || 0 : 0;
-        }
-
-        function syncHistory(url) {
-            try {
-                window.history.replaceState({}, '', url);
-            } catch (_err) {}
-        }
-
-        function dispatchResultsUpdated(count, countText) {
-            try {
-                window.dispatchEvent(new CustomEvent('wow:searchbar-v4:results-updated', {
-                    detail: {
-                        count: typeof count === 'number' ? count : null,
-                        countText: typeof countText === 'string' && countText.trim() !== ''
-                            ? countText
-                            : lastCountText,
-                    },
-                }));
-            } catch (_err) {}
-        }
-
-        function updateCount(count, countText) {
-            if (countEl) {
-                if (typeof countText === 'string' && countText.trim() !== '') {
-                    countEl.textContent = countText;
-                } else if (typeof count === 'number') {
-                    countEl.textContent = count + ' results';
-                }
+            function setRange(range, value) {
+                const percent = ((Number(value) - Number(range.min)) / (Number(range.max) - Number(range.min))) * 100;
+                range.value = value;
+                range.style.setProperty('--range-progress', `${percent}%`);
             }
 
-            lastCountText = countEl ? countEl.textContent : lastCountText;
-            dispatchResultsUpdated(
-                typeof count === 'number' ? count : currentCountFromText(lastCountText),
-                lastCountText
-            );
-        }
-
-        function renderGridHtml(html) {
-            if (typeof html !== 'string') return;
-            grid.innerHTML = html;
-        }
-
-        function renderPaginationHtml(html) {
-            if (!paginationEl || typeof html !== 'string') return;
-            paginationEl.innerHTML = html;
-        }
-
-        function setLoadingState(isLoading) {
-            grid.setAttribute('aria-busy', isLoading ? 'true' : 'false');
-            if (paginationEl) {
-                paginationEl.setAttribute('aria-busy', isLoading ? 'true' : 'false');
-            }
-        }
-
-        function releasePageScroll() {
-            try {
-                document.body.style.overflow = '';
-                document.documentElement.style.overflow = '';
-            } catch (_err) {}
-        }
-
-        function clearAllFilters() {
-            const nextUrl = normalizeUrl(window.location.href);
-            const url = new URL(nextUrl);
-            ['what', 'where', 'when', 'when_start', 'when_end', 'adults', 'group_type', 'sort', 'price_max', 'rating', 'type', 'mode', 'anytime'].forEach((key) => {
-                url.searchParams.delete(key);
-            });
-            const cleanUrl = url.toString();
-
-            try {
-                window.history.replaceState({}, '', cleanUrl);
-            } catch (_err) {}
-
-            try {
-                window.dispatchEvent(new CustomEvent('wow:searchbar-v4:query-change', {
-                    detail: {
-                        reason: 'clear_all',
-                        url: cleanUrl,
-                    },
-                }));
-            } catch (_err) {}
-        }
-
-        function updateSearchBarOffset() {
-            if (!searchBar) return;
-            const rect = searchBar.getBoundingClientRect();
-            const bottom = Math.max(0, Math.round(rect.bottom || 0));
-            const offset = Math.max(38, bottom + 20);
-            root.style.setProperty('--wow-mobile-results-offset', `${offset}px`);
-        }
-
-        function scheduleOffsetUpdate() {
-            if (resizeFrame) {
-                cancelAnimationFrame(resizeFrame);
+            function renderDraft() {
+                root.querySelectorAll('[data-draft-name]').forEach(button => {
+                    const selected = draft[button.dataset.draftName] === button.dataset.draftValue;
+                    button.classList.toggle('is-selected', selected);
+                });
+                root.querySelectorAll('[data-draft-price]').forEach(range => setRange(range, draft.price));
+                root.querySelectorAll('[data-draft-price-label]').forEach(node => { node.textContent = priceText(draft.price); });
+                root.querySelectorAll('[data-draft-price-chip]').forEach(button => button.classList.toggle('is-selected', Number(button.dataset.draftPriceChip) === draft.price));
             }
 
-            resizeFrame = window.requestAnimationFrame(() => {
-                resizeFrame = null;
-                updateSearchBarOffset();
-                updateMobileMapWidth();
-            });
-        }
+            function setCounts(count) {
+                countNodes.forEach(node => { node.textContent = count; });
+                applyCount.textContent = count;
+            }
 
-        function fetchSearchResults(url) {
-            const nextUrl = normalizeUrl(url);
-            const requestId = ++currentRequestId;
+            function openFilters() {
+                draft = readDraft();
+                renderDraft();
+                modal.hidden = false;
+                document.body.classList.add('wow-sr-v5-no-scroll');
+                root.querySelector('[data-close-filters]').focus();
+            }
 
-            if (activeAbortController) {
+            function closeFilters() {
+                modal.hidden = true;
+                document.body.classList.remove('wow-sr-v5-no-scroll');
+            }
+
+            function setMapMode(enabled) {
+                root.classList.toggle('is-map-mode', enabled);
+                root.querySelectorAll('[data-map-toggle]').forEach(button => button.setAttribute('aria-pressed', String(enabled)));
+                root.querySelectorAll('[data-map-label]').forEach(label => { label.textContent = enabled ? 'List view' : 'Map'; });
+                if (enabled) renderMap();
+            }
+
+            function loadGoogleMaps() {
+                if (window.google && window.google.maps) return Promise.resolve(window.google.maps);
+                if (!mapKey) return Promise.reject(new Error('Google Maps is not configured'));
+                if (window.wowGoogleMapsPromise) return window.wowGoogleMapsPromise;
+                window.wowGoogleMapsPromise = new Promise((resolve, reject) => {
+                    const existing = document.getElementById('wow-google-maps-js');
+                    if (existing) {
+                        existing.addEventListener('load', () => resolve(window.google.maps), { once: true });
+                        existing.addEventListener('error', () => reject(new Error('Google Maps failed to load')), { once: true });
+                        return;
+                    }
+                    const script = document.createElement('script');
+                    script.id = 'wow-google-maps-js';
+                    script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(mapKey)}&v=weekly&region=GB`;
+                    script.async = true;
+                    script.onload = () => window.google && window.google.maps ? resolve(window.google.maps) : reject(new Error('Google Maps failed to load'));
+                    script.onerror = () => reject(new Error('Google Maps failed to load'));
+                    document.head.appendChild(script);
+                });
+                return window.wowGoogleMapsPromise;
+            }
+
+            function renderMap() {
+                if (!root.classList.contains('is-map-mode')) return;
+                loadGoogleMaps().then(maps => {
+                    if (!map) {
+                        map = new maps.Map(mapCanvas, { center: { lat: 51.5072, lng: -0.1276 }, zoom: 10, mapTypeControl: false, streetViewControl: false, fullscreenControl: false });
+                        infoWindow = new maps.InfoWindow();
+                    }
+                    markers.forEach(marker => marker.setMap(null));
+                    markers = [];
+                    const bounds = new maps.LatLngBounds();
+                    const points = Array.isArray(pendingMapData) ? pendingMapData.filter(item => Number.isFinite(Number(item.lat)) && Number.isFinite(Number(item.lng))) : [];
+                    points.forEach(item => {
+                        const position = { lat: Number(item.lat), lng: Number(item.lng) };
+                        const marker = new maps.Marker({ map, position, title: item.title || '' });
+                        marker.addListener('click', () => {
+                            const link = item.url ? `<p><a href="${escapeHtml(item.url)}">View offering</a></p>` : '';
+                            infoWindow.setContent(`<div class="wow-sr-v5-mobile-map-info"><strong>${escapeHtml(item.title)}</strong><span>${escapeHtml(item.label)}</span>${item.price_label ? `<p>${escapeHtml(item.price_label)}</p>` : ''}${link}</div>`);
+                            infoWindow.open({ map, anchor: marker });
+                        });
+                        markers.push(marker);
+                        bounds.extend(position);
+                    });
+                    if (points.length === 1) { map.setCenter(bounds.getCenter()); map.setZoom(13); }
+                    if (points.length > 1) map.fitBounds(bounds, 40);
+                    mapPanel.classList.add('is-ready');
+                    window.setTimeout(() => maps.event.trigger(map, 'resize'), 0);
+                }).catch(() => {
+                    mapPanel.classList.remove('is-ready');
+                    root.querySelector('[data-map-empty]').textContent = 'Map could not load. Please try again.';
+                });
+            }
+
+            async function fetchResults(nextUrl, { push = false } = {}) {
+                const url = new URL(nextUrl, window.location.origin);
+                if (activeRequest) activeRequest.abort();
+                activeRequest = new AbortController();
+                root.setAttribute('aria-busy', 'true');
                 try {
-                    activeAbortController.abort();
-                } catch (_err) {}
-            }
-
-            activeAbortController = new AbortController();
-            lastGridHtml = grid.innerHTML;
-            lastPaginationHtml = paginationEl ? paginationEl.innerHTML : lastPaginationHtml;
-            lastCountText = countEl ? countEl.textContent : lastCountText;
-
-            syncHistory(nextUrl);
-            releasePageScroll();
-            setLoadingState(true);
-
-            fetch(nextUrl, {
-                cache: 'no-store',
-                credentials: 'same-origin',
-                signal: activeAbortController.signal,
-                headers: {
-                    Accept: 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest',
-                },
-            })
-                .then((response) => {
-                    if (!response.ok) {
-                        throw new Error('Search API request failed: ' + response.status);
-                    }
-                    return response.json();
-                })
-                .then((payload) => {
-                    if (requestId !== currentRequestId) return;
-
-                    if (payload && typeof payload.grid_html === 'string') {
-                        renderGridHtml(payload.grid_html);
-                        lastGridHtml = grid.innerHTML;
-                    }
-
-                    if (payload && typeof payload.pagination_html === 'string') {
-                        renderPaginationHtml(payload.pagination_html);
-                        lastPaginationHtml = paginationEl ? paginationEl.innerHTML : lastPaginationHtml;
-                    }
-
-                    updateCount(
-                        payload && typeof payload.count === 'number' ? payload.count : null,
-                        payload && typeof payload.count_text === 'string' ? payload.count_text : null
-                    );
-
-                    if (payload && Array.isArray(payload.map_data)) {
-                        renderMapData(payload.map_data);
-                    } else {
-                        renderMapData([]);
-                    }
-
-                    scheduleOffsetUpdate();
-                })
-                .catch((error) => {
-                    if (error && error.name === 'AbortError') return;
-
-                    console.warn('[search-mobile] api refresh failed', error);
-                    grid.innerHTML = lastGridHtml;
-                    if (paginationEl) {
-                        paginationEl.innerHTML = lastPaginationHtml;
-                    }
-                    if (countEl) {
-                        countEl.textContent = lastCountText;
-                    }
-                    dispatchResultsUpdated(currentCountFromText(lastCountText), lastCountText);
-                })
-                .finally(() => {
-                    if (requestId !== currentRequestId) return;
-                    releasePageScroll();
-                    setLoadingState(false);
-                });
-        }
-
-        function handleQueryChange(event) {
-            const detail = event && event.detail ? event.detail : {};
-            if (!detail.url) return;
-            fetchSearchResults(detail.url);
-        }
-
-        function handlePopState() {
-            fetchSearchResults(window.location.href);
-        }
-
-        function bindOffsetObservers() {
-            if (searchBar && typeof ResizeObserver !== 'undefined') {
-                resizeObserver = new ResizeObserver(() => {
-                    scheduleOffsetUpdate();
-                });
-                resizeObserver.observe(searchBar);
-            }
-
-            window.addEventListener('resize', scheduleOffsetUpdate, { passive: true });
-            window.addEventListener('scroll', scheduleMobileMapWidthUpdate, { passive: true });
-            window.addEventListener('wow:searchbar-v4:layout-change', scheduleOffsetUpdate);
-            window.addEventListener('wow:searchbar-v4:results-updated', scheduleOffsetUpdate);
-            document.addEventListener('click', (event) => {
-                const marker = event.target.closest('.wow-marker');
-                const popup = event.target.closest('.mapboxgl-popup');
-                if (!marker && !popup) {
-                    closeMapPopups();
-                    setActiveMarker('');
+                    const response = await fetch(url.toString(), { cache: 'no-store', credentials: 'same-origin', signal: activeRequest.signal, headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
+                    if (!response.ok) throw new Error('Search request failed');
+                    const payload = await response.json();
+                    grid.innerHTML = payload.grid_html || '';
+                    if (recommendations) recommendations.innerHTML = payload.recommendations_html || '';
+                    pagination.innerHTML = payload.pagination_html || '';
+                    pendingMapData = payload.map_data || [];
+                    setCounts(payload.count ?? 0);
+                    draft = readDraft(url);
+                    renderDraft();
+                    if (push) window.history.pushState({}, '', url.toString());
+                    if (root.classList.contains('is-map-mode')) renderMap();
+                } catch (error) {
+                    if (error.name !== 'AbortError') console.error('Search results could not be refreshed.', error);
+                } finally {
+                    if (!activeRequest || !activeRequest.signal.aborted) root.removeAttribute('aria-busy');
                 }
-            }, true);
-            captureMapWrapBaseline();
-            scheduleOffsetUpdate();
-        }
+            }
 
-        if (clearAllButton) {
-            clearAllButton.addEventListener('click', clearAllFilters);
-        }
+            function applyDraft() {
+                const url = activeUrl();
+                [['sort', draft.sort, 'popular'], ['type', draft.type, ''], ['rating', draft.rating, ''], ['price_max', String(draft.price), '500']].forEach(([name, value, defaultValue]) => {
+                    if (!value || value === defaultValue) url.searchParams.delete(name);
+                    else url.searchParams.set(name, value);
+                });
+                url.searchParams.delete('page');
+                closeFilters();
+                fetchResults(url, { push: true });
+            }
 
-        window.addEventListener('wow:searchbar-v4:query-change', handleQueryChange);
-        window.addEventListener('popstate', handlePopState);
-        bindOffsetObservers();
-        ensureMapboxAssets(mapboxToken || window.WOW_MAPS_KEY || '');
-        releasePageScroll();
-        dispatchResultsUpdated(currentCountFromText(lastCountText), lastCountText);
+            root.addEventListener('click', event => {
+                if (event.target.closest('[data-open-filters]')) { openFilters(); return; }
+                if (event.target.closest('[data-close-filters]')) { closeFilters(); return; }
+                if (event.target.closest('[data-map-toggle]')) { setMapMode(!root.classList.contains('is-map-mode')); return; }
+                if (event.target.closest('[data-clear-filters]')) { draft = { sort: 'popular', type: '', rating: '', price: 500 }; renderDraft(); return; }
+                if (event.target.closest('[data-apply-filters]')) { applyDraft(); return; }
+                const sectionToggle = event.target.closest('[data-mobile-section-toggle]');
+                if (sectionToggle) {
+                    const section = sectionToggle.closest('.wow-sr-v5-mobile-filter-section');
+                    section.classList.toggle('is-collapsed');
+                    sectionToggle.setAttribute('aria-expanded', String(!section.classList.contains('is-collapsed')));
+                    return;
+                }
+                const filter = event.target.closest('[data-draft-name]');
+                if (filter) {
+                    const name = filter.dataset.draftName;
+                    const value = filter.dataset.draftValue;
+                    draft[name] = name === 'type' && draft.type === value ? '' : value;
+                    renderDraft();
+                    return;
+                }
+                const priceChip = event.target.closest('[data-draft-price-chip]');
+                if (priceChip) { draft.price = Number(priceChip.dataset.draftPriceChip); renderDraft(); return; }
+                const pageLink = event.target.closest('#mobileSearchResultsPagination a');
+                if (pageLink && pageLink.href) { event.preventDefault(); fetchResults(pageLink.href, { push: true }); }
+            });
 
-        window.requestAnimationFrame(function () {
-            fetchSearchResults(window.location.href);
-        });
-    })();
-</script>
+            root.querySelectorAll('[data-draft-price]').forEach(range => {
+                range.addEventListener('input', () => { draft.price = Number(range.value); renderDraft(); });
+            });
+
+            document.addEventListener('keydown', event => { if (event.key === 'Escape' && !modal.hidden) closeFilters(); });
+            window.addEventListener('wow:searchbar-v4:query-change', event => { if (event.detail && event.detail.url) { closeFilters(); fetchResults(event.detail.url); } });
+            window.addEventListener('popstate', () => fetchResults(window.location.href));
+            draft = readDraft();
+            renderDraft();
+            window.requestAnimationFrame(() => fetchResults(window.location.href));
+        })();
+    </script>
+@endonce

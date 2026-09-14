@@ -7,17 +7,7 @@
 @endpush
 
 <style>
-/* Desktop split: page scrolls the list; map stays sticky */
 @media (min-width: 992px){
-  #search-v4-root{
-    position: sticky;
-    top: 127px;
-    z-index: 4900;
-  }
-  #search-v4-root .wow-search-filter{
-    position: relative;
-    top: 0px;
-  }
   .results-scroll{ padding-right: 6px; }
   .search-layout.sr-list-only .results-scroll{
     padding-right: 0px;
@@ -36,6 +26,19 @@
 }
 .search-page-body #wow-header-container{
   z-index: 5001;
+}
+.wow-search-page-hero #wowsearch-desktop-what-field,
+.wow-search-page-hero #wowsearch-desktop-where-field{
+  position:relative;
+}
+.wow-search-page-hero #wowsearch-desktop-what-dropdown,
+.wow-search-page-hero #wowsearch-desktop-where-dropdown{
+  position:absolute !important;
+  top:calc(100% + 8px) !important;
+  right:auto !important;
+  bottom:auto !important;
+  left:0 !important;
+  z-index:20000 !important;
 }
 .wow-ultra .bar{
   z-index: 4900;
@@ -136,7 +139,7 @@ body.wow-search-pane-open .wow-ultra{
 .search-layout.sr-list-only .result-view-list{ display:block; }
 .search-layout .result-view-map,
 .search-layout .result-view-list{
-  text-align:center;
+  text-align:left;
 }
 .search-layout .result-view-map .product-v4-1-card-scope,
 .search-layout .result-view-list .product-v4-1-card-scope,
@@ -148,6 +151,9 @@ body.wow-search-pane-open .wow-ultra{
 /* Disabled seg buttons */
 .seg[disabled], .seg[aria-disabled="true"]{ opacity: .5; cursor: not-allowed; }
 @media (max-width: 991.98px){
+  .wow-mobile-search-page__map-wrap{ display:none !important; }
+  .wow-mobile-search-page #wowMobileResultsGrid .result-view-map{ display:none !important; }
+  .wow-mobile-search-page #wowMobileResultsGrid .result-view-list{ display:block !important; }
   .search-layout.sr-map-only .col-results{ display:none }
   .search-layout.sr-list-only .col-map{ display:none }
   .col-map .map{ height: 60vh }
@@ -257,9 +263,8 @@ body.wow-search-pane-open .wow-ultra{
 }
 
 @media (max-width: 1040px){
-  .wow-search-page-hero,
-  .wow-breadcrumbs{
-    display:none !important;
+  .wow-search-page-hero{
+    display:block;
   }
 
   .wow-search-mobile-shell{
@@ -293,7 +298,9 @@ body.wow-search-pane-open .wow-ultra{
 @endphp
 
 <div class="search-page-shell pt-4 pb-2 bg-transparent">
-  <x-searchbar-v4 id-prefix="search-v4" :result-count="$resultCount" mobile-top-offset="var(--wow-header-offset, 0px)" />
+  <div class="wow-search-page-hero">
+    <x-home-searchbar-v4 :search-url="url('/search?view=list')" />
+  </div>
 
   <div class="wow-search-mobile-shell">
     @include('search.partials.mobile')

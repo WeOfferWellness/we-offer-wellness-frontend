@@ -8,13 +8,21 @@ import '../css/wow-buttons.css';
 import '../css/wow-cards.css';
 import '../css/site.css';
 import '../css/offering-cards-v49.css';
+import '../css/offering-cards-v49-mobile.css';
 import '../css/home-hero.css';
+import '../css/home-searchbar-v4.css';
+import '../css/home-searchbar-viewport.css';
+import '../css/newsletter-modal.css';
 // Load Bootstrap JS (Popper included via dependency)
 import 'bootstrap';
 import './bootstrap';
 // Header + homepage interactivity (mega menu, mobile drawer, search panes)
 import './home';
+import './home-searchbar-v4';
 import './home-offerings';
+import { installSearchAnalytics } from './services/searchAnalytics';
+
+installSearchAnalytics();
 
 import { createInertiaApp } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
@@ -26,6 +34,7 @@ import { initClickLoaders } from './lib/wow-buttons';
 import './lib/wow-analytics';
 import './lib/cart-shortcuts';
 import './lib/cart-mini';
+import './lib/newsletter-modal';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 const inertiaRoot = document.getElementById('app');

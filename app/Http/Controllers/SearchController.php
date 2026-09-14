@@ -246,24 +246,37 @@ class SearchController extends Controller
         }
 
         $items = $this->sortSearchItems($items, $sort, $locationContext);
+        if (in_array(strtolower(trim($sort)), ['', 'popular', 'relevance'], true)) {
+            $items = $this->prioritizeExactCategoryMatches($items, $what);
+        }
 
         $ratingFilter = trim((string) $request->input('rating', ''));
         if ($ratingFilter !== '') {
             $items = $this->applyRatingFilter($items, $ratingFilter);
         }
 
+        // Finished dated experiences remain discoverable, but never compete
+        // with upcoming offerings or appear among the recommendations.
+        $items = $this->sortPastEventItemsLast($items);
+
         $total = $items->count();
+        $recommendations = $this->buildSearchRecommendations($items, $request, $locationContext);
+        $recommendedKeys = collect($recommendations)->pluck('item')->map(fn ($item) => $this->searchItemKey($item))->all();
+        $catalogItems = $items->reject(fn ($item) => in_array($this->searchItemKey($item), $recommendedKeys, true))->values();
         $page = max(1, (int) $request->integer('page', 1));
-        $lastPage = max(1, (int) ceil($total / max(1, $perPage)));
+        $catalogTotal = $catalogItems->count();
+        $lastPage = max(1, (int) ceil($catalogTotal / max(1, $perPage)));
         $page = min($page, $lastPage);
         $products = new LengthAwarePaginator(
-            $items->forPage($page, $perPage)->values(),
-            $total,
+            $catalogItems->forPage($page, $perPage)->values(),
+            $catalogTotal,
             $perPage,
             $page,
             ['path' => url()->current(), 'query' => $request->query()]
         );
-        $searchMapData = $this->buildSearchMapData($products->getCollection());
+        // Keep every filtered offering on the map, including the four promoted
+        // recommendations that are intentionally removed from the catalogue.
+        $searchMapData = $this->buildSearchMapData($items);
 
         $seoWhat = Str::squish($what);
         $seoWhere = Str::squish((string) $request->string('where')->toString());
@@ -280,16 +293,24 @@ class SearchController extends Controller
             ? 'Search ' . $seoWhat . ' and browse live therapies, classes, events and workshops on We Offer Wellness.'
             : 'Search all offerings and browse live therapies, classes, events and workshops on We Offer Wellness.';
 
-        $gridHtml = view('search.partials.results_cards', ['products' => $products])->render();
+        $gridHtml = view('search.partials.results_cards', [
+            'products' => $products,
+            'showEmpty' => $catalogTotal > 0 || empty($recommendations),
+        ])->render();
+        $recommendationsHtml = view('search.partials.recommendations', [
+            'recommendations' => $recommendations,
+            'resultCount' => $total,
+        ])->render();
         $paginationHtml = ($products instanceof LengthAwarePaginator && $products->total() > 0)
             ? $products->withQueryString()->onEachSide(1)->links('pagination::bootstrap-4')->render()
             : '';
 
         if ($request->expectsJson()) {
             return response()->json([
-                'count' => $products->total(),
-                'count_text' => $products->total() . ' results',
+                'count' => $total,
+                'count_text' => $total . ' matching offerings',
                 'grid_html' => $gridHtml,
+                'recommendations_html' => $recommendationsHtml,
                 'pagination_html' => $paginationHtml,
                 'map_data' => $searchMapData,
             ]);
@@ -298,9 +319,10 @@ class SearchController extends Controller
         return view('search.index', [
             'mapsKey' => env('GOOGLE_MAPS_API_KEY'),
             'products' => $products,
-            'resultCount' => $products->total(),
+            'resultCount' => $total,
             'perPage' => $perPage,
             'searchGridHtml' => $gridHtml,
+            'searchRecommendationsHtml' => $recommendationsHtml,
             'searchPaginationHtml' => $paginationHtml,
             'searchMapData' => $searchMapData,
             'seo' => [
@@ -396,6 +418,9 @@ class SearchController extends Controller
         $query->where(function ($q) use ($pattern, $starterSql, $latestTierSql, $includeOfferingDetails) {
             $q->where('title', 'like', $pattern)
                 ->orWhere('summary', 'like', $pattern)
+                ->orWhereHas('category', function ($categoryQuery) use ($pattern) {
+                    $categoryQuery->where('name', 'like', $pattern);
+                })
                 ->orWhereHas('vendor', function ($vendorQ) use ($pattern, $starterSql, $latestTierSql) {
                     $vendorQ->where('vendor_name', 'like', $pattern)
                         ->whereHas('user', function ($userQ) use ($starterSql) {
@@ -608,6 +633,196 @@ class SearchController extends Controller
         }
 
         return ProductRanking::sortCollection($items, $sort);
+    }
+
+    private function sortPastEventItemsLast(Collection $items): Collection
+    {
+        return $items
+            ->partition(fn ($item) => ! (bool) data_get($item, 'is_past_event', false))
+            ->flatten(1)
+            ->values();
+    }
+
+    /**
+     * Pick a small, explainable recommendation layer without changing the
+     * underlying catalogue ranking. Every badge is backed by a material
+     * difference rather than simply decorating rows 1-4.
+     */
+    private function buildSearchRecommendations(Collection $items, Request $request, ?array $locationContext): array
+    {
+        $items = $items
+            ->reject(fn ($item) => (bool) data_get($item, 'is_past_event', false))
+            ->values();
+
+        if ($items->isEmpty()) {
+            return [];
+        }
+
+        $exactCategoryMatches = $this->exactCategoryMatches($items, (string) $request->input('what', ''));
+        // A category selected exactly by the customer is stronger intent than
+        // a broad text hit in a title or description.
+        $ordered = ($exactCategoryMatches->isNotEmpty() ? $exactCategoryMatches : $items)->values();
+        $best = $ordered->first();
+        $mode = strtolower(trim((string) ($request->input('mode') ?: $request->input('format', ''))));
+        $allOnline = $ordered->every(fn ($item) => $this->isSearchItemOnline($item));
+        $canClaimBest = $locationContext !== null || $mode === 'online' || $allOnline;
+        $recommendations = [[
+            'item' => $best,
+            'label' => $canClaimBest ? ($allOnline && $mode !== 'in-person' ? 'BEST ONLINE MATCH' : 'BEST MATCH') : 'RECOMMENDED',
+            'priority' => true,
+        ]];
+        $used = [$this->searchItemKey($best) => true];
+        $candidates = $ordered->skip(1)->values();
+
+        $add = function ($item, string $label) use (&$recommendations, &$used): bool {
+            if (!$item) {
+                return false;
+            }
+            $key = $this->searchItemKey($item);
+            if (isset($used[$key])) {
+                return false;
+            }
+            $used[$key] = true;
+            $recommendations[] = ['item' => $item, 'label' => $label, 'priority' => false];
+            return true;
+        };
+
+        $bestPrice = ProductRanking::priceValue($best);
+        $value = $candidates
+            ->filter(fn ($item) => $bestPrice !== null && ($price = ProductRanking::priceValue($item)) !== null && $price <= ($bestPrice * .85) && $price < $bestPrice)
+            ->sortBy(fn ($item) => ProductRanking::priceValue($item) ?? PHP_FLOAT_MAX)
+            ->first();
+        if ($value) {
+            $saving = max(0, (int) round($bestPrice - ProductRanking::priceValue($value)));
+            $label = $this->isSearchItemOnline($value) && $saving >= 10
+                ? 'ONLINE & £' . $saving . ' LESS'
+                : 'BEST VALUE';
+            $add($value, $label);
+        }
+
+        $rating = $candidates
+            ->reject(fn ($item) => isset($used[$this->searchItemKey($item)]))
+            ->sort(function ($left, $right) {
+                $leftScore = ProductRanking::ratingValue($left) * log(1 + ProductRanking::reviewCountValue($left));
+                $rightScore = ProductRanking::ratingValue($right) * log(1 + ProductRanking::reviewCountValue($right));
+                return $rightScore <=> $leftScore;
+            })
+            ->first(function ($item) use ($best) {
+                return ProductRanking::ratingValue($item) >= ProductRanking::ratingValue($best) + .2
+                    || ProductRanking::reviewCountValue($item) >= max(10, ProductRanking::reviewCountValue($best) * 2);
+            });
+        $add($rating, 'TOP RATED');
+
+        $now = now()->timestamp;
+        $soonest = $candidates
+            ->reject(fn ($item) => isset($used[$this->searchItemKey($item)]))
+            ->filter(fn ($item) => is_numeric(data_get($item, 'next_available_timestamp')))
+            ->sortBy(fn ($item) => (int) data_get($item, 'next_available_timestamp'))
+            ->first(function ($item) use ($best, $now) {
+                $candidate = (int) data_get($item, 'next_available_timestamp');
+                $baseline = (int) data_get($best, 'next_available_timestamp', PHP_INT_MAX);
+                return $candidate <= $now + 86400 && $candidate + 86400 < $baseline;
+            });
+        $add($soonest, 'AVAILABLE TODAY');
+
+        if ($locationContext) {
+            $closest = $candidates
+                ->reject(fn ($item) => isset($used[$this->searchItemKey($item)]))
+                ->filter(fn ($item) => is_numeric(data_get($item, 'search_distance_miles')))
+                ->sortBy(fn ($item) => (float) data_get($item, 'search_distance_miles'))
+                ->first(function ($item) use ($best) {
+                    $candidate = (float) data_get($item, 'search_distance_miles');
+                    $baseline = data_get($best, 'search_distance_miles');
+                    return is_numeric($baseline) && $candidate + .5 < (float) $baseline;
+                });
+            $add($closest, 'CLOSEST');
+        }
+
+        foreach ($candidates as $fallback) {
+            if (count($recommendations) >= 4) {
+                break;
+            }
+            $add($fallback, 'RECOMMENDED');
+        }
+
+        // Mobile presents one honest decision pair. If there is no exact
+        // location/online match (or no meaningful value alternative), lead
+        // with the strongest review-backed option and a neutral recommendation.
+        if (! $canClaimBest || ! $value) {
+            $topRated = collect($recommendations)->first(fn ($recommendation) => $recommendation['label'] === 'TOP RATED');
+            $recommended = collect($recommendations)->first(fn ($recommendation) => $recommendation['label'] === 'RECOMMENDED');
+            if ($topRated && $recommended) {
+                $priorityKeys = [$this->searchItemKey($topRated['item']), $this->searchItemKey($recommended['item'])];
+                $recommendations = collect($recommendations)
+                    ->sortBy(fn ($recommendation) => in_array($this->searchItemKey($recommendation['item']), $priorityKeys, true)
+                        ? array_search($this->searchItemKey($recommendation['item']), $priorityKeys, true)
+                        : 99)
+                    ->values()
+                    ->all();
+            }
+        }
+
+        return array_slice($recommendations, 0, 4);
+    }
+
+    private function searchItemKey(mixed $item): string
+    {
+        $source = (string) data_get($item, 'source_version', get_class($item));
+        return $source . ':' . (string) data_get($item, 'id');
+    }
+
+    private function isSearchItemOnline(mixed $item): bool
+    {
+        $mode = strtolower(trim((string) data_get($item, 'mode', '')));
+        if ($mode === 'online') {
+            return true;
+        }
+        $locations = data_get($item, 'locations', []);
+        return is_array($locations) && count($locations) > 0
+            && collect($locations)->every(fn ($location) => strtolower(trim((string) (is_array($location) ? ($location['name'] ?? '') : $location))) === 'online');
+    }
+
+    private function prioritizeExactCategoryMatches(Collection $items, string $what): Collection
+    {
+        $exactMatches = $this->exactCategoryMatches($items, $what);
+        if ($exactMatches->isEmpty()) {
+            return $items->values();
+        }
+
+        $exactKeys = $exactMatches
+            ->map(fn ($item) => $this->searchItemKey($item))
+            ->flip();
+
+        return $items
+            ->sortByDesc(fn ($item) => $exactKeys->has($this->searchItemKey($item)))
+            ->values();
+    }
+
+    private function exactCategoryMatches(Collection $items, string $what): Collection
+    {
+        $needle = $this->normaliseSearchLabel($what);
+        if ($needle === '') {
+            return collect();
+        }
+
+        return $items
+            ->filter(fn ($item) => $this->normaliseSearchLabel($this->searchItemCategoryName($item)) === $needle)
+            ->values();
+    }
+
+    private function searchItemCategoryName(mixed $item): string
+    {
+        $category = data_get($item, 'category');
+        if (is_scalar($category)) {
+            return (string) $category;
+        }
+
+        return (string) data_get($category, 'name', data_get($item, 'category_name', ''));
+    }
+
+    private function normaliseSearchLabel(string $value): string
+    {
+        return Str::lower(Str::squish($value));
     }
 
     private function compareSearchItemsByRelevance(mixed $left, mixed $right): int

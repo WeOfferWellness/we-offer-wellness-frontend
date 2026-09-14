@@ -75,9 +75,9 @@ function buildLocationItems(payload, search = '', limit = 12) {
         const title = normalizeText(item.title)
         return title === query || title.includes(query) || hay.includes(query)
       })
-    : items.slice(0, 5)
+    : items
 
-  const maxItems = query ? Math.max(5, Number(limit) || 12) : 5
+  const maxItems = Math.max(5, Number(limit) || 12)
   const sliced = filtered.slice(0, maxItems)
   if (!sliced.some((item) => item.online)) {
     sliced.unshift({ label: 'Online', subtitle: 'Virtual', value: 'Online', icon: 'wifi', title: 'Online', slug: 'online', online: true })

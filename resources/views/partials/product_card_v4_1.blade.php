@@ -25,68 +25,60 @@
     }
     $typeLabel = ucfirst($kind);
     $category = trim($categoryRaw) !== '' ? ucwords(strtolower(str_replace(['_', '-'], ' ', $categoryRaw))) : $typeLabel;
+    $categoryWords = preg_split('/\s+/', $category, -1, PREG_SPLIT_NO_EMPTY);
+    $categoryShort = mb_strlen($category) > 20 && count($categoryWords) > 1
+        ? implode('', array_map(fn ($word) => mb_strtoupper(mb_substr($word, 0, 1)), $categoryWords))
+        : $category;
+    $categoryIsAbbreviated = $categoryShort !== $category;
     $gift = (bool) preg_match('/gift\s*card|giftcard|voucher|e-?gift/i', strtolower(implode(' ', [$title, $categoryRaw, $typeRaw, (string) $value('slug', '')])));
     $eventStyle = in_array($kind, ['event', 'workshop', 'retreat'], true);
     $provider = trim((string) $value('vendor_name', $value('practitioner_name', $value('vendor.name', $value('vendor_details.name', '')))));
     $locations = method_exists($product, 'getLocations') ? $product->getLocations() : (array) $value('locations', [$value('location', $value('location_name', $value('venue', '')))]);
     $locations = collect($locations)->map(function ($location) {
         return is_object($location) || is_array($location)
-            ? trim((string) data_get($location, 'name', data_get($location, 'label', data_get($location, 'city', ''))))
+            ? trim((string) data_get($location, 'formatted_address', data_get($location, 'label', data_get($location, 'name', data_get($location, 'city', '')))))
             : trim((string) $location);
     })->filter()->values();
     $online = $locations->contains(fn ($location) => strtolower($location) === 'online') || str_contains(strtolower((string) $value('format', '')), 'online');
     $location = $locations->first(fn ($item) => strtolower($item) !== 'online') ?: ($online ? 'Online' : 'In person');
-    $distance = trim((string) $value('distance', $value('distance_label', '')));
-    $locationLabel = $distance !== '' ? $location . ' · ' . $distance : $location;
+    $countryFallback = trim((string) $value('country', $value('vendor.country', $value('vendor.user.country', $value('vendor_details.country', '')))));
+    $countryCode = function (string $country): string {
+        return match (strtolower(trim($country))) {
+            'gb', 'uk', 'u.k.', 'united kingdom', 'great britain', 'england', 'scotland', 'wales', 'northern ireland' => 'UK',
+            'us', 'u.s.', 'usa', 'u.s.a.', 'united states', 'united states of america' => 'USA',
+            'au', 'australia' => 'AU',
+            'ca', 'canada' => 'CA',
+            'ie', 'ireland' => 'IE',
+            'nz', 'new zealand' => 'NZ',
+            default => '',
+        };
+    };
+    if ($location === 'Online' || $location === 'In person') {
+        $locationLabel = $location;
+    } else {
+        $parts = collect(preg_split('/\\s*,\\s*/', $location) ?: [])
+            ->map(fn ($part) => trim((string) $part))
+            ->reject(fn ($part) => preg_match('/^(?:[A-Z]{1,2}\\d[A-Z\\d]?\\s*\\d[A-Z]{2}|\\d{5}(?:-\\d{4})?)$/i', $part) === 1)
+            ->filter()
+            ->values();
+        $country = $countryCode((string) $parts->last());
+        if ($country !== '') {
+            $parts->pop();
+        } else {
+            $country = $countryCode($countryFallback);
+        }
+        $place = (string) $parts->first();
+        $locationLabel = implode(', ', array_filter([$place ?: $location, $country]));
+    }
     $planKey = strtolower(trim((string) $value('plan_key', $value('plan_label', $value('vendor.plan_key', $value('vendor_details.plan_key', $value('vendor.user.tier.tier', '')))))));
     $businessAccelerator = in_array(str_replace(['_', ' '], '-', $planKey), ['business-accelerator', 'businessaccelerator', 'core'], true);
     $rating = (float) $value('rating', $value('reviews_avg_rating', 0));
     $reviews = (int) $value('review_count', $value('reviews_count', 0));
     $description = trim((string) $value('benefit', $value('summary', $value('description', $value('excerpt', '')))));
-    $event = $value('when.event', $value('event', []));
-    $eventCandidates = [
-        data_get($event, 'start_date'),
-        data_get($event, 'date'),
-        $value('start_date'),
-        $value('date'),
-        $value('display_date'),
-        $value('display_when'),
-    ];
-    foreach ((array) data_get($event, 'dates', []) as $candidate) {
-        $eventCandidates[] = is_array($candidate) || is_object($candidate)
-            ? data_get($candidate, 'start_date', data_get($candidate, 'date', data_get($candidate, 'starts_at', data_get($candidate, 'start', data_get($candidate, 'day')))))
-            : $candidate;
-    }
-    foreach ((array) data_get($event, 'upcoming_dates', []) as $candidate) {
-        $eventCandidates[] = is_array($candidate) || is_object($candidate)
-            ? data_get($candidate, 'start_date', data_get($candidate, 'date', data_get($candidate, 'starts_at', data_get($candidate, 'start', data_get($candidate, 'day')))))
-            : $candidate;
-    }
-    foreach ((array) data_get($event, 'schedule.days', []) as $candidate) {
-        $eventCandidates[] = is_array($candidate) || is_object($candidate)
-            ? data_get($candidate, 'start_date', data_get($candidate, 'date', data_get($candidate, 'starts_at', data_get($candidate, 'start', data_get($candidate, 'day')))))
-            : $candidate;
-    }
-    $eventDate = null;
-    foreach ($eventCandidates as $candidate) {
-        if (!$candidate) {
-            continue;
-        }
-        try {
-            $eventDate = \Carbon\Carbon::parse((string) $candidate);
-            break;
-        } catch (\Throwable $e) {
-            continue;
-        }
-    }
-    $eventTime = data_get($event, 'start_time', $value('start_time'));
-    try {
-        $start = $eventDate ? \Carbon\Carbon::parse($eventDate . ($eventTime ? ' ' . $eventTime : '')) : null;
-    } catch (\Throwable $e) {
-        $start = null;
-    }
-    $eventMonth = $start?->format('M') ?? 'Soon';
-    $eventDay = $start?->format('d') ?? '—';
+    $start = $eventStyle ? \App\Support\EventListing::startAt($product) : null;
+    $isPastEvent = $eventStyle && (bool) $value('is_past_event', \App\Support\EventListing::isPast($product));
+    $eventMonth = $start?->format('M');
+    $eventDay = $start?->format('d');
 
     $dayMap = ['mon' => 1, 'monday' => 1, 'tue' => 2, 'tuesday' => 2, 'wed' => 3, 'wednesday' => 3, 'thu' => 4, 'thursday' => 4, 'fri' => 5, 'friday' => 5, 'sat' => 6, 'saturday' => 6, 'sun' => 0, 'sunday' => 0];
     $availableDays = [];
@@ -115,17 +107,19 @@
     }
     $availableDays = array_values(array_unique(array_filter($availableDays, fn ($day) => is_int($day) && $day >= 0 && $day <= 6)));
     $today = now()->dayOfWeek;
+    $availabilityTone = 'neutral';
     if (!$availableDays) {
-        $availabilityLabel = 'Contact to check availability';
-        $availableToday = false;
+        $availabilityLabel = 'Flexible dates';
     } elseif (count($availableDays) === 7) {
         $availabilityLabel = 'Available every day';
         $availableToday = true;
+        $availabilityTone = 'today';
     } else {
         $offset = 0;
         while ($offset < 7 && !in_array(($today + $offset) % 7, $availableDays, true)) $offset++;
         $availabilityLabel = $offset === 0 ? 'Available today' : ($offset === 1 ? 'Available tomorrow' : 'Next available: ' . ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][($today + $offset) % 7]);
         $availableToday = $offset === 0;
+        $availabilityTone = $offset === 0 ? 'today' : ($offset === 1 ? 'tomorrow' : 'neutral');
     }
 @endphp
 
@@ -146,17 +140,18 @@
 </article>
 @elseif($eventStyle)
 <article class="wow49-blade-card wow49-blade-card--event" aria-label="{{ $typeLabel }} card {{ $title }}">
-    <a href="{{ $url }}" class="wow49-blade-card__link" aria-label="View and book {{ $title }}"></a>
+    <a href="{{ $url }}" class="wow49-blade-card__link" aria-label="{{ $isPastEvent ? 'View details for' : 'View and book' }} {{ $title }}"></a>
     <div class="wow49-blade-card__event-image">@if($image)<img src="{{ $image }}" alt="{{ $title }}" loading="lazy">@endif</div>
-    <span class="wow49-blade-card__date"><b>{{ $eventMonth }}</b><strong>{{ $eventDay }}</strong></span>
+    @if($start)<span class="wow49-blade-card__date"><b>{{ $eventMonth }}</b><strong>{{ $eventDay }}</strong></span>@endif
+    @if($isPastEvent)<span class="wow49-blade-card__past-status">PAST EVENT</span>@endif
     @if($businessAccelerator)<img class="wow49-blade-card__rosette" src="https://studio.weofferwellness.co.uk/storage/uploads/images/78aa908f-334b-45c0-9220-1c4d84053c5e.png" alt="Business Accelerator partner">@endif
-    <div class="wow49-blade-card__event-content"><div class="wow49-blade-card__tags"><span>{{ $category }}</span><span class="type">{{ $typeLabel }}</span></div><h3>{{ $title }}</h3>@if($provider)<p class="wow49-blade-card__provider">with {{ ucwords(strtolower($provider)) }}</p>@endif<p class="wow49-blade-card__location"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s7-4.4 7-11a7 7 0 1 0-14 0c0 6.6 7 11 7 11Z"/><circle cx="12" cy="10" r="3"/></svg>{{ $locationLabel }}</p><div class="wow49-blade-card__event-bottom"><div><small>From</small><strong>{{ $priceLabel }}</strong></div><a href="{{ $url }}" class="wow49-blade-card__button">VIEW &amp; BOOK</a></div></div>
+    <div class="wow49-blade-card__event-content"><div class="wow49-blade-card__tags"><span class="wow49-blade-card__category {{ $categoryIsAbbreviated ? 'is-abbreviated' : '' }}" @if($categoryIsAbbreviated) data-mobile-label="{{ $categoryShort }}" @endif>{{ $category }}</span><span class="type">{{ $typeLabel }}</span></div><h3>{{ $title }}</h3>@if($provider)<p class="wow49-blade-card__provider">with {{ ucwords(strtolower($provider)) }}</p>@endif<p class="wow49-blade-card__location"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s7-4.4 7-11a7 7 0 1 0-14 0c0 6.6 7 11 7 11Z"/><circle cx="12" cy="10" r="3"/></svg>{{ $locationLabel }}</p><div class="wow49-blade-card__event-bottom"><div><small>From</small><strong>{{ $priceLabel }}</strong></div><a href="{{ $url }}" class="wow49-blade-card__button">{{ $isPastEvent ? 'VIEW DETAILS' : 'VIEW & BOOK' }}</a></div></div>
 </article>
 @else
 <article class="wow49-blade-card" aria-label="Offering card {{ $title }}">
     <a href="{{ $url }}" class="wow49-blade-card__link" aria-label="View and book {{ $title }}"></a>
-    <div class="wow49-blade-card__media">@if($image)<img src="{{ $image }}" alt="{{ $title }}" loading="lazy">@endif @if($value('fomo_text'))<span class="wow49-blade-card__signal">{{ $value('fomo_text') }}</span>@elseif($online && !$locations->contains(fn ($item) => strtolower($item) !== 'online'))<span class="wow49-blade-card__signal">Exclusively online</span>@endif @if($businessAccelerator)<img class="wow49-blade-card__rosette" src="https://studio.weofferwellness.co.uk/storage/uploads/images/78aa908f-334b-45c0-9220-1c4d84053c5e.png" alt="Business Accelerator partner">@endif<div class="wow49-blade-card__tags"><span>{{ $category }}</span><span class="type">{{ $typeLabel }}</span></div></div>
-    <div class="wow49-blade-card__body"><h3>{{ $title }}</h3>@if($provider)<p class="wow49-blade-card__provider">with {{ ucwords(strtolower($provider)) }}</p>@endif<div class="wow49-blade-card__rating"><span class="wow49-blade-card__stars">{{ str_repeat('★', min(5, max(0, round($rating)))) }}{{ str_repeat('☆', 5 - min(5, max(0, round($rating)))) }}</span><span>{{ number_format($rating, 1) }} · {{ $reviews ? $reviews . ' reviews' : 'Be the first to review' }}</span></div><p class="wow49-blade-card__location">@if($online && !$locations->contains(fn ($item) => strtolower($item) !== 'online'))<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6.95 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1" fill="currentColor" stroke="none"/></svg>@else<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s7-4.4 7-11a7 7 0 1 0-14 0c0 6.6 7 11 7 11Z"/><circle cx="12" cy="10" r="3"/></svg>@endif{{ $locationLabel }}</p>@if($description)<p class="wow49-blade-card__description">{{ $description }}</p>@endif<div class="wow49-blade-card__availability {{ $availableToday ? 'today' : '' }}"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span>{{ $availabilityLabel }}</span></div></div>
+    <div class="wow49-blade-card__media">@if($image)<img src="{{ $image }}" alt="{{ $title }}" loading="lazy">@endif @if($value('fomo_text'))<span class="wow49-blade-card__signal">{{ $value('fomo_text') }}</span>@elseif($online && !$locations->contains(fn ($item) => strtolower($item) !== 'online'))<span class="wow49-blade-card__signal">Exclusively online</span>@endif @if($businessAccelerator)<img class="wow49-blade-card__rosette" src="https://studio.weofferwellness.co.uk/storage/uploads/images/78aa908f-334b-45c0-9220-1c4d84053c5e.png" alt="Business Accelerator partner">@endif<div class="wow49-blade-card__tags"><span class="wow49-blade-card__category {{ $categoryIsAbbreviated ? 'is-abbreviated' : '' }}" @if($categoryIsAbbreviated) data-mobile-label="{{ $categoryShort }}" @endif>{{ $category }}</span><span class="type">{{ $typeLabel }}</span></div></div>
+    <div class="wow49-blade-card__body"><h3>{{ $title }}</h3>@if($provider)<p class="wow49-blade-card__provider">with {{ ucwords(strtolower($provider)) }}</p>@endif<div class="wow49-blade-card__rating"><span class="wow49-blade-card__stars">{{ str_repeat('★', min(5, max(0, round($rating)))) }}{{ str_repeat('☆', 5 - min(5, max(0, round($rating)))) }}</span><span>{{ number_format($rating, 1) }} · {{ $reviews ? $reviews . ' reviews' : 'Be the first to review' }}</span></div><p class="wow49-blade-card__location">@if($online && !$locations->contains(fn ($item) => strtolower($item) !== 'online'))<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6.95 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1" fill="currentColor" stroke="none"/></svg>@else<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s7-4.4 7-11a7 7 0 1 0-14 0c0 6.6 7 11 7 11Z"/><circle cx="12" cy="10" r="3"/></svg>@endif{{ $locationLabel }}</p>@if($description)<p class="wow49-blade-card__description">{{ $description }}</p>@endif<div class="wow49-blade-card__availability {{ $availabilityTone }}"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span>{{ $availabilityLabel }}</span></div></div>
     <footer class="wow49-blade-card__footer"><div><small>From</small><strong>{{ $priceLabel }}</strong></div><a href="{{ $url }}" class="wow49-blade-card__button">VIEW &amp; BOOK</a></footer>
 </article>
 @endif

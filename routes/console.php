@@ -5,6 +5,9 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
 
 Schedule::command('store:run-abandoned-cart')->hourly()->withoutOverlapping();
+Schedule::command('store:reconcile-paid-checkouts')
+    ->everyMinute()
+    ->withoutOverlapping();
 use App\Models\LegacyPageVisit;
 use App\Models\Product;
 use App\Models\ProductStatus;

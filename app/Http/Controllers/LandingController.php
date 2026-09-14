@@ -2104,12 +2104,6 @@ class LandingController extends Controller
         $schedule = DB::table('offering_schedule')->where('offering_id', $offering->id)->first();
         $eventPayload = (array) ($offering->event ?? []);
         $eventPayloadDate = $this->extractPrimaryDateValue($eventPayload);
-        if ($startDate === '' && $eventPayloadDate !== null) {
-            $startDate = $eventPayloadDate;
-            if ($endDate === '') {
-                $endDate = $eventPayloadDate;
-            }
-        }
         $descriptionHtml = \App\Support\ContentFormatter::format((string) ($details->description ?? ''));
         $whatToExpectHtml = \App\Support\ContentFormatter::format((string) ($details->what_to_expect ?? ''));
         $includedHtml = \App\Support\ContentFormatter::format((string) ($details->whats_included ?? ''));
@@ -2315,6 +2309,11 @@ class LandingController extends Controller
                 $endDate = $endAt ? $endAt->toDateString() : $startDate;
                 $startTime = $startAt->format('H:i');
                 $endTime = $endAt ? $endAt->format('H:i') : $startTime;
+            }
+
+            if ($startDate === null && $eventPayloadDate !== null) {
+                $startDate = $eventPayloadDate;
+                $endDate = $eventPayloadDate;
             }
 
             $eventDates = [];

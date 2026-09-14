@@ -1,12 +1,54 @@
+const backendUrl = String(import.meta.env.VITE_BACKEND_URL || '').replace(/\/$/, '')
+
+async function fetchPopularSearches() {
+  if (!backendUrl) return []
+
+  try {
+    const response = await fetch(`${backendUrl}/api/search-events/popular`, {
+      cache: 'no-store',
+      credentials: 'include',
+      headers: { Accept: 'application/json' },
+    })
+    if (!response.ok) throw new Error(`Failed to load popular searches: ${response.status}`)
+
+    const payload = await response.json()
+    if (!payload?.enabled || !Array.isArray(payload.terms)) return []
+
+    return payload.terms
+      .map((item) => {
+        const title = String(item?.term || '').trim()
+        const searches = Number(item?.searches || 0)
+        return {
+          cat: 'Popular searches',
+          title,
+          label: title,
+          value: title,
+          type: 'Popular search',
+          subtitle: searches ? `${searches.toLocaleString()} searches` : 'Popular search',
+          slug: '',
+          search: title,
+          counts: { products: 0, offerings: 0, total: searches },
+        }
+      })
+      .filter((item) => item.title)
+  } catch (error) {
+    console.warn('[what-categories] popular searches unavailable', error)
+    return []
+  }
+}
+
 export async function fetchWhatCategories() {
   try {
-    const res = await fetch('/cache/what-categories.json', { cache: 'no-store' })
+    const [res, popularSearches] = await Promise.all([
+      fetch('/cache/what-categories.json', { cache: 'no-store' }),
+      fetchPopularSearches(),
+    ])
     if (!res.ok) throw new Error(`Failed to load what categories: ${res.status}`)
 
     const payload = await res.json()
     const categories = Array.isArray(payload?.categories) ? payload.categories : []
 
-    return categories
+    const categoryItems = categories
       .map((item) => {
         const title = String(item?.title || item?.label || item?.value || '').trim()
         const value = String(item?.value || title).trim()
@@ -34,6 +76,14 @@ export async function fetchWhatCategories() {
         if (at !== bt) return bt - at
         return String(a.title).localeCompare(String(b.title))
       })
+
+    const seen = new Set()
+    return [...popularSearches, ...categoryItems].filter((item) => {
+      const key = item.title.toLocaleLowerCase()
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
   } catch (error) {
     console.warn('[what-categories] failed', error)
     return []

@@ -22914,8 +22914,7 @@ What’s included
         inset: 0;
         pointer-events: none;
         z-index: -2;
-        background: linear-gradient(to right, var(--wow-line) 0 1px, #0000 1px) no-repeat 10px 0 / 1px 100%,
-        linear-gradient(to right, var(--wow-line) 0 1px, #0000 1px) no-repeat calc(100% - 10px) 0 / 1px 100%;
+        background: none;
     }
 
     body::after {

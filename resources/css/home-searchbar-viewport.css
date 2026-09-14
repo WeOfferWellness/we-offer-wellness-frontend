@@ -1,0 +1,49 @@
+#wowsearch-mobile-where-modal,
+#wowsearch-mobile-what-modal {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 2147483647 !important;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+#wowsearch-mobile-where-modal[hidden],
+#wowsearch-mobile-what-modal[hidden] {
+  display: none !important;
+}
+
+.wowsearch-main-search-close {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid rgba(16, 24, 40, 0.09);
+  border-radius: 10px;
+  background: #fff;
+  color: #475467;
+  cursor: pointer;
+  box-shadow: 0 2px 7px rgba(16, 24, 40, 0.05);
+  transition: background-color .15s ease, border-color .15s ease, color .15s ease, transform .15s ease, box-shadow .15s ease;
+}
+
+.wowsearch-main-search-close:hover {
+  background: #f8fafc;
+  border-color: rgba(16, 24, 40, 0.14);
+  color: #101828;
+  box-shadow: 0 4px 12px rgba(16, 24, 40, 0.08);
+}
+
+.wowsearch-main-search-close:active { transform: scale(.96); }
+.wowsearch-main-search-close:focus-visible { outline: 3px solid rgba(79, 147, 129, 0.20); outline-offset: 2px; }
+
+/* A selected search option is identified by its row colour, not a redundant tick. */
+.wowsearch-selection-check { display: none !important; }
+
+/* The mobile sheets show a compact, predictable first eight options. */
+#wowsearch-mobile-what-modal .wowsearch-mobile-what-option:nth-of-type(n + 9) {
+  display: none !important;
+}

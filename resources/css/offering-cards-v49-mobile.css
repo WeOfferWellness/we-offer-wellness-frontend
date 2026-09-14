@@ -1,0 +1,21 @@
+@media (max-width: 560px) {
+  .wow49-blade-card,
+  .wow49-store-blade {
+    min-width: 214px;
+  }
+
+  .wow49-blade-card__rating > span:not(.wow49-blade-card__stars) {
+    display: none;
+  }
+
+  .wow49-blade-card__category.is-abbreviated {
+    font-size: 0;
+  }
+
+  .wow49-blade-card__category.is-abbreviated::before {
+    content: attr(data-mobile-label);
+    font-size: 10px;
+  }
+}
+.wow49-blade-card__availability.today{background:#eaf5f1;color:#2f6f60}.wow49-blade-card__availability.tomorrow{background:#edf4ff;color:#2456a6}
+.wow49-blade-card--gift .wow49-blade-card__gift-media{height:60%;flex-basis:60%}

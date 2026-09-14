@@ -3,6 +3,16 @@ const SESSION_START_KEY = 'wow_subscriber_session_started_at';
 const DEFAULT_SUCCESS_MESSAGE = 'Check your email to confirm your subscription.';
 const SUBSCRIBER_FORM_SELECTOR = 'form[data-subscriber-form]';
 const EMAIL_INPUT_SELECTOR = 'input[type="email"], input[name="email"]';
+// Post through the frontend proxy by default so the browser keeps the same
+// Laravel session/CSRF context. A direct Studio URL is opt-in for integrations.
+const subscriberApiBase = String(
+  import.meta.env.VITE_SUBSCRIBER_API_URL
+    || import.meta.env.VITE_STUDIO_API_URL
+    || '',
+).replace(/\/$/, '');
+const subscriberEndpoint = subscriberApiBase
+  ? `${subscriberApiBase}/api/v3-subscribers`
+  : '/api/v3-subscribers';
 
 let sessionStart = loadNumber(SESSION_START_KEY);
 if (!sessionStart) {
@@ -121,13 +131,13 @@ function collectFormPayload(form) {
 async function submitSubscriber(additionalPayload = {}) {
   const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
   const payload = Object.assign({}, additionalPayload);
-  const response = await fetch('/api/v3-subscribers', {
+  const response = await fetch(subscriberEndpoint, {
     method: 'POST',
     headers: Object.assign({
       'Content-Type': 'application/json',
       'X-Requested-With': 'XMLHttpRequest',
     }, csrf ? { 'X-CSRF-TOKEN': csrf } : {}),
-    credentials: 'same-origin',
+    credentials: subscriberApiBase ? 'include' : 'same-origin',
     body: JSON.stringify(payload),
   });
   const bodyJson = await response.json().catch(() => ({}));
@@ -285,6 +295,10 @@ async function handleSubscriberSubmit(form) {
     const result = await submitSubscriber(payload);
     form.reset?.();
     const successMessage = result?.message || DEFAULT_SUCCESS_MESSAGE;
+    form.dispatchEvent(new CustomEvent('wow:subscriber-success', {
+      bubbles: true,
+      detail: { form, result },
+    }));
     showMessage(feedback, successMessage, true);
   } catch (error) {
     showMessage(feedback, error.message || 'Something went wrong. Please try again.', false);

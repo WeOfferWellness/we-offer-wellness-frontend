@@ -1,58 +1,17 @@
 @props([
     'searchUrl' => route('search'),
     'initialQuery' => request()->query('what', request()->query('q', '')),
-    'initialWhere' => request()->query('where', ''),
+    'initialWhere' => request()->query('where', request()->query('mode') === 'near-me' ? 'Near me' : ''),
     'initialMode' => request()->query('mode', ''),
     'mapboxKey' => config('services.mapbox.token'),
 ])
 
-  <style>
-    @import "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap";@layer wowsearch-properties{@supports (((-webkit-hyphens:none)) and (not (margin-trim:inline))) or ((-moz-orient:inline) and (not (color:rgb(from red r g b)))){.wowsearch-component-scope *,.wowsearch-component-scope :before,.wowsearch-component-scope :after,.wowsearch-component-scope ::backdrop{--wowsearch-tw-translate-x:0;--wowsearch-tw-translate-y:0;--wowsearch-tw-translate-z:0;--wowsearch-tw-rotate-x:initial;--wowsearch-tw-rotate-y:initial;--wowsearch-tw-rotate-z:initial;--wowsearch-tw-skew-x:initial;--wowsearch-tw-skew-y:initial;--wowsearch-tw-space-x-reverse:0;--wowsearch-tw-border-style:solid;--wowsearch-tw-leading:initial;--wowsearch-tw-font-weight:initial;--wowsearch-tw-tracking:initial;--wowsearch-tw-ordinal:initial;--wowsearch-tw-slashed-zero:initial;--wowsearch-tw-numeric-figure:initial;--wowsearch-tw-numeric-spacing:initial;--wowsearch-tw-numeric-fraction:initial;--wowsearch-tw-shadow:0 0 #0000;--wowsearch-tw-shadow-color:initial;--wowsearch-tw-shadow-alpha:100%;--wowsearch-tw-inset-shadow:0 0 #0000;--wowsearch-tw-inset-shadow-color:initial;--wowsearch-tw-inset-shadow-alpha:100%;--wowsearch-tw-ring-color:initial;--wowsearch-tw-ring-shadow:0 0 #0000;--wowsearch-tw-inset-ring-color:initial;--wowsearch-tw-inset-ring-shadow:0 0 #0000;--wowsearch-tw-ring-inset:initial;--wowsearch-tw-ring-offset-width:0px;--wowsearch-tw-ring-offset-color:#fff;--wowsearch-tw-ring-offset-shadow:0 0 #0000;--wowsearch-tw-outline-style:solid;--wowsearch-tw-blur:initial;--wowsearch-tw-brightness:initial;--wowsearch-tw-contrast:initial;--wowsearch-tw-grayscale:initial;--wowsearch-tw-hue-rotate:initial;--wowsearch-tw-invert:initial;--wowsearch-tw-opacity:initial;--wowsearch-tw-saturate:initial;--wowsearch-tw-sepia:initial;--wowsearch-tw-drop-shadow:initial;--wowsearch-tw-drop-shadow-color:initial;--wowsearch-tw-drop-shadow-alpha:100%;--wowsearch-tw-drop-shadow-size:initial;--wowsearch-tw-backdrop-blur:initial;--wowsearch-tw-backdrop-brightness:initial;--wowsearch-tw-backdrop-contrast:initial;--wowsearch-tw-backdrop-grayscale:initial;--wowsearch-tw-backdrop-hue-rotate:initial;--wowsearch-tw-backdrop-invert:initial;--wowsearch-tw-backdrop-opacity:initial;--wowsearch-tw-backdrop-saturate:initial;--wowsearch-tw-backdrop-sepia:initial;--wowsearch-tw-duration:initial;--wowsearch-tw-ease:initial;--wowsearch-tw-content:"";--wowsearch-tw-animation-delay:0s;--wowsearch-tw-animation-direction:normal;--wowsearch-tw-animation-duration:initial;--wowsearch-tw-animation-fill-mode:none;--wowsearch-tw-animation-iteration-count:1;--wowsearch-tw-enter-blur:0;--wowsearch-tw-enter-opacity:1;--wowsearch-tw-enter-rotate:0;--wowsearch-tw-enter-scale:1;--wowsearch-tw-enter-translate-x:0;--wowsearch-tw-enter-translate-y:0;--wowsearch-tw-exit-blur:0;--wowsearch-tw-exit-opacity:1;--wowsearch-tw-exit-rotate:0;--wowsearch-tw-exit-scale:1;--wowsearch-tw-exit-translate-x:0;--wowsearch-tw-exit-translate-y:0}}}@layer wowsearch-theme{.wowsearch-component-scope,.wowsearch-component-scope{--wowsearch-font-sans:ui-sans-serif,system-ui,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";--wowsearch-font-mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;--wowsearch-color-amber-50:oklch(98.7% .022 95.277);--wowsearch-color-amber-700:oklch(55.5% .163 48.998);--wowsearch-color-yellow-50:oklch(98.7% .026 102.212);--wowsearch-color-yellow-700:oklch(55.4% .135 66.442);--wowsearch-color-blue-50:oklch(97% .014 254.604);--wowsearch-color-blue-500:oklch(62.3% .214 259.815);--wowsearch-color-blue-700:oklch(48.8% .243 264.376);--wowsearch-color-indigo-50:oklch(96.2% .018 272.314);--wowsearch-color-indigo-700:oklch(45.7% .24 277.023);--wowsearch-color-purple-50:oklch(97.7% .014 308.299);--wowsearch-color-purple-700:oklch(49.6% .265 301.924);--wowsearch-color-rose-50:oklch(96.9% .015 12.422);--wowsearch-color-rose-700:oklch(51.4% .222 16.935);--wowsearch-color-gray-100:oklch(96.7% .003 264.542);--wowsearch-color-gray-600:oklch(44.6% .03 256.802);--wowsearch-color-black:#000;--wowsearch-color-white:#fff;--wowsearch-spacing:.25rem;--wowsearch-container-sm:24rem;--wowsearch-container-lg:32rem;--wowsearch-text-xs:.75rem;--wowsearch-text-xs--line-height:calc(1/.75);--wowsearch-text-sm:.875rem;--wowsearch-text-sm--line-height:calc(1.25/.875);--wowsearch-text-base:1rem;--wowsearch-text-base--line-height: 1.5 ;--wowsearch-text-lg:1.125rem;--wowsearch-text-lg--line-height:calc(1.75/1.125);--wowsearch-text-xl:1.25rem;--wowsearch-text-2xl:1.5rem;--wowsearch-font-weight-normal:400;--wowsearch-font-weight-medium:500;--wowsearch-font-weight-semibold:600;--wowsearch-font-weight-bold:700;--wowsearch-tracking-tight:-.025em;--wowsearch-tracking-wider:.05em;--wowsearch-tracking-widest:.1em;--wowsearch-leading-relaxed:1.625;--wowsearch-radius-xs:.125rem;--wowsearch-radius-2xl:1rem;--wowsearch-ease-in-out:cubic-bezier(.4,0,.2,1);--wowsearch-animate-pulse:wowsearch-kf-pulse 2s cubic-bezier(.4,0,.6,1)infinite;--wowsearch-aspect-video:16/9;--wowsearch-default-transition-duration:.15s;--wowsearch-default-transition-timing-function:cubic-bezier(.4,0,.2,1);--wowsearch-default-font-family:var(--wowsearch-font-sans);--wowsearch-default-mono-font-family:var(--wowsearch-font-mono);--wowsearch-color-border:var(--wowsearch-border)}}@layer wowsearch-base{.wowsearch-component-scope *,.wowsearch-component-scope :after,.wowsearch-component-scope :before,.wowsearch-component-scope ::backdrop{box-sizing:border-box;border:0 solid;margin:0;padding:0}.wowsearch-component-scope ::file-selector-button{box-sizing:border-box;border:0 solid;margin:0;padding:0}.wowsearch-component-scope,.wowsearch-component-scope{-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;line-height:1.5;font-family:var(--wowsearch-default-font-family,ui-sans-serif,system-ui,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji");font-feature-settings:var(--wowsearch-default-font-feature-settings,normal);font-variation-settings:var(--wowsearch-default-font-variation-settings,normal);-webkit-tap-highlight-color:transparent}.wowsearch-component-scope hr{height:0;color:inherit;border-top-width:1px}.wowsearch-component-scope abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}.wowsearch-component-scope h1,.wowsearch-component-scope h2,.wowsearch-component-scope h3,.wowsearch-component-scope h4,.wowsearch-component-scope h5,.wowsearch-component-scope h6{font-size:inherit;font-weight:inherit}.wowsearch-component-scope a{color:inherit;-webkit-text-decoration:inherit;text-decoration:inherit}.wowsearch-component-scope b,.wowsearch-component-scope strong{font-weight:bolder}.wowsearch-component-scope code,.wowsearch-component-scope kbd,.wowsearch-component-scope samp,.wowsearch-component-scope pre{font-family:var(--wowsearch-default-mono-font-family,ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace);font-feature-settings:var(--wowsearch-default-mono-font-feature-settings,normal);font-variation-settings:var(--wowsearch-default-mono-font-variation-settings,normal);font-size:1em}.wowsearch-component-scope small{font-size:80%}.wowsearch-component-scope sub,.wowsearch-component-scope sup{vertical-align:baseline;font-size:75%;line-height:0;position:relative}.wowsearch-component-scope sub{bottom:-.25em}.wowsearch-component-scope sup{top:-.5em}.wowsearch-component-scope table{text-indent:0;border-color:inherit;border-collapse:collapse}.wowsearch-component-scope :-moz-focusring{outline:auto}.wowsearch-component-scope progress{vertical-align:baseline}.wowsearch-component-scope summary{display:list-item}.wowsearch-component-scope ol,.wowsearch-component-scope ul,.wowsearch-component-scope menu{list-style:none}.wowsearch-component-scope img,.wowsearch-component-scope svg,.wowsearch-component-scope video,.wowsearch-component-scope canvas,.wowsearch-component-scope audio,.wowsearch-component-scope iframe,.wowsearch-component-scope embed,.wowsearch-component-scope object{vertical-align:middle;display:block}.wowsearch-component-scope img,.wowsearch-component-scope video{max-width:100%;height:auto}.wowsearch-component-scope button,.wowsearch-component-scope input,.wowsearch-component-scope select,.wowsearch-component-scope optgroup,.wowsearch-component-scope textarea{font:inherit;font-feature-settings:inherit;font-variation-settings:inherit;letter-spacing:inherit;color:inherit;opacity:1;background-color:#0000;border-radius:0}.wowsearch-component-scope ::file-selector-button{font:inherit;font-feature-settings:inherit;font-variation-settings:inherit;letter-spacing:inherit;color:inherit;opacity:1;background-color:#0000;border-radius:0}.wowsearch-component-scope :where(select:is([multiple],[size])) optgroup{font-weight:bolder}.wowsearch-component-scope :where(select:is([multiple],[size])) optgroup option{padding-inline-start:20px}.wowsearch-component-scope ::file-selector-button{margin-inline-end:4px}.wowsearch-component-scope ::placeholder{opacity:1}@supports (not ((-webkit-appearance:-apple-pay-button))) or (contain-intrinsic-size:1px){.wowsearch-component-scope ::placeholder{color:currentColor}@supports (color:color-mix(in lab,red,red)){.wowsearch-component-scope ::placeholder{color:color-mix(in oklab,currentcolor 50%,transparent)}}}.wowsearch-component-scope textarea{resize:vertical}.wowsearch-component-scope ::-webkit-search-decoration{-webkit-appearance:none}.wowsearch-component-scope ::-webkit-date-and-time-value{min-height:1lh;text-align:inherit}.wowsearch-component-scope ::-webkit-datetime-edit{display:inline-flex}.wowsearch-component-scope ::-webkit-datetime-edit-fields-wrapper{padding:0}.wowsearch-component-scope ::-webkit-datetime-edit{padding-block:0}.wowsearch-component-scope ::-webkit-datetime-edit-year-field{padding-block:0}.wowsearch-component-scope ::-webkit-datetime-edit-month-field{padding-block:0}.wowsearch-component-scope ::-webkit-datetime-edit-day-field{padding-block:0}.wowsearch-component-scope ::-webkit-datetime-edit-hour-field{padding-block:0}.wowsearch-component-scope ::-webkit-datetime-edit-minute-field{padding-block:0}.wowsearch-component-scope ::-webkit-datetime-edit-second-field{padding-block:0}.wowsearch-component-scope ::-webkit-datetime-edit-millisecond-field{padding-block:0}.wowsearch-component-scope ::-webkit-datetime-edit-meridiem-field{padding-block:0}.wowsearch-component-scope ::-webkit-calendar-picker-indicator{line-height:1}.wowsearch-component-scope :-moz-ui-invalid{box-shadow:none}.wowsearch-component-scope button,.wowsearch-component-scope input:where([type=button],[type=reset],[type=submit]){-webkit-appearance:button;-moz-appearance:button;appearance:button}.wowsearch-component-scope ::file-selector-button{-webkit-appearance:button;-moz-appearance:button;appearance:button}.wowsearch-component-scope ::-webkit-inner-spin-button{height:auto}.wowsearch-component-scope ::-webkit-outer-spin-button{height:auto}.wowsearch-component-scope [hidden]:where(:not([hidden=until-found])){display:none!important}.wowsearch-component-scope *{border-color:var(--wowsearch-border);outline-color:var(--wowsearch-ring)}@supports (color:color-mix(in lab,red,red)){.wowsearch-component-scope *{outline-color:color-mix(in oklab,var(--wowsearch-ring)50%,transparent)}}.wowsearch-component-scope{color:var(--wowsearch-foreground)}.wowsearch-component-scope{font-size:var(--wowsearch-font-size)}.wowsearch-component-scope h1{font-size:var(--wowsearch-text-2xl);font-weight:var(--wowsearch-font-weight-medium);line-height:1.5}.wowsearch-component-scope h2{font-size:var(--wowsearch-text-xl);font-weight:var(--wowsearch-font-weight-medium);line-height:1.5}.wowsearch-component-scope h3{font-size:var(--wowsearch-text-lg);font-weight:var(--wowsearch-font-weight-medium);line-height:1.5}.wowsearch-component-scope h4,.wowsearch-component-scope label,.wowsearch-component-scope button{font-size:var(--wowsearch-text-base);font-weight:var(--wowsearch-font-weight-medium);line-height:1.5}.wowsearch-component-scope input{font-size:var(--wowsearch-text-base);font-weight:var(--wowsearch-font-weight-normal);line-height:1.5}}@layer wowsearch-utilities{.wowsearch-component-scope .wowsearch-absolute{position:absolute}.wowsearch-component-scope .wowsearch-fixed{position:fixed}.wowsearch-component-scope .wowsearch-relative{position:relative}.wowsearch-component-scope .wowsearch-inset-0{inset:calc(var(--wowsearch-spacing)*0)}.wowsearch-component-scope .wowsearch-top-1\/2{top:50%}.wowsearch-component-scope .wowsearch-top-\[calc\(100\%\+8px\)\]{top:calc(100% + 8px)}.wowsearch-component-scope .wowsearch-left-0{left:calc(var(--wowsearch-spacing)*0)}.wowsearch-component-scope .wowsearch-left-4{left:calc(var(--wowsearch-spacing)*4)}.wowsearch-component-scope .wowsearch-z-50{z-index:50}.wowsearch-component-scope .wowsearch-z-\[100\]{z-index:100}.wowsearch-component-scope .wowsearch-mx-auto{margin-inline:auto}.wowsearch-component-scope .wowsearch-mt-1{margin-top:calc(var(--wowsearch-spacing)*1)}.wowsearch-component-scope .wowsearch-mt-1\.5{margin-top:calc(var(--wowsearch-spacing)*1.5)}.wowsearch-component-scope .wowsearch-mr-3{margin-right:calc(var(--wowsearch-spacing)*3)}.wowsearch-component-scope .wowsearch-mr-\[4px\]{margin-right:4px}.wowsearch-component-scope .wowsearch-mb-\[1px\]{margin-bottom:1px}.wowsearch-component-scope .wowsearch-block{display:block}.wowsearch-component-scope .wowsearch-flex{display:flex}.wowsearch-component-scope .wowsearch-hidden{display:none}.wowsearch-component-scope .wowsearch-inline-flex{display:inline-flex}.wowsearch-component-scope .wowsearch-h-1{height:calc(var(--wowsearch-spacing)*1)}.wowsearch-component-scope .wowsearch-h-1\.5{height:calc(var(--wowsearch-spacing)*1.5)}.wowsearch-component-scope .wowsearch-h-5{height:calc(var(--wowsearch-spacing)*5)}.wowsearch-component-scope .wowsearch-h-8{height:calc(var(--wowsearch-spacing)*8)}.wowsearch-component-scope .wowsearch-h-9{height:calc(var(--wowsearch-spacing)*9)}.wowsearch-component-scope .wowsearch-h-10{height:calc(var(--wowsearch-spacing)*10)}.wowsearch-component-scope .wowsearch-h-12{height:calc(var(--wowsearch-spacing)*12)}.wowsearch-component-scope .wowsearch-h-\[52px\]{height:52px}.wowsearch-component-scope .wowsearch-h-\[54px\]{height:54px}.wowsearch-component-scope .wowsearch-h-\[58px\]{height:58px}.wowsearch-component-scope .wowsearch-h-\[60px\]{height:60px}.wowsearch-component-scope .wowsearch-h-\[68px\]{height:68px}.wowsearch-component-scope .wowsearch-h-full{height:100%}.wowsearch-component-scope .wowsearch-w-5{width:calc(var(--wowsearch-spacing)*5)}.wowsearch-component-scope .wowsearch-w-8{width:calc(var(--wowsearch-spacing)*8)}.wowsearch-component-scope .wowsearch-w-9{width:calc(var(--wowsearch-spacing)*9)}.wowsearch-component-scope .wowsearch-w-10{width:calc(var(--wowsearch-spacing)*10)}.wowsearch-component-scope .wowsearch-w-\[58px\]{width:58px}.wowsearch-component-scope .wowsearch-w-fit{width:fit-content}.wowsearch-component-scope .wowsearch-w-full{width:100%}.wowsearch-component-scope .wowsearch-max-w-\[520px\]{max-width:520px}.wowsearch-component-scope .wowsearch-max-w-\[900px\]{max-width:900px}.wowsearch-component-scope .wowsearch-min-w-0{min-width:calc(var(--wowsearch-spacing)*0)}.wowsearch-component-scope .wowsearch-min-w-\[280px\]{min-width:280px}.wowsearch-component-scope .wowsearch-min-w-\[320px\]{min-width:320px}.wowsearch-component-scope .wowsearch-flex-1{flex:1}.wowsearch-component-scope .wowsearch-flex-\[1\.7\]{flex:1.7}.wowsearch-component-scope .wowsearch-shrink-0{flex-shrink:0}.wowsearch-component-scope .wowsearch-border-collapse{border-collapse:collapse}.wowsearch-component-scope .wowsearch--translate-y-1\/2{--wowsearch-tw-translate-y: -50% ;translate:var(--wowsearch-tw-translate-x)var(--wowsearch-tw-translate-y)}.wowsearch-component-scope .wowsearch-cursor-grab{cursor:grab}.wowsearch-component-scope .wowsearch-cursor-text{cursor:text}.wowsearch-component-scope .wowsearch-touch-none{touch-action:none}.wowsearch-component-scope .wowsearch-\[appearance\:textfield\]{-webkit-appearance:textfield;-moz-appearance:textfield;appearance:textfield}.wowsearch-component-scope .wowsearch-flex-col{flex-direction:column}.wowsearch-component-scope .wowsearch-flex-col-reverse{flex-direction:column-reverse}.wowsearch-component-scope .wowsearch-flex-row{flex-direction:row}.wowsearch-component-scope .wowsearch-flex-wrap{flex-wrap:wrap}.wowsearch-component-scope .wowsearch-items-center{align-items:center}.wowsearch-component-scope .wowsearch-justify-between{justify-content:space-between}.wowsearch-component-scope .wowsearch-justify-center{justify-content:center}.wowsearch-component-scope .wowsearch-justify-end{justify-content:flex-end}.wowsearch-component-scope .wowsearch-gap-1\.5{gap:calc(var(--wowsearch-spacing)*1.5)}.wowsearch-component-scope .wowsearch-gap-2\.5{gap:calc(var(--wowsearch-spacing)*2.5)}.wowsearch-component-scope .wowsearch-gap-3{gap:calc(var(--wowsearch-spacing)*3)}.wowsearch-component-scope .wowsearch-gap-3\.5{gap:calc(var(--wowsearch-spacing)*3.5)}.wowsearch-component-scope .wowsearch-truncate{text-overflow:ellipsis;white-space:nowrap;overflow:hidden}.wowsearch-component-scope .wowsearch-overflow-hidden{overflow:hidden}.wowsearch-component-scope .wowsearch-overflow-y-auto{overflow-y:auto}.wowsearch-component-scope .wowsearch-rounded-2xl{border-radius:var(--wowsearch-radius-2xl)}.wowsearch-component-scope .wowsearch-rounded-\[14px\]{border-radius:14px}.wowsearch-component-scope .wowsearch-rounded-full{border-radius:3.40282e38px}.wowsearch-component-scope .wowsearch-rounded-t-\[24px\]{border-top-left-radius:24px;border-top-right-radius:24px}.wowsearch-component-scope .wowsearch-border{border-style:var(--wowsearch-tw-border-style);border-width:1px}.wowsearch-component-scope .wowsearch-border-0{border-style:var(--wowsearch-tw-border-style);border-width:0}.wowsearch-component-scope .wowsearch-border-\[1\.5px\]{border-style:var(--wowsearch-tw-border-style);border-width:1.5px}.wowsearch-component-scope .wowsearch-border-y{border-block-style:var(--wowsearch-tw-border-style);border-block-width:1px}.wowsearch-component-scope .wowsearch-border-t{border-top-style:var(--wowsearch-tw-border-style);border-top-width:1px}.wowsearch-component-scope .wowsearch-border-r{border-right-style:var(--wowsearch-tw-border-style);border-right-width:1px}.wowsearch-component-scope .wowsearch-border-b{border-bottom-style:var(--wowsearch-tw-border-style);border-bottom-width:1px}.wowsearch-component-scope .wowsearch-border-l{border-left-style:var(--wowsearch-tw-border-style);border-left-width:1px}.wowsearch-component-scope .wowsearch-border-dashed{--wowsearch-tw-border-style:dashed;border-style:dashed}.wowsearch-component-scope .wowsearch-border-\(--wowsearch-color-border\){border-color:var(--wowsearch-color-border)}.wowsearch-component-scope .wowsearch-border-\[\#dce1e7\]{border-color:#dce1e7}.wowsearch-component-scope .wowsearch-border-\[\#edf0f2\]{border-color:#edf0f2}.wowsearch-component-scope .wowsearch-border-\[\#eef0f3\]{border-color:#eef0f3}.wowsearch-component-scope .wowsearch-border-\[rgba\(117\,128\,150\,0\.42\)\]{border-color:#7580966b}.wowsearch-component-scope .wowsearch-border-\[rgba\(155\,165\,180\,0\.6\)\]{border-color:#9ba5b499}.wowsearch-component-scope .wowsearch-border-\[rgba\(155\,165\,180\,0\.45\)\]{border-color:#9ba5b473}.wowsearch-component-scope .wowsearch-border-black\/6{border-color:#0000000f}@supports (color:color-mix(in lab,red,red)){.wowsearch-component-scope .wowsearch-border-black\/6{border-color:color-mix(in oklab,var(--wowsearch-color-black)6%,transparent)}}.wowsearch-component-scope .wowsearch-border-black\/10{border-color:#0000001a}@supports (color:color-mix(in lab,red,red)){.wowsearch-component-scope .wowsearch-border-black\/10{border-color:color-mix(in oklab,var(--wowsearch-color-black)10%,transparent)}}.wowsearch-component-scope .wowsearch-border-border\/50{border-color:var(--wowsearch-border)}@supports (color:color-mix(in lab,red,red)){.wowsearch-component-scope .wowsearch-border-border\/50{border-color:color-mix(in oklab,var(--wowsearch-border)50%,transparent)}}.wowsearch-component-scope .wowsearch-border-input{border-color:var(--wowsearch-input)}.wowsearch-component-scope .wowsearch-border-primary{border-color:var(--wowsearch-primary)}.wowsearch-component-scope .wowsearch-border-sidebar-border{border-color:var(--wowsearch-sidebar-border)}.wowsearch-component-scope .wowsearch-border-transparent{border-color:#0000}.wowsearch-component-scope .wowsearch-border-t-transparent{border-top-color:#0000}.wowsearch-component-scope .wowsearch-border-l-transparent{border-left-color:#0000}.wowsearch-component-scope .wowsearch-bg-\[\#4f9381\]{background-color:#4f9381}.wowsearch-component-scope .wowsearch-bg-\[\#101828\]{background-color:#101828}.wowsearch-component-scope .wowsearch-bg-\[\#d3d7de\]{background-color:#d3d7de}.wowsearch-component-scope .wowsearch-bg-\[\#e4e8ee\]{background-color:#e4e8ee}.wowsearch-component-scope .wowsearch-bg-\[\#e8f5f1\]{background-color:#e8f5f1}.wowsearch-component-scope .wowsearch-bg-\[\#f0faf7\]{background-color:#f0faf7}.wowsearch-component-scope .wowsearch-bg-\[\#f2f4f7\]{background-color:#f2f4f7}.wowsearch-component-scope .wowsearch-bg-amber-50{background-color:var(--wowsearch-color-amber-50)}.wowsearch-component-scope .wowsearch-bg-black\/40{background-color:#0006}@supports (color:color-mix(in lab,red,red)){.wowsearch-component-scope .wowsearch-bg-black\/40{background-color:color-mix(in oklab,var(--wowsearch-color-black)40%,transparent)}}.wowsearch-component-scope .wowsearch-bg-blue-50{background-color:var(--wowsearch-color-blue-50)}.wowsearch-component-scope .wowsearch-bg-indigo-50{background-color:var(--wowsearch-color-indigo-50)}.wowsearch-component-scope .wowsearch-bg-purple-50{background-color:var(--wowsearch-color-purple-50)}.wowsearch-component-scope .wowsearch-bg-rose-50{background-color:var(--wowsearch-color-rose-50)}.wowsearch-component-scope .wowsearch-bg-transparent{background-color:#0000}.wowsearch-component-scope .wowsearch-bg-white{background-color:var(--wowsearch-color-white)}.wowsearch-component-scope .wowsearch-bg-white\/97{background-color:#fffffff7}@supports (color:color-mix(in lab,red,red)){.wowsearch-component-scope .wowsearch-bg-white\/97{background-color:color-mix(in oklab,var(--wowsearch-color-white)97%,transparent)}}.wowsearch-component-scope .wowsearch-bg-yellow-50{background-color:var(--wowsearch-color-yellow-50)}.wowsearch-component-scope .wowsearch-p-0{padding:calc(var(--wowsearch-spacing)*0)}.wowsearch-component-scope .wowsearch-px-2{padding-inline:calc(var(--wowsearch-spacing)*2)}.wowsearch-component-scope .wowsearch-px-2\.5{padding-inline:calc(var(--wowsearch-spacing)*2.5)}.wowsearch-component-scope .wowsearch-px-3{padding-inline:calc(var(--wowsearch-spacing)*3)}.wowsearch-component-scope .wowsearch-px-4{padding-inline:calc(var(--wowsearch-spacing)*4)}.wowsearch-component-scope .wowsearch-px-5{padding-inline:calc(var(--wowsearch-spacing)*5)}.wowsearch-component-scope .wowsearch-py-0\.5{padding-block:calc(var(--wowsearch-spacing)*.5)}.wowsearch-component-scope .wowsearch-py-1{padding-block:calc(var(--wowsearch-spacing)*1)}.wowsearch-component-scope .wowsearch-py-1\.5{padding-block:calc(var(--wowsearch-spacing)*1.5)}.wowsearch-component-scope .wowsearch-py-2\.5{padding-block:calc(var(--wowsearch-spacing)*2.5)}.wowsearch-component-scope .wowsearch-py-3{padding-block:calc(var(--wowsearch-spacing)*3)}.wowsearch-component-scope .wowsearch-py-3\.5{padding-block:calc(var(--wowsearch-spacing)*3.5)}.wowsearch-component-scope .wowsearch-py-4{padding-block:calc(var(--wowsearch-spacing)*4)}.wowsearch-component-scope .wowsearch-py-\[14px\]{padding-block:14px}.wowsearch-component-scope .wowsearch-pt-2\.5{padding-top:calc(var(--wowsearch-spacing)*2.5)}.wowsearch-component-scope .wowsearch-pt-3{padding-top:calc(var(--wowsearch-spacing)*3)}.wowsearch-component-scope .wowsearch-pr-4{padding-right:calc(var(--wowsearch-spacing)*4)}.wowsearch-component-scope .wowsearch-pb-1{padding-bottom:calc(var(--wowsearch-spacing)*1)}.wowsearch-component-scope .wowsearch-pb-1\.5{padding-bottom:calc(var(--wowsearch-spacing)*1.5)}.wowsearch-component-scope .wowsearch-pb-3{padding-bottom:calc(var(--wowsearch-spacing)*3)}.wowsearch-component-scope .wowsearch-pb-8{padding-bottom:calc(var(--wowsearch-spacing)*8)}.wowsearch-component-scope .wowsearch-pl-10{padding-left:calc(var(--wowsearch-spacing)*10)}.wowsearch-component-scope .wowsearch-text-left{text-align:left}.wowsearch-component-scope .wowsearch-text-\[1\.2rem\]{font-size:1.2rem}.wowsearch-component-scope .wowsearch-text-\[10px\]{font-size:10px}.wowsearch-component-scope .wowsearch-text-\[11px\]{font-size:11px}.wowsearch-component-scope .wowsearch-text-\[12px\]{font-size:12px}.wowsearch-component-scope .wowsearch-text-\[13\.5px\]{font-size:13.5px}.wowsearch-component-scope .wowsearch-text-\[13px\]{font-size:13px}.wowsearch-component-scope .wowsearch-text-\[14\.5px\]{font-size:14.5px}.wowsearch-component-scope .wowsearch-text-\[15px\]{font-size:15px}.wowsearch-component-scope .wowsearch-font-\[650\]{--wowsearch-tw-font-weight:650;font-weight:650}.wowsearch-component-scope .wowsearch-font-bold{--wowsearch-tw-font-weight:var(--wowsearch-font-weight-bold);font-weight:var(--wowsearch-font-weight-bold)}.wowsearch-component-scope .wowsearch-font-medium{--wowsearch-tw-font-weight:var(--wowsearch-font-weight-medium);font-weight:var(--wowsearch-font-weight-medium)}.wowsearch-component-scope .wowsearch-font-normal{--wowsearch-tw-font-weight:var(--wowsearch-font-weight-normal);font-weight:var(--wowsearch-font-weight-normal)}.wowsearch-component-scope .wowsearch-font-semibold{--wowsearch-tw-font-weight:var(--wowsearch-font-weight-semibold);font-weight:var(--wowsearch-font-weight-semibold)}.wowsearch-component-scope .wowsearch-tracking-\[-0\.01em\]{--wowsearch-tw-tracking:-.01em;letter-spacing:-.01em}.wowsearch-component-scope .wowsearch-tracking-wider{--wowsearch-tw-tracking:var(--wowsearch-tracking-wider);letter-spacing:var(--wowsearch-tracking-wider)}.wowsearch-component-scope .wowsearch-tracking-widest{--wowsearch-tw-tracking:var(--wowsearch-tracking-widest);letter-spacing:var(--wowsearch-tracking-widest)}.wowsearch-component-scope .wowsearch-text-\[\#1a202c\]{color:#1a202c}.wowsearch-component-scope .wowsearch-text-\[\#2a5e52\]{color:#2a5e52}.wowsearch-component-scope .wowsearch-text-\[\#4a5568\]{color:#4a5568}.wowsearch-component-scope .wowsearch-text-\[\#4f9381\]{color:#4f9381}.wowsearch-component-scope .wowsearch-text-\[\#8e9bb0\]{color:#8e9bb0}.wowsearch-component-scope .wowsearch-text-\[\#98a2b3\]{color:#98a2b3}.wowsearch-component-scope .wowsearch-text-\[\#101828\]{color:#101828}.wowsearch-component-scope .wowsearch-text-\[\#111827\]{color:#111827}.wowsearch-component-scope .wowsearch-text-\[\#687283\]{color:#687283}.wowsearch-component-scope .wowsearch-text-\[\#697386\]{color:#697386}.wowsearch-component-scope .wowsearch-text-\[\#758096\]{color:#758096}.wowsearch-component-scope .wowsearch-text-\[\#b8c0cc\]{color:#b8c0cc}.wowsearch-component-scope .wowsearch-text-\[\#c0c8d4\]{color:#c0c8d4}.wowsearch-component-scope .wowsearch-text-amber-700{color:var(--wowsearch-color-amber-700)}.wowsearch-component-scope .wowsearch-text-blue-500{color:var(--wowsearch-color-blue-500)}.wowsearch-component-scope .wowsearch-text-blue-700{color:var(--wowsearch-color-blue-700)}.wowsearch-component-scope .wowsearch-text-indigo-700{color:var(--wowsearch-color-indigo-700)}.wowsearch-component-scope .wowsearch-text-purple-700{color:var(--wowsearch-color-purple-700)}.wowsearch-component-scope .wowsearch-text-rose-700{color:var(--wowsearch-color-rose-700)}.wowsearch-component-scope .wowsearch-text-white{color:var(--wowsearch-color-white)}.wowsearch-component-scope .wowsearch-text-yellow-700{color:var(--wowsearch-color-yellow-700)}.wowsearch-component-scope .wowsearch-uppercase{text-transform:uppercase}.wowsearch-component-scope .wowsearch-opacity-60{opacity:.6}.wowsearch-component-scope .wowsearch-shadow-\[0_-8px_40px_rgba\(0\,0\,0\,0\.18\)\]{--wowsearch-tw-shadow:0 -8px 40px var(--wowsearch-tw-shadow-color,#0000002e);box-shadow:var(--wowsearch-tw-inset-shadow),var(--wowsearch-tw-inset-ring-shadow),var(--wowsearch-tw-ring-offset-shadow),var(--wowsearch-tw-ring-shadow),var(--wowsearch-tw-shadow)}.wowsearch-component-scope .wowsearch-shadow-\[0_0_0_3px_rgba\(79\,147\,129\,0\.15\)\,0_10px_30px_rgba\(28\,39\,56\,0\.10\)\]{--wowsearch-tw-shadow:0 0 0 3px var(--wowsearch-tw-shadow-color,#4f938126),0 10px 30px var(--wowsearch-tw-shadow-color,#1c27381a);box-shadow:var(--wowsearch-tw-inset-shadow),var(--wowsearch-tw-inset-ring-shadow),var(--wowsearch-tw-ring-offset-shadow),var(--wowsearch-tw-ring-shadow),var(--wowsearch-tw-shadow)}.wowsearch-component-scope .wowsearch-shadow-\[0_2px_12px_rgba\(16\,24\,40\,0\.06\)\]{--wowsearch-tw-shadow:0 2px 12px var(--wowsearch-tw-shadow-color,#1018280f);box-shadow:var(--wowsearch-tw-inset-shadow),var(--wowsearch-tw-inset-ring-shadow),var(--wowsearch-tw-ring-offset-shadow),var(--wowsearch-tw-ring-shadow),var(--wowsearch-tw-shadow)}.wowsearch-component-scope .wowsearch-shadow-\[0_4px_12px_rgba\(0\,0\,0\,0\.18\)\]{--wowsearch-tw-shadow:0 4px 12px var(--wowsearch-tw-shadow-color,#0000002e);box-shadow:var(--wowsearch-tw-inset-shadow),var(--wowsearch-tw-inset-ring-shadow),var(--wowsearch-tw-ring-offset-shadow),var(--wowsearch-tw-ring-shadow),var(--wowsearch-tw-shadow)}.wowsearch-component-scope .wowsearch-shadow-\[0_4px_14px_rgba\(0\,0\,0\,0\.2\)\]{--wowsearch-tw-shadow:0 4px 14px var(--wowsearch-tw-shadow-color,#0003);box-shadow:var(--wowsearch-tw-inset-shadow),var(--wowsearch-tw-inset-ring-shadow),var(--wowsearch-tw-ring-offset-shadow),var(--wowsearch-tw-ring-shadow),var(--wowsearch-tw-shadow)}.wowsearch-component-scope .wowsearch-shadow-\[0_8px_24px_rgba\(28\,39\,56\,0\.09\)\]{--wowsearch-tw-shadow:0 8px 24px var(--wowsearch-tw-shadow-color,#1c273817);box-shadow:var(--wowsearch-tw-inset-shadow),var(--wowsearch-tw-inset-ring-shadow),var(--wowsearch-tw-ring-offset-shadow),var(--wowsearch-tw-ring-shadow),var(--wowsearch-tw-shadow)}.wowsearch-component-scope .wowsearch-shadow-\[0_10px_30px_rgba\(28\,39\,56\,0\.08\)\]{--wowsearch-tw-shadow:0 10px 30px var(--wowsearch-tw-shadow-color,#1c273814);box-shadow:var(--wowsearch-tw-inset-shadow),var(--wowsearch-tw-inset-ring-shadow),var(--wowsearch-tw-ring-offset-shadow),var(--wowsearch-tw-ring-shadow),var(--wowsearch-tw-shadow)}.wowsearch-component-scope .wowsearch-shadow-\[0_16px_48px_rgba\(16\,24\,40\,0\.14\)\]{--wowsearch-tw-shadow:0 16px 48px var(--wowsearch-tw-shadow-color,#10182824);box-shadow:var(--wowsearch-tw-inset-shadow),var(--wowsearch-tw-inset-ring-shadow),var(--wowsearch-tw-ring-offset-shadow),var(--wowsearch-tw-ring-shadow),var(--wowsearch-tw-shadow)}.wowsearch-component-scope .wowsearch-backdrop-blur-\[2px\]{--wowsearch-tw-backdrop-blur:blur(2px);-webkit-backdrop-filter:var(--wowsearch-tw-backdrop-blur,)var(--wowsearch-tw-backdrop-brightness,)var(--wowsearch-tw-backdrop-contrast,)var(--wowsearch-tw-backdrop-grayscale,)var(--wowsearch-tw-backdrop-hue-rotate,)var(--wowsearch-tw-backdrop-invert,)var(--wowsearch-tw-backdrop-opacity,)var(--wowsearch-tw-backdrop-saturate,)var(--wowsearch-tw-backdrop-sepia,);backdrop-filter:var(--wowsearch-tw-backdrop-blur,)var(--wowsearch-tw-backdrop-brightness,)var(--wowsearch-tw-backdrop-contrast,)var(--wowsearch-tw-backdrop-grayscale,)var(--wowsearch-tw-backdrop-hue-rotate,)var(--wowsearch-tw-backdrop-invert,)var(--wowsearch-tw-backdrop-opacity,)var(--wowsearch-tw-backdrop-saturate,)var(--wowsearch-tw-backdrop-sepia,)}.wowsearch-component-scope .wowsearch-transition-all{transition-property:all;transition-timing-function:var(--wowsearch-tw-ease,var(--wowsearch-default-transition-timing-function));transition-duration:var(--wowsearch-tw-duration,var(--wowsearch-default-transition-duration))}.wowsearch-component-scope .wowsearch-transition-colors{transition-property:color,background-color,border-color,outline-color,text-decoration-color,fill,stroke,--wowsearch-tw-gradient-from,--wowsearch-tw-gradient-via,--wowsearch-tw-gradient-to;transition-timing-function:var(--wowsearch-tw-ease,var(--wowsearch-default-transition-timing-function));transition-duration:var(--wowsearch-tw-duration,var(--wowsearch-default-transition-duration))}.wowsearch-component-scope .wowsearch-transition-shadow{transition-property:box-shadow;transition-timing-function:var(--wowsearch-tw-ease,var(--wowsearch-default-transition-timing-function));transition-duration:var(--wowsearch-tw-duration,var(--wowsearch-default-transition-duration))}.wowsearch-component-scope .wowsearch-duration-150{--wowsearch-tw-duration:.15s;transition-duration:.15s}.wowsearch-component-scope .wowsearch-duration-200{--wowsearch-tw-duration:.2s;transition-duration:.2s}.wowsearch-component-scope .wowsearch-outline-none{--wowsearch-tw-outline-style:none;outline-style:none}.wowsearch-component-scope .wowsearch-select-none{-webkit-user-select:none;user-select:none}.wowsearch-component-scope .wowsearch-group-focus-within\/menu-item\:opacity-100:is(:where(.wowsearch-group\/menu-item):focus-within *){opacity:1}@media (hover:hover){.wowsearch-component-scope .wowsearch-group-hover\/menu-item\:opacity-100:is(:where(.wowsearch-group\/menu-item):hover *){opacity:1}}.wowsearch-component-scope .wowsearch-group-has-data-\[sidebar\=menu-action\]\/menu-item\:pr-8:is(:where(.wowsearch-group\/menu-item):has([data-sidebar=menu-action]) *){padding-right:calc(var(--wowsearch-spacing)*8)}.wowsearch-component-scope .wowsearch-group-data-\[collapsible\=icon\]\:-mt-8:is(:where(.wowsearch-group)[data-collapsible=icon] *){margin-top:calc(var(--wowsearch-spacing)*-8)}.wowsearch-component-scope .wowsearch-group-data-\[collapsible\=icon\]\:hidden:is(:where(.wowsearch-group)[data-collapsible=icon] *){display:none}.wowsearch-component-scope .wowsearch-group-data-\[collapsible\=icon\]\:size-8\!:is(:where(.wowsearch-group)[data-collapsible=icon] *){width:calc(var(--wowsearch-spacing)*8)!important;height:calc(var(--wowsearch-spacing)*8)!important}.wowsearch-component-scope .wowsearch-group-data-\[collapsible\=icon\]\:w-\(--wowsearch-sidebar-width-icon\):is(:where(.wowsearch-group)[data-collapsible=icon] *){width:var(--wowsearch-sidebar-width-icon)}.wowsearch-component-scope .wowsearch-group-data-\[collapsible\=icon\]\:w-\[calc\(var\(--wowsearch-sidebar-width-icon\)\+\(--wowsearch-spacing\(4\)\)\)\]:is(:where(.wowsearch-group)[data-collapsible=icon] *){width:calc(var(--wowsearch-sidebar-width-icon) + (calc(var(--wowsearch-spacing)*4)))}.wowsearch-component-scope .wowsearch-group-data-\[collapsible\=icon\]\:w-\[calc\(var\(--wowsearch-sidebar-width-icon\)\+\(--wowsearch-spacing\(4\)\)\+2px\)\]:is(:where(.wowsearch-group)[data-collapsible=icon] *){width:calc(var(--wowsearch-sidebar-width-icon) + (calc(var(--wowsearch-spacing)*4)) + 2px)}.wowsearch-component-scope .wowsearch-group-data-\[collapsible\=icon\]\:overflow-hidden:is(:where(.wowsearch-group)[data-collapsible=icon] *){overflow:hidden}.wowsearch-component-scope .wowsearch-group-data-\[collapsible\=icon\]\:p-0\!:is(:where(.wowsearch-group)[data-collapsible=icon] *){padding:calc(var(--wowsearch-spacing)*0)!important}.wowsearch-component-scope .wowsearch-group-data-\[collapsible\=icon\]\:p-2\!:is(:where(.wowsearch-group)[data-collapsible=icon] *){padding:calc(var(--wowsearch-spacing)*2)!important}.wowsearch-component-scope .wowsearch-group-data-\[collapsible\=icon\]\:opacity-0:is(:where(.wowsearch-group)[data-collapsible=icon] *){opacity:0}.wowsearch-component-scope .wowsearch-group-data-\[collapsible\=offcanvas\]\:right-\[calc\(var\(--wowsearch-sidebar-width\)\*-1\)\]:is(:where(.wowsearch-group)[data-collapsible=offcanvas] *){right:calc(var(--wowsearch-sidebar-width)*-1)}.wowsearch-component-scope .wowsearch-group-data-\[collapsible\=offcanvas\]\:left-\[calc\(var\(--wowsearch-sidebar-width\)\*-1\)\]:is(:where(.wowsearch-group)[data-collapsible=offcanvas] *){left:calc(var(--wowsearch-sidebar-width)*-1)}.wowsearch-component-scope .wowsearch-group-data-\[collapsible\=offcanvas\]\:w-0:is(:where(.wowsearch-group)[data-collapsible=offcanvas] *){width:calc(var(--wowsearch-spacing)*0)}.wowsearch-component-scope .wowsearch-group-data-\[collapsible\=offcanvas\]\:translate-x-0:is(:where(.wowsearch-group)[data-collapsible=offcanvas] *){--wowsearch-tw-translate-x:calc(var(--wowsearch-spacing)*0);translate:var(--wowsearch-tw-translate-x)var(--wowsearch-tw-translate-y)}.wowsearch-component-scope .wowsearch-group-data-\[disabled\=true\]\:pointer-events-none:is(:where(.wowsearch-group)[data-disabled=true] *){pointer-events:none}.wowsearch-component-scope .wowsearch-group-data-\[disabled\=true\]\:opacity-50:is(:where(.wowsearch-group)[data-disabled=true] *){opacity:.5}.wowsearch-component-scope .wowsearch-group-data-\[side\=left\]\:-right-4:is(:where(.wowsearch-group)[data-side=left] *){right:calc(var(--wowsearch-spacing)*-4)}.wowsearch-component-scope .wowsearch-group-data-\[side\=left\]\:border-r:is(:where(.wowsearch-group)[data-side=left] *){border-right-style:var(--wowsearch-tw-border-style);border-right-width:1px}.wowsearch-component-scope .wowsearch-group-data-\[side\=right\]\:left-0:is(:where(.wowsearch-group)[data-side=right] *){left:calc(var(--wowsearch-spacing)*0)}.wowsearch-component-scope .wowsearch-group-data-\[side\=right\]\:rotate-180:is(:where(.wowsearch-group)[data-side=right] *){rotate:180deg}.wowsearch-component-scope .wowsearch-group-data-\[side\=right\]\:border-l:is(:where(.wowsearch-group)[data-side=right] *){border-left-style:var(--wowsearch-tw-border-style);border-left-width:1px}.wowsearch-component-scope .wowsearch-group-data-\[state\=open\]\:rotate-180:is(:where(.wowsearch-group)[data-state=open] *){rotate:180deg}.wowsearch-component-scope .wowsearch-group-data-\[variant\=floating\]\:rounded-lg:is(:where(.wowsearch-group)[data-variant=floating] *){border-radius:var(--wowsearch-radius)}.wowsearch-component-scope .wowsearch-group-data-\[variant\=floating\]\:border:is(:where(.wowsearch-group)[data-variant=floating] *){border-style:var(--wowsearch-tw-border-style);border-width:1px}.wowsearch-component-scope .wowsearch-group-data-\[variant\=floating\]\:border-sidebar-border:is(:where(.wowsearch-group)[data-variant=floating] *){border-color:var(--wowsearch-sidebar-border)}.wowsearch-component-scope .wowsearch-group-data-\[variant\=floating\]\:shadow-sm:is(:where(.wowsearch-group)[data-variant=floating] *){--wowsearch-tw-shadow:0 1px 3px 0 var(--wowsearch-tw-shadow-color,#0000001a),0 1px 2px -1px var(--wowsearch-tw-shadow-color,#0000001a);box-shadow:var(--wowsearch-tw-inset-shadow),var(--wowsearch-tw-inset-ring-shadow),var(--wowsearch-tw-ring-offset-shadow),var(--wowsearch-tw-ring-shadow),var(--wowsearch-tw-shadow)}.wowsearch-component-scope .wowsearch-group-data-\[vaul-drawer-direction\=bottom\]\/drawer-content\:block:is(:where(.wowsearch-group\/drawer-content)[data-vaul-drawer-direction=bottom] *){display:block}.wowsearch-component-scope .wowsearch-group-data-\[viewport\=false\]\/navigation-menu\:top-full:is(:where(.wowsearch-group\/navigation-menu)[data-viewport=false] *){top:100%}.wowsearch-component-scope .wowsearch-group-data-\[viewport\=false\]\/navigation-menu\:mt-1\.5:is(:where(.wowsearch-group\/navigation-menu)[data-viewport=false] *){margin-top:calc(var(--wowsearch-spacing)*1.5)}.wowsearch-component-scope .wowsearch-group-data-\[viewport\=false\]\/navigation-menu\:overflow-hidden:is(:where(.wowsearch-group\/navigation-menu)[data-viewport=false] *){overflow:hidden}.wowsearch-component-scope .wowsearch-group-data-\[viewport\=false\]\/navigation-menu\:rounded-md:is(:where(.wowsearch-group\/navigation-menu)[data-viewport=false] *){border-radius:calc(var(--wowsearch-radius) - 2px)}.wowsearch-component-scope .wowsearch-group-data-\[viewport\=false\]\/navigation-menu\:border:is(:where(.wowsearch-group\/navigation-menu)[data-viewport=false] *){border-style:var(--wowsearch-tw-border-style);border-width:1px}.wowsearch-component-scope .wowsearch-group-data-\[viewport\=false\]\/navigation-menu\:bg-popover:is(:where(.wowsearch-group\/navigation-menu)[data-viewport=false] *){background-color:var(--wowsearch-popover)}.wowsearch-component-scope .wowsearch-group-data-\[viewport\=false\]\/navigation-menu\:text-popover-foreground:is(:where(.wowsearch-group\/navigation-menu)[data-viewport=false] *){color:var(--wowsearch-popover-foreground)}.wowsearch-component-scope .wowsearch-group-data-\[viewport\=false\]\/navigation-menu\:shadow:is(:where(.wowsearch-group\/navigation-menu)[data-viewport=false] *){--wowsearch-tw-shadow:0 1px 3px 0 var(--wowsearch-tw-shadow-color,#0000001a),0 1px 2px -1px var(--wowsearch-tw-shadow-color,#0000001a);box-shadow:var(--wowsearch-tw-inset-shadow),var(--wowsearch-tw-inset-ring-shadow),var(--wowsearch-tw-ring-offset-shadow),var(--wowsearch-tw-ring-shadow),var(--wowsearch-tw-shadow)}.wowsearch-component-scope .wowsearch-group-data-\[viewport\=false\]\/navigation-menu\:duration-200:is(:where(.wowsearch-group\/navigation-menu)[data-viewport=false] *){--wowsearch-tw-duration:.2s;transition-duration:.2s}.wowsearch-component-scope .wowsearch-placeholder\:font-normal::placeholder{--wowsearch-tw-font-weight:var(--wowsearch-font-weight-normal);font-weight:var(--wowsearch-font-weight-normal)}.wowsearch-component-scope .wowsearch-placeholder\:text-\[\#818896\]::placeholder{color:#818896}.wowsearch-component-scope .wowsearch-group-data-\[collapsible\=offcanvas\]\:after\:left-full:is(:where(.wowsearch-group)[data-collapsible=offcanvas] *):after{content:var(--wowsearch-tw-content);left:100%}.wowsearch-component-scope .wowsearch-last\:border-0:last-child{border-style:var(--wowsearch-tw-border-style);border-width:0}@media (hover:hover){.wowsearch-component-scope .wowsearch-hover\:bg-\[\#1d2939\]:hover{background-color:#1d2939}.wowsearch-component-scope .wowsearch-hover\:bg-\[\#d0d5de\]:hover{background-color:#d0d5de}.wowsearch-component-scope .wowsearch-hover\:bg-\[\#e8eaed\]:hover{background-color:#e8eaed}.wowsearch-component-scope .wowsearch-hover\:bg-\[\#f0faf7\]:hover{background-color:#f0faf7}.wowsearch-component-scope .wowsearch-hover\:bg-\[\#f7f9fb\]:hover{background-color:#f7f9fb}.wowsearch-component-scope .wowsearch-hover\:bg-black\/\[0\.025\]:hover{background-color:#00000006}@supports (color:color-mix(in lab,red,red)){.wowsearch-component-scope .wowsearch-hover\:bg-black\/\[0\.025\]:hover{background-color:color-mix(in oklab,var(--wowsearch-color-black)2.5%,transparent)}}.wowsearch-component-scope .wowsearch-hover\:group-data-\[collapsible\=offcanvas\]\:bg-sidebar:hover:is(:where(.wowsearch-group)[data-collapsible=offcanvas] *){background-color:var(--wowsearch-sidebar)}}.wowsearch-component-scope .wowsearch-focus\:border-\[\#4f9381\]:focus{border-color:#4f9381}.wowsearch-component-scope .wowsearch-focus\:ring-2:focus{--wowsearch-tw-ring-shadow:var(--wowsearch-tw-ring-inset,)0 0 0 calc(2px + var(--wowsearch-tw-ring-offset-width))var(--wowsearch-tw-ring-color,currentcolor);box-shadow:var(--wowsearch-tw-inset-shadow),var(--wowsearch-tw-inset-ring-shadow),var(--wowsearch-tw-ring-offset-shadow),var(--wowsearch-tw-ring-shadow),var(--wowsearch-tw-shadow)}.wowsearch-component-scope .wowsearch-focus\:ring-\[\#4f9381\]\/20:focus{--wowsearch-tw-ring-color:oklab(61.2926% -.0748301 .00716132/.2)}.wowsearch-component-scope .wowsearch-active\:scale-\[0\.96\]:active{scale:.96}.wowsearch-component-scope .wowsearch-active\:scale-\[0\.98\]:active{scale:.98}.wowsearch-component-scope .wowsearch-active\:cursor-grabbing:active{cursor:grabbing}.wowsearch-component-scope .wowsearch-active\:bg-\[\#f7f9fb\]:active{background-color:#f7f9fb}.wowsearch-component-scope .wowsearch-group-data-\[viewport\=false\]\/navigation-menu\:data-\[state\=closed\]\:animate-out:is(:where(.wowsearch-group\/navigation-menu)[data-viewport=false] *)[data-state=closed]{animation:wowsearch-kf-exit var(--wowsearch-tw-animation-duration,var(--wowsearch-tw-duration,.15s))var(--wowsearch-tw-ease,ease)var(--wowsearch-tw-animation-delay,0s)var(--wowsearch-tw-animation-iteration-count,1)var(--wowsearch-tw-animation-direction,normal)var(--wowsearch-tw-animation-fill-mode,none)}.wowsearch-component-scope .wowsearch-group-data-\[viewport\=false\]\/navigation-menu\:data-\[state\=closed\]\:fade-out-0:is(:where(.wowsearch-group\/navigation-menu)[data-viewport=false] *)[data-state=closed]{--wowsearch-tw-exit-opacity:0}.wowsearch-component-scope .wowsearch-group-data-\[viewport\=false\]\/navigation-menu\:data-\[state\=closed\]\:zoom-out-95:is(:where(.wowsearch-group\/navigation-menu)[data-viewport=false] *)[data-state=closed]{--wowsearch-tw-exit-scale:.95}.wowsearch-component-scope .wowsearch-group-data-\[viewport\=false\]\/navigation-menu\:data-\[state\=open\]\:animate-in:is(:where(.wowsearch-group\/navigation-menu)[data-viewport=false] *)[data-state=open]{animation:wowsearch-kf-enter var(--wowsearch-tw-animation-duration,var(--wowsearch-tw-duration,.15s))var(--wowsearch-tw-ease,ease)var(--wowsearch-tw-animation-delay,0s)var(--wowsearch-tw-animation-iteration-count,1)var(--wowsearch-tw-animation-direction,normal)var(--wowsearch-tw-animation-fill-mode,none)}.wowsearch-component-scope .wowsearch-group-data-\[viewport\=false\]\/navigation-menu\:data-\[state\=open\]\:fade-in-0:is(:where(.wowsearch-group\/navigation-menu)[data-viewport=false] *)[data-state=open]{--wowsearch-tw-enter-opacity:0}.wowsearch-component-scope .wowsearch-group-data-\[viewport\=false\]\/navigation-menu\:data-\[state\=open\]\:zoom-in-95:is(:where(.wowsearch-group\/navigation-menu)[data-viewport=false] *)[data-state=open]{--wowsearch-tw-enter-scale:.95}@media (min-width:48rem){.wowsearch-component-scope .wowsearch-md\:block{display:block}.wowsearch-component-scope .wowsearch-md\:hidden{display:none}}.wowsearch-component-scope .wowsearch-\[\&\:\:-webkit-search-cancel-button\]\:appearance-none::-webkit-search-cancel-button{-webkit-appearance:none;-moz-appearance:none;appearance:none}.wowsearch-component-scope .wowsearch-\[\&\:\:-webkit-search-decoration\]\:appearance-none::-webkit-search-decoration{-webkit-appearance:none;-moz-appearance:none;appearance:none}.wowsearch-component-scope .wowsearch-\[\.border-b\]\:pb-6.wowsearch-border-b{padding-bottom:calc(var(--wowsearch-spacing)*6)}.wowsearch-component-scope .wowsearch-\[\.border-t\]\:pt-6.wowsearch-border-t{padding-top:calc(var(--wowsearch-spacing)*6)}}@property --wowsearch-tw-animation-delay{syntax:"*";inherits:false;initial-value:0s}@property --wowsearch-tw-animation-direction{syntax:"*";inherits:false;initial-value:normal}@property --wowsearch-tw-animation-duration{syntax:"*";inherits:false}@property --wowsearch-tw-animation-fill-mode{syntax:"*";inherits:false;initial-value:none}@property --wowsearch-tw-animation-iteration-count{syntax:"*";inherits:false;initial-value:1}@property --wowsearch-tw-enter-blur{syntax:"*";inherits:false;initial-value:0}@property --wowsearch-tw-enter-opacity{syntax:"*";inherits:false;initial-value:1}@property --wowsearch-tw-enter-rotate{syntax:"*";inherits:false;initial-value:0}@property --wowsearch-tw-enter-scale{syntax:"*";inherits:false;initial-value:1}@property --wowsearch-tw-enter-translate-x{syntax:"*";inherits:false;initial-value:0}@property --wowsearch-tw-enter-translate-y{syntax:"*";inherits:false;initial-value:0}@property --wowsearch-tw-exit-blur{syntax:"*";inherits:false;initial-value:0}@property --wowsearch-tw-exit-opacity{syntax:"*";inherits:false;initial-value:1}@property --wowsearch-tw-exit-rotate{syntax:"*";inherits:false;initial-value:0}@property --wowsearch-tw-exit-scale{syntax:"*";inherits:false;initial-value:1}@property --wowsearch-tw-exit-translate-x{syntax:"*";inherits:false;initial-value:0}@property --wowsearch-tw-exit-translate-y{syntax:"*";inherits:false;initial-value:0}.wowsearch-component-scope{--wowsearch-font-size:16px;--wowsearch-foreground:#101828;--wowsearch-card:#fff;--wowsearch-card-foreground:#101828;--wowsearch-popover:#fff;--wowsearch-popover-foreground:#101828;--wowsearch-primary:#4f9381;--wowsearch-primary-foreground:#fff;--wowsearch-secondary:#e8f5f1;--wowsearch-secondary-foreground:#2a5e52;--wowsearch-muted:#f0ede8;--wowsearch-muted-foreground:#667085;--wowsearch-accent:#4f9381;--wowsearch-accent-foreground:#fff;--wowsearch-destructive:#d4183d;--wowsearch-destructive-foreground:#fff;--wowsearch-border:#1018281a;--wowsearch-input:transparent;--wowsearch-input-background:#f3f3f5;--wowsearch-switch-background:#cbced4;--wowsearch-font-weight-medium:500;--wowsearch-font-weight-normal:400;--wowsearch-ring:#4f9381;--wowsearch-chart-1:oklch(64.6% .222 41.116);--wowsearch-chart-2:oklch(60% .118 184.704);--wowsearch-chart-3:oklch(39.8% .07 227.392);--wowsearch-chart-4:oklch(82.8% .189 84.429);--wowsearch-chart-5:oklch(76.9% .188 70.08);--wowsearch-radius:.625rem;--wowsearch-sidebar:oklch(98.5% 0 0);--wowsearch-sidebar-foreground:oklch(14.5% 0 0);--wowsearch-sidebar-primary:#030213;--wowsearch-sidebar-primary-foreground:oklch(98.5% 0 0);--wowsearch-sidebar-accent:oklch(97% 0 0);--wowsearch-sidebar-accent-foreground:oklch(20.5% 0 0);--wowsearch-sidebar-border:oklch(92.2% 0 0);--wowsearch-sidebar-ring:oklch(70.8% 0 0)}@property --wowsearch-tw-translate-x{syntax:"*";inherits:false;initial-value:0}@property --wowsearch-tw-translate-y{syntax:"*";inherits:false;initial-value:0}@property --wowsearch-tw-translate-z{syntax:"*";inherits:false;initial-value:0}@property --wowsearch-tw-rotate-x{syntax:"*";inherits:false}@property --wowsearch-tw-rotate-y{syntax:"*";inherits:false}@property --wowsearch-tw-rotate-z{syntax:"*";inherits:false}@property --wowsearch-tw-skew-x{syntax:"*";inherits:false}@property --wowsearch-tw-skew-y{syntax:"*";inherits:false}@property --wowsearch-tw-space-x-reverse{syntax:"*";inherits:false;initial-value:0}@property --wowsearch-tw-border-style{syntax:"*";inherits:false;initial-value:solid}@property --wowsearch-tw-leading{syntax:"*";inherits:false}@property --wowsearch-tw-font-weight{syntax:"*";inherits:false}@property --wowsearch-tw-tracking{syntax:"*";inherits:false}@property --wowsearch-tw-ordinal{syntax:"*";inherits:false}@property --wowsearch-tw-slashed-zero{syntax:"*";inherits:false}@property --wowsearch-tw-numeric-figure{syntax:"*";inherits:false}@property --wowsearch-tw-numeric-spacing{syntax:"*";inherits:false}@property --wowsearch-tw-numeric-fraction{syntax:"*";inherits:false}@property --wowsearch-tw-shadow{syntax:"*";inherits:false;initial-value:0 0 #0000}@property --wowsearch-tw-shadow-color{syntax:"*";inherits:false}@property --wowsearch-tw-shadow-alpha{syntax:"<percentage>";inherits:false;initial-value:100%}@property --wowsearch-tw-inset-shadow{syntax:"*";inherits:false;initial-value:0 0 #0000}@property --wowsearch-tw-inset-shadow-color{syntax:"*";inherits:false}@property --wowsearch-tw-inset-shadow-alpha{syntax:"<percentage>";inherits:false;initial-value:100%}@property --wowsearch-tw-ring-color{syntax:"*";inherits:false}@property --wowsearch-tw-ring-shadow{syntax:"*";inherits:false;initial-value:0 0 #0000}@property --wowsearch-tw-inset-ring-color{syntax:"*";inherits:false}@property --wowsearch-tw-inset-ring-shadow{syntax:"*";inherits:false;initial-value:0 0 #0000}@property --wowsearch-tw-ring-inset{syntax:"*";inherits:false}@property --wowsearch-tw-ring-offset-width{syntax:"<length>";inherits:false;initial-value:0}@property --wowsearch-tw-ring-offset-color{syntax:"*";inherits:false;initial-value:#fff}@property --wowsearch-tw-ring-offset-shadow{syntax:"*";inherits:false;initial-value:0 0 #0000}@property --wowsearch-tw-outline-style{syntax:"*";inherits:false;initial-value:solid}@property --wowsearch-tw-blur{syntax:"*";inherits:false}@property --wowsearch-tw-brightness{syntax:"*";inherits:false}@property --wowsearch-tw-contrast{syntax:"*";inherits:false}@property --wowsearch-tw-grayscale{syntax:"*";inherits:false}@property --wowsearch-tw-hue-rotate{syntax:"*";inherits:false}@property --wowsearch-tw-invert{syntax:"*";inherits:false}@property --wowsearch-tw-opacity{syntax:"*";inherits:false}@property --wowsearch-tw-saturate{syntax:"*";inherits:false}@property --wowsearch-tw-sepia{syntax:"*";inherits:false}@property --wowsearch-tw-drop-shadow{syntax:"*";inherits:false}@property --wowsearch-tw-drop-shadow-color{syntax:"*";inherits:false}@property --wowsearch-tw-drop-shadow-alpha{syntax:"<percentage>";inherits:false;initial-value:100%}@property --wowsearch-tw-drop-shadow-size{syntax:"*";inherits:false}@property --wowsearch-tw-backdrop-blur{syntax:"*";inherits:false}@property --wowsearch-tw-backdrop-brightness{syntax:"*";inherits:false}@property --wowsearch-tw-backdrop-contrast{syntax:"*";inherits:false}@property --wowsearch-tw-backdrop-grayscale{syntax:"*";inherits:false}@property --wowsearch-tw-backdrop-hue-rotate{syntax:"*";inherits:false}@property --wowsearch-tw-backdrop-invert{syntax:"*";inherits:false}@property --wowsearch-tw-backdrop-opacity{syntax:"*";inherits:false}@property --wowsearch-tw-backdrop-saturate{syntax:"*";inherits:false}@property --wowsearch-tw-backdrop-sepia{syntax:"*";inherits:false}@property --wowsearch-tw-duration{syntax:"*";inherits:false}@property --wowsearch-tw-ease{syntax:"*";inherits:false}@property --wowsearch-tw-content{syntax:"*";inherits:false;initial-value:""}@keyframes wowsearch-kf-pulse{50%{opacity:.5}}@keyframes wowsearch-kf-enter{0%{opacity:var(--wowsearch-tw-enter-opacity,1);transform:translate3d(var(--wowsearch-tw-enter-translate-x,0),var(--wowsearch-tw-enter-translate-y,0),0)scale3d(var(--wowsearch-tw-enter-scale,1),var(--wowsearch-tw-enter-scale,1),var(--wowsearch-tw-enter-scale,1))rotate(var(--wowsearch-tw-enter-rotate,0));filter:blur(var(--wowsearch-tw-enter-blur,0))}}@keyframes wowsearch-kf-exit{to{opacity:var(--wowsearch-tw-exit-opacity,1);transform:translate3d(var(--wowsearch-tw-exit-translate-x,0),var(--wowsearch-tw-exit-translate-y,0),0)scale3d(var(--wowsearch-tw-exit-scale,1),var(--wowsearch-tw-exit-scale,1),var(--wowsearch-tw-exit-scale,1))rotate(var(--wowsearch-tw-exit-rotate,0));filter:blur(var(--wowsearch-tw-exit-blur,0))}}@keyframes wowsearch-kf-accordion-down{0%{height:0}to{height:var(--wowsearch-radix-accordion-content-height,var(--wowsearch-bits-accordion-content-height,var(--wowsearch-reka-accordion-content-height,var(--wowsearch-kb-accordion-content-height,var(--wowsearch-ngp-accordion-content-height,auto)))))}}@keyframes wowsearch-kf-accordion-up{0%{height:var(--wowsearch-radix-accordion-content-height,var(--wowsearch-bits-accordion-content-height,var(--wowsearch-reka-accordion-content-height,var(--wowsearch-kb-accordion-content-height,var(--wowsearch-ngp-accordion-content-height,auto)))))}to{height:0}}@keyframes wowsearch-kf-caret-blink{0%,70%,to{opacity:1}20%,50%{opacity:0}}
-
-    .wowsearch-component-scope{
-      width:100%;
-      margin:0;
-      color:#101828;
-      font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-    }
-    .wowsearch-component-scope .wowsearch-search-only-stage{
-      box-sizing:border-box;
-      position:relative;
-      z-index:20;
-      width:100%;
-      overflow:visible;
-      padding:20px;
-    }
-
-button.wowsearch-shrink-0.wowsearch-w-\[58px\].wowsearch-h-\[58px\].wowsearch-mr-\[4px\].wowsearch-rounded-full.wowsearch-bg-\[\#101828\].wowsearch-text-white.wowsearch-flex.wowsearch-items-center.wowsearch-justify-center.wowsearch-shadow-\[0_4px_12px_rgba\(0\,0\,0\,0\.18\)\].wowsearch-hover\:bg-\[\#1d2939\].wowsearch-active\:scale-\[0\.96\].wowsearch-transition-all.wowsearch-duration-150 {
-    border-radius: 40px;
-}
-
-button#wowsearch-desktop-clear-where, button#wowsearch-desktop-clear-what {
-    border-radius: 20px;
-}
-
-
-.wowsearch-component-scope {
-    background: none !important;
-}
-
-ul.wowsearch-py-1 {
-    padding-left: 0;
-}
-
-ul.wowsearch-pb-1\.5 {
-    padding-left: 0px;
-}
-
-  </style>
-
-<div class="wowsearch-component-scope">
+<div class="wowsearch-component-scope" data-wow-home-searchbar-v4 data-search-url="{{ $searchUrl }}" data-initial-query="{{ e($initialQuery) }}" data-initial-where="{{ e($initialWhere) }}" data-initial-mode="{{ e($initialMode) }}">
   <div id="wowsearch-root">
     <div class="wowsearch-search-only-stage">
       <form class="wowsearch-hidden wowsearch-md:block wowsearch-w-full wowsearch-max-w-[900px] wowsearch-mx-auto" id="wowsearch-desktop-search-form" novalidate="">
         <div class="wowsearch-flex wowsearch-items-center wowsearch-h-[68px] wowsearch-bg-white/97 wowsearch-border wowsearch-rounded-full wowsearch-shadow-[0_10px_30px_rgba(28,39,56,0.08)] wowsearch-transition-shadow wowsearch-duration-200 wowsearch-border-[rgba(155,165,180,0.45)]" id="wowsearch-desktop-search-shell">
-          <div class="wowsearch-relative wowsearch-flex wowsearch-items-center wowsearch-gap-3 wowsearch-px-5 wowsearch-flex-[1.7] wowsearch-min-w-0 wowsearch-h-full wowsearch-rounded-full wowsearch-cursor-text wowsearch-transition-colors wowsearch-duration-150 wowsearch-hover:bg-black/[0.025]" id="wowsearch-desktop-what-field">
+          <div class="wowsearch-relative wowsearch-flex wowsearch-items-center wowsearch-gap-3 wowsearch-px-5 wowsearch-flex-1 wowsearch-min-w-0 wowsearch-h-full wowsearch-rounded-full wowsearch-cursor-text wowsearch-transition-colors wowsearch-duration-150 wowsearch-hover:bg-black/[0.025]" id="wowsearch-desktop-what-field">
             <svg aria-hidden="true" class="wowsearch-lucide wowsearch-lucide-sparkles wowsearch-desktop-what-icon wowsearch-shrink-0 wowsearch-transition-colors wowsearch-text-[#8e9bb0]" fill="none" height="17" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="17" xmlns="http://www.w3.org/2000/svg"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"></path><path d="M20 3v4"></path><path d="M22 5h-4"></path><path d="M4 17v2"></path><path d="M5 18H3"></path></svg>
             <div class="wowsearch-flex wowsearch-flex-col wowsearch-min-w-0 wowsearch-flex-1">
               <label class="wowsearch-text-[11px] wowsearch-font-[650] wowsearch-text-[#758096] wowsearch-mb-[1px] wowsearch-cursor-text wowsearch-select-none" for="wowsearch-desktop-what">Search</label>
@@ -61,7 +20,7 @@ ul.wowsearch-pb-1\.5 {
             <button aria-label="Clear search" class="wowsearch-shrink-0 wowsearch-w-5 wowsearch-h-5 wowsearch-rounded-full wowsearch-bg-[#e4e8ee] wowsearch-flex wowsearch-items-center wowsearch-justify-center wowsearch-hover:bg-[#d0d5de] wowsearch-transition-colors" hidden="" id="wowsearch-desktop-clear-what" type="button"><svg aria-hidden="true" class="wowsearch-lucide wowsearch-lucide-x wowsearch-text-[#4a5568]" fill="none" height="10" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="10" xmlns="http://www.w3.org/2000/svg"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
             <div class="wowsearch-absolute wowsearch-top-[calc(100%+8px)] wowsearch-left-0 wowsearch-w-full wowsearch-min-w-[320px] wowsearch-bg-white wowsearch-rounded-2xl wowsearch-border wowsearch-border-black/10 wowsearch-shadow-[0_16px_48px_rgba(16,24,40,0.14)] wowsearch-overflow-hidden wowsearch-z-50" hidden="" id="wowsearch-desktop-what-dropdown">
               <div class="wowsearch-px-4 wowsearch-pt-3 wowsearch-pb-1"><span class="wowsearch-text-[10px] wowsearch-font-bold wowsearch-uppercase wowsearch-tracking-widest wowsearch-text-[#98a2b3]" id="wowsearch-desktop-what-heading">Popular experiences</span></div>
-              <ul class="wowsearch-py-1"><li class="wowsearch-desktop-what-option" data-cat="Therapy" data-label="Massage Therapy">
+              <ul class="wowsearch-py-1" id="wowsearch-desktop-what-list"><li class="wowsearch-desktop-what-option" data-cat="Therapy" data-label="Massage Therapy">
                 <button class="wowsearch-w-full wowsearch-flex wowsearch-items-center wowsearch-gap-3 wowsearch-px-4 wowsearch-py-2.5 wowsearch-hover:bg-[#f7f9fb] wowsearch-transition-colors wowsearch-text-left wowsearch-group" data-action="desktop-select-what" type="button">
                   <svg aria-hidden="true" class="wowsearch-lucide wowsearch-lucide-sparkles wowsearch-text-[#4f9381] wowsearch-shrink-0 wowsearch-opacity-60" fill="none" height="13" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="13" xmlns="http://www.w3.org/2000/svg"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"></path><path d="M20 3v4"></path><path d="M22 5h-4"></path><path d="M4 17v2"></path><path d="M5 18H3"></path></svg>
                   <span class="wowsearch-flex-1 wowsearch-text-[13.5px] wowsearch-text-[#1a202c] wowsearch-font-medium">Massage Therapy</span>
@@ -238,7 +197,7 @@ ul.wowsearch-pb-1\.5 {
                 <span class="wowsearch-flex-1"><span class="wowsearch-block wowsearch-text-[13.5px] wowsearch-font-semibold wowsearch-text-[#1a202c]">Online</span><span class="wowsearch-block wowsearch-text-[11px] wowsearch-text-[#98a2b3]">Join from anywhere</span></span><svg aria-hidden="true" class="wowsearch-lucide wowsearch-lucide-chevron-right wowsearch-text-[#c0c8d4]" fill="none" height="14" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="14" xmlns="http://www.w3.org/2000/svg"><path d="m9 18 6-6-6-6"></path></svg>
               </button>
               <div class="wowsearch-px-4 wowsearch-pt-2.5 wowsearch-pb-1" id="wowsearch-desktop-location-list-heading-wrap"><span class="wowsearch-text-[10px] wowsearch-font-bold wowsearch-uppercase wowsearch-tracking-widest wowsearch-text-[#98a2b3]" id="wowsearch-desktop-location-heading">Popular</span></div>
-              <ul class="wowsearch-pb-1.5"><li class="wowsearch-desktop-location-option" data-label="London">
+              <ul class="wowsearch-pb-1.5" id="wowsearch-desktop-location-list"><li class="wowsearch-desktop-location-option" data-label="London">
                 <button class="wowsearch-w-full wowsearch-flex wowsearch-items-center wowsearch-gap-3 wowsearch-px-4 wowsearch-py-2.5 wowsearch-hover:bg-[#f7f9fb] wowsearch-transition-colors wowsearch-text-left" data-action="desktop-select-where" type="button">
                   <svg aria-hidden="true" class="wowsearch-lucide wowsearch-lucide-building-2 wowsearch-text-[#8e9bb0] wowsearch-shrink-0" fill="none" height="13" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="13" xmlns="http://www.w3.org/2000/svg"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"></path><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"></path><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"></path><path d="M10 6h4"></path><path d="M10 10h4"></path><path d="M10 14h4"></path><path d="M10 18h4"></path></svg><span class="wowsearch-text-[13.5px] wowsearch-text-[#1a202c] wowsearch-font-medium">London</span>
                 </button>
@@ -306,7 +265,7 @@ ul.wowsearch-pb-1\.5 {
       <div class="wowsearch-flex-1 wowsearch-overflow-y-auto wowsearch-px-2 wowsearch-pb-8">
         <button class="wowsearch-w-full wowsearch-flex wowsearch-items-center wowsearch-gap-3.5 wowsearch-px-3 wowsearch-py-4 wowsearch-border-b wowsearch-border-[#eef0f3] wowsearch-text-left" id="wowsearch-mobile-use-location" type="button"><span class="wowsearch-w-9 wowsearch-h-9 wowsearch-rounded-full wowsearch-bg-[#e8f5f1] wowsearch-flex wowsearch-items-center wowsearch-justify-center wowsearch-shrink-0"><svg aria-hidden="true" class="wowsearch-lucide wowsearch-lucide-navigation wowsearch-text-[#4f9381]" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><polygon points="3 11 22 2 13 21 11 13 3 11"></polygon></svg></span><span class="wowsearch-flex-1"><strong class="wowsearch-block wowsearch-text-[15px] wowsearch-text-[#1a202c] wowsearch-font-semibold">Use my location</strong><small class="wowsearch-text-[12px] wowsearch-text-[#98a2b3]">Find wellness near you</small></span><svg aria-hidden="true" class="wowsearch-lucide wowsearch-lucide-chevron-right wowsearch-text-[#b8c0cc]" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="m9 18 6-6-6-6"></path></svg></button>
         <button class="wowsearch-w-full wowsearch-flex wowsearch-items-center wowsearch-gap-3.5 wowsearch-px-3 wowsearch-py-4 wowsearch-border-b wowsearch-border-[#eef0f3] wowsearch-text-left" id="wowsearch-mobile-online" type="button"><span class="wowsearch-w-9 wowsearch-h-9 wowsearch-rounded-full wowsearch-bg-blue-50 wowsearch-flex wowsearch-items-center wowsearch-justify-center wowsearch-shrink-0"><svg aria-hidden="true" class="wowsearch-lucide wowsearch-lucide-wifi wowsearch-text-blue-500" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M12 20h.01"></path><path d="M2 8.82a15 15 0 0 1 20 0"></path><path d="M5 12.859a10 10 0 0 1 14 0"></path><path d="M8.5 16.429a5 5 0 0 1 7 0"></path></svg></span><span class="wowsearch-flex-1"><strong class="wowsearch-block wowsearch-text-[15px] wowsearch-text-[#1a202c] wowsearch-font-semibold">Online</strong><small class="wowsearch-text-[12px] wowsearch-text-[#98a2b3]">Join from anywhere</small></span><svg aria-hidden="true" class="wowsearch-lucide wowsearch-lucide-chevron-right wowsearch-text-[#b8c0cc]" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="m9 18 6-6-6-6"></path></svg></button>
-        <button class="wowsearch-mobile-location-option wowsearch-w-full wowsearch-flex wowsearch-items-center wowsearch-gap-3.5 wowsearch-px-3 wowsearch-py-[14px] wowsearch-border-b wowsearch-border-[#eef0f3] wowsearch-text-left wowsearch-last:border-0" data-label="London" type="button">
+        <div id="wowsearch-mobile-location-list"><button class="wowsearch-mobile-location-option wowsearch-w-full wowsearch-flex wowsearch-items-center wowsearch-gap-3.5 wowsearch-px-3 wowsearch-py-[14px] wowsearch-border-b wowsearch-border-[#eef0f3] wowsearch-text-left wowsearch-last:border-0" data-label="London" type="button">
           <span class="wowsearch-w-8 wowsearch-h-8 wowsearch-flex wowsearch-items-center wowsearch-justify-center wowsearch-shrink-0"><svg aria-hidden="true" class="wowsearch-lucide wowsearch-lucide-building-2 wowsearch-text-[#8e9bb0]" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"></path><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"></path><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"></path><path d="M10 6h4"></path><path d="M10 10h4"></path><path d="M10 14h4"></path><path d="M10 18h4"></path></svg></span>
           <span class="wowsearch-text-[15px] wowsearch-text-[#1a202c] wowsearch-font-medium wowsearch-flex-1">London</span>
           <span class="wowsearch-selection-check wowsearch-w-5 wowsearch-h-5 wowsearch-rounded-full wowsearch-bg-[#4f9381] wowsearch-items-center wowsearch-justify-center"><span class="wowsearch-text-white wowsearch-text-[10px] wowsearch-font-bold">✓</span></span>
@@ -338,7 +297,7 @@ ul.wowsearch-pb-1\.5 {
         <span class="wowsearch-w-8 wowsearch-h-8 wowsearch-flex wowsearch-items-center wowsearch-justify-center wowsearch-shrink-0"><svg aria-hidden="true" class="wowsearch-lucide wowsearch-lucide-building-2 wowsearch-text-[#8e9bb0]" fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"></path><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"></path><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"></path><path d="M10 6h4"></path><path d="M10 10h4"></path><path d="M10 14h4"></path><path d="M10 18h4"></path></svg></span>
         <span class="wowsearch-text-[15px] wowsearch-text-[#1a202c] wowsearch-font-medium wowsearch-flex-1">Leeds</span>
         <span class="wowsearch-selection-check wowsearch-w-5 wowsearch-h-5 wowsearch-rounded-full wowsearch-bg-[#4f9381] wowsearch-items-center wowsearch-justify-center"><span class="wowsearch-text-white wowsearch-text-[10px] wowsearch-font-bold">✓</span></span>
-      </button>
+      </button></div>
       </div>
     </div>
   </div>
@@ -456,364 +415,3 @@ ul.wowsearch-pb-1\.5 {
     </div>
   </div>
 </div>
-
-<script>
-
-  (() => {
-    'use strict';
-
-    const state = {
-      desktopWhereSelected: '',
-      mobileWhat: '',
-      mobileWhere: '',
-      mobileWhereSelected: '',
-      activeDesktop: null,
-      activeModal: null
-    };
-
-    const $ = (selector, root = document) => root.querySelector(selector);
-    const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
-
-    function buildSearchUrl(what, where) {
-      const params = new URLSearchParams();
-      const whatValue = what.trim();
-      const whereValue = where.trim();
-      if (whatValue) params.set('what', whatValue);
-      if (whereValue && whereValue !== 'Near me') params.set('where', whereValue);
-      return `/search?${params.toString()}`;
-    }
-
-    function requestLocation() {
-      if (!navigator.geolocation) {
-        console.warn('Geolocation is not available in this browser.');
-        return;
-      }
-      navigator.geolocation.getCurrentPosition(
-              () => {},
-              error => console.warn(`Unable to access your location: ${error.message}`),
-              { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }
-      );
-    }
-
-    function replaceClasses(element, remove, add) {
-      remove.forEach(c => element.classList.remove(c));
-      add.forEach(c => element.classList.add(c));
-    }
-
-    // ----- Desktop -----
-    const desktopForm = $('#wowsearch-desktop-search-form');
-    const desktopShell = $('#wowsearch-desktop-search-shell');
-    const whatField = $('#wowsearch-desktop-what-field');
-    const whereField = $('#wowsearch-desktop-where-field');
-    const whatInput = $('#wowsearch-desktop-what');
-    const whereInput = $('#wowsearch-desktop-where');
-    const whatDropdown = $('#wowsearch-desktop-what-dropdown');
-    const whereDropdown = $('#wowsearch-desktop-where-dropdown');
-    const clearWhat = $('#wowsearch-desktop-clear-what');
-    const clearWhere = $('#wowsearch-desktop-clear-where');
-    const nearMeChip = $('#wowsearch-desktop-near-me-chip');
-    const whatHeading = $('#wowsearch-desktop-what-heading');
-    const locationHeading = $('#wowsearch-desktop-location-heading');
-    const locationHeadingWrap = $('#wowsearch-desktop-location-list-heading-wrap');
-    const whatIcon = $('.wowsearch-desktop-what-icon');
-    const whereIcon = $('.wowsearch-desktop-where-icon');
-
-    function setDesktopActive(which) {
-      state.activeDesktop = which;
-      const active = which === 'what' || which === 'where';
-      desktopShell.classList.toggle('wowsearch-border-[rgba(155,165,180,0.45)]', !active);
-      desktopShell.classList.toggle('wowsearch-border-[rgba(155,165,180,0.6)]', active);
-      desktopShell.classList.toggle('wowsearch-shadow-[0_10px_30px_rgba(28,39,56,0.08)]', !active);
-      desktopShell.classList.toggle('wowsearch-shadow-[0_0_0_3px_rgba(79,147,129,0.15),0_10px_30px_rgba(28,39,56,0.10)]', active);
-
-      const whatActive = which === 'what';
-      const whereActive = which === 'where';
-      whatField.classList.toggle('wowsearch-bg-white', whatActive);
-      whatField.classList.toggle('wowsearch-shadow-[0_2px_12px_rgba(16,24,40,0.06)]', whatActive);
-      whatField.classList.toggle('wowsearch-hover:bg-black/[0.025]', !whatActive);
-      whereField.classList.toggle('wowsearch-bg-white', whereActive);
-      whereField.classList.toggle('wowsearch-shadow-[0_2px_12px_rgba(16,24,40,0.06)]', whereActive);
-      whereField.classList.toggle('wowsearch-hover:bg-black/[0.025]', !whereActive);
-      whatIcon.classList.toggle('wowsearch-text-[#4f9381]', whatActive);
-      whatIcon.classList.toggle('wowsearch-text-[#8e9bb0]', !whatActive);
-      whereIcon.classList.toggle('wowsearch-text-[#4f9381]', whereActive);
-      whereIcon.classList.toggle('wowsearch-text-[#8e9bb0]', !whereActive);
-      whatDropdown.hidden = !whatActive;
-      whereDropdown.hidden = !whereActive;
-      clearWhat.hidden = !(whatInput.value && whatActive);
-      clearWhere.hidden = !(whereInput.value || state.desktopWhereSelected);
-      if (whatActive) filterDesktopWhat();
-      if (whereActive) filterDesktopWhere();
-    }
-
-    function filterDesktopWhat() {
-      const query = whatInput.value.trim().toLowerCase();
-      whatHeading.textContent = query ? 'Suggestions' : 'Popular experiences';
-      let visible = 0;
-      $$('.wowsearch-desktop-what-option').forEach(item => {
-        const matches = !query || item.dataset.label.toLowerCase().includes(query) || item.dataset.cat.toLowerCase().includes(query);
-        const show = matches && visible < 8;
-        item.hidden = !show;
-        if (show) visible += 1;
-      });
-      whatDropdown.hidden = state.activeDesktop !== 'what' || visible === 0;
-    }
-
-    function filterDesktopWhere() {
-      const query = whereInput.value.trim().toLowerCase();
-      locationHeading.textContent = query ? 'Matching' : 'Popular';
-      let visible = 0;
-      $$('.wowsearch-desktop-location-option').forEach(item => {
-        const matches = !query || item.dataset.label.toLowerCase().includes(query);
-        const show = matches && visible < (query ? 6 : 8);
-        item.hidden = !show;
-        if (show) visible += 1;
-      });
-      locationHeadingWrap.hidden = !!query && visible === 0;
-    }
-
-    function updateDesktopWhereDisplay() {
-      const isNearMe = state.desktopWhereSelected === 'Near me';
-      whereInput.hidden = isNearMe;
-      nearMeChip.hidden = !isNearMe;
-      clearWhere.hidden = !(whereInput.value || state.desktopWhereSelected);
-    }
-
-    whatField.addEventListener('click', event => {
-      if (event.target.closest('button')) return;
-      whatInput.focus();
-    });
-    whereField.addEventListener('click', event => {
-      if (event.target.closest('button')) return;
-      whereInput.focus();
-    });
-    whatInput.addEventListener('focus', () => setDesktopActive('what'));
-    whereInput.addEventListener('focus', () => setDesktopActive('where'));
-    whatInput.addEventListener('input', () => { clearWhat.hidden = !(whatInput.value && state.activeDesktop === 'what'); filterDesktopWhat(); });
-    whereInput.addEventListener('input', () => { state.desktopWhereSelected = ''; clearWhere.hidden = !whereInput.value; filterDesktopWhere(); });
-
-    $$('.wowsearch-desktop-what-option button').forEach(button => button.addEventListener('mousedown', event => {
-      event.preventDefault();
-      const item = button.closest('.wowsearch-desktop-what-option');
-      whatInput.value = item.dataset.label;
-      setDesktopActive(null);
-      whereInput.focus();
-      setDesktopActive('where');
-    }));
-
-    $$('.wowsearch-desktop-location-option button').forEach(button => button.addEventListener('mousedown', event => {
-      event.preventDefault();
-      const value = button.closest('.wowsearch-desktop-location-option').dataset.label;
-      whereInput.value = value;
-      state.desktopWhereSelected = value;
-      updateDesktopWhereDisplay();
-      setDesktopActive(null);
-    }));
-
-    $('#wowsearch-desktop-online').addEventListener('mousedown', event => {
-      event.preventDefault();
-      whereInput.value = 'Online';
-      state.desktopWhereSelected = 'Online';
-      updateDesktopWhereDisplay();
-      setDesktopActive(null);
-    });
-
-    $('#wowsearch-desktop-use-location').addEventListener('mousedown', event => {
-      event.preventDefault();
-      whereInput.value = 'Near me';
-      state.desktopWhereSelected = 'Near me';
-      updateDesktopWhereDisplay();
-      setDesktopActive(null);
-      requestLocation();
-    });
-
-    clearWhat.addEventListener('mousedown', event => { event.preventDefault(); whatInput.value = ''; whatInput.focus(); setDesktopActive('what'); filterDesktopWhat(); });
-    clearWhere.addEventListener('mousedown', event => {
-      event.preventDefault();
-      whereInput.value = '';
-      state.desktopWhereSelected = '';
-      updateDesktopWhereDisplay();
-      whereInput.focus();
-      setDesktopActive('where');
-    });
-
-    desktopForm.addEventListener('submit', event => {
-      event.preventDefault();
-      if (!whatInput.value.trim()) { whatInput.focus(); setDesktopActive('what'); return; }
-      window.location.href = buildSearchUrl(whatInput.value, whereInput.value);
-    });
-
-    document.addEventListener('mousedown', event => {
-      if (!desktopForm.contains(event.target)) setDesktopActive(null);
-    });
-
-    // ----- Mobile -----
-    const mobileForm = $('#wowsearch-mobile-search-form');
-    const mobileWhatDisplay = $('#wowsearch-mobile-what-display');
-    const mobileWhereDisplay = $('#wowsearch-mobile-where-display');
-    const mobileNearMeChip = $('#wowsearch-mobile-near-me-chip');
-    const mobileWhatIcon = $('.wowsearch-mobile-what-main-icon');
-    const mobileWhereIcon = $('.wowsearch-mobile-where-main-icon');
-    const whatModal = $('#wowsearch-mobile-what-modal');
-    const whereModal = $('#wowsearch-mobile-where-modal');
-    const mobileWhatInput = $('#wowsearch-mobile-what-input');
-    const mobileWhereInput = $('#wowsearch-mobile-where-input');
-
-    function updateMobileMainDisplay() {
-      if (state.mobileWhat) {
-        mobileWhatDisplay.textContent = state.mobileWhat;
-        replaceClasses(mobileWhatDisplay, ['wowsearch-text-[#687283]','wowsearch-font-normal'], ['wowsearch-text-[#111827]']);
-        replaceClasses(mobileWhatIcon, ['wowsearch-text-[#8e9bb0]'], ['wowsearch-text-[#4f9381]']);
-      } else {
-        mobileWhatDisplay.textContent = 'Search therapies, events & more';
-        replaceClasses(mobileWhatDisplay, ['wowsearch-text-[#111827]'], ['wowsearch-text-[#687283]','wowsearch-font-normal']);
-        replaceClasses(mobileWhatIcon, ['wowsearch-text-[#4f9381]'], ['wowsearch-text-[#8e9bb0]']);
-      }
-
-      const where = state.mobileWhereSelected || state.mobileWhere;
-      const isNearMe = where === 'Near me';
-      mobileNearMeChip.hidden = !isNearMe;
-      mobileWhereDisplay.hidden = isNearMe;
-      if (!isNearMe) {
-        mobileWhereDisplay.textContent = where || 'Near me, town or Online';
-        if (where) replaceClasses(mobileWhereDisplay, ['wowsearch-text-[#687283]','wowsearch-font-normal'], ['wowsearch-text-[#111827]']);
-        else replaceClasses(mobileWhereDisplay, ['wowsearch-text-[#111827]'], ['wowsearch-text-[#687283]','wowsearch-font-normal']);
-      }
-      replaceClasses(mobileWhereIcon, [where ? 'wowsearch-text-[#8e9bb0]' : 'wowsearch-text-[#4f9381]'], [where ? 'wowsearch-text-[#4f9381]' : 'wowsearch-text-[#8e9bb0]']);
-    }
-
-    function markMobileSelections() {
-      $$('.wowsearch-mobile-what-option').forEach(button => {
-        const selected = button.dataset.label === state.mobileWhat;
-        button.classList.toggle('wowsearch-bg-[#f0faf7]', selected);
-        const check = $('.wowsearch-selection-check', button);
-        check.hidden = !selected;
-        check.classList.toggle('wowsearch-flex', selected);
-      });
-      const where = state.mobileWhereSelected;
-      $('#wowsearch-mobile-online').classList.toggle('wowsearch-bg-[#f0faf7]', where === 'Online');
-      $$('.wowsearch-mobile-location-option').forEach(button => {
-        const selected = button.dataset.label === where;
-        button.classList.toggle('wowsearch-bg-[#f0faf7]', selected);
-        const check = $('.wowsearch-selection-check', button);
-        check.hidden = !selected;
-        check.classList.toggle('wowsearch-flex', selected);
-      });
-    }
-
-    function filterMobileWhat() {
-      const query = mobileWhatInput.value.trim().toLowerCase();
-      $$('.wowsearch-mobile-what-option').forEach(button => {
-        button.hidden = !!query && !(button.dataset.label.toLowerCase().includes(query) || button.dataset.cat.toLowerCase().includes(query));
-      });
-    }
-
-    function filterMobileWhere() {
-      const query = mobileWhereInput.value.trim().toLowerCase();
-      $$('.wowsearch-mobile-location-option').forEach(button => {
-        button.hidden = !!query && !button.dataset.label.toLowerCase().includes(query);
-      });
-    }
-
-    function openModal(modal, input) {
-      if (state.activeModal) closeModal(state.activeModal);
-      state.activeModal = modal;
-      modal.hidden = false;
-      $('.wowsearch-mobile-sheet', modal).style.height = '88dvh';
-      document.body.style.overflow = 'hidden';
-      if (modal === whatModal) { mobileWhatInput.value = state.mobileWhat; filterMobileWhat(); }
-      else { mobileWhereInput.value = ''; filterMobileWhere(); }
-      markMobileSelections();
-      window.setTimeout(() => input.focus(), 100);
-    }
-
-    function closeModal(modal) {
-      modal.hidden = true;
-      $('.wowsearch-mobile-sheet', modal).style.height = '88dvh';
-      if (state.activeModal === modal) state.activeModal = null;
-      if (!state.activeModal) document.body.style.overflow = '';
-      if (modal === whereModal) mobileWhereInput.value = '';
-    }
-
-    function enableSheetDrag(modal) {
-      const handle = $('.wowsearch-mobile-sheet-handle', modal);
-      const sheet = $('.wowsearch-mobile-sheet', modal);
-      let drag = null;
-      handle.addEventListener('pointerdown', event => {
-        handle.setPointerCapture(event.pointerId);
-        drag = { y: event.clientY, height: parseFloat(sheet.style.height) || 88 };
-      });
-      handle.addEventListener('pointermove', event => {
-        if (!drag) return;
-        const delta = ((drag.y - event.clientY) / window.innerHeight) * 100;
-        const height = Math.min(100, Math.max(88, drag.height + delta));
-        sheet.style.height = `${height}dvh`;
-      });
-      const finish = () => {
-        if (!drag) return;
-        drag = null;
-        const height = parseFloat(sheet.style.height) || 88;
-        sheet.style.height = `${height > 94 ? 100 : 88}dvh`;
-      };
-      handle.addEventListener('pointerup', finish);
-      handle.addEventListener('pointercancel', finish);
-    }
-
-    $('#wowsearch-mobile-open-what').addEventListener('click', () => openModal(whatModal, mobileWhatInput));
-    $('#wowsearch-mobile-open-where').addEventListener('click', () => openModal(whereModal, mobileWhereInput));
-    $$('.wowsearch-mobile-modal-overlay, .wowsearch-mobile-modal-close').forEach(element => element.addEventListener('click', () => closeModal(element.closest('[id$="-modal"]'))));
-    enableSheetDrag(whatModal);
-    enableSheetDrag(whereModal);
-
-    mobileWhatInput.addEventListener('input', filterMobileWhat);
-    mobileWhereInput.addEventListener('input', filterMobileWhere);
-
-    $$('.wowsearch-mobile-what-option').forEach(button => button.addEventListener('click', () => {
-      state.mobileWhat = button.dataset.label;
-      updateMobileMainDisplay();
-      markMobileSelections();
-      closeModal(whatModal);
-    }));
-
-    $('#wowsearch-mobile-use-location').addEventListener('click', () => {
-      state.mobileWhere = 'Near me';
-      state.mobileWhereSelected = 'Near me';
-      updateMobileMainDisplay();
-      markMobileSelections();
-      requestLocation();
-      closeModal(whereModal);
-    });
-
-    $('#wowsearch-mobile-online').addEventListener('click', () => {
-      state.mobileWhere = 'Online';
-      state.mobileWhereSelected = 'Online';
-      updateMobileMainDisplay();
-      markMobileSelections();
-      closeModal(whereModal);
-    });
-
-    $$('.wowsearch-mobile-location-option').forEach(button => button.addEventListener('click', () => {
-      state.mobileWhere = button.dataset.label;
-      state.mobileWhereSelected = button.dataset.label;
-      updateMobileMainDisplay();
-      markMobileSelections();
-      closeModal(whereModal);
-    }));
-
-    mobileForm.addEventListener('submit', event => {
-      event.preventDefault();
-      if (state.mobileWhat.trim()) window.location.href = buildSearchUrl(state.mobileWhat, state.mobileWhere);
-    });
-
-    document.addEventListener('keydown', event => {
-      if (event.key === 'Escape' && state.activeModal) closeModal(state.activeModal);
-    });
-
-    updateDesktopWhereDisplay();
-    updateMobileMainDisplay();
-    markMobileSelections();
-    filterDesktopWhat();
-    filterDesktopWhere();
-  })();
-
-</script>

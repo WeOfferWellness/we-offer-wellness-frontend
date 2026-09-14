@@ -55,15 +55,6 @@
         pointer-events:none;
         white-space:nowrap;
     }
-    .wow-mobile-wordmark{
-        display:none;
-        font-size:17px;
-        font-weight:800;
-        letter-spacing:-.03em;
-        line-height:1;
-        color:#0b1320;
-        white-space:nowrap;
-    }
     /* hover state inherit existing bg hover */
     .utility-links__secondary .our-vibe-link{ border:1px solid transparent; background:transparent; padding:4px 12px; border-radius:4px; transition:background .2s ease, border-color .2s ease, box-shadow .2s ease; text-decoration:none; display:inline-flex; align-items:center; }
     .utility-links__secondary .our-vibe-link__logo{ display:block; width:auto; height:22px; max-width:96px; object-fit:contain; }
@@ -234,6 +225,59 @@
     .mobile-search-trigger.is-open .mobile-search-trigger__icon--close{
         opacity:1;
     }
+    [data-mobile-search-trigger]{
+        display:none !important;
+    }
+    .mobile-menu-trigger{
+        width:40px;
+        height:40px;
+        min-height:40px;
+        padding:0;
+        border-color:rgba(15,23,42,.12);
+        background:#fff;
+        color:#0f172a;
+    }
+    .mobile-menu-trigger:hover,
+    .mobile-menu-trigger:focus,
+    .mobile-menu-trigger:active{
+        border-color:rgba(15,23,42,.12);
+        background:#fff;
+        color:#0f172a;
+        box-shadow:0 10px 22px rgba(15,23,42,.12);
+    }
+    .mobile-menu-trigger.is-open{
+        border-color:#dc2626;
+        background:#dc2626;
+        color:#fff;
+        box-shadow:0 10px 22px rgba(220,38,38,.22);
+    }
+    .mobile-menu-trigger svg{
+        display:block;
+        width:24px;
+        height:24px;
+        color:currentColor;
+    }
+    .mobile-menu-trigger.is-open svg{
+        color:#fff;
+    }
+    .mobile-menu-trigger.is-open svg path{
+        stroke:#fff !important;
+    }
+    .mobile-menu-trigger__icon{
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        pointer-events:none;
+    }
+    .mobile-menu-trigger__icon--open{
+        display:none;
+    }
+    .mobile-menu-trigger.is-open .mobile-menu-trigger__icon--closed{
+        display:none;
+    }
+    .mobile-menu-trigger.is-open .mobile-menu-trigger__icon--open{
+        display:flex;
+    }
     @media (max-width: 480px){
         .practice-mode{ flex-direction:column; }
         .practitioner-form .field-row{ grid-template-columns:1fr; }
@@ -248,8 +292,37 @@
         .mobile-search-drawer__title{ font-size:20px; }
     }
     @media (max-width: 1279.98px){
-        .wow-brand-mark{ display:none !important; }
-        .wow-mobile-wordmark{ display:inline-flex; align-items:center; }
+        .wow-mobile-logo-group{ margin-left:48px; }
+        .wow-mobile-menu-anchor{
+            position:absolute;
+            left:12px;
+            top:50%;
+            transform:translateY(-50%);
+        }
+        .mobile-nav-text-trigger,
+        .mobile-nav-text-trigger:hover,
+        .mobile-nav-text-trigger:focus,
+        .mobile-nav-text-trigger:active,
+        .mobile-search-trigger.is-open,
+        .mobile-menu-trigger,
+        .mobile-menu-trigger:hover,
+        .mobile-menu-trigger:focus,
+        .mobile-menu-trigger:active,
+        .mobile-menu-trigger.is-open{
+            width:40px;
+            min-width:40px;
+            height:40px;
+            min-height:40px;
+            padding:0;
+            border:0;
+            background:transparent;
+            box-shadow:none;
+            color:#0f172a;
+        }
+        .mobile-menu-trigger.is-open svg,
+        .mobile-menu-trigger.is-open svg path{ color:#0f172a; stroke:#0f172a !important; }
+        .wow-brand-mark{ display:inline-flex !important; align-items:center; }
+        .wow-brand-mark svg{ height:28px; width:auto; max-width:210px; }
     }
 </style>
 <style>
@@ -331,8 +404,8 @@
     <div id="header-sentinel" style="position:relative;height:1px;width:1px"></div>
     <nav class="top-0 z-50 bg-white/90 backdrop-blur border-b"
             style="border-bottom: 1px solid rgba(153, 153, 153, 0.4); margin-top: -1px;">
-        <div class="container container-page header-inner h-16 flex items-center justify-between">
-            <div class="flex items-center gap-4"><a class="flex items-center gap-2 shrink-0" href="/" aria-label="We Offer Wellness">
+        <div class="container container-page header-inner h-16 flex items-center justify-between position-relative">
+            <div class="flex items-center gap-4 wow-mobile-logo-group"><a class="flex items-center gap-2 shrink-0" href="/" aria-label="We Offer Wellness">
                 <!-- Inline SVG logo -->
                 <span class="wow-brand-mark block" style="height:28px; display:inline-flex; align-items:center">
                 <!-- BEGIN: WOW Logo -->
@@ -364,7 +437,6 @@
                     </svg>
                     <!-- END: WOW Logo -->
                 </span>
-                <span class="wow-mobile-wordmark">We Offer Wellness</span>
             </a>
                 <nav class="wow-desktop-only items-center gap-1 wow-desktop-nav" id="desktopNav" aria-label="Main navigation">
                     <div class="nav-item"><a class="link-wow--nav" data-mega-menu="need" tabindex="0" href="/needs">By Need</a></div>
@@ -381,10 +453,10 @@
             <div class="wow-desktop-only items-center gap-2 position-relative">
                 <button
                     type="button"
-                    class="icon-btn position-relative mobile-search-trigger"
+                    class="icon-btn position-relative mobile-search-trigger wow-search-modal-trigger"
                     aria-label="Search"
                     aria-expanded="false"
-                    data-mobile-search-trigger>
+                    data-wow-search-modal-trigger>
                     <span class="mobile-search-trigger__icon mobile-search-trigger__icon--search" aria-hidden="true">
                         <svg class="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
                             <path stroke="currentColor" stroke-linecap="round" stroke-width="2"
@@ -470,18 +542,44 @@
             <div class="wow-mobile-tablet-only items-center gap-3">
                 <button
                     type="button"
-                    class="mobile-nav-text-trigger mobile-search-trigger"
+                    class="mobile-nav-text-trigger mobile-search-trigger wow-search-modal-trigger"
                     aria-label="Search"
                     aria-expanded="false"
-                    data-mobile-search-trigger>
-                    <span class="mobile-nav-text-trigger__label">Search</span>
+                    data-wow-search-modal-trigger>
+                    <span class="mobile-search-trigger__icon mobile-search-trigger__icon--search" aria-hidden="true">
+                        <svg class="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="m21 21-3.5-3.5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"></path>
+                        </svg>
+                    </span>
                 </button>
+                @auth
+                    <a class="mobile-nav-text-trigger mobile-account-trigger" href="{{ route('account.dashboard') }}" aria-label="Account">
+                        <svg class="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0 0a8.949 8.949 0 0 0 4.951-1.488A3.987 3.987 0 0 0 13 16h-2a3.987 3.987 0 0 0-3.951 3.512A8.948 8.948 0 0 0 12 21Zm3-11a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
+                        </svg>
+                    </a>
+                @else
+                    <a class="mobile-nav-text-trigger mobile-account-trigger" href="{{ route('login', ['redirect' => '/account']) }}" aria-label="Account">
+                        <svg class="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0 0a8.949 8.949 0 0 0 4.951-1.488A3.987 3.987 0 0 0 13 16h-2a3.987 3.987 0 0 0-3.951 3.512A8.948 8.948 0 0 0 12 21Zm3-11a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
+                        </svg>
+                    </a>
+                @endauth
                 <button
                     type="button"
-                    class="mobile-nav-text-trigger mobile-menu-trigger"
+                    class="mobile-nav-text-trigger mobile-menu-trigger wow-mobile-menu-anchor"
                     data-wow-mobile-toggle
                     aria-label="Menu" aria-expanded="false">
-                    <span class="mobile-nav-text-trigger__label">Menu</span>
+                    <span class="mobile-menu-trigger__icon mobile-menu-trigger__icon--closed" aria-hidden="true">
+                        <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M5 7h14M5 12h14M5 17h14"/>
+                        </svg>
+                    </span>
+                    <span class="mobile-menu-trigger__icon mobile-menu-trigger__icon--open" aria-hidden="true">
+                        <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 17.94 6M18 18 6.06 6"/>
+                        </svg>
+                    </span>
                 </button>
             </div>
         </div><!----><!---->
@@ -636,6 +734,7 @@
         </div>
     </nav>
 </header>
+@include('partials.search-modal')
 <div id="wow-header-offset-spacer" aria-hidden="true"></div>
 <style>
 /* Backdrop for mega menu (below header/utility, above content) */
@@ -1459,15 +1558,18 @@
                     });
                 };
 
+                const syncBurgerState = (isOpen) => {
+                    if (!burger) return;
+                    burger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                    burger.setAttribute('aria-label', isOpen ? 'Close menu' : 'Menu');
+                    burger.classList.toggle('is-open', isOpen);
+                };
+
                 const closeMobileMenu = () => {
                     if (!mobileMenu) return;
                     mobileMenu.style.display = 'none';
                     if (mobileMenuBackdrop) mobileMenuBackdrop.classList.remove('is-visible');
-                    burger?.setAttribute('aria-expanded', 'false');
-                    if (burger) burger.setAttribute('aria-label', 'Menu');
-                    const burgerLabel = burger?.querySelector('.mobile-nav-text-trigger__label');
-                    if (burgerLabel) burgerLabel.textContent = 'Menu';
-                    burger?.classList.remove('is-open');
+                    syncBurgerState(false);
                     try {
                         if (window.__WOWHamburger && typeof window.__WOWHamburger.set === 'function') {
                             window.__WOWHamburger.set(false);

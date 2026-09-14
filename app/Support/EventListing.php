@@ -21,37 +21,106 @@ class EventListing
     }
 
     /**
-     * Parse the earliest start timestamp we can infer from the item.
+     * Parse the next available start timestamp we can infer from the item.
      */
     public static function startAt(mixed $item): ?Carbon
     {
         $timezone = self::timezone($item);
-        $date = self::dateValue($item, [
-            'when.event.start_date',
-            'event.start_date',
-            'start_date',
-            'date',
-            'meta_json.start_date',
-            'meta_json.date',
-        ]);
-        $time = self::dateValue($item, [
-            'when.event.start_time',
-            'event.start_time',
-            'start_time',
-            'meta_json.start_time',
-        ]);
+        $dates = [];
+        // Read through accessors before normalising Eloquent models to arrays.
+        // OfferingV3 exposes event dates via its `when` and `event` accessors.
+        $queue = [[
+            'starts_at' => data_get($item, 'starts_at'),
+            'start_date' => data_get($item, 'start_date'),
+            'start_time' => data_get($item, 'start_time'),
+            'date' => data_get($item, 'date'),
+            'when' => data_get($item, 'when', []),
+            'event' => data_get($item, 'event', []),
+            'meta_json' => data_get($item, 'meta_json', []),
+            'dates' => data_get($item, 'dates', []),
+            'upcoming_dates' => data_get($item, 'upcoming_dates', []),
+            'occurrences' => data_get($item, 'occurrences', []),
+            'schedule' => data_get($item, 'schedule', []),
+        ]];
+        $visited = 0;
 
-        if ($date === '') {
+        while ($queue !== [] && $visited < 64) {
+            $visited++;
+            $current = array_shift($queue);
+
+            if ($current instanceof \Illuminate\Support\Collection) {
+                $current = $current->all();
+            } elseif ($current instanceof \Traversable) {
+                $current = iterator_to_array($current, false);
+            } elseif (is_object($current)) {
+                $current = (array) $current;
+            }
+
+            if (! is_array($current)) {
+                continue;
+            }
+
+            $time = self::valueFrom($current, ['start_time', 'time']);
+            foreach (['starts_at', 'start_date', 'date', 'start', 'day'] as $key) {
+                $parsed = self::parseStartValue(data_get($current, $key), $time, $timezone);
+                if ($parsed) {
+                    $dates[] = $parsed;
+                }
+            }
+
+            foreach (['when.event', 'event', 'meta_json.when.event', 'meta_json.event', 'dates', 'upcoming_dates', 'occurrences', 'schedule.days', 'schedule.occurrences'] as $path) {
+                $nested = data_get($current, $path);
+                if ($nested !== null && $nested !== []) {
+                    $queue[] = $nested;
+                }
+            }
+        }
+
+        if ($dates === []) {
             return null;
         }
 
-        $raw = $date;
-        if ($time !== '') {
-            $raw .= ' ' . $time;
+        usort($dates, fn (Carbon $left, Carbon $right) => $left->getTimestamp() <=> $right->getTimestamp());
+        $today = Carbon::now($timezone)->startOfDay();
+
+        foreach ($dates as $date) {
+            if ($date->gte($today)) {
+                return $date;
+            }
+        }
+
+        return $dates[0];
+    }
+
+    private static function valueFrom(array $source, array $keys): string
+    {
+        foreach ($keys as $key) {
+            $value = data_get($source, $key);
+            if (is_scalar($value) && trim((string) $value) !== '') {
+                return trim((string) $value);
+            }
+        }
+
+        return '';
+    }
+
+    private static function parseStartValue(mixed $date, string $time, string $timezone): ?Carbon
+    {
+        if ($date instanceof \DateTimeInterface) {
+            return Carbon::instance($date)->setTimezone($timezone);
+        }
+
+        if (! is_scalar($date)) {
+            return null;
+        }
+
+        $rawDate = trim((string) $date);
+        if ($rawDate === '' || preg_match('/^(?:mon|tue|wed|thu|fri|sat|sun)(?:day)?$/i', $rawDate) || preg_match('/^\d{1,2}$/', $rawDate)) {
+            return null;
         }
 
         try {
-            return Carbon::parse($raw, $timezone);
+            return Carbon::parse($rawDate . ($time !== '' ? ' ' . $time : ''), $timezone);
         } catch (\Throwable $e) {
             return null;
         }
@@ -184,7 +253,7 @@ class EventListing
         };
 
         $scheduleType = strtolower(trim((string) data_get($item, 'when.type', data_get($item, 'event.type', ''))));
-        if (in_array($scheduleType, ['event', 'workshop'], true)) {
+        if (in_array($scheduleType, ['event', 'workshop', 'class', 'retreat'], true)) {
             return true;
         }
 
@@ -220,6 +289,8 @@ class EventListing
             'talk',
             'festival',
             'circle',
+            'retreat',
+            'class',
         ] as $keyword) {
             if (str_contains($haystack, $keyword)) {
                 return true;
