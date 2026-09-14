@@ -88,6 +88,10 @@
     $isPastEvent = $eventStyle && (bool) $value('is_past_event', \App\Support\EventListing::isPast($product));
     $eventMonth = $start?->format('M');
     $eventDay = $start?->format('d');
+    $trackingId = $value('id');
+    $trackingId = is_numeric($trackingId) && (int) $trackingId > 0 ? (int) $trackingId : null;
+    $trackingSource = strtolower(trim((string) $value('source_version', $value('version', 'legacy'))));
+    $trackingSource = in_array($trackingSource, ['v3', 'store'], true) ? $trackingSource : 'legacy';
 
     $dayMap = ['mon' => 1, 'monday' => 1, 'tue' => 2, 'tuesday' => 2, 'wed' => 3, 'wednesday' => 3, 'thu' => 4, 'thursday' => 4, 'fri' => 5, 'friday' => 5, 'sat' => 6, 'saturday' => 6, 'sun' => 0, 'sunday' => 0];
     $availableDays = [];
@@ -143,14 +147,14 @@
 --}}
 
 @if($gift)
-<article class="wow49-blade-card wow49-blade-card--gift" aria-label="Gift card {{ $title }}">
+<article class="wow49-blade-card wow49-blade-card--gift" aria-label="Gift card {{ $title }}" @if($trackingId) data-product-id="{{ $trackingId }}" data-source-version="{{ $trackingSource }}" @endif>
     <a href="{{ url('/giftcards') }}" class="wow49-blade-card__link" aria-label="Buy {{ $title }}"></a>
     <div class="wow49-blade-card__gift-media">@if($image)<img src="{{ $image }}" alt="{{ $title }}" loading="lazy">@endif<span class="wow49-blade-card__gift-badge">Digital gift card</span></div>
     <div class="wow49-blade-card__body"><h3>{{ $title }}</h3><p class="wow49-blade-card__provider">Instant email delivery</p></div>
     <footer class="wow49-blade-card__footer"><div><small>From</small><strong>{{ $priceLabel }}</strong></div><a href="{{ url('/giftcards') }}" class="wow49-blade-card__button">BUY GIFT CARD</a></footer>
 </article>
 @elseif($eventStyle)
-<article class="wow49-blade-card wow49-blade-card--event" aria-label="{{ $typeLabel }} card {{ $title }}">
+<article class="wow49-blade-card wow49-blade-card--event" aria-label="{{ $typeLabel }} card {{ $title }}" @if($trackingId) data-product-id="{{ $trackingId }}" data-source-version="{{ $trackingSource }}" @endif>
     <a href="{{ $url }}" class="wow49-blade-card__link" aria-label="{{ $isPastEvent ? 'View details for' : 'View and book' }} {{ $title }}"></a>
     <div class="wow49-blade-card__event-image">@if($image)<img src="{{ $image }}" alt="{{ $title }}" loading="lazy">@endif</div>
     @if($start)<span class="wow49-blade-card__date"><b>{{ $eventMonth }}</b><strong>{{ $eventDay }}</strong></span>@endif
@@ -159,7 +163,7 @@
     <div class="wow49-blade-card__event-content"><div class="wow49-blade-card__tags"><span class="wow49-blade-card__category {{ $categoryIsAbbreviated ? 'is-abbreviated' : '' }}" @if($categoryIsAbbreviated) data-mobile-label="{{ $categoryShort }}" @endif>{{ $category }}</span><span class="type">{{ $typeLabel }}</span></div><h3>{{ $title }}</h3>@if($provider)<p class="wow49-blade-card__provider">with {{ ucwords(strtolower($provider)) }}</p>@endif<p class="wow49-blade-card__location"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s7-4.4 7-11a7 7 0 1 0-14 0c0 6.6 7 11 7 11Z"/><circle cx="12" cy="10" r="3"/></svg>{{ $locationLabel }}</p><div class="wow49-blade-card__event-bottom"><div><small>From</small><strong>{{ $priceLabel }}</strong></div><a href="{{ $url }}" class="wow49-blade-card__button">{{ $isPastEvent ? 'VIEW DETAILS' : 'VIEW & BOOK' }}</a></div></div>
 </article>
 @else
-<article class="wow49-blade-card" aria-label="Offering card {{ $title }}">
+<article class="wow49-blade-card" aria-label="Offering card {{ $title }}" @if($trackingId) data-product-id="{{ $trackingId }}" data-source-version="{{ $trackingSource }}" @endif>
     <a href="{{ $url }}" class="wow49-blade-card__link" aria-label="View and book {{ $title }}"></a>
     <div class="wow49-blade-card__media">@if($image)<img src="{{ $image }}" alt="{{ $title }}" loading="lazy">@endif @if($value('fomo_text'))<span class="wow49-blade-card__signal">{{ $value('fomo_text') }}</span>@elseif($online && !$locations->contains(fn ($item) => strtolower($item) !== 'online'))<span class="wow49-blade-card__signal">Exclusively online</span>@endif @if($businessAccelerator)<img class="wow49-blade-card__rosette" src="https://studio.weofferwellness.co.uk/storage/uploads/images/78aa908f-334b-45c0-9220-1c4d84053c5e.png" alt="Business Accelerator partner">@endif<div class="wow49-blade-card__tags"><span class="wow49-blade-card__category {{ $categoryIsAbbreviated ? 'is-abbreviated' : '' }}" @if($categoryIsAbbreviated) data-mobile-label="{{ $categoryShort }}" @endif>{{ $category }}</span><span class="type">{{ $typeLabel }}</span></div></div>
     <div class="wow49-blade-card__body"><h3>{{ $title }}</h3>@if($provider)<p class="wow49-blade-card__provider">with {{ ucwords(strtolower($provider)) }}</p>@endif<div class="wow49-blade-card__rating"><span class="wow49-blade-card__stars">{{ str_repeat('★', min(5, max(0, round($rating)))) }}{{ str_repeat('☆', 5 - min(5, max(0, round($rating)))) }}</span><span>{{ number_format($rating, 1) }} · {{ $reviews ? $reviews . ' reviews' : 'Be the first to review' }}</span></div><p class="wow49-blade-card__location">@if($online && !$locations->contains(fn ($item) => strtolower($item) !== 'online'))<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6.95 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1" fill="currentColor" stroke="none"/></svg>@else<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s7-4.4 7-11a7 7 0 1 0-14 0c0 6.6 7 11 7 11Z"/><circle cx="12" cy="10" r="3"/></svg>@endif{{ $locationLabel }}</p>@if($description)<p class="wow49-blade-card__description">{{ $description }}</p>@endif<div class="wow49-blade-card__availability {{ $availabilityTone }}"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span>{{ $availabilityLabel }}</span></div></div>

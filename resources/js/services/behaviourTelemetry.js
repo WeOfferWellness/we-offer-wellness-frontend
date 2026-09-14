@@ -12,6 +12,7 @@ let flushTimer;
 let sequence = 0;
 let visibilityInstalled = false;
 const cards = new WeakMap();
+const hoverTimers = new WeakMap();
 
 const uuid = () => window.crypto?.randomUUID?.() || 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
   const n = Math.floor(Math.random() * 16);
@@ -35,8 +36,12 @@ function rankingFor(element) {
 }
 
 function pageMetadata() {
+  const path = window.location.pathname;
+  const segments = path.split('/').filter(Boolean);
   return {
-    surface: window.location.pathname.startsWith('/search') ? 'search' : 'marketplace',
+    surface: path.startsWith('/search') ? 'search' : 'marketplace',
+    page_type: segments[0] || 'home',
+    category: path.startsWith('/therapies/') ? (segments[1] || null) : null,
     device_class: window.matchMedia('(max-width: 767px)').matches ? 'mobile' : (window.matchMedia('(max-width: 1024px)').matches ? 'tablet' : 'desktop'),
   };
 }
@@ -103,13 +108,24 @@ function installVisibility() {
     const percent = entry.intersectionRatio * 100;
     state.maxPercent = Math.max(state.maxPercent, percent);
     if (percent >= meaningfulPercent && !document.hidden) {
-      if (!state.activeSince) { state.activeSince = performance.now(); state.entries += 1; }
-    } else if (state.activeSince) finishCard(element, state, 'viewport_exit');
+      if (!state.activeSince) {
+        state.activeSince = performance.now();
+        state.entries += 1;
+        if (state.entries > 1) queue('offering_revisited', { offering: offeringFor(element), ranking_request_id: rankingFor(element), metadata: pageMetadata() });
+      }
+    } else if (state.activeSince) {
+      const wasFastPass = state.visibleMs + elapsed(state) < minimumVisibleMs && state.speed === 'fast';
+      finishCard(element, state, 'viewport_exit');
+      if (wasFastPass && !state.fastSkipSent) {
+        state.fastSkipSent = true;
+        queue('fast_skip', { offering: offeringFor(element), ranking_request_id: rankingFor(element), metadata: pageMetadata() });
+      }
+    }
   }), { threshold: [0, 0.6, 1] });
 
   const observe = () => document.querySelectorAll(cardSelector).forEach((element) => {
     if (cards.has(element) || !offeringFor(element)) return;
-    cards.set(element, { visibleMs: 0, focusedMs: 0, maxPercent: 0, entries: 0, scrollBacks: 0, speed: 'normal', activeSince: 0, sent: false });
+    cards.set(element, { visibleMs: 0, focusedMs: 0, maxPercent: 0, entries: 0, scrollBacks: 0, speed: 'normal', activeSince: 0, sent: false, fastSkipSent: false });
     observer.observe(element);
     queue('offering_impression', { offering: offeringFor(element), metadata: pageMetadata() });
   });
@@ -142,5 +158,27 @@ export function installBehaviourTelemetry() {
     const element = event.target instanceof Element ? event.target.closest(cardSelector) : null;
     if (element && offeringFor(element)) queue('offering_opened', { offering: offeringFor(element), ranking_request_id: rankingFor(element), metadata: pageMetadata() });
   }, true);
+  // Desktop hover is attention, not intent by itself. A short qualifying delay
+  // stops fly-over mouse movement becoming behavioural data.
+  if (window.matchMedia?.('(hover: hover) and (pointer: fine)').matches) {
+    document.addEventListener('pointerover', (event) => {
+      const element = event.target instanceof Element ? event.target.closest(cardSelector) : null;
+      if (!element || !offeringFor(element) || hoverTimers.has(element)) return;
+      const timer = window.setTimeout(() => {
+        hoverTimers.delete(element);
+        const state = cards.get(element);
+        if (state?.hoverSent) return;
+        if (state) state.hoverSent = true;
+        queue('offering_focus', { offering: offeringFor(element), ranking_request_id: rankingFor(element), metadata: { ...pageMetadata(), interaction: 'desktop_hover' } });
+      }, 650);
+      hoverTimers.set(element, timer);
+    }, true);
+    document.addEventListener('pointerout', (event) => {
+      const element = event.target instanceof Element ? event.target.closest(cardSelector) : null;
+      if (!element) return;
+      const timer = hoverTimers.get(element);
+      if (timer) { window.clearTimeout(timer); hoverTimers.delete(element); }
+    }, true);
+  }
   window.addEventListener('pagehide', () => { void flush(); });
 }
