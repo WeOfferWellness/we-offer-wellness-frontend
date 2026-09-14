@@ -781,6 +781,9 @@ class SeoStructureService
     {
         return $this->inferTypeKeyFromText(implode(' ', array_filter([
             (string) data_get($product, 'product_type', ''),
+            (string) data_get($product, 'type.name', ''),
+            (string) data_get($product, 'type.slug', ''),
+            (string) data_get($product, 'type_label', ''),
             (string) data_get($product, 'tags_list', ''),
             (string) data_get($product, 'category.name', ''),
             (string) data_get($product, 'meta_json.therapy_slug', ''),
@@ -844,7 +847,7 @@ class SeoStructureService
 
     public function offeringSlugFromProduct(mixed $product): string
     {
-        return $this->slugify((string) (data_get($product, 'title') ?: data_get($product, 'handle') ?: data_get($product, 'id')));
+        return $this->slugify((string) (data_get($product, 'slug') ?: data_get($product, 'handle') ?: data_get($product, 'title') ?: data_get($product, 'id')));
     }
 
     public function offeringSlugFromOffering(OfferingV3 $offering): string

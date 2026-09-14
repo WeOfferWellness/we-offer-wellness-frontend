@@ -29,11 +29,13 @@ class HomeRailsController extends Controller
         if ($section === 'gifts') {
             $limit = max(1, min((int) $request->integer('limit', 12), 24));
             $page = max(1, (int) $request->integer('page', 1));
-            $catalogue = $this->catalogue(['max_price' => 50], 6);
-            $items = ProductRanking::sortCollection($catalogue->filter(fn (array $item) => $this->isGift($item) && $this->price($item) !== null), 'review_count_desc');
-            if ($items->isEmpty()) {
-                $items = ProductRanking::sortCollection($catalogue->filter(fn (array $item) => $this->price($item) !== null), 'review_count_desc');
-            }
+            $catalogue = $this->catalogue(['max_price' => 50], 6)
+                ->concat($this->catalogue(['max_price' => 50, 'search' => 'gift'], 2))
+                ->unique(fn (array $item) => (string) data_get($item, 'source_type', data_get($item, 'source_version', '')).':'.(string) data_get($item, 'id', ''));
+            $explicitGifts = ProductRanking::sortCollection($catalogue->filter(fn (array $item) => $this->isGift($item) && $this->price($item) !== null), 'review_count_desc');
+            $physicalGifts = ProductRanking::sortCollection($catalogue->filter(fn (array $item) => ! $this->isGift($item) && $this->isPhysicalProduct($item) && $this->price($item) !== null), 'review_count_desc');
+            $giftIdeas = ProductRanking::sortCollection($catalogue->filter(fn (array $item) => ! $this->isGift($item) && ! $this->isPhysicalProduct($item) && $this->price($item) !== null), 'review_count_desc');
+            $items = $explicitGifts->concat($physicalGifts)->concat($giftIdeas)->values();
             $offset = ($page - 1) * $limit;
 
             return response($this->renderCards($items->slice($offset, $limit)->values(), true))
@@ -86,13 +88,18 @@ class HomeRailsController extends Controller
 
     private function isGift(array $item): bool
     {
-        return Str::contains(Str::lower(implode(' ', [
+        return preg_match('/\b(?:gift(?:\s*card)?|e-?gift|voucher)\b/i', implode(' ', [
             (string) data_get($item, 'title', ''),
             (string) data_get($item, 'summary', ''),
             (string) data_get($item, 'category.name', ''),
             (string) data_get($item, 'type.name', ''),
             implode(' ', (array) data_get($item, 'tags', [])),
-        ])), ['gift', 'voucher', 'card', 'present']);
+        ])) === 1;
+    }
+
+    private function isPhysicalProduct(array $item): bool
+    {
+        return in_array(Str::lower((string) data_get($item, 'source_type', data_get($item, 'kind', ''))), ['physical_product', 'store_product'], true);
     }
 
     private function price(array $item): ?float

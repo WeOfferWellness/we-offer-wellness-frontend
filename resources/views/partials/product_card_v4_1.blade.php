@@ -1,7 +1,13 @@
 @php
     $value = fn ($key, $default = null) => data_get($product, $key, $default);
+    $storeProduct = collect([
+        $value('kind'),
+        $value('product_kind'),
+        $value('source_type'),
+    ])->contains(fn ($value) => in_array(strtolower(trim((string) $value)), ['physical_product', 'store_product'], true))
+        || (bool) $value('store_product_id', false);
     $title = trim((string) $value('title', $value('name', 'Untitled')));
-    $url = app(\App\Services\SeoStructureService::class)->canonicalProductUrl($product);
+    $url = trim((string) $value('url', '')) ?: app(\App\Services\SeoStructureService::class)->canonicalProductUrl($product);
     $image = is_object($product) && method_exists($product, 'getFirstImageUrl')
         ? $product->getFirstImageUrl()
         : (string) ($value('image', $value('image_url', $value('featured_image', ''))));
@@ -88,7 +94,7 @@
         $value('body_html'),
         $value('what_to_expect'),
         $value('included'),
-    ])->map(fn ($text) => trim(strip_tags((string) $text)))->first(fn (string $text): bool => $text !== '') ?? '';
+    ])->map(fn ($text) => trim(preg_replace('/\s+/u', ' ', strip_tags(html_entity_decode((string) $text, ENT_QUOTES | ENT_HTML5, 'UTF-8'))) ?? ''))->first(fn (string $text): bool => $text !== '') ?? '';
     $start = $eventStyle ? \App\Support\EventListing::startAt($product) : null;
     $isPastEvent = $eventStyle && (bool) $value('is_past_event', \App\Support\EventListing::isPast($product));
     $eventMonth = $start?->format('M');
@@ -143,6 +149,10 @@
     }
 @endphp
 
+@if($storeProduct)
+    @include('partials.store_product_card', ['product' => $product])
+@else
+
 {{--
 @once
 <style>
@@ -174,4 +184,5 @@
     <div class="wow49-blade-card__body"><h3>{{ $title }}</h3>@if($provider)<p class="wow49-blade-card__provider">with {{ ucwords(strtolower($provider)) }}</p>@endif<div class="wow49-blade-card__rating"><span class="wow49-blade-card__stars">{{ str_repeat('★', min(5, max(0, round($rating)))) }}{{ str_repeat('☆', 5 - min(5, max(0, round($rating)))) }}</span><span>{{ number_format($rating, 1) }} · {{ $reviews ? $reviews . ' reviews' : 'Be the first to review' }}</span></div><p class="wow49-blade-card__location">@if($online && !$locations->contains(fn ($item) => strtolower($item) !== 'online'))<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6.95 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1" fill="currentColor" stroke="none"/></svg>@else<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s7-4.4 7-11a7 7 0 1 0-14 0c0 6.6 7 11 7 11Z"/><circle cx="12" cy="10" r="3"/></svg>@endif{{ $locationLabel }}</p>@if($description)<p class="wow49-blade-card__description">{{ $description }}</p>@endif<div class="wow49-blade-card__availability {{ $availabilityTone }}"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span>{{ $availabilityLabel }}</span></div></div>
     <footer class="wow49-blade-card__footer"><div><small>From</small><strong>{{ $priceLabel }}</strong></div><a href="{{ $url }}" class="wow49-blade-card__button">VIEW &amp; BOOK</a></footer>
 </article>
+@endif
 @endif

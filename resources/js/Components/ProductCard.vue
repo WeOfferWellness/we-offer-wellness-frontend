@@ -19,6 +19,28 @@ function titleCase(value) {
   return text(value).replace(/\s+/g, ' ').replace(/\w\S*/g, (word) => word[0].toUpperCase() + word.slice(1).toLowerCase())
 }
 
+function slug(value) {
+  return text(value).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+}
+
+function publicProductUrl(product) {
+  const explicit = text(product?.url)
+  if (explicit) return explicit
+  const format = { therapy: 'therapies', class: 'classes', event: 'events', workshop: 'workshops', retreat: 'retreats' }[productType(product)] || 'therapies'
+  const modality = slug(product?.category?.slug || product?.category?.name || product?.category_name || product?.category_label || 'wellness')
+  const offering = slug(product?.slug || product?.handle || product?.title || product?.name || product?.id)
+  return `/${format}/${modality}/${offering}`
+}
+
+function plainText(value) {
+  const source = text(value)
+  if (!source) return ''
+  if (typeof document === 'undefined') return source.replace(/<[^>]*>/g, ' ').replace(/&nbsp;/gi, ' ').replace(/\s+/g, ' ').trim()
+  const element = document.createElement('div')
+  element.innerHTML = source
+  return text(element.textContent).replace(/\s+/g, ' ')
+}
+
 function money(value) {
   let amount = Number(value)
   if (!Number.isFinite(amount) || amount <= 0) return null
@@ -183,7 +205,11 @@ function eventRange(product) {
 }
 
 const product = computed(() => props.product || {})
-const isStoreProduct = computed(() => ['physical_product', 'store_product'].includes(text(product.value.kind || product.value.product_kind).toLowerCase()) || Boolean(product.value.store_product_id))
+const isStoreProduct = computed(() => [
+  product.value.kind,
+  product.value.product_kind,
+  product.value.source_type,
+].some((value) => ['physical_product', 'store_product'].includes(text(value).toLowerCase())) || Boolean(product.value.store_product_id))
 const type = computed(() => productType(product.value))
 const isEvent = computed(() => ['event', 'workshop', 'retreat'].includes(type.value))
 const isGift = computed(() => /gift\s*card|giftcard|voucher|e-?gift/i.test([product.value.title, product.value.name, product.value.slug, product.value.category?.name, product.value.product_type].map(text).join(' ')))
@@ -193,7 +219,7 @@ const provider = computed(() => {
   return text(name) ? titleCase(name) : ''
 })
 const image = computed(() => product.value.image || product.value.image_url || product.value.featured_image || product.value.media?.[0]?.url || product.value.media?.[0]?.original_url || '')
-const url = computed(() => product.value.url || `/offerings/${product.value.slug || product.value.id}`)
+const url = computed(() => publicProductUrl(product.value))
 const price = computed(() => money(product.value.variants_min_price ?? product.value.price_min ?? product.value.price ?? product.value.base_price) || '£0')
 const rating = computed(() => Number(product.value.rating ?? product.value.reviews_avg_rating ?? product.value.vendor_review_rating ?? product.value.vendor?.review_summary?.rating ?? 0))
 const reviews = computed(() => Number(product.value.review_count ?? product.value.reviews_count ?? product.value.vendor_review_count ?? product.value.vendor?.review_summary?.count ?? 0))
@@ -221,7 +247,7 @@ const signal = computed(() => text(product.value.fomo_text) || (online.value && 
 const eventStart = computed(() => eventDate(product.value))
 const eventMonth = computed(() => eventStart.value ? eventStart.value.toLocaleDateString('en-GB', { month: 'short' }) : 'Soon')
 const eventDay = computed(() => eventStart.value ? String(eventStart.value.getDate()).padStart(2, '0') : '—')
-const description = computed(() => text(product.value.benefit || product.value.summary || product.value.description || product.value.excerpt))
+const description = computed(() => plainText(product.value.benefit || product.value.summary || product.value.description_short || product.value.description || product.value.excerpt || product.value.body_html || product.value.what_to_expect || product.value.included))
 
 </script>
 

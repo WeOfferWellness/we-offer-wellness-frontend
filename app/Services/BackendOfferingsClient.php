@@ -46,7 +46,7 @@ class BackendOfferingsClient
                         ])
                         ->timeout(8)
                         ->retry(1, 150)
-                        ->get($baseUrl.'/api/behaviour/offerings', array_merge($filters, ['page' => $page]));
+                        ->get($baseUrl.'/api/offerings', array_merge($filters, ['page' => $page]));
                 } catch (\Throwable) {
                     break;
                 }
@@ -80,7 +80,7 @@ class BackendOfferingsClient
             }
 
             return $items
-                ->unique(fn (array $offering) => (string) data_get($offering, 'source_version', '').':'.(string) data_get($offering, 'id', ''))
+                ->unique(fn (array $offering) => (string) data_get($offering, 'source_type', data_get($offering, 'source_version', '')).':'.(string) data_get($offering, 'id', ''))
                 ->values();
         };
 

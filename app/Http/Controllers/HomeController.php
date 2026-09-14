@@ -28,17 +28,22 @@ class HomeController extends Controller
                 ->reject(fn (array $offering) => EventListing::isPast($offering))
                 ->values();
 
-            $giftsUnder50 = ProductRanking::sortCollection(
-                $active->filter(fn (array $offering) => $this->isGift($offering) && $this->price($offering) !== null && $this->price($offering) <= 50),
+            $giftCandidates = $active
+                ->concat($offeringsClient->catalogue(['max_price' => 50, 'search' => 'gift'], 2))
+                ->unique(fn (array $offering) => (string) data_get($offering, 'source_type', data_get($offering, 'source_version', '')).':'.(string) data_get($offering, 'id', ''));
+            $explicitGifts = ProductRanking::sortCollection(
+                $giftCandidates->filter(fn (array $offering) => $this->isGift($offering) && $this->price($offering) !== null && $this->price($offering) <= 50),
                 'review_count_desc'
-            )->take(12)->values();
-
-            if ($giftsUnder50->isEmpty()) {
-                $giftsUnder50 = ProductRanking::sortCollection(
-                    $active->filter(fn (array $offering) => $this->price($offering) !== null && $this->price($offering) <= 50),
-                    'review_count_desc'
-                )->take(12)->values();
-            }
+            );
+            $physicalGifts = ProductRanking::sortCollection(
+                $giftCandidates->filter(fn (array $offering) => ! $this->isGift($offering) && $this->isPhysicalProduct($offering) && $this->price($offering) !== null && $this->price($offering) <= 50),
+                'review_count_desc'
+            );
+            $giftIdeas = ProductRanking::sortCollection(
+                $giftCandidates->filter(fn (array $offering) => ! $this->isGift($offering) && ! $this->isPhysicalProduct($offering) && $this->price($offering) !== null && $this->price($offering) <= 50),
+                'review_count_desc'
+            );
+            $giftsUnder50 = $explicitGifts->concat($physicalGifts)->concat($giftIdeas)->take(12)->values();
 
             $onlineUnder50 = ProductRanking::sortCollection(
                 $active->filter(fn (array $offering) => $this->isOnlineOnly($offering) && $this->price($offering) !== null && $this->price($offering) <= 50)
@@ -78,18 +83,23 @@ class HomeController extends Controller
 
     private function isGift(array $offering): bool
     {
-        return Str::contains(Str::lower(implode(' ', [
+        return preg_match('/\b(?:gift(?:\s*card)?|e-?gift|voucher)\b/i', implode(' ', [
             (string) data_get($offering, 'title', ''),
             (string) data_get($offering, 'summary', ''),
             (string) data_get($offering, 'category.name', ''),
             (string) data_get($offering, 'type.name', ''),
             implode(' ', (array) data_get($offering, 'tags', [])),
-        ])), ['gift', 'voucher', 'card', 'present']);
+        ])) === 1;
     }
 
     private function isPublicOffering(array $offering): bool
     {
         return in_array(Str::lower(trim((string) data_get($offering, 'status', 'live'))), ['live', 'published'], true);
+    }
+
+    private function isPhysicalProduct(array $offering): bool
+    {
+        return in_array(Str::lower((string) data_get($offering, 'source_type', data_get($offering, 'kind', ''))), ['physical_product', 'store_product'], true);
     }
 
     private function isOnlineOnly(array $offering): bool
