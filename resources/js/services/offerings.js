@@ -98,11 +98,13 @@ export function normalizeOfferingsPayload(payload) {
     ? payload.included.vendor_details
     : {};
 
+  const rankingRequestId = payload?.meta?.ranking_request_id || null;
   const items = Array.isArray(payload?.data) ? payload.data.map((item) => {
     const vendor = vendorDetails[String(item?.vendor_id ?? '')] || item?.vendor || null;
     return {
       ...item,
       image: item?.image || item?.image_url || null,
+      ranking_request_id: rankingRequestId,
       vendor_details: normalizeVendorDetails(vendor),
     };
   }) : [];
@@ -926,7 +928,7 @@ export function renderOfferingCard(item) {
 
   if (eventCard) {
     return `
-      <article class="wow-card md wow-event-card-v4 ${imageUrl && hasDisplayableImageUrl(imageUrl) ? 'is-loading' : 'is-missing'}" aria-label="Event card ${escapeHtml(id)}"${imageUrl && hasDisplayableImageUrl(imageUrl) ? ' aria-busy="true"' : ''}>
+      <article class="wow-card md wow-event-card-v4 ${imageUrl && hasDisplayableImageUrl(imageUrl) ? 'is-loading' : 'is-missing'}" aria-label="Event card ${escapeHtml(id)}" data-product-id="${escapeHtml(id)}" data-source-version="${escapeHtml(sourceVersion)}" data-ranking-request-id="${escapeHtml(item?.ranking_request_id || '')}"${imageUrl && hasDisplayableImageUrl(imageUrl) ? ' aria-busy="true"' : ''}>
         <a href="${escapeHtml(url)}" class="wow-event-card-v4__link" aria-label="View ${escapeHtml(title)}"></a>
 
         <div class="wow-event-card-v4__image">
@@ -1063,7 +1065,7 @@ export function renderOfferingCard(item) {
 
   return `
     <a href="${escapeHtml(url)}" class="wow-card md">
-      <article class="therapy-card" aria-label="Offering card ${escapeHtml(id)}">
+      <article class="therapy-card" aria-label="Offering card ${escapeHtml(id)}" data-product-id="${escapeHtml(id)}" data-source-version="${escapeHtml(sourceVersion)}" data-ranking-request-id="${escapeHtml(item?.ranking_request_id || '')}">
         <div class="therapy-card__media">
           <img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(title)}" loading="lazy">
 

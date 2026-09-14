@@ -1037,6 +1037,8 @@
       role="link"
       tabindex="0"
       data-id="{{ $product->id }}"
+      data-product-id="{{ $product->id }}"
+      data-source-version="legacy"
       data-url="{{ $url }}"
     >
       <div class="wow-row-card">
