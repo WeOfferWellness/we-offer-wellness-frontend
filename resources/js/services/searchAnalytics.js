@@ -22,9 +22,10 @@ function searchSessionId() {
 
 function inputValue(form, selectors) {
   for (const selector of selectors) {
-    const element = form.querySelector(selector);
+    const element = form.querySelector(selector) || document.querySelector(selector);
     const value = element?.value ?? element?.textContent;
-    if (String(value || '').trim()) return String(value).trim();
+    const clean = String(value || '').trim();
+    if (clean && !['where', 'location', 'what are you looking for?'].includes(clean.toLowerCase())) return clean;
   }
 
   return '';
@@ -35,24 +36,6 @@ function sourceFor(form) {
   if (window.location.pathname.startsWith('/search')) return 'search-page';
   if (form.closest('.hero, [class*="hero"], [data-hero]')) return 'hero';
   return 'site-search';
-}
-
-function grantedLocation() {
-  if (!navigator.geolocation || !navigator.permissions) return Promise.resolve({});
-
-  return navigator.permissions.query({ name: 'geolocation' })
-    .then((permission) => {
-      if (permission.state !== 'granted') return {};
-
-      return new Promise((resolve) => {
-        navigator.geolocation.getCurrentPosition(
-          (position) => resolve({ latitude: position.coords.latitude, longitude: position.coords.longitude }),
-          () => resolve({}),
-          { enableHighAccuracy: false, timeout: 1500, maximumAge: 300000 },
-        );
-      });
-    })
-    .catch(() => ({}));
 }
 
 function postSearchEvent(payload, { duringNavigation = false } = {}) {
@@ -101,11 +84,6 @@ export function logSearchEvent(form) {
 
   // Beacon delivery survives the search handler's immediate page navigation.
   void postSearchEvent(payload, { duringNavigation: true });
-  void grantedLocation().then((location) => {
-    if (location.latitude === undefined) return;
-    void postSearchEvent({ ...payload, ...location });
-  });
-
   return payload;
 }
 

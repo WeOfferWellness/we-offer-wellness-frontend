@@ -376,6 +376,16 @@ export function isOnlineOnly(item) {
   return false;
 }
 
+export function hasOnlineDelivery(item) {
+  if (!item || typeof item !== 'object') return false;
+  if (item.online_only === true || item.online === true) return true;
+
+  const channels = (item.channels || []).map((channel) => lower(channel));
+  if (channels.some((channel) => ['online', 'remote', 'virtual'].includes(channel))) return true;
+
+  return (item.locations || []).some((location) => lower(location).includes('online'));
+}
+
 export function matchesGroupType(item, groupType) {
   const mode = lower(groupType);
   if (!['solo', 'couple', 'group'].includes(mode)) {
@@ -710,6 +720,12 @@ function eventTilesForItem(item, baseUrl) {
 }
 
 function eventLocationLabelFor(item) {
+  // A hybrid offering must not be labelled In-person just because it also has
+  // a venue. Online is an available delivery choice and takes precedence here.
+  if (hasOnlineDelivery(item)) {
+    return isOnlineOnly(item) ? 'Online' : 'Online available';
+  }
+
   const candidates = [];
   if (item?.matched_location_label) candidates.push(item.matched_location_label);
   if (item?.location_name) candidates.push(item.location_name);
@@ -732,10 +748,6 @@ function eventLocationLabelFor(item) {
 
   if (first) {
     return titleCase(first.replace(/,?\s*(united kingdom|uk)$/i, '').trim());
-  }
-
-  if (isOnlineOnly(item)) {
-    return 'Online';
   }
 
   return 'In-person';
@@ -846,7 +858,7 @@ export function renderOfferingCard(item) {
   const reviewCount = reviewCountValue(item);
   const signalText = buildSignalText(item);
   const durationLabel = item?.duration || '';
-  const hasOnline = Array.isArray(item?.channels) ? item.channels.map(lower).includes('online') : isOnlineOnly(item);
+  const hasOnline = hasOnlineDelivery(item);
   const physicalLocations = Array.isArray(item?.locations)
     ? item.locations.filter((location) => lower(location) !== 'online')
     : [];
