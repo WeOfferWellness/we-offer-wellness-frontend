@@ -39,7 +39,12 @@
             ? trim((string) data_get($location, 'formatted_address', data_get($location, 'label', data_get($location, 'name', data_get($location, 'city', '')))))
             : trim((string) $location);
     })->filter()->values();
-    $online = $locations->contains(fn ($location) => strtolower($location) === 'online') || str_contains(strtolower((string) $value('format', '')), 'online');
+    $channels = collect((array) $value('channels', []))
+        ->map(fn ($channel) => strtolower(trim((string) $channel)));
+    $online = (bool) $value('online_only', false)
+        || $channels->contains('online')
+        || $locations->contains(fn ($location) => strtolower($location) === 'online')
+        || str_contains(strtolower((string) $value('format', '')), 'online');
     $location = $locations->first(fn ($item) => strtolower($item) !== 'online') ?: ($online ? 'Online' : 'In person');
     $countryFallback = trim((string) $value('country', $value('vendor.country', $value('vendor.user.country', $value('vendor_details.country', '')))));
     $countryCode = function (string $country): string {
