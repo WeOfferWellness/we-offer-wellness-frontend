@@ -406,10 +406,13 @@ class V3SubscriberController extends Controller
         $endpoint = $isPractitioner ? '/api/v3-subscribers/practitioner-interest' : '/api/v3-subscribers';
 
         try {
-            Http::timeout(5)
+            $http = Http::timeout(5)
                 ->acceptJson()
-                ->asJson()
-                ->post($backendUrl . $endpoint, $payload);
+                ->asJson();
+            if (request()->headers->has('cookie')) {
+                $http = $http->withHeaders(['Cookie' => request()->headers->get('cookie')]);
+            }
+            $http->post($backendUrl . $endpoint, $payload);
         } catch (\Throwable $e) {
             logger()->warning('subscriber.backend_sync_failed', [
                 'email' => $subscriber->email,

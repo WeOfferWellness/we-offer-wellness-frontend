@@ -98,6 +98,32 @@ function queueEvent(eventType, details = {}) {
     return;
   }
 
+  function pageMetadata() {
+    const path = window.location.pathname.toLowerCase();
+    let pageType = 'page';
+    if (path === '/' || path === '') pageType = 'homepage';
+    else if (/\/(search|find|results)/.test(path)) pageType = 'search';
+    else if (/\/(offering|product|store)\//.test(path)) pageType = 'product';
+    else if (/\/(therapies|classes|events|retreats|workshops|courses|readings|categories|locations)/.test(path)) pageType = 'category';
+    else if (/\/(about|contact|privacy|terms|cookies)/.test(path)) pageType = 'landing';
+
+    return {
+      page_type: pageType,
+      page_title: document.title.slice(0, 255),
+      href: window.location.href.slice(0, 2048),
+      device_class: window.matchMedia('(max-width: 767px)').matches
+        ? 'mobile'
+        : (window.matchMedia('(max-width: 1024px)').matches ? 'tablet' : 'desktop'),
+      viewport_width: window.innerWidth,
+      viewport_height: window.innerHeight,
+    };
+  }
+
+  function categoryContext() {
+    const path = window.location.pathname.split('/').filter(Boolean);
+    return path.length ? path[0].slice(0, 255) : null;
+  }
+
   window.clearTimeout(flushTimer);
   flushTimer = window.setTimeout(() => { void flushEvents(); }, 1500);
 }
@@ -134,21 +160,71 @@ function collectOfferingImpressions() {
 }
 
 function installInteractions() {
+  const metadata = pageMetadata();
+  queueEvent('page_view', { metadata });
+  if (metadata.page_type === 'category') {
+    queueEvent('category_view', { metadata: { ...metadata, category: categoryContext() } });
+  } else if (metadata.page_type === 'product') {
+    queueEvent('product_view', { metadata });
+  } else if (metadata.page_type === 'landing') {
+    queueEvent('landing_page_view', { metadata });
+  }
+
   document.addEventListener('click', (event) => {
-    const element = event.target instanceof Element
-      ? event.target.closest('[data-product-id], [data-id]')
-      : null;
+    const clicked = event.target instanceof Element ? event.target : null;
+    const element = clicked?.closest('[data-product-id], [data-id]');
     const offering = offeringReference(element);
-    if (offering) queueEvent('offering_opened', { offering });
+    const target = clicked?.closest('a,button,[role="button"],input,select,textarea');
+    if (offering) {
+      queueEvent('offering_opened', {
+        offering,
+        metadata: { ...pageMetadata(), interaction: target?.tagName?.toLowerCase() || 'offering' },
+      });
+    } else if (target) {
+      const label = String(target.getAttribute('aria-label') || target.textContent || target.getAttribute('name') || '').trim();
+      queueEvent('page_interaction', {
+        metadata: {
+          ...pageMetadata(),
+          interaction: target.tagName.toLowerCase(),
+          target: label.slice(0, 255),
+          href: target.getAttribute('href') || window.location.href,
+        },
+      });
+    }
   }, true);
 
   document.addEventListener('submit', (event) => {
     if (!(event.target instanceof HTMLFormElement)) return;
     if (event.target.matches('[role="search"], form[id*="search"]')) {
-      queueEvent('search_performed');
+      queueEvent('search_performed', { metadata: pageMetadata() });
+    } else {
+      queueEvent('page_interaction', {
+        metadata: { ...pageMetadata(), interaction: 'form_submit', target: event.target.getAttribute('id') || 'form' },
+      });
     }
   }, true);
 
+  document.addEventListener('change', (event) => {
+    const target = event.target instanceof HTMLElement ? event.target : null;
+    if (!target) return;
+    queueEvent('page_interaction', {
+      metadata: { ...pageMetadata(), interaction: 'field_change', target: target.getAttribute('name') || target.id || target.tagName.toLowerCase() },
+    });
+  }, true);
+
+  let maxScroll = 0;
+  window.addEventListener('scroll', () => {
+    const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+    if (scrollable <= 0) return;
+    const percent = Math.round((window.scrollY / scrollable) * 100);
+    if (percent >= maxScroll + 25) {
+      maxScroll = percent;
+      queueEvent('page_interaction', { metadata: { ...pageMetadata(), interaction: 'scroll', target: `${percent}%` } });
+    }
+  }, { passive: true });
+
+  const observer = new MutationObserver(() => collectOfferingImpressions());
+  observer.observe(document.body, { childList: true, subtree: true });
   window.addEventListener('pagehide', () => { void flushEvents(); });
 }
 

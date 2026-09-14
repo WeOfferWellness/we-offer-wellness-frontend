@@ -39,6 +39,9 @@ class BackendOfferingsClient
                         ->withHeaders([
                             'Origin' => config('app.url'),
                             'Referer' => rtrim((string) config('app.url'), '/').'/',
+                            'X-WOW-User-Agent' => (string) $request->userAgent(),
+                            'X-WOW-Device-Class' => $this->deviceClass($request->userAgent()),
+                            'X-WOW-Client-IP' => (string) $request->ip(),
                             ...($request->headers->has('cookie') ? ['Cookie' => $request->headers->get('cookie')] : []),
                         ])
                         ->timeout(8)
@@ -73,6 +76,7 @@ class BackendOfferingsClient
                 if ($rows->isEmpty() || $page >= $lastPage) {
                     break;
                 }
+
             }
 
             return $items
@@ -83,5 +87,17 @@ class BackendOfferingsClient
         return $hasVisitorCookie
             ? $load()
             : Cache::remember($cacheKey, now()->addMinutes(3), $load);
+    }
+
+    private function deviceClass(?string $userAgent): string
+    {
+        $ua = strtolower((string) $userAgent);
+        if (str_contains($ua, 'ipad') || str_contains($ua, 'tablet') || str_contains($ua, 'android') && ! str_contains($ua, 'mobile')) {
+            return 'tablet';
+        }
+
+        return preg_match('/android|iphone|ipod|mobile|windows phone|opera mini|iemobile/i', $ua) === 1
+            ? 'mobile'
+            : 'desktop';
     }
 }
