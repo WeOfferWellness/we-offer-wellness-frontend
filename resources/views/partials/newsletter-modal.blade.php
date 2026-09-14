@@ -10,7 +10,7 @@
   <section class="wow-newsletter-card">
     <div class="wow-newsletter-layout">
       <div class="wow-newsletter-media">
-        <img src="https://studio.weofferwellness.co.uk/storage/uploads/images/b9e35c72-4d89-417b-935c-8dd08cc7c763.jpg" alt="A calm wellness scene with an envelope, herbal tea, books, plants and a relaxed woman">
+        <img src="https://studio.weofferwellness.co.uk/storage/uploads/images/47423cd9-76ef-451a-a6d5-1b127d543d5f.jpg" alt="A calm wellness scene with an envelope, herbal tea, books, plants and a relaxed woman">
         <div class="wow-newsletter-media-badge"><span>Once a week</span><strong>Your weekly dose of wellness, culture and what's happening at WOW.</strong></div>
       </div>
       <div class="wow-newsletter-content" id="wow-newsletter-content">
