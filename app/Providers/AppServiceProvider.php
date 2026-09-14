@@ -3,11 +3,12 @@
 namespace App\Providers;
 
 use App\Models\Review;
+use App\Services\BackendOfferingsClient;
 use App\Support\Navigation\EventsMenuState;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Vite;
-use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 
@@ -18,7 +19,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(BackendOfferingsClient::class);
     }
 
     /**
@@ -51,7 +52,7 @@ class AppServiceProvider extends ServiceProvider
                     ->map(function (Review $review) {
                         $user = $review->user;
                         $name = trim(($user->first_name ?? '').' '.($user->last_name ?? ''));
-                        if (!$name) {
+                        if (! $name) {
                             $name = $user?->name ?: 'Verified customer';
                         }
                         $location = $user?->location;

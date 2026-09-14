@@ -248,6 +248,12 @@ const eventStart = computed(() => eventDate(product.value))
 const eventMonth = computed(() => eventStart.value ? eventStart.value.toLocaleDateString('en-GB', { month: 'short' }) : 'Soon')
 const eventDay = computed(() => eventStart.value ? String(eventStart.value.getDate()).padStart(2, '0') : '—')
 const description = computed(() => plainText(product.value.benefit || product.value.summary || product.value.description_short || product.value.description || product.value.excerpt || product.value.body_html || product.value.what_to_expect || product.value.included))
+const trackingId = computed(() => Number(product.value.id) > 0 ? Number(product.value.id) : null)
+const trackingSource = computed(() => {
+  if (isStoreProduct.value) return 'store'
+  return text(product.value.source_version).toLowerCase() === 'v1-v2' ? 'legacy' : 'v3'
+})
+const rankingRequestId = computed(() => text(product.value.ranking_request_id) || null)
 
 </script>
 
@@ -258,6 +264,9 @@ const description = computed(() => plainText(product.value.benefit || product.va
     class="wow49-card wow49-card--gift"
     :class="{ 'wow49-card--fluid': fluid }"
     :aria-label="`Gift card ${title}`"
+    :data-product-id="trackingId"
+    :data-source-version="trackingSource"
+    :data-ranking-request-id="rankingRequestId"
   >
     <a href="/giftcards" class="wow49-card__link" :aria-label="`Buy ${title}`"></a>
     <div class="wow49-card__gift-media">
@@ -276,6 +285,9 @@ const description = computed(() => plainText(product.value.benefit || product.va
     class="wow49-card wow49-card--event"
     :class="{ 'wow49-card--fluid': fluid }"
     :aria-label="`${typeLabel(type)} card ${title}`"
+    :data-product-id="trackingId"
+    :data-source-version="trackingSource"
+    :data-ranking-request-id="rankingRequestId"
   >
     <a :href="url" class="wow49-card__link" :aria-label="`View and book ${title}`"></a>
     <div class="wow49-card__event-background"><img v-if="image" :src="image" :alt="title" loading="lazy"></div>
@@ -295,6 +307,9 @@ const description = computed(() => plainText(product.value.benefit || product.va
     class="wow49-card"
     :class="{ 'wow49-card--fluid': fluid }"
     :aria-label="`Offering card ${title}`"
+    :data-product-id="trackingId"
+    :data-source-version="trackingSource"
+    :data-ranking-request-id="rankingRequestId"
   >
     <a :href="url" class="wow49-card__link" :aria-label="`View and book ${title}`"></a>
     <div class="wow49-card__media">

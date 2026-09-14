@@ -3,11 +3,10 @@
 namespace App\Support;
 
 use App\Models\OfferingV3;
-use App\Models\Product;
 use App\Models\VendorAvailability;
 use App\Models\VendorDetail;
 use App\Services\AvailabilityWindowService;
-use Illuminate\Support\Carbon;
+use App\Services\BackendOfferingsClient;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
@@ -16,6 +15,10 @@ class ProductRanking
     public static function sortCollection(Collection $items, string $sort = 'popular'): Collection
     {
         $sort = strtolower(trim($sort));
+
+        if (! app()->runningInConsole() && (string) request()->cookie('wow_visitor_id') !== '' && ! request()->filled('sort')) {
+            return app(BackendOfferingsClient::class)->reorder($items);
+        }
 
         if ($sort === 'newest') {
             return $items->sortByDesc(fn ($item) => optional(data_get($item, 'created_at'))->timestamp ?? 0)->values();
@@ -171,7 +174,7 @@ class ProductRanking
         try {
             $weekly = AvailabilityWindowService::buildWeeklyWindows($user);
             foreach ($weekly as $day) {
-                if (!empty($day['enabled']) && !empty($day['windows'])) {
+                if (! empty($day['enabled']) && ! empty($day['windows'])) {
                     return 1;
                 }
             }
@@ -235,17 +238,18 @@ class ProductRanking
     {
         $vendorId = data_get($item, 'vendor_id');
         if (is_numeric($vendorId) && (int) $vendorId > 0) {
-            return 'vendor:' . (int) $vendorId;
+            return 'vendor:'.(int) $vendorId;
         }
 
         $vendorName = trim((string) data_get($item, 'vendor_name', data_get($item, 'vendor.vendor_name', '')));
         if ($vendorName !== '') {
-            return 'vendor:' . strtolower($vendorName);
+            return 'vendor:'.strtolower($vendorName);
         }
 
         $itemType = get_debug_type($item);
         $itemId = data_get($item, 'id');
-        return $itemType . ':' . (string) $itemId;
+
+        return $itemType.':'.(string) $itemId;
     }
 
     public static function resolveVendorPlan(?VendorDetail $vendor): array

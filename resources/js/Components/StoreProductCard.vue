@@ -14,7 +14,7 @@ function addToCart() {
 </script>
 
 <template>
-  <article class="wow49-store-card" :class="{ 'wow49-store-card--fluid': fluid }" :aria-label="`Product card ${product.title}`">
+  <article class="wow49-store-card" :class="{ 'wow49-store-card--fluid': fluid }" :aria-label="`Product card ${product.title}`" :data-product-id="product.id" data-source-version="store" :data-ranking-request-id="product.ranking_request_id || null">
     <a :href="href" class="wow49-store-card__link" :aria-label="`Open ${product.title}`"></a>
     <div class="wow49-store-card__media"><img v-if="product.image" :src="product.image" :alt="product.title" loading="lazy"><span>Ships to you</span><div><b>Physical product</b><b class="is-type">Store</b></div></div>
     <div class="wow49-store-card__body"><h3>{{ product.title }}</h3><p>{{ product.brand || 'We Offer Wellness' }}</p><p class="wow49-store-card__summary">{{ product.summary || 'Physical product delivered directly to you.' }}</p><span class="wow49-store-card__availability">Secure checkout</span></div>

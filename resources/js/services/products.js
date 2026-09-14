@@ -77,7 +77,13 @@ function productVisible(p) {
 
 export async function fetchProducts(params = {}, options = {}) {
   const opts = typeof options === 'object' && options !== null ? options : {}
-  const qs = new URLSearchParams(params).toString();
+  const apiParams = { ...params }
+  if (apiParams.what && !apiParams.search) apiParams.search = apiParams.what
+  if (apiParams.price_min && !apiParams.min_price) apiParams.min_price = apiParams.price_min
+  if (apiParams.price_max && !apiParams.max_price) apiParams.max_price = apiParams.price_max
+  if (apiParams.format === 'online' && !apiParams.mode) apiParams.mode = 'online'
+  if (apiParams.limit && !apiParams.per_page) apiParams.per_page = apiParams.limit
+  const qs = new URLSearchParams(apiParams).toString();
   const backendUrl = String(import.meta.env.VITE_BACKEND_URL || '').replace(/\/$/, '')
   const candidates = [
     import.meta.env.VITE_OFFERINGS_URL || `${backendUrl}/api/behaviour/offerings`,
@@ -103,10 +109,11 @@ export async function fetchProducts(params = {}, options = {}) {
             ? data.items
             : (Array.isArray(data?.products) ? data.products : (Array.isArray(data?.offerings) ? data.offerings : []))))
       const filtered = list.filter(productVisible)
-      return sortFavorability(filtered.map((item) => ({
+      return filtered.map((item) => ({
         ...item,
         image: item?.image || item?.image_url || null,
-      })), params?.sort)
+        ranking_request_id: item?.ranking_request_id || data?.meta?.ranking_request_id || null,
+      }))
     } catch (e) {
       lastError = e
     }

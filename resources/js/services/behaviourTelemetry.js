@@ -13,6 +13,7 @@ let sequence = 0;
 let visibilityInstalled = false;
 const cards = new WeakMap();
 const hoverTimers = new WeakMap();
+let lastSearchContextKey = '';
 
 const uuid = () => window.crypto?.randomUUID?.() || 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
   const n = Math.floor(Math.random() * 16);
@@ -44,6 +45,32 @@ function pageMetadata() {
     category: path.startsWith('/therapies/') ? (segments[1] || null) : null,
     device_class: window.matchMedia('(max-width: 767px)').matches ? 'mobile' : (window.matchMedia('(max-width: 1024px)').matches ? 'tablet' : 'desktop'),
   };
+}
+
+function searchContext() {
+  const params = new URLSearchParams(window.location.search);
+  const path = window.location.pathname;
+  const segments = path.split('/').filter(Boolean);
+  const context = {};
+  const category = params.get('category') || (segments[0] === 'therapies' && segments[1] ? segments[1] : '');
+  const type = params.get('type') || (['classes', 'events', 'workshops', 'retreats'].includes(segments[0]) ? segments[0].replace(/s$/, '') : '');
+  const mode = params.get('mode') || params.get('format') || (segments[0] === 'online' ? 'online' : '');
+  const minPrice = Number(params.get('min_price') || params.get('price_min'));
+  const maxPrice = Number(params.get('max_price') || params.get('price_max'));
+  if (category) context.category_slug = category.slice(0, 100);
+  if (type) context.type_slug = type.slice(0, 100);
+  if (mode) context.delivery_mode = mode === 'online' ? 'online' : 'in_person';
+  if (Number.isFinite(minPrice) && minPrice > 0) context.price_min = minPrice;
+  if (Number.isFinite(maxPrice) && maxPrice > 0) context.price_max = maxPrice;
+  return context;
+}
+
+function queueCurrentSearch() {
+  if (!enabled || !window.location.pathname.startsWith('/search')) return;
+  const key = `${window.location.pathname}?${new URLSearchParams(window.location.search).toString()}`;
+  if (key === lastSearchContextKey) return;
+  lastSearchContextKey = key;
+  queue('search_performed', { search_context: searchContext(), metadata: pageMetadata() });
 }
 
 function queue(eventType, details = {}) {
@@ -145,7 +172,7 @@ async function syncConsent(value) {
     const response = await fetch(consentEndpoint, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ enabled: allowed, consent_version: '1' }) });
     if (!response.ok) throw new Error(String(response.status));
     enabled = allowed;
-    if (enabled) { queue('page_view', { metadata: pageMetadata() }); installVisibility(); }
+    if (enabled) { queue('page_view', { search_context: searchContext(), metadata: pageMetadata() }); queueCurrentSearch(); installVisibility(); }
     else pending = [];
   } catch (_) { enabled = false; pending = []; }
 }
@@ -154,6 +181,7 @@ export function installBehaviourTelemetry() {
   if (!backendUrl || typeof window === 'undefined') return;
   document.addEventListener('wow:cookie-preferences', (event) => { void syncConsent(event.detail || preferences()); });
   if (preferences()?.personalization === true) void syncConsent(preferences());
+  window.addEventListener('wow:search-results-loaded', queueCurrentSearch);
   document.addEventListener('click', (event) => {
     const element = event.target instanceof Element ? event.target.closest(cardSelector) : null;
     if (element && offeringFor(element)) queue('offering_opened', { offering: offeringFor(element), ranking_request_id: rankingFor(element), metadata: pageMetadata() });

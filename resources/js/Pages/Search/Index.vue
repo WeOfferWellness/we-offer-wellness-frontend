@@ -6,6 +6,7 @@ import UltraSearchBar from '@/Components/UltraSearchBar.vue'
 import ProductCard from '@/Components/ProductCard.vue'
 import MapPanel from '@/Components/MapPanel.vue'
 import { fetchProducts } from '@/services/products'
+import { reportSearchResults } from '@/services/searchAnalytics'
 import {
   canonicalUrl,
   pageKeywords,
@@ -63,6 +64,7 @@ async function load() {
   filters.value = paramsFromUrl()
   try {
     products.value = await fetchProducts(filters.value, { throwOnError: true })
+    reportSearchResults(products.value.length)
   } catch (error) {
     console.error('[search] load failed', error)
     loadError.value = true

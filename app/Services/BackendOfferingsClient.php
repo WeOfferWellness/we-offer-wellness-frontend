@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Http;
 /** The Frontend catalogue is sourced exclusively from the Backend API. */
 class BackendOfferingsClient
 {
+    private ?Collection $personalisedCatalogue = null;
+
     public function catalogue(array $filters = [], int $maxPages = 2): Collection
     {
         $baseUrl = rtrim((string) env('BACKEND_URL', env('BACKEND_ASSET_URL', '')), '/');
@@ -29,26 +31,37 @@ class BackendOfferingsClient
         $hasVisitorCookie = (string) $request->cookie('wow_visitor_id') !== '';
         $cacheKey = 'backend:offerings:'.sha1($baseUrl.'|'.json_encode($filters).'|'.$maxPages);
 
-        $load = function () use ($baseUrl, $filters, $maxPages, $request): Collection {
+        $load = function () use ($baseUrl, $filters, $maxPages, $request, $hasVisitorCookie): Collection {
             $items = collect();
             $page = max(1, (int) ($filters['page'] ?? 1));
 
             for ($requestNumber = 0; $requestNumber < $maxPages; $requestNumber++, $page++) {
+                $client = Http::acceptJson()
+                    ->withHeaders([
+                        'Origin' => config('app.url'),
+                        'Referer' => rtrim((string) config('app.url'), '/').'/',
+                        'X-WOW-User-Agent' => (string) $request->userAgent(),
+                        'X-WOW-Device-Class' => $this->deviceClass($request->userAgent()),
+                        'X-WOW-Client-IP' => (string) $request->ip(),
+                        ...($request->headers->has('cookie') ? ['Cookie' => $request->headers->get('cookie')] : []),
+                    ])
+                    ->timeout(8)
+                    ->retry(1, 150);
                 try {
-                    $response = Http::acceptJson()
-                        ->withHeaders([
-                            'Origin' => config('app.url'),
-                            'Referer' => rtrim((string) config('app.url'), '/').'/',
-                            'X-WOW-User-Agent' => (string) $request->userAgent(),
-                            'X-WOW-Device-Class' => $this->deviceClass($request->userAgent()),
-                            'X-WOW-Client-IP' => (string) $request->ip(),
-                            ...($request->headers->has('cookie') ? ['Cookie' => $request->headers->get('cookie')] : []),
-                        ])
-                        ->timeout(8)
-                        ->retry(1, 150)
-                        ->get($baseUrl.'/api/offerings', array_merge($filters, ['page' => $page]));
+                    $path = $hasVisitorCookie ? '/api/behaviour/offerings' : '/api/offerings';
+                    $response = $client->get($baseUrl.$path, array_merge($filters, ['page' => $page]));
+                    if ($hasVisitorCookie && ! $response->successful()) {
+                        $response = $client->get($baseUrl.'/api/offerings', array_merge($filters, ['page' => $page]));
+                    }
                 } catch (\Throwable) {
-                    break;
+                    if (! $hasVisitorCookie) {
+                        break;
+                    }
+                    try {
+                        $response = $client->get($baseUrl.'/api/offerings', array_merge($filters, ['page' => $page]));
+                    } catch (\Throwable) {
+                        break;
+                    }
                 }
 
                 if (! $response->successful()) {
@@ -57,14 +70,18 @@ class BackendOfferingsClient
 
                 $payload = $response->json();
                 $vendorDetails = data_get($payload, 'included.vendor_details', []);
+                $rankingRequestId = trim((string) data_get($payload, 'meta.ranking_request_id', ''));
                 $rows = collect(data_get($payload, 'data', []))
                     ->filter(fn ($offering): bool => is_array($offering))
-                    ->map(function (array $offering) use ($vendorDetails): array {
+                    ->map(function (array $offering) use ($vendorDetails, $rankingRequestId): array {
                         $vendorId = (string) data_get($offering, 'vendor_id', '');
                         $vendor = is_array($vendorDetails) ? ($vendorDetails[$vendorId] ?? null) : null;
 
                         if (is_array($vendor)) {
                             $offering['vendor'] = $vendor;
+                        }
+                        if ($rankingRequestId !== '') {
+                            $offering['ranking_request_id'] = $rankingRequestId;
                         }
 
                         return $offering;
@@ -87,6 +104,38 @@ class BackendOfferingsClient
         return $hasVisitorCookie
             ? $load()
             : Cache::remember($cacheKey, now()->addMinutes(3), $load);
+    }
+
+    public function reorder(Collection $items): Collection
+    {
+        if ((string) request()->cookie('wow_visitor_id') === '' || $items->isEmpty()) {
+            return $items->values();
+        }
+
+        $catalogue = $this->personalisedCatalogue ??= $this->catalogue([], 2);
+        if ($catalogue->isEmpty()) {
+            return $items->values();
+        }
+        $positions = $catalogue->values()->mapWithKeys(fn ($item, int $index) => [$this->offeringKey($item) => $index]);
+
+        return $items->values()->sortBy(function ($item, int $index) use ($positions): int {
+            return (int) ($positions->get($this->offeringKey($item), 100000 + $index));
+        })->values();
+    }
+
+    private function offeringKey(mixed $item): string
+    {
+        $sourceVersion = strtolower(trim((string) data_get($item, 'source_version', data_get($item, 'version', ''))));
+        $sourceType = strtolower(trim((string) data_get($item, 'source_type', data_get($item, 'kind', ''))));
+        $source = $sourceVersion === 'v1-v2' ? 'legacy' : ($sourceType === 'physical_product' || $sourceVersion === 'store' ? 'store' : 'v3');
+        if ($sourceVersion === '') {
+            $itemType = get_debug_type($item);
+            $source = str_contains($itemType, 'StoreProduct')
+                ? 'store'
+                : (str_contains($itemType, 'OfferingV3') ? 'v3' : (str_contains($itemType, 'Product') ? 'legacy' : $source));
+        }
+
+        return $source.':'.(int) data_get($item, 'id', 0);
     }
 
     private function deviceClass(?string $userAgent): string

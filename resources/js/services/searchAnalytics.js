@@ -47,7 +47,7 @@ function sourceFor(form) {
 function postSearchEvent(payload, { duringNavigation = false } = {}) {
   if (duringNavigation && navigator.sendBeacon) {
     const body = new Blob([JSON.stringify(payload)], { type: 'text/plain;charset=UTF-8' });
-    if (navigator.sendBeacon(endpoint, body)) return Promise.resolve();
+    if (navigator.sendBeacon(endpoint, body)) return Promise.resolve(true);
   }
 
   return fetch(endpoint, {
@@ -56,7 +56,7 @@ function postSearchEvent(payload, { duringNavigation = false } = {}) {
     keepalive: true,
     headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
     body: JSON.stringify(payload),
-  }).catch(() => {});
+  }).then((response) => response.ok).catch(() => false);
 }
 
 function recordSearch({ searchTerm = '', locationQuery = '', source = 'site-search' } = {}) {
@@ -117,9 +117,23 @@ function updatePendingSearchWithResults(count) {
 
   try {
     const pending = JSON.parse(window.sessionStorage?.getItem(pendingSearchKey) || 'null');
-    if (pending?.event_uuid) void postSearchEvent({ ...pending, items_shown: count });
+    if (pending?.event_uuid) {
+      void postSearchEvent({ ...pending, items_shown: count }).then((saved) => {
+        if (!saved) return;
+        const current = JSON.parse(window.sessionStorage?.getItem(pendingSearchKey) || 'null');
+        if (current?.event_uuid === pending.event_uuid) window.sessionStorage?.removeItem(pendingSearchKey);
+      });
+    }
   } catch (_) {
     // Search behavior must remain independent from analytics.
+  }
+}
+
+export function reportSearchResults(count) {
+  const parsed = Number(count);
+  if (Number.isInteger(parsed) && parsed >= 0) {
+    updatePendingSearchWithResults(parsed);
+    window.dispatchEvent(new CustomEvent('wow:search-results-loaded', { detail: { count: parsed } }));
   }
 }
 
@@ -160,8 +174,7 @@ export function installSearchAnalytics() {
   }
 
   window.addEventListener('wow:searchbar-v4:results-updated', (event) => {
-    const count = Number(event.detail?.count);
-    if (Number.isInteger(count)) updatePendingSearchWithResults(count);
+    reportSearchResults(event.detail?.count);
   });
 
   document.querySelectorAll('#wowMobileResultsCount, #searchResultsCount').forEach((element) => {
