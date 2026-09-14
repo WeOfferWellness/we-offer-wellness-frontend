@@ -707,6 +707,16 @@ function initHeaderSearchModal() {
     return `${url.pathname}${url.search}`;
   };
 
+  const reportHeaderSearch = (what, where) => {
+    window.dispatchEvent(new CustomEvent('wow:search-submitted', {
+      detail: {
+        what: String(what || '').trim(),
+        where: String(where || '').trim(),
+        source: 'header-modal',
+      },
+    }));
+  };
+
   const requestLocation = () => {
     if (!navigator.geolocation) return;
     navigator.geolocation.getCurrentPosition(() => {}, () => {}, {
@@ -1028,6 +1038,7 @@ function initHeaderSearchModal() {
   desktopForm.addEventListener('submit', (event) => {
     event.preventDefault();
     if (!whatInput.value.trim()) return setDesktopActive('desktop-what');
+    reportHeaderSearch(whatInput.value, whereInput.value);
     window.location.href = buildSearchUrl(whatInput.value, whereInput.value);
   });
 
@@ -1070,7 +1081,10 @@ function initHeaderSearchModal() {
   });
   mobileForm.addEventListener('submit', (event) => {
     event.preventDefault();
-    if (state.mobileWhat.trim()) window.location.href = buildSearchUrl(state.mobileWhat, state.mobileWhereSelected || state.mobileWhere);
+    if (state.mobileWhat.trim()) {
+      reportHeaderSearch(state.mobileWhat, state.mobileWhereSelected || state.mobileWhere);
+      window.location.href = buildSearchUrl(state.mobileWhat, state.mobileWhereSelected || state.mobileWhere);
+    }
   });
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape' && state.open) closeMainSearch();

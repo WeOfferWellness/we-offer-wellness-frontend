@@ -4,6 +4,7 @@ import { router } from '@inertiajs/vue3'
 import { fetchLocations } from '@/services/locations'
 import { fetchWhatCategories } from '@/services/whatCategories'
 import SearchRangeCalendar from './SearchRangeCalendar.vue'
+import { logSearchValues } from '@/services/searchAnalytics'
 
 const props = defineProps({
   idPrefix: { type: String, default: 'ultra' },
@@ -221,6 +222,11 @@ function onSubmit() {
   }
 
   const p = payload()
+  logSearchValues({
+    searchTerm: p.what,
+    locationQuery: p.whereList.join(', '),
+    source: props.idPrefix === 'modal' || String(props.idPrefix).includes('header') ? 'header-modal' : 'hero',
+  })
   const params = new URLSearchParams()
   if (p.what) params.set('what', p.what)
   if (p.whereList.length) params.set('where', p.whereList.join(','))

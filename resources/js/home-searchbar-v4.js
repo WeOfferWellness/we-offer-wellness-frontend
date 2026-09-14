@@ -44,6 +44,15 @@ function bootHomeSearchbarV4(root) {
       return `${url.pathname}${url.search}${url.hash}`;
     }
 
+    function reportSearch(what, where) {
+      const source = root.closest('.wow-search-page-hero')
+        ? 'search-page'
+        : (root.closest('.hero, [class*="hero"], [data-hero]') ? 'hero' : 'site-search');
+      window.dispatchEvent(new CustomEvent('wow:search-submitted', {
+        detail: { what: String(what || '').trim(), where: String(where || '').trim(), source },
+      }));
+    }
+
     function requestLocation() {
       if (!navigator.geolocation) {
         console.warn('Geolocation is not available in this browser.');
@@ -254,6 +263,7 @@ function bootHomeSearchbarV4(root) {
     desktopForm.addEventListener('submit', event => {
       event.preventDefault();
       if (!whatInput.value.trim()) { whatInput.focus(); setDesktopActive('what'); return; }
+      reportSearch(whatInput.value, whereInput.value);
       window.location.href = buildSearchUrl(whatInput.value, whereInput.value);
     });
 
@@ -451,7 +461,10 @@ function bootHomeSearchbarV4(root) {
 
     mobileForm.addEventListener('submit', event => {
       event.preventDefault();
-      if (state.mobileWhat.trim()) window.location.href = buildSearchUrl(state.mobileWhat, state.mobileWhere);
+      if (state.mobileWhat.trim()) {
+        reportSearch(state.mobileWhat, state.mobileWhere);
+        window.location.href = buildSearchUrl(state.mobileWhat, state.mobileWhere);
+      }
     });
 
     document.addEventListener('keydown', event => {

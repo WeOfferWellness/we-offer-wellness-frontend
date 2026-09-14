@@ -1,4 +1,10 @@
-const endpoint = `${String(import.meta.env.VITE_BACKEND_URL || '').replace(/\/$/, '')}/api/search-events`;
+// Search reporting belongs to Studio.  VITE_BACKEND_URL is shared by a number
+// of frontend integrations and currently points at the AtEase application, so
+// using it here silently sent search telemetry to the wrong host.
+const studioOrigin = String(
+  import.meta.env.VITE_SEARCH_EVENTS_ORIGIN || 'https://studio.weofferwellness.co.uk',
+).replace(/\/$/, '');
+const endpoint = `${studioOrigin}/api/search-events`;
 const pendingSearchKey = 'wow_pending_search_event';
 
 function searchEventId() {
@@ -53,6 +59,31 @@ function postSearchEvent(payload, { duringNavigation = false } = {}) {
   }).catch(() => {});
 }
 
+function recordSearch({ searchTerm = '', locationQuery = '', source = 'site-search' } = {}) {
+  const cleanSearchTerm = String(searchTerm || '').trim();
+  const cleanLocationQuery = String(locationQuery || '').trim();
+
+  if (!cleanSearchTerm && !cleanLocationQuery) return null;
+
+  const payload = {
+    event_uuid: searchEventId(),
+    search_term: cleanSearchTerm || null,
+    // Keep an intentionally empty location as null. This makes an omitted
+    // location distinct from a browser/IP estimate in the reporting view.
+    location_query: cleanLocationQuery || null,
+    source: String(source || 'site-search').slice(0, 80),
+    device_type: window.matchMedia('(max-width: 767px)').matches ? 'mobile' : 'desktop',
+    session_id: searchSessionId(),
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || null,
+  };
+
+  window.sessionStorage?.setItem(pendingSearchKey, JSON.stringify(payload));
+
+  // Beacon delivery survives the search handler's immediate page navigation.
+  void postSearchEvent(payload, { duringNavigation: true });
+  return payload;
+}
+
 export function logSearchEvent(form) {
   const searchTerm = inputValue(form, [
     '[name="what"]',
@@ -68,23 +99,11 @@ export function logSearchEvent(form) {
     '#wowsearch-mobile-where-display',
   ]);
 
-  if (!searchTerm && !locationQuery) return null;
+  return recordSearch({ searchTerm, locationQuery, source: sourceFor(form) });
+}
 
-  const payload = {
-    event_uuid: searchEventId(),
-    search_term: searchTerm || null,
-    location_query: locationQuery || null,
-    source: sourceFor(form),
-    device_type: window.matchMedia('(max-width: 767px)').matches ? 'mobile' : 'desktop',
-    session_id: searchSessionId(),
-    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || null,
-  };
-
-  window.sessionStorage?.setItem(pendingSearchKey, JSON.stringify(payload));
-
-  // Beacon delivery survives the search handler's immediate page navigation.
-  void postSearchEvent(payload, { duringNavigation: true });
-  return payload;
+export function logSearchValues(values) {
+  return recordSearch(values);
 }
 
 function resultCount() {
@@ -106,6 +125,10 @@ function updatePendingSearchWithResults(count) {
 
 export function installSearchAnalytics() {
   document.addEventListener('submit', (event) => {
+    // JavaScript search controls supply their selected values through the
+    // explicit event below. They prevent the native submit and may not retain
+    // their selection in a form input, so do not create a second/incomplete row.
+    if (event.defaultPrevented) return;
     const form = event.target;
     if (!(form instanceof HTMLFormElement)) return;
 
@@ -114,7 +137,16 @@ export function installSearchAnalytics() {
       || form.querySelector('[name="what"], #wowsearch-desktop-what, #wowsearch-mobile-what-input');
 
     if (isSearchForm) logSearchEvent(form);
-  }, true);
+  });
+
+  window.addEventListener('wow:search-submitted', (event) => {
+    const detail = event.detail || {};
+    recordSearch({
+      searchTerm: detail.searchTerm || detail.what,
+      locationQuery: detail.locationQuery || detail.where,
+      source: detail.source || 'site-search',
+    });
+  });
 
   const reportInitialResults = () => {
     const count = resultCount();

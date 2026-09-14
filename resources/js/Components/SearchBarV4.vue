@@ -3,6 +3,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } 
 import SearchRangeCalendar from './SearchRangeCalendar.vue'
 import { fetchLocations } from '@/services/locations'
 import { fetchWhatCategories } from '@/services/whatCategories'
+import { logSearchValues } from '@/services/searchAnalytics'
 
 const props = defineProps({
   idPrefix: { type: String, default: 'search-v4' },
@@ -705,9 +706,19 @@ function applySearch(immediate = true) {
     closeFilterDrawer()
   }
   if (props.navigateOnSubmit && typeof window !== 'undefined') {
+    logSearchValues({
+      searchTerm: state.what,
+      locationQuery: state.where,
+      source: props.idPrefix === 'header-search' ? 'header-modal' : 'search-page',
+    })
     window.location.assign(buildUrl())
     return
   }
+  logSearchValues({
+    searchTerm: state.what,
+    locationQuery: state.where,
+    source: props.idPrefix === 'header-search' ? 'header-modal' : 'search-page',
+  })
   emitQueryChange('submit', immediate)
 }
 
