@@ -78,17 +78,21 @@ function productVisible(p) {
 export async function fetchProducts(params = {}, options = {}) {
   const opts = typeof options === 'object' && options !== null ? options : {}
   const qs = new URLSearchParams(params).toString();
+  const backendUrl = String(import.meta.env.VITE_BACKEND_URL || '').replace(/\/$/, '')
   const candidates = [
-    import.meta.env.VITE_OFFERINGS_URL || '/api/offerings',
-    import.meta.env.VITE_PRODUCTS_URL || '/api/products',
+    import.meta.env.VITE_OFFERINGS_URL || `${backendUrl}/api/behaviour/offerings`,
   ]
+
+  if (import.meta.env.VITE_PRODUCTS_URL) {
+    candidates.push(import.meta.env.VITE_PRODUCTS_URL)
+  }
 
   let lastError = null
 
   for (const base of candidates) {
     const url = qs ? `${base}?${qs}` : base
     try {
-      const res = await fetch(url, { cache: 'no-store', credentials: 'same-origin', headers: { Accept: 'application/json' } })
+      const res = await fetch(url, { cache: 'no-store', credentials: 'include', headers: { Accept: 'application/json' } })
       if (!res.ok) throw new Error(`Failed to load products: ${res.status}`)
       const data = await res.json()
       const list = Array.isArray(data)

@@ -125,11 +125,13 @@ export async function fetchOfferings(params = {}, options = {}) {
         return carry;
       }, {})
   ).toString();
-  const base = opts.baseUrl || import.meta.env.VITE_OFFERINGS_URL || '/api/offerings';
+  const base = opts.baseUrl
+    || import.meta.env.VITE_OFFERINGS_URL
+    || `${String(import.meta.env.VITE_BACKEND_URL || '').replace(/\/$/, '')}/api/behaviour/offerings`;
   const url = qs ? `${base}?${qs}` : base;
 
   try {
-    const res = await fetch(url, { cache: 'no-store', credentials: 'same-origin', headers: { Accept: 'application/json' } });
+    const res = await fetch(url, { cache: 'no-store', credentials: 'include', headers: { Accept: 'application/json' } });
     if (!res.ok) throw new Error(`Failed to load offerings: ${res.status}`);
     const payload = await res.json();
     return normalizeOfferingsPayload(payload);

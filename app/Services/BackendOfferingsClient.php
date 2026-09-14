@@ -25,9 +25,11 @@ class BackendOfferingsClient
             'direction' => 'desc',
         ], $filters);
 
+        $request = request();
+        $hasVisitorCookie = (string) $request->cookie('wow_visitor_id') !== '';
         $cacheKey = 'backend:offerings:'.sha1($baseUrl.'|'.json_encode($filters).'|'.$maxPages);
 
-        return Cache::remember($cacheKey, now()->addMinutes(3), function () use ($baseUrl, $filters, $maxPages): Collection {
+        $load = function () use ($baseUrl, $filters, $maxPages, $request): Collection {
             $items = collect();
             $page = max(1, (int) ($filters['page'] ?? 1));
 
@@ -37,10 +39,11 @@ class BackendOfferingsClient
                         ->withHeaders([
                             'Origin' => config('app.url'),
                             'Referer' => rtrim((string) config('app.url'), '/').'/',
+                            ...($request->headers->has('cookie') ? ['Cookie' => $request->headers->get('cookie')] : []),
                         ])
                         ->timeout(8)
                         ->retry(1, 150)
-                        ->get($baseUrl.'/api/offerings', array_merge($filters, ['page' => $page]));
+                        ->get($baseUrl.'/api/behaviour/offerings', array_merge($filters, ['page' => $page]));
                 } catch (\Throwable) {
                     break;
                 }
@@ -75,6 +78,10 @@ class BackendOfferingsClient
             return $items
                 ->unique(fn (array $offering) => (string) data_get($offering, 'source_version', '').':'.(string) data_get($offering, 'id', ''))
                 ->values();
-        });
+        };
+
+        return $hasVisitorCookie
+            ? $load()
+            : Cache::remember($cacheKey, now()->addMinutes(3), $load);
     }
 }

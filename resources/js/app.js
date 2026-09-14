@@ -21,8 +21,10 @@ import './home';
 import './home-searchbar-v4';
 import './home-offerings';
 import { installSearchAnalytics } from './services/searchAnalytics';
+import { installBehaviourTelemetry } from './services/behaviourTelemetry';
 
 installSearchAnalytics();
+installBehaviourTelemetry();
 
 import { createInertiaApp } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
