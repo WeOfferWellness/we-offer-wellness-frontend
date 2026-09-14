@@ -65,6 +65,7 @@ class HomeRailsController extends Controller
     private function catalogue(array $filters = [], int $maxPages = 2): Collection
     {
         return $this->offeringsClient->catalogue($filters, $maxPages)
+            ->filter(fn (array $item): bool => $this->isPublicOffering($item))
             ->reject(fn (array $item) => EventListing::isPast($item))
             ->values();
     }
@@ -139,8 +140,13 @@ class HomeRailsController extends Controller
 
     private function timestamp(array $item): int
     {
-        $value = data_get($item, 'published_at', data_get($item, 'created_at'));
+        $value = data_get($item, 'created_at', data_get($item, 'published_at'));
 
         return $value ? Carbon::parse((string) $value)->getTimestamp() : (int) data_get($item, 'id', 0);
+    }
+
+    private function isPublicOffering(array $item): bool
+    {
+        return in_array(Str::lower(trim((string) data_get($item, 'status', 'live'))), ['live', 'published'], true);
     }
 }

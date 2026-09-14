@@ -24,6 +24,7 @@ class HomeController extends Controller
         $payload = Cache::remember('home:index:v4:'.$cacheVersion, now()->addMinutes(10), function () use ($offeringsClient): array {
             // Product, offering, and review data belongs to the Backend API only.
             $active = $offeringsClient->catalogue()
+                ->filter(fn (array $offering): bool => $this->isPublicOffering($offering))
                 ->reject(fn (array $offering) => EventListing::isPast($offering))
                 ->values();
 
@@ -44,7 +45,7 @@ class HomeController extends Controller
             )->take(12)->values();
 
             $latestCatalogue = $active
-                ->sortByDesc(fn (array $offering) => Carbon::parse((string) data_get($offering, 'published_at', data_get($offering, 'created_at', '1970-01-01')))->getTimestamp())
+                ->sortByDesc(fn (array $offering) => Carbon::parse((string) data_get($offering, 'created_at', data_get($offering, 'published_at', '1970-01-01')))->getTimestamp())
                 ->take(12)
                 ->values();
 
@@ -84,6 +85,11 @@ class HomeController extends Controller
             (string) data_get($offering, 'type.name', ''),
             implode(' ', (array) data_get($offering, 'tags', [])),
         ])), ['gift', 'voucher', 'card', 'present']);
+    }
+
+    private function isPublicOffering(array $offering): bool
+    {
+        return in_array(Str::lower(trim((string) data_get($offering, 'status', 'live'))), ['live', 'published'], true);
     }
 
     private function isOnlineOnly(array $offering): bool
