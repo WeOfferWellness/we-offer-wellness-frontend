@@ -66,9 +66,13 @@ class HomeController extends Controller
             return view('home.index', $payload);
         }
 
-        $html = Cache::remember('home:index:html:v4:'.$cacheVersion, now()->addMinutes(10), fn () => view('home.index', $payload)->render());
-
-        return response($html)->header('Cache-Control', 'public, max-age=600');
+        // The rail markup is deliberately only a short-lived skeleton. Serving
+        // cached homepage HTML can leave a visitor with an old bundle/rail pair
+        // after a deploy, which means placeholders never get replaced. Keep the
+        // catalogue data cached above, but always deliver current page markup.
+        return response(view('home.index', $payload)->render())
+            ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+            ->header('Pragma', 'no-cache');
     }
 
     private function isGift(array $offering): bool
