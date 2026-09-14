@@ -57,6 +57,9 @@ function waitForHtmlImages(html, signal) {
     return Promise.resolve();
   }
 
+  // Card markup must never remain hidden behind skeletons because one remote
+  // image is slow, blocked, or malformed. Images continue loading normally
+  // after the real cards are inserted.
   return Promise.all(uniqueUrls.map((src) => new Promise((resolve) => {
     if (signal?.aborted) {
       resolve();
@@ -76,6 +79,8 @@ function waitForHtmlImages(html, signal) {
     image.onerror = finish;
     image.src = src;
 
+    window.setTimeout(finish, 1500);
+
     if (image.complete) {
       finish();
     }
@@ -89,7 +94,6 @@ async function swapHtmlWhenReady(list, loadingHtml, html, signal) {
     return;
   }
 
-  await waitForHtmlImages(trimmed, signal);
   if (signal?.aborted) return;
   list.innerHTML = trimmed;
 }
@@ -100,7 +104,6 @@ async function appendHtmlWhenReady(list, html, signal) {
     return;
   }
 
-  await waitForHtmlImages(trimmed, signal);
   if (signal?.aborted) return;
   list.insertAdjacentHTML('beforeend', trimmed);
 }
