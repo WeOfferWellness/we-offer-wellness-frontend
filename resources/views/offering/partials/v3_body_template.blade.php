@@ -1168,16 +1168,21 @@ SVG;
     .wow-v3-offering-page .hero-wrap {
         max-width: var(--max);
         margin: 18px auto 0;
-        padding: 0 20px;
+        padding: 0;
     }
     .wow-v3-offering-page .hero {
         position: relative;
-        min-height: 630px;
-        overflow: hidden;
+        min-height: 0;
+        height: auto;
+        overflow: visible;
         border-radius: var(--radius);
-        background: #11241e;
-        box-shadow: var(--shadow);
+        background: transparent;
+        box-shadow: none;
     }
+    .wow-v3-offering-page .hero-slide,
+    .wow-v3-offering-page .hero-overlay,
+    .wow-v3-offering-page .hero-watermark,
+    .wow-v3-offering-page .hero-review-badge { display: none; }
     .wow-v3-offering-page .hero-slide {
         position: absolute;
         inset: 0;
@@ -1268,13 +1273,13 @@ SVG;
         position: relative;
         z-index: 3;
         display: grid;
-        grid-template-columns: minmax(0, 1fr) 380px;
-        gap: 28px;
-        min-height: 630px;
-        padding: 42px;
-        align-items: end;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0;
+        min-height: 0;
+        padding: 0;
+        align-items: start;
     }
-    .wow-v3-offering-page .hero-main { max-width: 980px; }
+    .wow-v3-offering-page .hero-main { max-width: 980px; color: #000; }
     /* Keep the title and category block anchored to the top of the hero. The
        booking panel may remain bottom-aligned, but the primary heading should
        never be pushed down by the hero's vertical alignment. */
@@ -1286,15 +1291,15 @@ SVG;
         gap: 8px;
         padding: 8px 10px;
         border-radius: var(--radius);
-        background: rgba(255, 255, 255, 0.12);
-        border: 1px solid rgba(255, 255, 255, 0.22);
-        color: #eefbf6;
+        background: #fff;
+        border: 1px solid var(--line);
+        color: #000;
         font-size: 13px;
     }
     .wow-v3-offering-page .hero h1 {
         max-width: 780px;
         margin: 0;
-        color: #ffffff;
+        color: #000000;
         font-size: clamp(42px, 5.8vw, 78px);
         line-height: 0.94;
         letter-spacing: -0.065em;
@@ -3083,10 +3088,10 @@ SVG;
     .store-v3-review-empty div{display:flex;flex-direction:column;gap:6px}.store-v3-review-empty span{color:var(--muted);font-size:13px}.store-v3-review-empty .btn{flex:0 0 auto}
     .store-v3-mobile-product-image{display:none}
     .store-v3-desktop-gallery{display:block}
-    .wow-v3-product-only .hero-wrap{min-height:100vh;background:var(--soft)}
-    .wow-v3-product-only .hero{min-height:100vh;background:var(--soft)}
+    .wow-v3-product-only .hero-wrap{min-height:0;background:transparent}
+    .wow-v3-product-only .hero{min-height:0;height:auto;background:transparent;box-shadow:none}
     .wow-v3-product-only .hero-slide,.wow-v3-product-only .hero-overlay,.wow-v3-product-only .hero-watermark{display:none}
-    .wow-v3-product-only .hero-content{max-width:1280px;padding:clamp(28px,6vw,80px);margin:0 auto;display:grid;grid-template-columns:minmax(280px,1fr) minmax(360px,.8fr);gap:clamp(28px,6vw,84px);align-items:center}
+    .wow-v3-product-only .hero-content{max-width:1280px;padding:0;margin:0 auto;display:grid;grid-template-columns:minmax(280px,1fr) minmax(360px,.8fr);gap:clamp(28px,6vw,84px);align-items:start}
     .wow-v3-product-only .hero-main{display:block;min-width:0}
     .wow-v3-product-only .store-v3-product-only-image{display:flex;align-items:center;justify-content:center;order:-1;margin:0;min-height:clamp(360px,62vh,680px);border:1px solid var(--line);border-radius:var(--radius);background:#fff;overflow:hidden}
     .wow-v3-product-only .store-v3-product-only-image img{width:100%;height:100%;max-height:680px;object-fit:contain}
@@ -3991,6 +3996,9 @@ SVG;
     const bookingFields = page.querySelector('#bookingFields');
     const modalFieldsSlot = page.querySelector('#modalFieldsSlot');
     const bookingPanel = page.querySelector('#booking');
+    const heroContent = page.querySelector('.hero-content');
+    const sideStack = page.querySelector('.side-stack');
+    const bookingHome = bookingPanel?.parentElement || null;
     const bookingModal = page.querySelector('#bookingModal');
     const bookingBackdrop = page.querySelector('#bookingBackdrop');
     const closeBookingModal = page.querySelector('#closeBookingModal');
@@ -4085,6 +4093,16 @@ SVG;
 
     function isMobile() {
         return window.innerWidth <= 720;
+    }
+
+    function placeBookingPanel() {
+        if (!bookingPanel || !sideStack || !bookingHome) return;
+        if (isMobile()) {
+            if (bookingPanel.parentElement !== bookingHome) bookingHome.appendChild(bookingPanel);
+            return;
+        }
+
+        if (bookingPanel.parentElement !== sideStack) sideStack.prepend(bookingPanel);
     }
 
     function money(value) {
@@ -5488,6 +5506,7 @@ SVG;
     });
 
     window.addEventListener('resize', () => {
+        placeBookingPanel();
         if (!isMobile() && bookingModal.classList.contains('is-open')) {
             closeBookingModalFn();
         }
@@ -5525,6 +5544,7 @@ SVG;
     }
 
     bootstrap();
+    placeBookingPanel();
     updateMobileStickyBar();
 })();
 </script>
