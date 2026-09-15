@@ -316,6 +316,9 @@
             function setCounts(count) {
                 countNodes.forEach(node => { node.textContent = count; });
                 applyCount.textContent = count;
+                // Results arrive asynchronously; update the original search
+                // event so Search Data does not leave items_shown as Pending.
+                window.dispatchEvent(new CustomEvent('wow:searchbar-v4:results-updated', { detail: { count: Number(count) || 0 } }));
             }
 
             function openFilters() {

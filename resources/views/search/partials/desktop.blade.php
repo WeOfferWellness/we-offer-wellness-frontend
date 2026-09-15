@@ -249,6 +249,7 @@
         .wow-sr-v5-desktop.is-map-mode .wow-sr-v5-layout { grid-template-columns: minmax(460px, 640px) minmax(0, 1fr); gap: 0; align-items: start; }
         .wow-sr-v5-desktop.is-map-mode .wow-sr-v5-sidebar { display: none; }
         .wow-sr-v5-desktop.is-map-mode .wow-sr-v5-content { padding: 0 22px 30px 26px; }
+        .wow-sr-v5-desktop.is-map-mode .wow-search-recommendations__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         .wow-sr-v5-desktop.is-map-mode .wow-sr-v5-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
         .wow-sr-v5-desktop.is-map-mode .wow-sr-v5-map-panel {
             position: sticky;
@@ -421,6 +422,9 @@
 
             function setCounts(count) {
                 countNodes.forEach(node => { node.textContent = count; });
+                // Results arrive asynchronously; update the original search
+                // event so Search Data does not leave items_shown as Pending.
+                window.dispatchEvent(new CustomEvent('wow:searchbar-v4:results-updated', { detail: { count: Number(count) || 0 } }));
             }
 
             function setMapMode(enabled) {
