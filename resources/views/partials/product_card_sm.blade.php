@@ -44,7 +44,6 @@
     $type = $normalizeTypeLabel($get('product_type', 'Therapy'));
     $category = $normalizeTypeLabel(data_get($product, 'category.name'));
     $priceMin = $get('variants_min_price', $get('price', null));
-    if (is_numeric($priceMin) && $priceMin > 1000 && $priceMin % 100 === 0) { $priceMin = $priceMin / 100; }
     $rating = is_numeric($get('reviews_avg_rating', null)) ? round((float) $get('reviews_avg_rating'), 1) : null;
     $reviewCount = (int) ($get('reviews_count', 0));
 @endphp

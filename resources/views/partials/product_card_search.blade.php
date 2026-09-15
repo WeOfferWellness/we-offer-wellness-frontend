@@ -53,16 +53,10 @@
         ? $product->hasDisplayableImage()
         : !str_contains((string) $image, 'no-product-image.jpg');
     $priceMin = $product->variants_min_price ?? ($product->price ?? null);
-    if (is_numeric($priceMin) && $priceMin > 1000 && $priceMin % 100 === 0) {
-        $priceMin = $priceMin / 100;
-    }
     $priceDisplay = is_numeric($priceMin)
         ? '£' . rtrim(rtrim(number_format((float) $priceMin, 2, '.', ''), '0'), '.')
         : '—';
     $compareMin = $product->variants_min_compare ?? ($product->compare_at_price ?? null);
-    if (is_numeric($compareMin) && $compareMin > 1000 && $compareMin % 100 === 0) {
-        $compareMin = $compareMin / 100;
-    }
     $vendorUser = data_get($product, 'vendor.user');
     $starterPlan = $vendorUser instanceof \App\Models\User
         ? $vendorUser->isStarterPlan()

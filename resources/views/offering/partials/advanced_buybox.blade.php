@@ -15,7 +15,6 @@
         ?? ($initialVariant['product_id'] ?? null)
         ?? ($initialVariant['id'] ?? null);
     $initialPrice = $product['variants_min_price'] ?? ($product['price'] ?? 0);
-    if (is_numeric($initialPrice) && $initialPrice > 1000) { $initialPrice = $initialPrice / 100; }
     $initialPriceFormatted = is_numeric($initialPrice) ? number_format((float)$initialPrice, 2, '.', '') : '0.00';
     $primaryImage = $product['images'][0] ?? ($product['image'] ?? '');
     $productTitleSafe = $product['title'] ?? 'Experience';

@@ -489,9 +489,7 @@ const dbgPrice = computed(() => {
   const v = dbgVariant.value
   const raw = v?.price
   const n = Number(raw)
-  // Price may be a string in pounds (e.g., "68.00") or pence. Prefer pounds when < 1000.
-  if (Number.isFinite(n) && n > 0 && n < 1000) return fmt(n, props.product?.currency || 'GBP')
-  if (Number.isFinite(n) && n >= 1000) return fmt(n/100, props.product?.currency || 'GBP')
+  if (Number.isFinite(n)) return fmt(n, props.product?.currency || 'GBP')
   return raw != null ? String(raw) : '—'
 })
 // Debug disabled: onMounted(() => { initDebugSel(); initDbgLocation() })

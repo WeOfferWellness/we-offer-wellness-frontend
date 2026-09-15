@@ -9,7 +9,6 @@
   $rating = $p['rating'] ?? null;
   $reviewCount = $p['review_count'] ?? 0;
   $priceMin = $p['price_min'] ?? ($p['price'] ?? null);
-  if (is_numeric($priceMin) && $priceMin >= 1000) { $priceMin = $priceMin / 100; }
   $summary = trim((string)($p['summary'] ?? ''));
   $seoTitle = trim((string)($p['seo_title'] ?? ''));
   $seoDescriptionOverride = trim((string)($p['seo_description'] ?? ''));
@@ -273,10 +272,6 @@
     }
 
     $amount = (float) $value;
-    if ($amount >= 1000) {
-      $amount = $amount / 100;
-    }
-
     return round($amount, 2);
   };
   $schemaProviderName = trim((string) (

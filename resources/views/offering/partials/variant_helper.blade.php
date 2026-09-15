@@ -2,7 +2,7 @@
   $dbg = $product ?? [];
   $opts = $dbg['options'] ?? [];
   $vars = $dbg['variants'] ?? [];
-  $norm = function($v){ if(!is_numeric($v)) return null; $n=(float)$v; if($n>=1000) $n=$n/100; return $n; };
+  $norm = function($v){ if(!is_numeric($v)) return null; return (float)$v; };
   $fmt = function($n){ return $n===null? '' : '£'.number_format((float)$n, 2); };
 @endphp
 

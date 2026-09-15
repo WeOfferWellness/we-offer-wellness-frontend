@@ -12,9 +12,6 @@
         ? $product->getFirstImageUrl()
         : (string) ($value('image', $value('image_url', $value('featured_image', ''))));
     $price = $value('variants_min_price', $value('price_min', $value('price', $value('base_price'))));
-    if (is_numeric($price) && $price > 1000 && $price % 100 === 0) {
-        $price /= 100;
-    }
     $priceLabel = is_numeric($price) ? '£' . rtrim(rtrim(number_format((float) $price, 2, '.', ''), '0'), '.') : '£0';
     $typeRaw = strtolower(trim((string) ($value('type.name', $value('type_label', $value('type_name', $value('product_type', 'therapy')))))));
     $categoryRaw = (string) $value('category.name', $value('category.label', $value('category_name', $value('category_label', $value('category', '')))));

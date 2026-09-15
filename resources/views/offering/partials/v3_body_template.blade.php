@@ -588,13 +588,7 @@ SVG;
             $variantLabel = 'Option ' . ($index + 1);
         }
         $variantPrice = is_numeric($variant['price'] ?? null) ? (float) $variant['price'] : $price;
-        if ($variantPrice >= 1000) {
-            $variantPrice = $variantPrice / 100;
-        }
         $variantCompare = is_numeric($variant['compare'] ?? null) ? (float) $variant['compare'] : null;
-        if (is_numeric($variantCompare) && $variantCompare >= 1000) {
-            $variantCompare = $variantCompare / 100;
-        }
         $priceOptionId = null;
         if (preg_match('/^po_(\d+)(?:_tier_(\d+))?$/', $variantId, $variantMatches)) {
             $priceOptionId = (int) $variantMatches[1];

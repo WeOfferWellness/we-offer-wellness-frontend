@@ -6,7 +6,6 @@
   $serverCart = [];
   foreach (($items ?? []) as $id => $it) {
       $p = (float)($it['price'] ?? 0);
-      if ($p >= 1000) $p = $p / 100;
       $lineProductId = $it['product_id'] ?? (is_numeric($id) ? (int)$id : (\Illuminate\Support\Str::startsWith((string)$id, 'p:') ? (int)substr((string)$id, 2) : null));
       $serverCart[] = [
           'id'    => (string)$id,
@@ -192,7 +191,6 @@
     var id = String(rawId ?? '');
     if(!id){ id = 'p:'+String(x.product_id || x.productId || Math.random().toString(36).slice(2)); }
     var rawPrice = Number(x.price_min ?? x.price ?? x.unit ?? 0);
-    if(rawPrice>=1000) rawPrice = rawPrice/100;
     var variantLabel = x.variant_label || x.variantLabel || x.options_label || '';
     var meta = (x.meta && typeof x.meta === 'object') ? x.meta : {};
     if (x.booking && typeof x.booking === 'object' && !meta.booking) meta.booking = x.booking;
@@ -364,7 +362,7 @@
     if(!target) return;
     if(!Array.isArray(list) || !list.length){ target.innerHTML = ''; return; }
     target.innerHTML = list.map(function(it){
-      var p = Number(it.price_min ?? it.price ?? 0); if(p>=1000) p=p/100;
+      var p = Number(it.price_min ?? it.price ?? 0);
       var img = it.image || (it.images && it.images[0]) || '';
       var slug = String(it.slug || it.handle || it.title || it.id || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
       var url = it.url || ('/' + String(it.format || 'therapies').toLowerCase() + '/' + String(it.modality || 'item').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') + '/' + slug);
@@ -658,7 +656,7 @@
     if (add){
       var uid = add.getAttribute('data-add');
       var u = (upsellPool||[]).find(function(x){ return String(x.id)===String(uid) }); if(!u) return;
-      var pRaw = Number(u.price_min ?? u.price ?? 0); var unit = pRaw>=1000 ? pRaw/100 : pRaw;
+      var pRaw = Number(u.price_min ?? u.price ?? 0); var unit = pRaw;
       var cartId = 'p:'+String(uid);
       var ex = cart.find(function(x){ return String(x.id)===cartId });
       var addedItem = ex ? ex : {

@@ -36,9 +36,6 @@
           ?? ''
         ));
         $price = data_get($product, 'variants_min_price', data_get($product, 'price', null));
-        if (is_numeric($price) && (float) $price > 1000 && ((float) $price % 100) === 0.0) {
-          $price = (float) $price / 100;
-        }
 
         $schemaItem = array_filter([
           '@type' => 'Service',

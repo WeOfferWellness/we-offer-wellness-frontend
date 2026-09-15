@@ -42,9 +42,6 @@
       }
 
       $amount = (float) $value;
-      if ($amount >= 1000 && ((int) round($amount)) % 100 === 0) {
-          $amount = $amount / 100;
-      }
 
       return round($amount, 2);
   };

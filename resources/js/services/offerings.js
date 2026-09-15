@@ -69,11 +69,7 @@ function stripEmoji(value) {
 function moneyValue(value) {
   const num = Number(value);
   if (!Number.isFinite(num)) return null;
-  let price = num;
-  if (price > 1000 && price % 100 === 0) {
-    price /= 100;
-  }
-  return Math.round(price * 100) / 100;
+  return Math.round(num * 100) / 100;
 }
 
 function formatMoney(value) {

@@ -44,7 +44,6 @@ function plainText(value) {
 function money(value) {
   let amount = Number(value)
   if (!Number.isFinite(amount) || amount <= 0) return null
-  if (amount > 1000 && amount % 100 === 0) amount /= 100
   return new Intl.NumberFormat('en-GB', { style: 'currency', currency: props.product?.currency || 'GBP', maximumFractionDigits: 2 }).format(amount)
 }
 

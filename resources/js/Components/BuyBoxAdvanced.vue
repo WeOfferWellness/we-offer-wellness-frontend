@@ -35,7 +35,7 @@ onMounted(() => {
   try {
   // ---------- Build a local product model compatible with the template ----------
   const p = props.product || {}
-  function normalizePennies(x){ const n = Number(x); if (!isFinite(n)) return 0; return n % 1 === 0 && n > 1000 ? n : Math.round(n * 100) }
+  function normalizePennies(x){ const n = Number(x); if (!isFinite(n)) return 0; return Math.round(n * 100) }
 
   function isLegacyOptions(prod){
     const names = (prod.options||[]).map(o => String(o?.name||o?.meta_name||'').toLowerCase())

@@ -20,7 +20,7 @@ const applyingExternal = ref(false)
 function fmtPrice(raw, c='GBP'){
   const n = Number(raw)
   try {
-    if (Number.isFinite(n) && n >= 1000) return new Intl.NumberFormat(undefined,{style:'currency',currency:c}).format(n/100)
+    if (Number.isFinite(n)) return new Intl.NumberFormat(undefined,{style:'currency',currency:c}).format(n)
     if (Number.isFinite(n)) return new Intl.NumberFormat(undefined,{style:'currency',currency:c}).format(n)
   } catch {}
   return String(raw ?? '—')

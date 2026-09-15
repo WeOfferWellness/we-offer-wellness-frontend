@@ -16,7 +16,7 @@ import { trackCommerce } from './wow-analytics'
       return match ? match.slice(name.length + 1) : '';
     }catch(_){ return '' }
   }
-  function money(n){ try{ var x=Number(n); if(x>=1000) x=x/100; return '£'+x.toFixed(2) }catch(_){ return '£0.00' } }
+  function money(n){ try{ var x=Number(n); return '£'+x.toFixed(2) }catch(_){ return '£0.00' } }
 
   const LS_KEY = 'wow_cart';
   function loadLS(){ try{ return JSON.parse(localStorage.getItem(LS_KEY)||'{}')||{} }catch(_){ return {} } }
