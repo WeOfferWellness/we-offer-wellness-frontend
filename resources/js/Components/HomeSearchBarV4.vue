@@ -101,7 +101,14 @@ function selectOnline() {
 function useMyLocation() {
   where.value = 'Near me'
   closeMenus()
-  navigator.geolocation?.getCurrentPosition(() => {}, () => {}, {
+  navigator.geolocation?.getCurrentPosition((position) => {
+    try {
+      window.sessionStorage?.setItem('wow_near_me_location', JSON.stringify({
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
+      }))
+    } catch (_) {}
+  }, () => {}, {
     enableHighAccuracy: false,
     timeout: 6000,
     maximumAge: 60000,

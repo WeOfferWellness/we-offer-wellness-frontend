@@ -721,7 +721,14 @@ function initHeaderSearchModal() {
 
   const requestLocation = () => {
     if (!navigator.geolocation) return;
-    navigator.geolocation.getCurrentPosition(() => {}, () => {}, {
+    navigator.geolocation.getCurrentPosition((position) => {
+      try {
+        window.sessionStorage?.setItem('wow_near_me_location', JSON.stringify({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        }));
+      } catch (_) {}
+    }, () => {}, {
       enableHighAccuracy: false,
       timeout: 10000,
       maximumAge: 300000,
@@ -1338,7 +1345,14 @@ function mountHomeSearchBarV4() {
   const requestLocation = () => {
     if (!navigator.geolocation) return
     navigator.geolocation.getCurrentPosition(
-      () => {},
+      (position) => {
+        try {
+          window.sessionStorage?.setItem('wow_near_me_location', JSON.stringify({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          }));
+        } catch (_) {}
+      },
       () => {},
       { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 },
     )

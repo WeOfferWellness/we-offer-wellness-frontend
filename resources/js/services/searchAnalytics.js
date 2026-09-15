@@ -80,12 +80,21 @@ function recordSearch({ searchTerm = '', locationQuery = '', source = 'site-sear
 
   if (!cleanSearchTerm && !cleanLocationQuery) return null;
 
+  let nearMeCoordinates = null;
+  if (cleanLocationQuery.toLowerCase() === 'near me') {
+    try {
+      nearMeCoordinates = JSON.parse(window.sessionStorage?.getItem('wow_near_me_location') || 'null');
+    } catch (_) { nearMeCoordinates = null; }
+  }
+
   const payload = {
     event_uuid: searchEventId(),
     search_term: cleanSearchTerm || null,
     // Keep an intentionally empty location as null. This makes an omitted
     // location distinct from a browser/IP estimate in the reporting view.
     location_query: cleanLocationQuery || null,
+    latitude: Number.isFinite(Number(nearMeCoordinates?.latitude)) ? Number(nearMeCoordinates.latitude) : null,
+    longitude: Number.isFinite(Number(nearMeCoordinates?.longitude)) ? Number(nearMeCoordinates.longitude) : null,
     source: String(source || 'site-search').slice(0, 80),
     device_type: window.matchMedia('(max-width: 767px)').matches ? 'mobile' : 'desktop',
     session_id: searchSessionId(),
