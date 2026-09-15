@@ -1275,6 +1275,10 @@ SVG;
         align-items: end;
     }
     .wow-v3-offering-page .hero-main { max-width: 980px; }
+    /* Keep the title and category block anchored to the top of the hero. The
+       booking panel may remain bottom-aligned, but the primary heading should
+       never be pushed down by the hero's vertical alignment. */
+    .wow-v3-offering-page:not(.wow-v3-product-only) .hero-main { align-self: start; }
     .wow-v3-offering-page .kicker-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
     .wow-v3-offering-page .pill {
         display: inline-flex;
