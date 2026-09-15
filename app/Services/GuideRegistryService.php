@@ -4,8 +4,10 @@ namespace App\Services;
 
 use App\Models\OfferingV3;
 use App\Models\Product;
+use App\Models\GuidePage;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 class GuideRegistryService
@@ -916,8 +918,59 @@ class GuideRegistryService
             'what_is' => $this->buildWhatIsPage($record),
             'modality_for_need' => $this->buildNeedGuidePage($record),
             'what_to_expect' => $this->buildWhatToExpectPage($record),
+            'custom' => $this->buildCustomGuidePage($record),
             default => [],
         };
+    }
+
+    private function buildCustomGuidePage(array $record): array
+    {
+        $definition = $record['modality'];
+        $canonical = $this->absoluteGuideUrl($record);
+        $safety = $record['safety_note'] ?: $this->safetyNote($definition['safety_tags'], null);
+        $faqs = array_values(array_filter((array) ($record['faqs'] ?? []), fn (mixed $faq): bool => is_array($faq) && filled($faq['q'] ?? null) && filled($faq['a'] ?? null)));
+
+        $page = [
+            'guide_type' => 'custom',
+            'title' => $record['title'],
+            'h1' => $record['title'],
+            'format' => $record['format'],
+            'modality' => $record['route_modality'],
+            'modality_label' => $definition['label'],
+            'guide_slug_base' => $definition['guide_slug_base'],
+            'slug' => $record['slug'],
+            'intro' => $record['intro'],
+            'quick_answer' => $record['quick_answer'],
+            'sections' => array_values($record['sections'] ?? []),
+            'faqs' => $faqs,
+            'safety_note' => $safety,
+            'offerings' => $this->offeringCards($definition),
+            'nearby_links' => $this->nearbyLinks($definition),
+            'online_links' => $this->onlineLinks($definition),
+            'related_guides' => $this->relatedGuidesForRecord($record),
+            'practitioners' => $this->practitionerCards($definition),
+            'final_cta' => [
+                'heading' => 'Explore ' . $definition['label'],
+                'text' => 'Compare current options and decide whether this approach feels like the right fit for you.',
+                'links' => [
+                    ['label' => 'Browse ' . $definition['label'], 'url' => $this->seo()->modalityPageUrl($definition['format'], $definition['route_modality'])],
+                    ['label' => 'Find ' . $definition['label'] . ' near you', 'url' => $this->seo()->modalityPageUrl($definition['format'], $definition['route_modality'])],
+                ],
+            ],
+            'published_at' => $record['published_at'] ?? self::PUBLISHED_AT,
+            'updated_at' => $record['updated_at'] ?? self::PUBLISHED_AT,
+            'breadcrumbs' => $this->breadcrumbsForRecord($record),
+            'seo' => [
+                'title' => $record['seo_title'] ?: $record['title'] . ' | We Offer Wellness®',
+                'description' => $record['seo_description'] ?: $record['summary'],
+                'canonical' => $canonical,
+                'robots' => 'index,follow',
+                'og_type' => 'article',
+            ],
+        ];
+        $page['schema'] = $this->buildGuideSchema($page, $definition);
+
+        return $page;
     }
 
     private function buildWhatIsPage(array $record): array
@@ -1790,7 +1843,7 @@ class GuideRegistryService
             return $this->records;
         }
 
-        $records = [];
+        $records = $this->customPublishedRecords();
         foreach ($this->supportedModalities() as $definition) {
             $records[] = [
                 'guide_type' => 'what_is',
@@ -1841,6 +1894,66 @@ class GuideRegistryService
 
         return $this->records = collect($records)
             ->filter(fn (array $record): bool => $this->passesValidation($this->buildGuidePage($record)))
+            ->values()
+            ->all();
+    }
+
+    private function customPublishedRecords(): array
+    {
+        if (! Schema::hasTable('guide_pages')) {
+            return [];
+        }
+
+        return GuidePage::query()
+            ->where('status', 'published')
+            ->whereNotNull('published_at')
+            ->orderBy('id')
+            ->get()
+            ->map(function (GuidePage $guide): array {
+                $modality = Str::slug((string) $guide->modality);
+                $format = $this->seo()->canonicalFormatKey((string) $guide->format);
+                $definition = collect(self::MODALITIES)->first(fn (array $item): bool => $item['format'] === $format && $item['route_modality'] === $modality);
+                $definition ??= [
+                    'label' => Str::headline($modality),
+                    'route_modality' => $modality,
+                    'guide_slug_base' => $modality,
+                    'format' => $format,
+                    'summary' => $guide->summary,
+                    'origin' => '',
+                    'session' => 'The exact format varies by practitioner and should be explained before booking.',
+                    'uses' => $guide->summary,
+                    'beginner' => 'Ask the practitioner whether this format is suitable for your experience and circumstances.',
+                    'chooser' => 'Look for a clear description, sensible suitability information and a practitioner whose approach feels grounded.',
+                    'need_guides' => [],
+                    'related_modalities' => [],
+                    'safety_tags' => ['general'],
+                    'session_noun' => 'session',
+                    'session_plural' => 'sessions',
+                    'expect_title' => 'What to Expect',
+                    'expect_slug' => null,
+                ];
+
+                return [
+                    'guide_type' => 'custom',
+                    'format' => $format,
+                    'route_modality' => $modality,
+                    'guide_slug_base' => $definition['guide_slug_base'],
+                    'slug' => Str::slug((string) $guide->slug),
+                    'title' => $guide->title,
+                    'summary' => $guide->summary,
+                    'intro' => $guide->intro,
+                    'quick_answer' => $guide->quick_answer,
+                    'sections' => (array) $guide->sections,
+                    'faqs' => (array) ($guide->faqs ?? []),
+                    'safety_note' => $guide->safety_note,
+                    'seo_title' => $guide->seo_title,
+                    'seo_description' => $guide->seo_description,
+                    'published_at' => optional($guide->published_at)->toAtomString() ?: self::PUBLISHED_AT,
+                    'updated_at' => optional($guide->updated_at)->toAtomString() ?: self::PUBLISHED_AT,
+                    'modality' => $definition,
+                ];
+            })
+            ->filter(fn (array $record): bool => filled($record['slug']) && filled($record['route_modality']))
             ->values()
             ->all();
     }
