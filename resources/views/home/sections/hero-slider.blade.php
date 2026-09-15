@@ -22,19 +22,17 @@
       min-height: var(--wow-hero-band-height);
     }
 
-    .wow-hero-swiper.wow-hero-swiper--single,
-    .wow-hero-swiper.wow-hero-swiper--single .swiper-wrapper,
-    .wow-hero-swiper.wow-hero-swiper--single .swiper-slide,
-    .wow-hero-swiper.wow-hero-swiper--single .swiper-slide > .whero,
-    .wow-hero-swiper.wow-hero-swiper--single .swiper-slide > .whero .whero-pad {
-      height: auto !important;
-      min-height: 0 !important;
+    .wow-hero-swiper .whero-eyebrow,
+    .wow-hero-swiper .whero-title,
+    .wow-hero-swiper .whero-sub {
+      color: #000 !important;
     }
+
     @media (max-width: 767.98px) {
       .wow-hero-swiper .swiper-wrapper,
       .wow-hero-swiper .swiper-slide {
-        min-height: var(--wow-hero-band-height);
-        height: 828px !important;
+        min-height: auto;
+        height: auto !important;
       }
       .wow-hero-pagination .swiper-pagination-bullet{
         width: 44px !important;
@@ -266,6 +264,7 @@
   </style>
 
 {{-- Swiper slider --}}
+@php($heroHasMultipleSlides = false)
 <div class="swiper wow-hero-swiper" data-hero-swiper>
   <div class="swiper-wrapper">
     @if(false)
@@ -279,6 +278,7 @@
     </div>
   </div>
 
+  @if($heroHasMultipleSlides)
   {{-- Controls overlay --}}
   <div class="wow-hero-nav">
     <div class="container-page">
@@ -305,6 +305,7 @@
       </button>
     </div>
   </div>
+  @endif
 </div>
 
 @include('home.sections.mindful_times_ribbon')
@@ -320,9 +321,8 @@
     const toggleBtn = document.querySelector('[data-hero-toggle]');
     const slideCount = el.querySelectorAll('.swiper-wrapper > .swiper-slide').length;
     const hasMultipleSlides = slideCount > 1;
-    el.classList.toggle('wow-hero-swiper--single', !hasMultipleSlides);
     if (!hasMultipleSlides) {
-      el.querySelector('.wow-hero-nav')?.setAttribute('hidden', 'hidden');
+      return;
     }
     let isPaused = false;
 
