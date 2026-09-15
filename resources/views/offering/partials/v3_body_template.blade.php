@@ -1280,6 +1280,22 @@ SVG;
         align-items: start;
     }
     .wow-v3-offering-page .hero-main { max-width: 980px; color: #000; }
+    /* The checkout is relocated into .side-stack by the page bootstrap. Keep
+       it out of the hero grid while that move is pending so the title never
+       renders with a blank reserved column or vertical gap. */
+    .wow-v3-offering-page .hero-content > .booking-panel,
+    .wow-v3-offering-page .hero-content > .legacy-buybox-shell {
+        position: absolute;
+        inset-inline-end: 0;
+        inset-block-start: 0;
+        width: min(380px, 100%);
+    }
+    .wow-v3-offering-page .side-stack > .booking-panel,
+    .wow-v3-offering-page .side-stack > .legacy-buybox-shell {
+        position: static;
+        inset: auto;
+        width: auto;
+    }
     /* Keep the title and category block anchored to the top of the hero. The
        booking panel may remain bottom-aligned, but the primary heading should
        never be pushed down by the hero's vertical alignment. */
@@ -1350,6 +1366,7 @@ SVG;
 
     .wow-v3-offering-page .booking-panel {
         display: block;
+        visibility: hidden;
         align-self: end;
         min-width: 0;
         padding: 22px;
@@ -1358,6 +1375,7 @@ SVG;
         border: 1px solid var(--line);
         box-shadow: 0 22px 60px rgba(2, 18, 32, 0.22);
     }
+    .wow-v3-offering-page .booking-panel.is-positioned { visibility: visible; }
     .wow-v3-offering-page .legacy-buybox-shell {
         align-self: end;
         min-width: 0;
@@ -3225,7 +3243,6 @@ SVG;
                         </div>
 
                         <div class="desktop-booking-buttons">
-                            <button class="btn secondary-checkout js-add-to-cart js-open-cart" type="button" data-id="store-{{ $offering['id'] ?? 0 }}" data-product-id="{{ $offering['id'] ?? 0 }}" data-source-version="store" data-title="{{ $title }}" data-price="{{ number_format($price, 2, '.', '') }}" data-variant-id="{{ $selectedVariantId }}" data-variant-label="{{ $selectedVariantLabel }}" data-image="{{ $primaryImage }}" data-product-url="{{ $offering['url'] ?? url()->current() }}" data-url="{{ $offering['url'] ?? url()->current() }}" data-qty="1">Add to cart</button>
                             <button class="btn checkout-button js-buy-now" type="button" data-id="store-{{ $offering['id'] ?? 0 }}" data-product-id="{{ $offering['id'] ?? 0 }}" data-source-version="store" data-title="{{ $title }}" data-price="{{ number_format($price, 2, '.', '') }}" data-variant-id="{{ $selectedVariantId }}" data-variant-label="{{ $selectedVariantLabel }}" data-image="{{ $primaryImage }}" data-product-url="{{ $offering['url'] ?? url()->current() }}" data-url="{{ $offering['url'] ?? url()->current() }}" data-qty="1">Buy now</button>
                         </div>
                         <p class="secure-note">Secure checkout. Stripe payment. Email order confirmation.</p>
@@ -3371,7 +3388,6 @@ SVG;
                         </div>
 
                         <div class="desktop-booking-buttons">
-                            <button class="btn secondary-checkout" type="button" id="desktopSecondaryAction">Add to cart</button>
                             <button class="btn checkout-button" type="button" id="desktopPrimaryAction">Book now</button>
                         </div>
 
@@ -4099,10 +4115,12 @@ SVG;
         if (!bookingPanel || !sideStack || !bookingHome) return;
         if (isMobile()) {
             if (bookingPanel.parentElement !== bookingHome) bookingHome.appendChild(bookingPanel);
+            bookingPanel.classList.add('is-positioned');
             return;
         }
 
         if (bookingPanel.parentElement !== sideStack) sideStack.prepend(bookingPanel);
+        bookingPanel.classList.add('is-positioned');
     }
 
     function money(value) {

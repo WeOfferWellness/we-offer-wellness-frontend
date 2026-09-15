@@ -399,23 +399,6 @@
             Book now
         </button>
 
-        <button
-            class="btn secondary-checkout js-add-to-cart"
-            type="button"
-            id="eventAddToBasketBtn"
-            data-id="{{ $eventSelectedTicket['id'] ?? '' }}"
-            data-product-id="{{ $eventProductId }}"
-            data-title="{{ e($eventButtons['title']) }}"
-            data-price="{{ $eventSelectedTicket['price_formatted'] ?? '0.00' }}"
-            data-image="{{ $eventButtons['image'] }}"
-            data-url="{{ $eventButtons['url'] }}"
-            data-qty="{{ $eventQty }}"
-            data-variant-id="{{ $eventSelectedTicket['id'] ?? '' }}"
-            data-variant-label="{{ $eventSelectedTicket['label'] ?? '' }}"
-            data-source-version="v3"
-        >
-                            Add to cart
-        </button>
     </div>
 
     <p class="secure-note">

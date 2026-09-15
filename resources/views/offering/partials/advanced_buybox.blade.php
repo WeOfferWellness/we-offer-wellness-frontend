@@ -27,9 +27,9 @@
         || str_contains(strtolower((string) ($product['type'] ?? '')), 'event')
         || !empty($product['start_date'])
         || !empty($product['end_date']);
-    $primaryActionLabel = $isEventOffering ? 'Book tickets' : 'Add to cart';
+    $primaryActionLabel = $isEventOffering ? 'Book tickets' : 'Book now';
     $secondaryActionLabel = $isEventOffering ? 'Checkout' : 'Book now';
-    $mobileActionLabel = $isEventOffering ? 'Book tickets' : 'Add to cart';
+    $mobileActionLabel = $isEventOffering ? 'Book tickets' : 'Book now';
     $bookingHeaderLabel = $isEventOffering ? 'Book tickets' : 'Select a Date & Time';
 @endphp
 
@@ -278,15 +278,6 @@
             </div>
 
             <div class="d-grid gap-2 mb-2" id="ctaWrap">
-                <button class="btn btn-basket btn-lg js-add-to-cart" id="addBtn"
-                        data-id="{{ $baseProductId }}"
-                        data-product-id="{{ $baseProductId }}"
-                        data-title="{{ e($productTitleSafe) }}"
-                        data-price="{{ $initialPriceFormatted }}"
-                        data-image="{{ $primaryImage }}"
-                        data-url="{{ $productUrlCurrent }}"
-                        data-qty="1"
-                >{{ $primaryActionLabel }}</button>
                 <button class="btn btn-main btn-lg" id="buyNow"
                         data-id="{{ $baseProductId }}"
                         data-product-id="{{ $baseProductId }}"
@@ -1352,8 +1343,10 @@ function updateVariant(){
     if(show){groupRange.style.display="block";clampGroupCount();}
     else{groupRange.style.display="none";state.groupCount=3;if(groupCount) groupCount.value=3;}
   }
-  addBtn.disabled=!state.variant || !state.variant.available;
-  addBtn.textContent=(state.variant && state.variant.available)?PRIMARY_ACTION_LABEL:"Sold out";
+  if(addBtn){
+    addBtn.disabled=!state.variant || !state.variant.available;
+    addBtn.textContent=(state.variant && state.variant.available)?PRIMARY_ACTION_LABEL:"Sold out";
+  }
   if (buyNow) buyNow.textContent = SECONDARY_ACTION_LABEL;
   if (mobileAdd) mobileAdd.textContent = MOBILE_ACTION_LABEL;
   updatePriceUI();
@@ -1415,7 +1408,7 @@ function openConfigSheet(intent){
   updateSheetSubtotal();
   configModal.show();
 }
-mobileAdd?.addEventListener('click',()=>{ openConfigSheet('add'); });
+mobileAdd?.addEventListener('click',()=>{ openConfigSheet('buy'); });
 if(buyNow){
   buyNow.addEventListener('click',function(e){
     e.preventDefault();
@@ -1504,7 +1497,7 @@ bookingModalEl.addEventListener('shown.bs.modal',async()=>{
 });
 configModalEl?.addEventListener('shown.bs.modal',async()=>{await loadBookingContext(false);syncBookingMode();});
 // (mode note removed)
-function wireCTA(){addBtn.addEventListener("click",e=>{e.preventDefault();const t=new bootstrap.Toast(toastEl);t.show()});buyNow.addEventListener("click",e=>{e.preventDefault();const t=new bootstrap.Toast(toastEl);t.show()})}
+function wireCTA(){addBtn?.addEventListener("click",e=>{e.preventDefault();const t=new bootstrap.Toast(toastEl);t.show()});buyNow?.addEventListener("click",e=>{e.preventDefault();const t=new bootstrap.Toast(toastEl);t.show()})}
 function init(){
   renderStars();
   buildFormatBlock();
