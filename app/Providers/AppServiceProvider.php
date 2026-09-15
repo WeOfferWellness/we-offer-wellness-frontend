@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Vite;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 
@@ -44,6 +45,10 @@ class AppServiceProvider extends ServiceProvider
 
         View::composer('layouts.account', function ($view) {
             $reviews = Cache::remember('auth_review_snippets', now()->addMinutes(20), function () {
+                if (! Schema::hasTable('reviews')) {
+                    return [];
+                }
+
                 return Review::with(['user:id,first_name,last_name,name,location', 'product:id,title', 'vendor:id,vendor_name'])
                     ->whereNotNull('review_text')
                     ->orderByDesc('created_at')

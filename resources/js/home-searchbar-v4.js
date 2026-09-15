@@ -284,6 +284,8 @@ function bootHomeSearchbarV4(root) {
     const mobileWhereInput = $('#wowsearch-mobile-where-input');
     const mobileOnline = $('#wowsearch-mobile-online');
     const mobileLocationList = $('#wowsearch-mobile-location-list');
+    const mobileClearWhat = $('#wowsearch-mobile-clear-what');
+    const mobileClearWhere = $('#wowsearch-mobile-clear-where');
 
     $$('.wowsearch-mobile-modal-close').forEach(button => {
       const actions = document.createElement('div');
@@ -313,6 +315,10 @@ function bootHomeSearchbarV4(root) {
         else replaceClasses(mobileWhereDisplay, ['wowsearch-text-[#111827]'], ['wowsearch-text-[#687283]','wowsearch-font-normal']);
       }
       replaceClasses(mobileWhereIcon, [where ? 'wowsearch-text-[#8e9bb0]' : 'wowsearch-text-[#4f9381]'], [where ? 'wowsearch-text-[#4f9381]' : 'wowsearch-text-[#8e9bb0]']);
+      mobileClearWhat.hidden = !state.mobileWhat;
+      mobileClearWhat.classList.toggle('wowsearch-flex', !!state.mobileWhat);
+      mobileClearWhere.hidden = !where;
+      mobileClearWhere.classList.toggle('wowsearch-flex', !!where);
     }
 
     function markMobileSelections() {
@@ -320,8 +326,10 @@ function bootHomeSearchbarV4(root) {
         const selected = button.dataset.label === state.mobileWhat;
         button.classList.toggle('wowsearch-bg-[#f0faf7]', selected);
         const check = $('.wowsearch-selection-check', button);
-        check.hidden = !selected;
-        check.classList.toggle('wowsearch-flex', selected);
+        if (check) {
+          check.hidden = !selected;
+          check.classList.toggle('wowsearch-flex', selected);
+        }
       });
       const where = state.mobileWhereSelected;
       mobileOnline.classList.toggle('wowsearch-bg-[#f0faf7]', where === 'Online');
@@ -329,19 +337,26 @@ function bootHomeSearchbarV4(root) {
         const selected = button.dataset.label === where;
         button.classList.toggle('wowsearch-bg-[#f0faf7]', selected);
         const check = $('.wowsearch-selection-check', button);
-        check.hidden = !selected;
-        check.classList.toggle('wowsearch-flex', selected);
+        if (check) {
+          check.hidden = !selected;
+          check.classList.toggle('wowsearch-flex', selected);
+        }
       });
     }
 
     function filterMobileWhat() {
       const query = mobileWhatInput.value.trim().toLowerCase();
+      const list = whatModal.querySelector('.wowsearch-flex-1.wowsearch-overflow-y-auto');
+      list?.querySelectorAll('[data-wowsearch-custom-option]').forEach(button => button.remove());
       let visible = 0;
+      let exact = false;
       $$('.wowsearch-mobile-what-option', whatModal).forEach(button => {
         const matches = !query || button.dataset.label.toLowerCase().includes(query) || button.dataset.cat.toLowerCase().includes(query);
+        exact ||= !!query && button.dataset.label.trim().toLowerCase() === query;
         button.hidden = !matches || visible >= 8;
         if (!button.hidden) visible += 1;
       });
+      if (query && !exact) list?.prepend(createCustomMobileOption(mobileWhatInput.value.trim(), 'what'));
     }
 
     function filterMobileWhere() {
@@ -370,6 +385,18 @@ function bootHomeSearchbarV4(root) {
 
         return button;
       }));
+      const exact = items.some(item => String(item.title || item.label || item.value || '').trim().toLowerCase() === query);
+      if (query && !exact) mobileLocationList.prepend(createCustomMobileOption(mobileWhereInput.value.trim(), 'where'));
+    }
+
+    function createCustomMobileOption(value, field) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.dataset.label = value;
+      button.dataset.wowsearchCustomOption = 'true';
+      button.className = `wowsearch-mobile-${field === 'what' ? 'what' : 'location'}-option wowsearch-w-full wowsearch-flex wowsearch-items-center wowsearch-gap-3.5 wowsearch-px-3 wowsearch-py-[14px] wowsearch-border-b wowsearch-border-[#d9d1f7] wowsearch-text-left wowsearch-bg-[#f7f5ff] wowsearch-hover:bg-[#f0ecff]`;
+      button.innerHTML = `<span class="wowsearch-w-9 wowsearch-h-9 wowsearch-rounded-full wowsearch-bg-[#e8e2ff] wowsearch-text-[#6246b8] wowsearch-flex wowsearch-items-center wowsearch-justify-center wowsearch-shrink-0">+</span><span class="wowsearch-flex-1"><strong class="wowsearch-block wowsearch-text-[15px] wowsearch-text-[#41316f] wowsearch-font-semibold">Search for “${value.replace(/[&<>\"]/g, '')}”</strong><small class="wowsearch-text-[12px] wowsearch-text-[#7968a6]">Use your exact ${field === 'what' ? 'search' : 'location'}</small></span>`;
+      return button;
     }
 
     function openModal(modal, input) {
@@ -425,12 +452,32 @@ function bootHomeSearchbarV4(root) {
     mobileWhatInput.addEventListener('input', filterMobileWhat);
     mobileWhereInput.addEventListener('input', filterMobileWhere);
 
-    $$('.wowsearch-mobile-what-option').forEach(button => button.addEventListener('click', () => {
-      state.mobileWhat = button.dataset.label;
+    whatModal.addEventListener('click', event => {
+      const button = event.target.closest('.wowsearch-mobile-what-option');
+      if (!button) return;
+      state.mobileWhat = button.dataset.label || mobileWhatInput.value.trim();
       updateMobileMainDisplay();
       markMobileSelections();
       closeModal(whatModal);
-    }));
+    });
+
+    mobileClearWhat.addEventListener('click', event => {
+      event.preventDefault();
+      event.stopPropagation();
+      state.mobileWhat = '';
+      mobileWhatInput.value = '';
+      updateMobileMainDisplay();
+      markMobileSelections();
+    });
+    mobileClearWhere.addEventListener('click', event => {
+      event.preventDefault();
+      event.stopPropagation();
+      state.mobileWhere = '';
+      state.mobileWhereSelected = '';
+      mobileWhereInput.value = '';
+      updateMobileMainDisplay();
+      markMobileSelections();
+    });
 
     $('#wowsearch-mobile-use-location').addEventListener('click', () => {
       state.mobileWhere = 'Near me';

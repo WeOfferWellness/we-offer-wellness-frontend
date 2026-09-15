@@ -22,7 +22,11 @@ return new class extends Migration
             }
         });
 
-        DB::statement('ALTER TABLE `orders` MODIFY `user_id` BIGINT UNSIGNED NULL');
+        // The original orders migration already declares user_id nullable. MySQL
+        // needs the explicit MODIFY, while SQLite cannot execute MySQL syntax.
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement('ALTER TABLE `orders` MODIFY `user_id` BIGINT UNSIGNED NULL');
+        }
 
         Schema::table('orders', function (Blueprint $table) {
             $table->foreign('user_id')->references('id')->on('users')->nullOnDelete();
@@ -44,7 +48,9 @@ return new class extends Migration
             }
         });
 
-        DB::statement('ALTER TABLE `orders` MODIFY `user_id` BIGINT UNSIGNED NOT NULL');
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement('ALTER TABLE `orders` MODIFY `user_id` BIGINT UNSIGNED NOT NULL');
+        }
 
         Schema::table('orders', function (Blueprint $table) {
             $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
