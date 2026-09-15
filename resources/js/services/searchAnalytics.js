@@ -137,6 +137,29 @@ export function reportSearchResults(count) {
   }
 }
 
+function logSearchFromCurrentUrl() {
+  if (!window.location.pathname.startsWith('/search')) return;
+
+  const params = new URLSearchParams(window.location.search);
+  const searchTerm = String(params.get('what') || params.get('q') || '').trim();
+  const locationQuery = String(params.get('where') || params.get('location') || '').trim();
+  if (!searchTerm && !locationQuery) return;
+
+  // A submit immediately before navigation already leaves this event in the
+  // session queue. Only create a URL-derived event when there is no matching
+  // pending event, so shared/bookmarked search URLs are still measurable
+  // without duplicating normal form submissions.
+  try {
+    const pending = JSON.parse(window.sessionStorage?.getItem(pendingSearchKey) || 'null');
+    if (pending?.search_term === (searchTerm || null)
+      && pending?.location_query === (locationQuery || null)) return;
+  } catch (_) {
+    // A storage failure must not prevent the search page from rendering.
+  }
+
+  recordSearch({ searchTerm, locationQuery, source: 'search-page-direct' });
+}
+
 export function installSearchAnalytics() {
   document.addEventListener('submit', (event) => {
     // JavaScript search controls supply their selected values through the
@@ -168,8 +191,12 @@ export function installSearchAnalytics() {
   };
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', reportInitialResults, { once: true });
+    document.addEventListener('DOMContentLoaded', () => {
+      logSearchFromCurrentUrl();
+      reportInitialResults();
+    }, { once: true });
   } else {
+    logSearchFromCurrentUrl();
     reportInitialResults();
   }
 
