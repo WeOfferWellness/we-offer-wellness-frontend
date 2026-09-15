@@ -203,6 +203,15 @@ function eventRange(product) {
     : `${date} - ${endDate}`
 }
 
+function eventHasPassed(product) {
+  if (product?.is_past_event || product?.display_is_past) return true
+  const event = product?.when?.event || product?.event || product
+  const start = parseDate(event?.start_date || event?.date, event?.start_time)
+  const end = parseDate(event?.end_date || event?.finish_date || event?.start_date || event?.date, event?.end_time || event?.finish_time || event?.start_time)
+  const boundary = end || start
+  return !!boundary && boundary.getTime() < Date.now()
+}
+
 const product = computed(() => props.product || {})
 const isStoreProduct = computed(() => [
   product.value.kind,
@@ -211,6 +220,7 @@ const isStoreProduct = computed(() => [
 ].some((value) => ['physical_product', 'store_product'].includes(text(value).toLowerCase())) || Boolean(product.value.store_product_id))
 const type = computed(() => productType(product.value))
 const isEvent = computed(() => ['event', 'workshop', 'retreat'].includes(type.value))
+const isPastEvent = computed(() => isEvent.value && eventHasPassed(product.value))
 const isGift = computed(() => /gift\s*card|giftcard|voucher|e-?gift/i.test([product.value.title, product.value.name, product.value.slug, product.value.category?.name, product.value.product_type].map(text).join(' ')))
 const title = computed(() => titleCase(product.value.title || product.value.name || 'Untitled'))
 const provider = computed(() => {
@@ -288,7 +298,7 @@ const rankingRequestId = computed(() => text(product.value.ranking_request_id) |
     :data-source-version="trackingSource"
     :data-ranking-request-id="rankingRequestId"
   >
-    <a :href="url" class="wow49-card__link" :aria-label="`View and book ${title}`"></a>
+    <a :href="url" class="wow49-card__link" :aria-label="`${isPastEvent ? 'View' : 'View and book'} ${title}`"></a>
     <div class="wow49-card__event-background"><img v-if="image" :src="image" :alt="title" loading="lazy"></div>
     <span class="wow49-card__date"><b>{{ eventMonth }}</b><strong>{{ eventDay }}</strong></span>
     <img v-if="isBusinessAccelerator" class="wow49-card__rosette" :src="PREMIUM_ROSETTE_URL" alt="Business Accelerator partner">
@@ -297,7 +307,7 @@ const rankingRequestId = computed(() => text(product.value.ranking_request_id) |
       <h3 class="wow49-card__title">{{ title }}</h3>
       <p v-if="provider" class="wow49-card__provider">with {{ provider }}</p>
       <p class="wow49-card__location"><svg viewBox="0 0 24 24" fill="none"><path d="M12 21s7-4.4 7-11a7 7 0 1 0-14 0c0 6.6 7 11 7 11Z"/><circle cx="12" cy="10" r="3"/></svg>{{ locationLine }}</p>
-      <div class="wow49-card__event-bottom"><div><small>From</small><strong>{{ price }}</strong></div><a :href="url" class="wow49-card__button">VIEW & BOOK</a></div>
+      <div class="wow49-card__event-bottom"><div><small>From</small><strong>{{ price }}</strong></div><a :href="url" class="wow49-card__button">{{ isPastEvent ? 'VIEW' : 'VIEW & BOOK' }}</a></div>
     </div>
   </article>
 

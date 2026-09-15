@@ -581,6 +581,14 @@ function parseEventDateTime(value, timeValue) {
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
+function eventHasPassed(item, event) {
+  if (item?.is_past_event || item?.display_is_past) return true;
+  const start = parseEventDateTime(event?.start_date || event?.date || null, event?.start_time || null);
+  const end = parseEventDateTime(event?.end_date || event?.finish_date || event?.start_date || event?.date || null, event?.end_time || event?.finish_time || event?.start_time || null);
+  const boundary = end || start;
+  return !!boundary && boundary.getTime() < Date.now();
+}
+
 function formatEventRange(startDate, startTime, endDate, endTime) {
   const start = parseEventDateTime(startDate, startTime);
   const end = parseEventDateTime(endDate || startDate, endTime || startTime);
@@ -888,7 +896,7 @@ export function renderOfferingCard(item) {
   const eventLocationLabel = eventLocationLabelFor(item);
   const eventDescription = benefitText || 'Upcoming event details coming soon.';
   const eventPriceLabel = priceLabel || '£0.00';
-  const isPastEvent = Boolean(item?.is_past_event || item?.display_is_past);
+  const isPastEvent = eventHasPassed(item, event);
 
   if (giftCard) {
     return `

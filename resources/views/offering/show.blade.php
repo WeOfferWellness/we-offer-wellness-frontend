@@ -46,8 +46,10 @@
   $durationText = '';
   $bookingVariantLabel = trim((string)($p['booking_variant_label'] ?? ''));
   $variantDurationMins = 0;
-  $isEventOffering = in_array(strtolower((string) ($type ?? '')), ['event', 'events'], true)
+  $isEventOffering = in_array(strtolower((string) ($type ?? '')), ['event', 'events', 'workshop', 'workshops', 'retreat', 'retreats'], true)
     || str_contains(strtolower((string) ($product['type'] ?? '')), 'event')
+    || str_contains(strtolower((string) ($product['type'] ?? '')), 'workshop')
+    || str_contains(strtolower((string) ($product['type'] ?? '')), 'retreat')
     || !empty($p['start_date'])
     || !empty($p['end_date']);
   $eventStartDate = trim((string) ($p['start_date'] ?? ''));
@@ -61,6 +63,7 @@
   $isPastEvent = (bool) data_get($p, 'is_past_event', \App\Support\EventListing::isPast($p));
   $isServiceSchema = $isV3Offering && ! $isEventOffering && ! $isGiftCardOffering;
   $showBookingUi = $isEventOffering && ! $isPastEvent;
+  $showPaymentModule = ! ($isEventOffering && $isPastEvent);
   $eventDateSummary = '';
   if ($isEventOffering && $eventStartDate !== '') {
     try {
@@ -1285,9 +1288,9 @@
         </div>
       </div>
     @elseif($isV3Offering)
-      @include('offering.partials.v3_body_template', ['product' => $p, 'type' => $type])
+      @include('offering.partials.v3_body_template', ['product' => $p, 'type' => $type, 'showPaymentModule' => $showPaymentModule])
     @else
-      @include('offering.partials.v3_body_template', ['product' => $p, 'type' => $type])
+      @include('offering.partials.v3_body_template', ['product' => $p, 'type' => $type, 'showPaymentModule' => $showPaymentModule])
       @if(false)
       <div class="row g-4 align-items-start">
         <div class="col-12 col-lg-8">

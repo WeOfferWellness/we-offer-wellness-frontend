@@ -3193,6 +3193,7 @@ SVG;
                     @endif
                 </div>
 
+                @if($showPaymentModule ?? true)
                 @if($isStoreProduct)
                     <aside class="booking-panel store-v3-checkout-panel" id="booking">
                         <div class="booking-top">
@@ -3387,6 +3388,7 @@ SVG;
 
                         <p class="secure-note">Secure checkout. Email confirmation. Live booking support where available.</p>
                     </aside>
+                @endif
                 @endif
             </div>
         </section>
