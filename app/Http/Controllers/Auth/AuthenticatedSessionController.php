@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Services\LoginSecurityService;
+use App\Services\CrossDomainPractitionerAuthService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -33,6 +34,8 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        app(CrossDomainPractitionerAuthService::class)->issue($request->user());
+
         if ($request->user()) {
             LoginSecurityService::recordLogin($request->user(), $request);
         }
@@ -46,6 +49,7 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        app(CrossDomainPractitionerAuthService::class)->revoke($request);
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();

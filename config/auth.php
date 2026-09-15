@@ -18,6 +18,13 @@ return [
         'passwords' => env('AUTH_PASSWORD_BROKER', 'users'),
     ],
 
+    'cross_domain_practitioner' => [
+        'cookie' => env('CROSS_DOMAIN_PRACTITIONER_COOKIE', 'wow_practitioner_auth'),
+        'domain' => env('CROSS_DOMAIN_AUTH_DOMAIN', '.weofferwellness.co.uk'),
+        'ttl_days' => (int) env('CROSS_DOMAIN_AUTH_TTL_DAYS', 30),
+        'ability' => 'cross-domain-practitioner',
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Authentication Guards

@@ -16,11 +16,16 @@ return Application::configure(basePath: dirname(__DIR__))
         __DIR__.'/../app/Console/Commands',
     ])
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->encryptCookies(except: [
+            'wow_practitioner_auth',
+        ]);
+
         $middleware->web(prepend: [
             \App\Http\Middleware\ResolveConfiguredRedirects::class,
         ]);
 
         $middleware->web(append: [
+            \App\Http\Middleware\AuthenticatePractitionerCookie::class,
             \App\Http\Middleware\HandleInertiaRequests::class,
             \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
             \App\Http\Middleware\GeoIpSignature::class,
