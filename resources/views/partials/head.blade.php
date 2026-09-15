@@ -3,7 +3,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
 @php
-  $gaId = env('GA_ID') ?: env('VITE_GA_ID') ?: 'G-MZMQNETBYH';
+  $gaId = config('analytics.enabled') ? config('analytics.measurement_id') : null;
 @endphp
 @if ($gaId)
 <!-- Google tag (gtag.js) -->
@@ -11,8 +11,9 @@
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
+  gtag('consent', 'default', @json(config('analytics.consent_default')));
   gtag('js', new Date());
-  gtag('config', '{{ $gaId }}');
+  gtag('config', '{{ $gaId }}', { 'send_page_view': false });
 </script>
 @endif
 

@@ -101,27 +101,16 @@ return [
 
     'public_site_url' => env('PUBLIC_SITE_URL', 'https://www.weofferwellness.co.uk'),
 
+    'gtm' => [
+        'id' => env('GTM_ID', env('VITE_GTM_ID')),
+    ],
+
     'search_console' => [
         'property_url' => env('GOOGLE_SEARCH_CONSOLE_PROPERTY_URL'),
         'sitemap_url' => env('GOOGLE_SEARCH_CONSOLE_SITEMAP_URL', rtrim(env('PUBLIC_SITE_URL', 'https://www.weofferwellness.co.uk'), '/') . '/sitemap.xml'),
         'sitemap_urls' => env(
             'GOOGLE_SEARCH_CONSOLE_SITEMAP_URLS',
-            implode(',', array_filter([
-                rtrim(env('PUBLIC_SITE_URL', 'https://www.weofferwellness.co.uk'), '/') . '/sitemap.xml',
-                rtrim(env('PUBLIC_SITE_URL', 'https://www.weofferwellness.co.uk'), '/') . '/sitemaps/static.xml',
-                rtrim(env('PUBLIC_SITE_URL', 'https://www.weofferwellness.co.uk'), '/') . '/sitemaps/modalities.xml',
-                rtrim(env('PUBLIC_SITE_URL', 'https://www.weofferwellness.co.uk'), '/') . '/sitemaps/types.xml',
-                rtrim(env('PUBLIC_SITE_URL', 'https://www.weofferwellness.co.uk'), '/') . '/sitemaps/offerings.xml',
-                rtrim(env('PUBLIC_SITE_URL', 'https://www.weofferwellness.co.uk'), '/') . '/sitemaps/locations.xml',
-                rtrim(env('PUBLIC_SITE_URL', 'https://www.weofferwellness.co.uk'), '/') . '/sitemaps/near-me.xml',
-                rtrim(env('PUBLIC_SITE_URL', 'https://www.weofferwellness.co.uk'), '/') . '/sitemaps/modality-location.xml',
-                rtrim(env('PUBLIC_SITE_URL', 'https://www.weofferwellness.co.uk'), '/') . '/sitemaps/type-location.xml',
-                rtrim(env('PUBLIC_SITE_URL', 'https://www.weofferwellness.co.uk'), '/') . '/sitemaps/events.xml',
-                rtrim(env('PUBLIC_SITE_URL', 'https://www.weofferwellness.co.uk'), '/') . '/sitemaps/online.xml',
-                rtrim(env('PUBLIC_SITE_URL', 'https://www.weofferwellness.co.uk'), '/') . '/sitemaps/by-need.xml',
-                rtrim(env('PUBLIC_SITE_URL', 'https://www.weofferwellness.co.uk'), '/') . '/sitemaps/practitioners.xml',
-                rtrim(env('PUBLIC_SITE_URL', 'https://www.weofferwellness.co.uk'), '/') . '/sitemaps/guides.xml',
-            ]))
+            rtrim(env('PUBLIC_SITE_URL', 'https://www.weofferwellness.co.uk'), '/') . '/sitemap.xml'
         ),
         'client_id' => env('GOOGLE_SEARCH_CONSOLE_CLIENT_ID'),
         'client_secret' => env('GOOGLE_SEARCH_CONSOLE_CLIENT_SECRET'),

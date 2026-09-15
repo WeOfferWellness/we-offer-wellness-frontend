@@ -9,6 +9,8 @@ const GA4_EVENT_ALIASES = {
   wow_v3_purchase_success: 'purchase',
 }
 
+const PURCHASE_STORAGE_PREFIX = 'wow_purchase_sent:'
+
 function getWindow() {
   return typeof window !== 'undefined' ? window : null
 }
@@ -38,6 +40,12 @@ function toCommerceItem(item, index = 0) {
   const sourceVersion = item.source_version ?? item.sourceVersion ?? item.meta?.source_version ?? null
   const productId = item.product_id ?? item.productId ?? item.meta?.product_id ?? null
   const variantId = item.variant_id ?? item.variantId ?? item.meta?.variant_id ?? null
+  const providerId = item.provider_id ?? item.providerId ?? item.vendor_id ?? item.meta?.provider_id ?? null
+  const offeringId = item.offering_id ?? item.offeringId ?? item.meta?.offering_id ?? null
+  const catalogueType = item.catalogue_type ?? item.catalogueType ?? item.meta?.catalogue_type ?? null
+  const modality = item.modality ?? item.meta?.modality ?? null
+  const bookingSource = item.booking_source ?? item.meta?.booking_source ?? null
+  const checkoutSource = item.checkout_source ?? item.meta?.checkout_source ?? null
 
   return cleanObject({
     item_id: String(rawId),
@@ -49,6 +57,12 @@ function toCommerceItem(item, index = 0) {
     product_id: productId != null ? String(productId) : undefined,
     variant_id: variantId != null ? String(variantId) : undefined,
     source_version: sourceVersion ? String(sourceVersion) : undefined,
+    provider_id: providerId != null ? String(providerId) : undefined,
+    offering_id: offeringId != null ? String(offeringId) : undefined,
+    catalogue_type: catalogueType ? String(catalogueType) : undefined,
+    modality: modality ? String(modality) : undefined,
+    booking_source: bookingSource ? String(bookingSource) : undefined,
+    checkout_source: checkoutSource ? String(checkoutSource) : undefined,
   })
 }
 
@@ -81,10 +95,6 @@ function track(eventName, params = {}) {
   try {
     if (typeof win.gtag === 'function') {
       win.gtag('event', eventName, payload)
-      const alias = GA4_EVENT_ALIASES[eventName]
-      if (alias && alias !== eventName) {
-        win.gtag('event', alias, payload)
-      }
       return true
     }
   } catch {}
@@ -92,10 +102,6 @@ function track(eventName, params = {}) {
   try {
     win.dataLayer = win.dataLayer || []
     win.dataLayer.push(['event', eventName, payload])
-    const alias = GA4_EVENT_ALIASES[eventName]
-    if (alias && alias !== eventName) {
-      win.dataLayer.push(['event', alias, payload])
-    }
     return true
   } catch {}
 
@@ -120,7 +126,8 @@ function trackCommerce(eventName, params = {}) {
     ? coerceNumber(params.item_count, items.reduce((sum, item) => sum + coerceNumber(item.quantity, 1), 0))
     : items.reduce((sum, item) => sum + coerceNumber(item.quantity, 1), 0)
 
-  return track(eventName, cleanObject({
+  const canonicalEvent = GA4_EVENT_ALIASES[eventName] || eventName
+  return track(canonicalEvent, cleanObject({
     ...params,
     currency,
     value: explicitValue != null ? coerceNumber(explicitValue, computedValue) : computedValue,
@@ -129,11 +136,28 @@ function trackCommerce(eventName, params = {}) {
   }))
 }
 
+function trackPurchase(params = {}) {
+  const transactionId = String(params.transaction_id || '').trim()
+  if (!transactionId) return false
+
+  const win = getWindow()
+  const key = `${PURCHASE_STORAGE_PREFIX}${transactionId}`
+  try {
+    if (win?.sessionStorage?.getItem(key) === '1') return false
+    win?.sessionStorage?.setItem(key, '1')
+  } catch (_) {
+    // Server-side claim remains the authoritative idempotency boundary.
+  }
+
+  return trackCommerce('purchase', params)
+}
+
 const WOWAnalytics = {
   flowVersion: FLOW_VERSION,
   track,
   trackPageView,
   trackCommerce,
+  trackPurchase,
   buildCommerceItems,
 }
 
@@ -142,5 +166,5 @@ if (win) {
   win.WOWAnalytics = WOWAnalytics
 }
 
-export { FLOW_VERSION, buildCommerceItems, track, trackCommerce, trackPageView }
+export { FLOW_VERSION, buildCommerceItems, track, trackCommerce, trackPurchase, trackPageView }
 export default WOWAnalytics

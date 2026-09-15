@@ -16,7 +16,6 @@ Interpretation notes:
 - [Homepage](https://www.weofferwellness.co.uk/)
 - [About](https://www.weofferwellness.co.uk/about)
 - [Contact](https://www.weofferwellness.co.uk/contact)
-- [Therapies](https://www.weofferwellness.co.uk/therapies)
 - [Classes](https://www.weofferwellness.co.uk/classes)
 - [Workshops](https://www.weofferwellness.co.uk/workshops)
 - [Events](https://www.weofferwellness.co.uk/events)
@@ -27,6 +26,7 @@ Interpretation notes:
 - [Reviews](https://www.weofferwellness.co.uk/reviews)
 - [Help centre](https://www.weofferwellness.co.uk/help)
 - [Safety and contraindications](https://www.weofferwellness.co.uk/safety-and-contraindications)
+- [Refunds And Cancellations](https://www.weofferwellness.co.uk/refunds-and-cancellations)
 
 ## Priority local pages
 - [Kent](https://www.weofferwellness.co.uk/locations/united-kingdom/kent)
@@ -42,6 +42,12 @@ Interpretation notes:
 
 ## Corporate wellbeing
 - [Corporate home](https://www.weofferwellness.co.uk/corporate)
+- [Wellbeing workshops](https://www.weofferwellness.co.uk/corporate/wellbeing-workshops)
+- [Meditation for teams](https://www.weofferwellness.co.uk/corporate/meditation)
+- [Breathwork for teams](https://www.weofferwellness.co.uk/corporate/breathwork)
+- [Workplace sound baths](https://www.weofferwellness.co.uk/corporate/sound-bath)
+- [Corporate gift vouchers](https://www.weofferwellness.co.uk/corporate/gift-vouchers)
+- [Employee rewards](https://www.weofferwellness.co.uk/corporate/employee-rewards)
 
 ## Discovery
 - [Sitemap](https://www.weofferwellness.co.uk/sitemap.xml)

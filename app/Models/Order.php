@@ -36,12 +36,14 @@ class Order extends Model
         'vendor_notified_at',
         'vendor_introduction_sent_at',
         'order_notifications_sent_at',
+        'analytics_purchase_emitted_at',
     ];
 
     protected $casts = [
         'vendor_notified_at' => 'datetime',
         'vendor_introduction_sent_at' => 'datetime',
         'order_notifications_sent_at' => 'datetime',
+        'analytics_purchase_emitted_at' => 'datetime',
     ];
 
     /**

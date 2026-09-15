@@ -9,6 +9,7 @@ import BuyBoxV3 from '@/Components/BuyBoxV3.vue'
 import WowxpExperience from '@/Components/WowxpExperience.vue'
 import RecRail from '@/Components/Recommendations/Rail.vue'
 import { recordProductView, recordFormat, recordLocation, recordVendor } from '@/services/recs'
+import { trackCommerce } from '@/lib/wow-analytics'
 
 const props = defineProps({
   type: { type: String, required: true },
@@ -720,6 +721,24 @@ function sel(i){ idx.value = i }
 const tab = ref('overview')
 onMounted(async () => {
   try { recordProductView(props.product); if (props.product?.vendor_id) recordVendor(props.product.vendor_id) } catch {}
+  try {
+    trackCommerce('view_item', {
+      currency: props.product?.currency || 'GBP',
+      value: Number(props.product?.price_min ?? props.product?.price ?? 0) || 0,
+      catalogue_type: props.product?.source_version === 'store' ? 'product' : (props.product?.type || 'offering'),
+      provider_id: props.product?.vendor_id || props.product?.provider_id || null,
+      offering_id: props.product?.source_version === 'v3' ? props.product?.id : null,
+      items: [{
+        id: props.product?.id,
+        title: props.product?.title,
+        price: Number(props.product?.price_min ?? props.product?.price ?? 0) || 0,
+        provider_id: props.product?.vendor_id || props.product?.provider_id || null,
+        offering_id: props.product?.source_version === 'v3' ? props.product?.id : null,
+        catalogue_type: props.product?.source_version === 'store' ? 'product' : (props.product?.type || 'offering'),
+        modality: props.product?.modality || props.product?.category?.slug || null,
+      }],
+    })
+  } catch {}
   // Track format/location selections from page events
   try{
     const onFmt = (ev)=>{ const f=String(ev?.detail?.format||''); if (f) recordFormat(f) }

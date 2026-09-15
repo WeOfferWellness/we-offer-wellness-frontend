@@ -1,78 +1,74 @@
 {
-    "generated_at": "2026-06-29T00:00:20+00:00",
+    "generated_at": "2026-09-15T10:58:58+00:00",
     "index_url": "https://www.weofferwellness.co.uk/sitemap.xml",
     "submission_urls": [
-        "https://www.weofferwellness.co.uk/sitemap.xml",
-        "https://www.weofferwellness.co.uk/sitemaps/static.xml",
-        "https://www.weofferwellness.co.uk/sitemaps/types.xml",
-        "https://www.weofferwellness.co.uk/sitemaps/modalities.xml",
-        "https://www.weofferwellness.co.uk/sitemaps/near-me.xml",
-        "https://www.weofferwellness.co.uk/sitemaps/offerings.xml",
-        "https://www.weofferwellness.co.uk/sitemaps/locations.xml",
-        "https://www.weofferwellness.co.uk/sitemaps/online.xml",
-        "https://www.weofferwellness.co.uk/sitemaps/by-need.xml",
-        "https://www.weofferwellness.co.uk/sitemaps/practitioners.xml",
-        "https://www.weofferwellness.co.uk/sitemaps/guides.xml"
+        "https://www.weofferwellness.co.uk/sitemap.xml"
     ],
     "sitemaps": [
         {
             "name": "static",
             "url": "https://www.weofferwellness.co.uk/sitemaps/static.xml",
-            "lastmod": "2026-06-29T00:00:20+00:00",
-            "count": 17
+            "lastmod": "2026-09-15T10:58:58+00:00",
+            "count": 24
+        },
+        {
+            "name": "schedules",
+            "url": "https://www.weofferwellness.co.uk/sitemaps/schedules.xml",
+            "lastmod": "2026-09-15T10:58:58+00:00",
+            "count": 19
         },
         {
             "name": "types",
             "url": "https://www.weofferwellness.co.uk/sitemaps/types.xml",
-            "lastmod": "2026-06-29T00:00:20+00:00",
-            "count": 5
+            "lastmod": "2026-09-15T10:58:58+00:00",
+            "count": 4
         },
         {
             "name": "modalities",
             "url": "https://www.weofferwellness.co.uk/sitemaps/modalities.xml",
-            "lastmod": "2026-06-29T00:00:20+00:00",
-            "count": 108
+            "lastmod": "2026-09-15T10:58:58+00:00",
+            "count": 111
         },
         {
             "name": "near-me",
             "url": "https://www.weofferwellness.co.uk/sitemaps/near-me.xml",
-            "lastmod": "2026-06-29T00:00:20+00:00",
-            "count": 701
+            "lastmod": "2026-09-15T10:58:58+00:00",
+            "count": 690
         },
         {
             "name": "offerings",
             "url": "https://www.weofferwellness.co.uk/sitemaps/offerings.xml",
-            "lastmod": "2026-06-29T00:00:20+00:00",
-            "count": 488
+            "lastmod": "2026-09-15T10:58:58+00:00",
+            "count": 566
         },
         {
             "name": "locations",
             "url": "https://www.weofferwellness.co.uk/sitemaps/locations.xml",
-            "lastmod": "2026-06-29T00:00:20+00:00",
-            "count": 163
+            "lastmod": "2026-09-15T10:58:58+00:00",
+            "count": 181
         },
         {
             "name": "online",
             "url": "https://www.weofferwellness.co.uk/sitemaps/online.xml",
-            "lastmod": "2026-06-29T00:00:20+00:00",
-            "count": 42
+            "lastmod": "2026-09-15T10:58:58+00:00",
+            "count": 43
         },
         {
             "name": "by-need",
             "url": "https://www.weofferwellness.co.uk/sitemaps/by-need.xml",
-            "lastmod": "2026-06-29T00:00:20+00:00",
+            "lastmod": "2026-09-15T10:58:58+00:00",
             "count": 14
         },
         {
             "name": "practitioners",
             "url": "https://www.weofferwellness.co.uk/sitemaps/practitioners.xml",
-            "lastmod": "2026-06-29T00:00:20+00:00",
-            "count": 400
+            "lastmod": "2026-09-15T10:58:58+00:00",
+            "count": 408
         },
         {
             "name": "guides",
             "url": "https://www.weofferwellness.co.uk/sitemaps/guides.xml",
-            "lastmod": "2026-06-29T00:00:20+00:00",
+            "lastmod": "2026-09-15T10:58:58+00:00",
             "count": 100
         }
     ],
@@ -81,19 +77,19 @@
             "name": "llms.txt",
             "url": "https://www.weofferwellness.co.uk/llms.txt",
             "count": 0,
-            "bytes": 2915
+            "bytes": 3450
         },
         {
             "name": "llms-small.txt",
             "url": "https://www.weofferwellness.co.uk/llms-small.txt",
             "count": 0,
-            "bytes": 1470
+            "bytes": 1553
         },
         {
             "name": "llms-full.txt",
             "url": "https://www.weofferwellness.co.uk/llms-full.txt",
             "count": 0,
-            "bytes": 142649
+            "bytes": 152030
         },
         {
             "name": "ai.txt",
@@ -102,6 +98,6 @@
             "bytes": 1756
         }
     ],
-    "file_count": 10,
-    "total_urls": 2038
+    "file_count": 11,
+    "total_urls": 2160
 }

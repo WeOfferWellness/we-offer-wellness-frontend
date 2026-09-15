@@ -136,7 +136,7 @@ class CheckoutOrderService
         $title = (string) ($item['title'] ?? ('Item '.$id));
         $qty = max(1, (int) ($item['qty'] ?? 1));
         $raw = (float) ($item['price'] ?? 0);
-        $unit = $raw >= 1000 ? (int) round($raw) : (int) round($raw * 100);
+        $unit = (int) round($raw * 100);
         $linePrice = round($unit / 100, 2);
         $image = $item['image'] ?? $item['img'] ?? null;
         $productId = $item['product_id'] ?? $item['productId'] ?? null;

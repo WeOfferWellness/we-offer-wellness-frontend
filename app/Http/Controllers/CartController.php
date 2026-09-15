@@ -466,7 +466,8 @@ class CartController extends Controller
 
     protected function mapLineItem(array $entry): array
     {
-        $price = $entry['price'] ?? $entry['unit'] ?? $entry['unit_amount'] ?? 0;
+        $priceIsMinor = ! array_key_exists('price', $entry) && ! array_key_exists('unit', $entry) && array_key_exists('unit_amount', $entry);
+        $price = $entry['price'] ?? $entry['unit'] ?? ($priceIsMinor ? ((float) $entry['unit_amount'] / 100) : 0);
         $variantId = $entry['variant_id'] ?? null;
         $variantLabel = $entry['variant_label'] ?? $entry['options_label'] ?? null;
         $options = $entry['options'] ?? [];
@@ -514,7 +515,7 @@ class CartController extends Controller
             'variant_label' => $variantLabel,
             'options' => $options,
             'title' => $entry['title'] ?? $entry['name'] ?? 'Item',
-            'price' => $this->formatPrice($price ?? 0),
+            'price' => (float) ($price ?? 0),
             'qty' => max(1, (int) ($entry['qty'] ?? $entry['quantity'] ?? 1)),
             'image' => $entry['image'] ?? $entry['img'] ?? null,
             'url' => $entry['url'] ?? $entry['href'] ?? '#',
@@ -531,11 +532,7 @@ class CartController extends Controller
 
     protected function formatPrice($value): float
     {
-        $price = (float) $value;
-        if ($price >= 1000 && fmod($price, 1) === 0.0) {
-            return $price / 100;
-        }
-        return $price;
+        return (float) $value;
     }
 
     protected function buildVariantLabel(?string $title, array $options = []): ?string

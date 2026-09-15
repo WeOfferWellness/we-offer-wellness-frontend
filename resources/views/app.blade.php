@@ -11,8 +11,8 @@
           $defaultDesc = 'Holistic therapy, classes, workshops and retreats from trusted practitioners across the UK, online and in person.';
           $defaultOg = asset('images/default-social-preview.jpg');
           $canonical = $seoService->canonicalUrl(request()->getPathInfo());
-          $gtmId = env('GTM_ID') ?: env('VITE_GTM_ID');
-          $gaId = env('GA_ID') ?: env('VITE_GA_ID') ?: 'G-MZMQNETBYH';
+          $gtmId = config('services.gtm.id');
+          $gaId = config('analytics.enabled') ? config('analytics.measurement_id') : null;
           $favicon = config('app.favicon_url', '/favicon.ico');
           $ogTitle = $seoService->shortOgTitle($appName);
           $ogDesc = $seoService->shortOgDescription($defaultDesc);
@@ -54,6 +54,7 @@
         <script>
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments)}
+          gtag('consent', 'default', @json(config('analytics.consent_default')));
           gtag('js', new Date());
           gtag('config', '{{ $gaId }}', { 'send_page_view': false });
         </script>
@@ -161,9 +162,51 @@
             function trackInitialPageView(){
               track('page_view', currentPageParams());
             }
+            function persistAttribution(){
+              try {
+                var params = new URLSearchParams(location.search);
+                var keys = ['utm_source','utm_medium','utm_campaign','utm_term','utm_content','gclid','fbclid'];
+                var current = JSON.parse(sessionStorage.getItem('wow_attribution') || '{}');
+                var first = JSON.parse(localStorage.getItem('wow_first_touch') || '{}');
+                keys.forEach(function(key){
+                  var value = (params.get(key) || '').trim();
+                  if (!value) return;
+                  current[key] = value;
+                  if (!first[key]) first[key] = value;
+                });
+                sessionStorage.setItem('wow_attribution', JSON.stringify(current));
+                localStorage.setItem('wow_first_touch', JSON.stringify(first));
+              } catch (_) {}
+            }
+            function syncConsent(){
+              try {
+                var preferences = JSON.parse(localStorage.getItem('wow_cookie_preferences') || '{}');
+                var granted = preferences.analytics === true || preferences.performance === true;
+                if (typeof window.gtag === 'function') window.gtag('consent', 'update', {
+                  analytics_storage: granted ? 'granted' : 'denied',
+                  ad_storage: granted ? 'granted' : 'denied',
+                  ad_user_data: granted ? 'granted' : 'denied',
+                  ad_personalization: granted ? 'granted' : 'denied'
+                });
+              } catch (_) {}
+            }
+            persistAttribution();
+            syncConsent();
+            document.addEventListener('wow:cookie-preferences', syncConsent);
+            document.addEventListener('click', function(event){
+              try {
+                var card = event.target.closest('[data-product-id], .offering-card');
+                if (!card || event.target.closest('button')) return;
+                var id = card.getAttribute('data-product-id') || card.dataset?.productId;
+                if (!id || card.dataset.wowSelectItemSent === '1') return;
+                card.dataset.wowSelectItemSent = '1';
+                track('select_item', { catalogue_type: card.dataset.sourceVersion === 'store' ? 'product' : (card.dataset.catalogueType || 'offering'), items: [{ item_id: String(id), item_name: card.dataset.productTitle || card.querySelector('h2,h3')?.textContent?.trim() || 'Item', provider_id: card.dataset.providerId || undefined }] });
+              } catch (_) {}
+            }, true);
             // Inertia page view
             document.addEventListener('inertia:success', function(ev){
               try {
+                persistAttribution();
                 track('page_view', currentPageParams());
               } catch {}
             });

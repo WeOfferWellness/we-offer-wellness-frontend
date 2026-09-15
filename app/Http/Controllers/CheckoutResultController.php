@@ -14,7 +14,10 @@ use Stripe\Stripe;
 
 class CheckoutResultController extends Controller
 {
-    public function __construct(private CheckoutOrderService $orderService)
+    public function __construct(
+        private CheckoutOrderService $orderService,
+        private PurchaseAnalyticsService $purchaseAnalytics,
+    )
     {
     }
 
@@ -38,7 +41,8 @@ class CheckoutResultController extends Controller
             session()->forget('cart_promo_code');
             session()->forget('cart_gift_code');
 
-            $response = response()->view('checkout.success', compact('order'));
+            $purchaseAnalytics = $this->purchaseAnalytics->claim($order);
+            $response = response()->view('checkout.success', compact('order', 'purchaseAnalytics'));
             $response->withCookie(cookie('wow_cart', json_encode([]), 60*24*30));
 
             return $response;
@@ -82,7 +86,8 @@ class CheckoutResultController extends Controller
         session()->forget('cart_promo_code');
         session()->forget('cart_gift_code');
 
-        $response = response()->view('checkout.success', compact('order'));
+        $purchaseAnalytics = $this->purchaseAnalytics->claim($order);
+        $response = response()->view('checkout.success', compact('order', 'purchaseAnalytics'));
         $response->withCookie(cookie('wow_cart', json_encode([]), 60*24*30));
 
         return $response;
@@ -93,7 +98,7 @@ class CheckoutResultController extends Controller
         $orderId = (int) $request->query('order');
         $token = (string) $request->query('token', '');
         $order = Order::with('items')->find($orderId);
-        if (!$order || !$token || !hash_equals(self::tokenForOrder($order), $token)) {
+        if (!$order || !$token || !hash_equals(self::tokenForOrder($order), $token) || ! $this->purchaseAnalytics->isSuccessful($order)) {
             abort(404);
         }
 
@@ -101,7 +106,8 @@ class CheckoutResultController extends Controller
         session()->forget('cart_promo_code');
         session()->forget('cart_gift_code');
 
-        $response = response()->view('checkout.success', compact('order'));
+        $purchaseAnalytics = $this->purchaseAnalytics->claim($order);
+        $response = response()->view('checkout.success', compact('order', 'purchaseAnalytics'));
         $response->withCookie(cookie('wow_cart', json_encode([]), 60*24*30));
 
         return $response;

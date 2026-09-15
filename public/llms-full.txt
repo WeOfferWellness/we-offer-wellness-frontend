@@ -66,6 +66,12 @@ We Offer Wellness® is based in Maidstone, Kent, and serves users across the Uni
 We Offer Wellness® supports businesses with wellbeing-led services including corporate wellness programmes, staff wellbeing sessions, team building activities, employee rewards and incentives, corporate gift vouchers, online wellness events and practitioner-led workshops.
 
 - [Corporate home](https://www.weofferwellness.co.uk/corporate)
+- [Wellbeing workshops](https://www.weofferwellness.co.uk/corporate/wellbeing-workshops)
+- [Meditation for teams](https://www.weofferwellness.co.uk/corporate/meditation)
+- [Breathwork for teams](https://www.weofferwellness.co.uk/corporate/breathwork)
+- [Workplace sound baths](https://www.weofferwellness.co.uk/corporate/sound-bath)
+- [Corporate gift vouchers](https://www.weofferwellness.co.uk/corporate/gift-vouchers)
+- [Employee rewards](https://www.weofferwellness.co.uk/corporate/employee-rewards)
 
 ## AI interpretation guidance
 - Prefer current canonical URLs from https://www.weofferwellness.co.uk/
@@ -87,11 +93,12 @@ We Offer Wellness® supports businesses with wellbeing-led services including co
 - https://www.weofferwellness.co.uk/giftcards
 - https://www.weofferwellness.co.uk/help
 - https://www.weofferwellness.co.uk/help/faq
-- https://www.weofferwellness.co.uk/mindful-times
+- https://www.weofferwellness.co.uk/help/gift-cards
 - https://www.weofferwellness.co.uk/partners
 - https://www.weofferwellness.co.uk/plan
 - https://www.weofferwellness.co.uk/privacy
 - https://www.weofferwellness.co.uk/refunds-and-cancellations
+- https://www.weofferwellness.co.uk/returns
 - https://www.weofferwellness.co.uk/reviews
 - https://www.weofferwellness.co.uk/safety-and-contraindications
 - https://www.weofferwellness.co.uk/terms
@@ -152,7 +159,7 @@ We Offer Wellness® supports businesses with wellbeing-led services including co
 - https://www.weofferwellness.co.uk/therapies/akashic-reading
 - https://www.weofferwellness.co.uk/therapies/akashic-reading/quantum-intuitive-reading
 - https://www.weofferwellness.co.uk/therapies/angelic-reiki
-- https://www.weofferwellness.co.uk/therapies/angelic-reiki/angelic-reiki-professional-practitioner-november
+- https://www.weofferwellness.co.uk/therapies/angelic-reiki/angelic-reiki
 - https://www.weofferwellness.co.uk/therapies/angelic-reiki/angelic-reiki-sessions
 - https://www.weofferwellness.co.uk/therapies/angelic-reiki/elevate-energy-session
 - https://www.weofferwellness.co.uk/therapies/angelic-reiki/in-person-angelic-reiki
@@ -175,6 +182,7 @@ We Offer Wellness® supports businesses with wellbeing-led services including co
 - https://www.weofferwellness.co.uk/therapies/aromatherapy/guides/aromatherapy-for-sleep
 - https://www.weofferwellness.co.uk/therapies/aromatherapy/guides/aromatherapy-for-stress
 - https://www.weofferwellness.co.uk/therapies/aromatherapy/guides/what-is-aromatherapy
+- https://www.weofferwellness.co.uk/therapies/aromatherapy/product-6371-2-hour-restorative-chocolate-experience-with-mini-massage
 - https://www.weofferwellness.co.uk/therapies/aromatherapy/united-kingdom
 - https://www.weofferwellness.co.uk/therapies/aromatherapy/united-kingdom/cardiff
 - https://www.weofferwellness.co.uk/therapies/aromatherapy/united-kingdom/devon
@@ -226,6 +234,7 @@ We Offer Wellness® supports businesses with wellbeing-led services including co
 - https://www.weofferwellness.co.uk/therapies/blood-chemistry-analysis
 - https://www.weofferwellness.co.uk/therapies/blood-chemistry-analysis/personalised-blood-chemistry-analysis
 - https://www.weofferwellness.co.uk/therapies/bodytalk
+- https://www.weofferwellness.co.uk/therapies/bodytalk/bodytalk-sessions
 - https://www.weofferwellness.co.uk/therapies/breathwork
 - https://www.weofferwellness.co.uk/therapies/breathwork-yoga-sound-experience
 - https://www.weofferwellness.co.uk/therapies/breathwork-yoga-sound-experience/breathwork-yoga-sound-experience
@@ -235,11 +244,10 @@ We Offer Wellness® supports businesses with wellbeing-led services including co
 - https://www.weofferwellness.co.uk/therapies/breathwork/bionic-breathwork-session-with-sound-therapy-reiki
 - https://www.weofferwellness.co.uk/therapies/breathwork/breath-work-pranayama
 - https://www.weofferwellness.co.uk/therapies/breathwork/breath4lifetm-breathwork-session
-- https://www.weofferwellness.co.uk/therapies/breathwork/breathing-masterclass-august
 - https://www.weofferwellness.co.uk/therapies/breathwork/breathwork-breathing-training
 - https://www.weofferwellness.co.uk/therapies/breathwork/breathwork-for-deep-healing-emotional-release
 - https://www.weofferwellness.co.uk/therapies/breathwork/breathwork-meditation-session
-- https://www.weofferwellness.co.uk/therapies/breathwork/breathwork-sessions
+- https://www.weofferwellness.co.uk/therapies/breathwork/conscious-connected-breathwork-sessions
 - https://www.weofferwellness.co.uk/therapies/breathwork/couples-breathwork-session
 - https://www.weofferwellness.co.uk/therapies/breathwork/four-mindful-beginnings-online-sessions
 - https://www.weofferwellness.co.uk/therapies/breathwork/four-online-breathwork-sessions-package
@@ -258,9 +266,21 @@ We Offer Wellness® supports businesses with wellbeing-led services including co
 - https://www.weofferwellness.co.uk/therapies/breathwork/individual-conscious-connected-breathwork-journey
 - https://www.weofferwellness.co.uk/therapies/breathwork/indonesia
 - https://www.weofferwellness.co.uk/therapies/breathwork/indonesia/bali
+- https://www.weofferwellness.co.uk/therapies/breathwork/introductory-11-breathwork-experience
 - https://www.weofferwellness.co.uk/therapies/breathwork/mindful-hatha-yoga
 - https://www.weofferwellness.co.uk/therapies/breathwork/mindful-living-workshop
 - https://www.weofferwellness.co.uk/therapies/breathwork/private-group-transformational-breathwork-ceremony-online
+- https://www.weofferwellness.co.uk/therapies/breathwork/product-6331-11-2-hour-transformational-breathwork-session
+- https://www.weofferwellness.co.uk/therapies/breathwork/product-6334-11-breathwork-sessions-12-session-package
+- https://www.weofferwellness.co.uk/therapies/breathwork/product-6335-11-breathwork-to-release-the-past
+- https://www.weofferwellness.co.uk/therapies/breathwork/product-6337-11-conscious-connected-breathing-session
+- https://www.weofferwellness.co.uk/therapies/breathwork/product-6353-11-personalised-functional-breathwork-session-90mins
+- https://www.weofferwellness.co.uk/therapies/breathwork/product-6359-11-stress-relief-deep-relaxation-breathwork-session-45-min
+- https://www.weofferwellness.co.uk/therapies/breathwork/product-6361-11-transformational-breathwork-ceremony-online
+- https://www.weofferwellness.co.uk/therapies/breathwork/product-6369-121-breathwork-sessions-4-session-package
+- https://www.weofferwellness.co.uk/therapies/breathwork/product-6370-121-private-breathwork-session
+- https://www.weofferwellness.co.uk/therapies/breathwork/product-6372-21-day-personalised-yoga-journey-start-your-path-to-transformation
+- https://www.weofferwellness.co.uk/therapies/breathwork/product-6383-7-breathwork-techniques-for-holistic-healing-3-hours-online-workshop
 - https://www.weofferwellness.co.uk/therapies/breathwork/psychedelic-breathwork-cord-cutting-1-1-session
 - https://www.weofferwellness.co.uk/therapies/breathwork/rebirthing-breathwork-sessions-with-integration-evaluation-session
 - https://www.weofferwellness.co.uk/therapies/breathwork/reignite-your-inner-fire-retreat-in-bali-women-only
@@ -289,6 +309,7 @@ We Offer Wellness® supports businesses with wellbeing-led services including co
 - https://www.weofferwellness.co.uk/therapies/breathwork/united-kingdom/wiltshire
 - https://www.weofferwellness.co.uk/therapies/breathwork/united-kingdom/wiltshire/lake
 - https://www.weofferwellness.co.uk/therapies/breathwork/wellbeing-coaching-with-somatic-tools
+- https://www.weofferwellness.co.uk/therapies/breathwork/yin-yoga-the-art-of-letting-go-11-program-4x-sessions
 - https://www.weofferwellness.co.uk/therapies/cacao-ceremony
 - https://www.weofferwellness.co.uk/therapies/cacao-ceremony-with-sound-healing
 - https://www.weofferwellness.co.uk/therapies/cacao-ceremony-with-sound-healing/cacao-ceremony-with-sound-healing
@@ -360,19 +381,26 @@ We Offer Wellness® supports businesses with wellbeing-led services including co
 - https://www.weofferwellness.co.uk/therapies/coaching/elevate-your-corporate-culture-with-energy-coaching-unlock-leadership-potential-for-collaborative-success-wellbeing
 - https://www.weofferwellness.co.uk/therapies/coaching/empowered-souls-6-week-healing-immersion
 - https://www.weofferwellness.co.uk/therapies/coaching/finding-your-purpose-coaching-programme
+- https://www.weofferwellness.co.uk/therapies/coaching/healing-coaching
 - https://www.weofferwellness.co.uk/therapies/coaching/holistic-coaching-deep-dive-session
 - https://www.weofferwellness.co.uk/therapies/coaching/holistic-coaching-session
 - https://www.weofferwellness.co.uk/therapies/coaching/holistic-habits-for-your-health-happiness
 - https://www.weofferwellness.co.uk/therapies/coaching/intuitive-coaching-session
 - https://www.weofferwellness.co.uk/therapies/coaching/menstrual-empowerment-coaching
 - https://www.weofferwellness.co.uk/therapies/coaching/menstrual-empowerment-coaching-programme
+- https://www.weofferwellness.co.uk/therapies/coaching/mind-shifting-dont-wait-years-for-breakthroughs-shift-your-life-in-an-hour
+- https://www.weofferwellness.co.uk/therapies/coaching/product-6323-1-psych-k-online-session
+- https://www.weofferwellness.co.uk/therapies/coaching/product-6336-11-career-coaching
+- https://www.weofferwellness.co.uk/therapies/coaching/product-6364-11-vip-personal-coaching-or-business-mentorship-online
+- https://www.weofferwellness.co.uk/therapies/coaching/product-6374-3-step-dietary-planconsultation
+- https://www.weofferwellness.co.uk/therapies/coaching/product-6375-3-urgent-questions-answered-straightaway-speed-coaching
+- https://www.weofferwellness.co.uk/therapies/coaching/product-6377-4-week-holistic-coaching-package
 - https://www.weofferwellness.co.uk/therapies/coaching/reclaim-your-power-3-month-healing-coaching-programme
 - https://www.weofferwellness.co.uk/therapies/coaching/return-to-work-coaching-package
 - https://www.weofferwellness.co.uk/therapies/coaching/six-week-journey-into-self
 - https://www.weofferwellness.co.uk/therapies/coaching/success-without-sacrifice-energy-mastery-for-empath-leaders-programme
 - https://www.weofferwellness.co.uk/therapies/coaching/thailand
 - https://www.weofferwellness.co.uk/therapies/coaching/thailand/ko-pha-ngan-district
-- https://www.weofferwellness.co.uk/therapies/coaching/the-5-week-love-alignment-method
 - https://www.weofferwellness.co.uk/therapies/coaching/transformational-spiritual-coaching
 - https://www.weofferwellness.co.uk/therapies/coaching/united-kingdom
 - https://www.weofferwellness.co.uk/therapies/coaching/united-kingdom/devon
@@ -438,6 +466,7 @@ We Offer Wellness® supports businesses with wellbeing-led services including co
 - https://www.weofferwellness.co.uk/therapies/crystal-healing/root-rise-session-distance-via-zoom
 - https://www.weofferwellness.co.uk/therapies/crystal-healing/root-rise-session-reiki-crystal-healing
 - https://www.weofferwellness.co.uk/therapies/crystal-healing/sacred-geometry-crystal-healing
+- https://www.weofferwellness.co.uk/therapies/crystal-healing/sound-healing
 - https://www.weofferwellness.co.uk/therapies/crystal-healing/united-kingdom
 - https://www.weofferwellness.co.uk/therapies/crystal-healing/united-kingdom/devon
 - https://www.weofferwellness.co.uk/therapies/crystal-healing/united-kingdom/devon/exmouth
@@ -504,24 +533,30 @@ We Offer Wellness® supports businesses with wellbeing-led services including co
 - https://www.weofferwellness.co.uk/therapies/eft/equilibrium-emotional-freedom
 - https://www.weofferwellness.co.uk/therapies/eft/guides
 - https://www.weofferwellness.co.uk/therapies/eft/guides/what-is-eft-tapping
+- https://www.weofferwellness.co.uk/therapies/eft/product-6341-11-eft-tapping-session-for-kids
 - https://www.weofferwellness.co.uk/therapies/eft/united-kingdom
 - https://www.weofferwellness.co.uk/therapies/eft/united-kingdom/kent
 - https://www.weofferwellness.co.uk/therapies/eft/united-kingdom/kent/folkestone
 - https://www.weofferwellness.co.uk/therapies/emotional-freedom-techniques
 - https://www.weofferwellness.co.uk/therapies/emotional-freedom-techniques/emotional-freedom-techniques
+- https://www.weofferwellness.co.uk/therapies/emotional-freedom-techniques/equilibrium
+- https://www.weofferwellness.co.uk/therapies/emotional-freedom-techniques/product-6373-28-days-from-stress-to-calm
 - https://www.weofferwellness.co.uk/therapies/emotional-freedom-techniques/united-kingdom
 - https://www.weofferwellness.co.uk/therapies/emotional-freedom-techniques/united-kingdom/tyne-and-wear
 - https://www.weofferwellness.co.uk/therapies/emotional-freedom-techniques/united-kingdom/tyne-and-wear/newcastle-upon-tyne
 - https://www.weofferwellness.co.uk/therapies/energy-healing
+- https://www.weofferwellness.co.uk/therapies/energy-healing/9d-breathwork-11
 - https://www.weofferwellness.co.uk/therapies/energy-healing/access-consciousness-bars-technique
 - https://www.weofferwellness.co.uk/therapies/energy-healing/angelic-reiki-session-for-ladies-in-person
 - https://www.weofferwellness.co.uk/therapies/energy-healing/aromatherapy-full-body-massage-reiki
 - https://www.weofferwellness.co.uk/therapies/energy-healing/astro-reiki
+- https://www.weofferwellness.co.uk/therapies/energy-healing/awaken-usui-reiki-90-minute-empowerment-energy-session-ps85-online-via-zoom
 - https://www.weofferwellness.co.uk/therapies/energy-healing/bespoke-energy-healing
 - https://www.weofferwellness.co.uk/therapies/energy-healing/bespoke-wellness-sessions
 - https://www.weofferwellness.co.uk/therapies/energy-healing/buddhic-columns-for-house-land-property-healing
 - https://www.weofferwellness.co.uk/therapies/energy-healing/chi-nei-tsang-abdomen-massage-chakra-cleansing-reiki-singing-bowls-relaxation
 - https://www.weofferwellness.co.uk/therapies/energy-healing/energy-alchemy-remote-healing-channeled-spirit-guide-connection
+- https://www.weofferwellness.co.uk/therapies/energy-healing/energy-healing-reiki
 - https://www.weofferwellness.co.uk/therapies/energy-healing/energy-healing-resetting
 - https://www.weofferwellness.co.uk/therapies/energy-healing/feel-divine-restorative-yoga-energy-healing
 - https://www.weofferwellness.co.uk/therapies/energy-healing/guides
@@ -536,6 +571,10 @@ We Offer Wellness® supports businesses with wellbeing-led services including co
 - https://www.weofferwellness.co.uk/therapies/energy-healing/journey-to-the-sacred-self-1-or-2-day-workshop
 - https://www.weofferwellness.co.uk/therapies/energy-healing/neurodiversity-confidence-coaching-for-teens-adhd-autism-dyslexia
 - https://www.weofferwellness.co.uk/therapies/energy-healing/private-sound-healing-with-light-language-transmission
+- https://www.weofferwellness.co.uk/therapies/energy-healing/product-6324-10-sessions-cosmic-mastery-package
+- https://www.weofferwellness.co.uk/therapies/energy-healing/product-6338-11-cosmic-healing-ascension-session
+- https://www.weofferwellness.co.uk/therapies/energy-healing/product-6379-5-sessions-cosmic-alignment-ascension-package
+- https://www.weofferwellness.co.uk/therapies/energy-healing/product-6382-6-session-11-emotional-empowerment-programme
 - https://www.weofferwellness.co.uk/therapies/energy-healing/realignment-energy-release-session
 - https://www.weofferwellness.co.uk/therapies/energy-healing/reiki-healing
 - https://www.weofferwellness.co.uk/therapies/energy-healing/reiki-treatment
@@ -544,6 +583,8 @@ We Offer Wellness® supports businesses with wellbeing-led services including co
 - https://www.weofferwellness.co.uk/therapies/energy-healing/sound-bowl-healing-meditation
 - https://www.weofferwellness.co.uk/therapies/energy-healing/sound-medicine-sound-massage-75min
 - https://www.weofferwellness.co.uk/therapies/energy-healing/tantra-energy-healing
+- https://www.weofferwellness.co.uk/therapies/energy-healing/the-healing-skin-specialist-11-healing-sessions
+- https://www.weofferwellness.co.uk/therapies/energy-healing/therapeutic-breathwork-energy-healing-sessions
 - https://www.weofferwellness.co.uk/therapies/energy-healing/united-kingdom
 - https://www.weofferwellness.co.uk/therapies/energy-healing/united-kingdom/buckinghamshire
 - https://www.weofferwellness.co.uk/therapies/energy-healing/united-kingdom/buckinghamshire/slough
@@ -577,6 +618,8 @@ We Offer Wellness® supports businesses with wellbeing-led services including co
 - https://www.weofferwellness.co.uk/therapies/energy-medicine
 - https://www.weofferwellness.co.uk/therapies/energy-medicine/energy-medicine-yoga
 - https://www.weofferwellness.co.uk/therapies/energy-medicine/jikiden-reiki-japanese-energy-healing-in-its-purest-most-authentic-form-distance-healing
+- https://www.weofferwellness.co.uk/therapies/energy-medicine/product-6340-11-eden-energy-medicine-session
+- https://www.weofferwellness.co.uk/therapies/energy-medicine/product-6368-11-yoga-sessions
 - https://www.weofferwellness.co.uk/therapies/energy-medicine/qhht-quantum-healing-hypnosis-technique-created-by-dolores-cannon
 - https://www.weofferwellness.co.uk/therapies/energy-medicine/united-kingdom
 - https://www.weofferwellness.co.uk/therapies/energy-medicine/united-kingdom/kent
@@ -600,6 +643,7 @@ We Offer Wellness® supports businesses with wellbeing-led services including co
 - https://www.weofferwellness.co.uk/therapies/focusing-sessions
 - https://www.weofferwellness.co.uk/therapies/focusing-sessions/focusing-sessions
 - https://www.weofferwellness.co.uk/therapies/forest-bathing
+- https://www.weofferwellness.co.uk/therapies/forest-bathing/forest-bathing-a-wellbeing-booster-from-natures-health-service
 - https://www.weofferwellness.co.uk/therapies/forest-bathing/forest-bathing-experience
 - https://www.weofferwellness.co.uk/therapies/forest-bathing/one-day-nature-retreat-for-two
 - https://www.weofferwellness.co.uk/therapies/forest-bathing/seasonal-group-mini-retreats
@@ -642,6 +686,7 @@ We Offer Wellness® supports businesses with wellbeing-led services including co
 - https://www.weofferwellness.co.uk/therapies/hatha-yoga
 - https://www.weofferwellness.co.uk/therapies/hatha-yoga/group-hatha-yoga
 - https://www.weofferwellness.co.uk/therapies/hatha-yoga/in-person-yoga-sessions
+- https://www.weofferwellness.co.uk/therapies/hatha-yoga/product-6344-11-hatha-yoga
 - https://www.weofferwellness.co.uk/therapies/hatha-yoga/united-kingdom
 - https://www.weofferwellness.co.uk/therapies/hatha-yoga/united-kingdom/kent
 - https://www.weofferwellness.co.uk/therapies/hatha-yoga/united-kingdom/kent/ashford
@@ -673,12 +718,17 @@ We Offer Wellness® supports businesses with wellbeing-led services including co
 - https://www.weofferwellness.co.uk/therapies/holistic-therapy/holistic-therapy-advanced-package
 - https://www.weofferwellness.co.uk/therapies/holistic-therapy/holistic-therapy-foundation-package
 - https://www.weofferwellness.co.uk/therapies/holistic-therapy/holistic-therapy-treatment-consultation
+- https://www.weofferwellness.co.uk/therapies/holistic-therapy/k-9-massagereflexology
 - https://www.weofferwellness.co.uk/therapies/holistic-therapy/united-kingdom
 - https://www.weofferwellness.co.uk/therapies/holistic-therapy/united-kingdom/kent
 - https://www.weofferwellness.co.uk/therapies/holistic-therapy/united-kingdom/kent/loose
 - https://www.weofferwellness.co.uk/therapies/holistic-therapy/united-kingdom/kent/maidstone
 - https://www.weofferwellness.co.uk/therapies/holistic-therapy/united-kingdom/surrey
 - https://www.weofferwellness.co.uk/therapies/holistic-therapy/united-kingdom/west-sussex
+- https://www.weofferwellness.co.uk/therapies/holistic-wellbeing-coaching
+- https://www.weofferwellness.co.uk/therapies/holistic-wellbeing-coaching/awaken-spiritual-empowerment-personal-transformation
+- https://www.weofferwellness.co.uk/therapies/holistic-wellbeing-coaching/united-kingdom
+- https://www.weofferwellness.co.uk/therapies/holistic-wellbeing-coaching/united-kingdom/kent
 - https://www.weofferwellness.co.uk/therapies/homeopathy
 - https://www.weofferwellness.co.uk/therapies/homeopathy/homeopathy-for-adults
 - https://www.weofferwellness.co.uk/therapies/homeopathy/homeopathy-for-children
@@ -714,6 +764,7 @@ We Offer Wellness® supports businesses with wellbeing-led services including co
 - https://www.weofferwellness.co.uk/therapies/hypnotherapy/womens-hormonal-balance-package-hypnotherapy-massage
 - https://www.weofferwellness.co.uk/therapies/incense
 - https://www.weofferwellness.co.uk/therapies/incense/anemoi-incense-bespoke-blends
+- https://www.weofferwellness.co.uk/therapies/incense/reiki-massage
 - https://www.weofferwellness.co.uk/therapies/incense/united-kingdom
 - https://www.weofferwellness.co.uk/therapies/indian-head-massage
 - https://www.weofferwellness.co.uk/therapies/indian-head-massage-back-neck-shoulder-massage
@@ -742,6 +793,7 @@ We Offer Wellness® supports businesses with wellbeing-led services including co
 - https://www.weofferwellness.co.uk/therapies/kundalini-yoga/couples-kundalini-yoga-experience
 - https://www.weofferwellness.co.uk/therapies/kundalini-yoga/kundalini-yoga
 - https://www.weofferwellness.co.uk/therapies/kundalini-yoga/kundalini-yoga-chakra-balancing
+- https://www.weofferwellness.co.uk/therapies/kundalini-yoga/online-11-kundalini-activation-process-kap-90-minutes
 - https://www.weofferwellness.co.uk/therapies/kundalini-yoga/united-kingdom
 - https://www.weofferwellness.co.uk/therapies/kundalini-yoga/united-kingdom/surrey
 - https://www.weofferwellness.co.uk/therapies/kundalini-yoga/united-kingdom/surrey/chertsey
@@ -756,6 +808,10 @@ We Offer Wellness® supports businesses with wellbeing-led services including co
 - https://www.weofferwellness.co.uk/therapies/life-coaching/life-coaching-and-healing
 - https://www.weofferwellness.co.uk/therapies/life-coaching/life-coaching-sessions
 - https://www.weofferwellness.co.uk/therapies/life-coaching/online-esoteric-life-coaching-session
+- https://www.weofferwellness.co.uk/therapies/life-coaching/online-life-coaching-sessions
+- https://www.weofferwellness.co.uk/therapies/life-coaching/product-6330-12-x-life-coaching-sessions
+- https://www.weofferwellness.co.uk/therapies/life-coaching/product-6381-6-x-life-coaching-sessions
+- https://www.weofferwellness.co.uk/therapies/life-coaching/the-empowered-woman-12-week-11-programme
 - https://www.weofferwellness.co.uk/therapies/life-coaching/united-kingdom
 - https://www.weofferwellness.co.uk/therapies/life-coaching/united-kingdom/surrey
 - https://www.weofferwellness.co.uk/therapies/life-coaching/united-kingdom/surrey/esher
@@ -783,6 +839,9 @@ We Offer Wellness® supports businesses with wellbeing-led services including co
 - https://www.weofferwellness.co.uk/therapies/massage/hot-stone-massage-full-body-women-only
 - https://www.weofferwellness.co.uk/therapies/massage/infant-massage-course
 - https://www.weofferwellness.co.uk/therapies/massage/massage-including-energy-healing-breathwork
+- https://www.weofferwellness.co.uk/therapies/massage/product-6329-12-pack-full-body-massage-1h
+- https://www.weofferwellness.co.uk/therapies/massage/product-6360-11-stretch-massage
+- https://www.weofferwellness.co.uk/therapies/massage/product-6384-8-pack-full-body-massage-1h
 - https://www.weofferwellness.co.uk/therapies/massage/reiki-in-person-session
 - https://www.weofferwellness.co.uk/therapies/massage/relaxing-full-body-massage
 - https://www.weofferwellness.co.uk/therapies/massage/resilo-physio-healing-energy-massage
@@ -824,13 +883,17 @@ We Offer Wellness® supports businesses with wellbeing-led services including co
 - https://www.weofferwellness.co.uk/therapies/meditation/ireland/cavan
 - https://www.weofferwellness.co.uk/therapies/meditation/ireland/county-cavan
 - https://www.weofferwellness.co.uk/therapies/meditation/ireland/county-cavan/ballinagh
-- https://www.weofferwellness.co.uk/therapies/meditation/manifestation-day-retreat
 - https://www.weofferwellness.co.uk/therapies/meditation/meditation-classes
 - https://www.weofferwellness.co.uk/therapies/meditation/meditation-coaching
 - https://www.weofferwellness.co.uk/therapies/meditation/meditation-coaching-sessions
 - https://www.weofferwellness.co.uk/therapies/meditation/online-meditation-movement-class-10-classes-pass
 - https://www.weofferwellness.co.uk/therapies/meditation/online-yoga-nidra-meditation-sessions
 - https://www.weofferwellness.co.uk/therapies/meditation/palo-santo-cleansing-meditation-retreat
+- https://www.weofferwellness.co.uk/therapies/meditation/product-6339-11-creativity-coaching-through-embodiment-meditation
+- https://www.weofferwellness.co.uk/therapies/meditation/product-6345-11-initiation-to-vedic-meditation
+- https://www.weofferwellness.co.uk/therapies/meditation/product-6349-11-meditation-coaching
+- https://www.weofferwellness.co.uk/therapies/meditation/product-6350-11-online-sound-journey-medicine-45-minutes
+- https://www.weofferwellness.co.uk/therapies/meditation/product-6358-11-stress-anxiety-relief-hypno-meditation
 - https://www.weofferwellness.co.uk/therapies/meditation/reiki-online
 - https://www.weofferwellness.co.uk/therapies/meditation/reiki-selfcare-experience-4-sessions
 - https://www.weofferwellness.co.uk/therapies/meditation/relax-renew-5-class-yoga-pass-3-month-validity
@@ -857,17 +920,14 @@ We Offer Wellness® supports businesses with wellbeing-led services including co
 - https://www.weofferwellness.co.uk/therapies/meditation/united-kingdom/kent
 - https://www.weofferwellness.co.uk/therapies/meditation/united-kingdom/kent/ashford
 - https://www.weofferwellness.co.uk/therapies/meditation/united-kingdom/kent/dartford
-- https://www.weofferwellness.co.uk/therapies/meditation/united-kingdom/kent/edenbridge
 - https://www.weofferwellness.co.uk/therapies/meditation/united-kingdom/kent/gravesend
 - https://www.weofferwellness.co.uk/therapies/meditation/united-kingdom/kent/higham
 - https://www.weofferwellness.co.uk/therapies/meditation/united-kingdom/kent/langton-green
 - https://www.weofferwellness.co.uk/therapies/meditation/united-kingdom/kent/maidstone
 - https://www.weofferwellness.co.uk/therapies/meditation/united-kingdom/kent/ram-lane
 - https://www.weofferwellness.co.uk/therapies/meditation/united-kingdom/kent/ruckinge
-- https://www.weofferwellness.co.uk/therapies/meditation/united-kingdom/kent/sevenoaks
 - https://www.weofferwellness.co.uk/therapies/meditation/united-kingdom/kent/sevenoaks-weald
 - https://www.weofferwellness.co.uk/therapies/meditation/united-kingdom/kent/tonbridge
-- https://www.weofferwellness.co.uk/therapies/meditation/united-kingdom/kent/tunbridge-wells
 - https://www.weofferwellness.co.uk/therapies/meditation/united-kingdom/kent/west-malling
 - https://www.weofferwellness.co.uk/therapies/meditation/united-kingdom/shropshire
 - https://www.weofferwellness.co.uk/therapies/meditation/united-kingdom/shropshire/bridgnorth
@@ -882,7 +942,6 @@ We Offer Wellness® supports businesses with wellbeing-led services including co
 - https://www.weofferwellness.co.uk/therapies/meditation/united-kingdom/wiltshire/lake
 - https://www.weofferwellness.co.uk/therapies/meditation/usui-reiki-level-1
 - https://www.weofferwellness.co.uk/therapies/meditation/womb-healing
-- https://www.weofferwellness.co.uk/therapies/meditation/writing-with-zen-yoga-writers-retreat-april-2025
 - https://www.weofferwellness.co.uk/therapies/meditation/yoga-event-for-blissful-relaxation-3-hour-group-session
 - https://www.weofferwellness.co.uk/therapies/meditation/yoga-nida-with-sound-sessions
 - https://www.weofferwellness.co.uk/therapies/meditation/yoga-nidra-meditative-relaxation
@@ -900,7 +959,6 @@ We Offer Wellness® supports businesses with wellbeing-led services including co
 - https://www.weofferwellness.co.uk/therapies/mindfulness
 - https://www.weofferwellness.co.uk/therapies/mindfulness/a-woman-reclaimed-the-ultimate-program-to-transform-anxiety-chronic-stress-to-a-life-of-unwavering-ease-joy
 - https://www.weofferwellness.co.uk/therapies/mindfulness/austria
-- https://www.weofferwellness.co.uk/therapies/mindfulness/calm-connect-create-one-day-retreat
 - https://www.weofferwellness.co.uk/therapies/mindfulness/corporate-wellness-gift-voucher
 - https://www.weofferwellness.co.uk/therapies/mindfulness/long-weekend-yoga-mindfulness-retreat-in-the-uk
 - https://www.weofferwellness.co.uk/therapies/mindfulness/mama-baby-sound-bath-sessions
@@ -909,6 +967,12 @@ We Offer Wellness® supports businesses with wellbeing-led services including co
 - https://www.weofferwellness.co.uk/therapies/mindfulness/mindfulness-workshop
 - https://www.weofferwellness.co.uk/therapies/mindfulness/miracle-mind-coaching
 - https://www.weofferwellness.co.uk/therapies/mindfulness/online-private-hatha-vinyasa-yoga-pack-of-2-classes
+- https://www.weofferwellness.co.uk/therapies/mindfulness/product-6342-11-embodiedsomatic-yoga
+- https://www.weofferwellness.co.uk/therapies/mindfulness/product-6343-11-embodiedsomatic-yoga-newcastle-area
+- https://www.weofferwellness.co.uk/therapies/mindfulness/product-6348-11-meditation
+- https://www.weofferwellness.co.uk/therapies/mindfulness/product-6351-11-online-yoga-and-meditation-session
+- https://www.weofferwellness.co.uk/therapies/mindfulness/product-6352-11-online-yoga-and-meditation-session
+- https://www.weofferwellness.co.uk/therapies/mindfulness/product-6363-11-vinyasa-yoga
 - https://www.weofferwellness.co.uk/therapies/mindfulness/tera-mai-reiki-1-2-masters
 - https://www.weofferwellness.co.uk/therapies/mindfulness/tera-mai-reiki-inclusive-of-chakra-balance
 - https://www.weofferwellness.co.uk/therapies/mindfulness/three-breathe-well-online-sessions
@@ -918,7 +982,6 @@ We Offer Wellness® supports businesses with wellbeing-led services including co
 - https://www.weofferwellness.co.uk/therapies/mindfulness/united-kingdom/cambridgeshire
 - https://www.weofferwellness.co.uk/therapies/mindfulness/united-kingdom/cambridgeshire/cambridge
 - https://www.weofferwellness.co.uk/therapies/mindfulness/united-kingdom/east-sussex
-- https://www.weofferwellness.co.uk/therapies/mindfulness/united-kingdom/east-sussex/battle
 - https://www.weofferwellness.co.uk/therapies/mindfulness/united-kingdom/kent
 - https://www.weofferwellness.co.uk/therapies/mindfulness/united-kingdom/kent/ashford
 - https://www.weofferwellness.co.uk/therapies/mindfulness/united-kingdom/kent/edenbridge
@@ -977,6 +1040,7 @@ We Offer Wellness® supports businesses with wellbeing-led services including co
 - https://www.weofferwellness.co.uk/therapies/pellowah-energy-session/united-kingdom/cornwall/porkellis
 - https://www.weofferwellness.co.uk/therapies/pellowah-energy-session/united-kingdom/cornwall/truro
 - https://www.weofferwellness.co.uk/therapies/pilates
+- https://www.weofferwellness.co.uk/therapies/pilates/product-6347-11-mat-pilates-private-session
 - https://www.weofferwellness.co.uk/therapies/pilates/united-kingdom
 - https://www.weofferwellness.co.uk/therapies/pilates/united-kingdom/kent
 - https://www.weofferwellness.co.uk/therapies/pilates/united-kingdom/kent/dartford
@@ -1022,6 +1086,7 @@ We Offer Wellness® supports businesses with wellbeing-led services including co
 - https://www.weofferwellness.co.uk/therapies/rapid-transformation-therapy/rapid-transformation-therapy-rtt-30-day-programme
 - https://www.weofferwellness.co.uk/therapies/reflexology
 - https://www.weofferwellness.co.uk/therapies/reflexology-and-reiki
+- https://www.weofferwellness.co.uk/therapies/reflexology-and-reiki/reflexology-reiki
 - https://www.weofferwellness.co.uk/therapies/reflexology-and-reiki/united-kingdom
 - https://www.weofferwellness.co.uk/therapies/reflexology-and-reiki/united-kingdom/kent
 - https://www.weofferwellness.co.uk/therapies/reflexology-and-reiki/united-kingdom/kent/west-malling
@@ -1047,6 +1112,7 @@ We Offer Wellness® supports businesses with wellbeing-led services including co
 - https://www.weofferwellness.co.uk/therapies/reflexology/guides/what-to-expect-from-reflexology
 - https://www.weofferwellness.co.uk/therapies/reflexology/personalised-menopause-or-peri-menopause-reflexology-treatment
 - https://www.weofferwellness.co.uk/therapies/reflexology/personalised-reflexology-treatments-with-eucalyptus-foot-soak
+- https://www.weofferwellness.co.uk/therapies/reflexology/reflexology
 - https://www.weofferwellness.co.uk/therapies/reflexology/reflexology-reiki
 - https://www.weofferwellness.co.uk/therapies/reflexology/reflexology-session-with-lifestyle-coaching
 - https://www.weofferwellness.co.uk/therapies/reflexology/reflexology-sessions-with-optional-reiki
@@ -1109,6 +1175,7 @@ We Offer Wellness® supports businesses with wellbeing-led services including co
 - https://www.weofferwellness.co.uk/therapies/reiki/holy-fire-reiki-experience
 - https://www.weofferwellness.co.uk/therapies/reiki/journey-to-rest-with-sunni-annabel
 - https://www.weofferwellness.co.uk/therapies/reiki/online-angelic-reiki
+- https://www.weofferwellness.co.uk/therapies/reiki/private-11-journey-to-rest-with-sunni-annabel
 - https://www.weofferwellness.co.uk/therapies/reiki/reiki-level-one-teaching
 - https://www.weofferwellness.co.uk/therapies/reiki/reiki-sessions
 - https://www.weofferwellness.co.uk/therapies/reiki/reiki-sessions-consultation
@@ -1144,8 +1211,10 @@ We Offer Wellness® supports businesses with wellbeing-led services including co
 - https://www.weofferwellness.co.uk/therapies/self-discovery-and-healing/breathwork-reiki
 - https://www.weofferwellness.co.uk/therapies/self-discovery-and-healing/energy-healing-clearing-blocks
 - https://www.weofferwellness.co.uk/therapies/self-discovery-and-healing/leela-game-of-life-with-alina
+- https://www.weofferwellness.co.uk/therapies/self-discovery-and-healing/product-6333-11-breathwork-session
 - https://www.weofferwellness.co.uk/therapies/self-discovery-and-healing/solo-forest-therapy
 - https://www.weofferwellness.co.uk/therapies/self-discovery-and-healing/soundbath-experience
+- https://www.weofferwellness.co.uk/therapies/self-discovery-and-healing/two-hour-online-group-breathwork-session-under-ps20-so-not-live
 - https://www.weofferwellness.co.uk/therapies/self-discovery-and-healing/united-kingdom
 - https://www.weofferwellness.co.uk/therapies/self-discovery-and-healing/united-kingdom/kent
 - https://www.weofferwellness.co.uk/therapies/self-discovery-and-healing/united-kingdom/kent/harrietsham
@@ -1164,6 +1233,7 @@ We Offer Wellness® supports businesses with wellbeing-led services including co
 - https://www.weofferwellness.co.uk/therapies/shamanic-healing/ireland/cavan
 - https://www.weofferwellness.co.uk/therapies/shamanic-healing/ireland/county-cavan
 - https://www.weofferwellness.co.uk/therapies/shamanic-healing/ireland/county-cavan/ballinagh
+- https://www.weofferwellness.co.uk/therapies/shamanic-healing/product-6356-11-shamanic-healing
 - https://www.weofferwellness.co.uk/therapies/shamanic-healing/shamanic-healing
 - https://www.weofferwellness.co.uk/therapies/shamanic-healing/shamanic-healing-sessions
 - https://www.weofferwellness.co.uk/therapies/shamanic-healing/united-kingdom
@@ -1193,6 +1263,8 @@ We Offer Wellness® supports businesses with wellbeing-led services including co
 - https://www.weofferwellness.co.uk/therapies/singing/united-kingdom
 - https://www.weofferwellness.co.uk/therapies/sleep
 - https://www.weofferwellness.co.uk/therapies/sleep/9d-parent-child-zoom-using-the-calm-kid-method-5-week-programme
+- https://www.weofferwellness.co.uk/therapies/sleep/product-6362-11-tre-session-for-womens-wellbeing
+- https://www.weofferwellness.co.uk/therapies/sleep/product-6365-11-yin-yoga
 - https://www.weofferwellness.co.uk/therapies/sleep/tre-for-two-shared-stress-release-sessions
 - https://www.weofferwellness.co.uk/therapies/sleep/united-kingdom
 - https://www.weofferwellness.co.uk/therapies/sleep/united-kingdom/cornwall
@@ -1201,29 +1273,22 @@ We Offer Wellness® supports businesses with wellbeing-led services including co
 - https://www.weofferwellness.co.uk/therapies/sound-bath/back-massage
 - https://www.weofferwellness.co.uk/therapies/sound-bath/body-massage-cupping
 - https://www.weofferwellness.co.uk/therapies/sound-bath/private-group-sound-bath
+- https://www.weofferwellness.co.uk/therapies/sound-bath/relaxing-full-body-massage
 - https://www.weofferwellness.co.uk/therapies/sound-bath/soulful-sound-bath
+- https://www.weofferwellness.co.uk/therapies/sound-bath/sound-bath
 - https://www.weofferwellness.co.uk/therapies/sound-bath/sound-bath-experience
 - https://www.weofferwellness.co.uk/therapies/sound-bath/sound-bath-experiences-with-ceremonial-cacao
-- https://www.weofferwellness.co.uk/therapies/sound-bath/sound-bath-studio-session-12-class-package
 - https://www.weofferwellness.co.uk/therapies/sound-bath/united-kingdom
 - https://www.weofferwellness.co.uk/therapies/sound-bath/united-kingdom/east-sussex
 - https://www.weofferwellness.co.uk/therapies/sound-bath/united-kingdom/east-sussex/newhaven
-- https://www.weofferwellness.co.uk/therapies/sound-bath/united-kingdom/hampshire
-- https://www.weofferwellness.co.uk/therapies/sound-bath/united-kingdom/hampshire/romsey
 - https://www.weofferwellness.co.uk/therapies/sound-bath/united-kingdom/kent
 - https://www.weofferwellness.co.uk/therapies/sound-bath/united-kingdom/kent/royal-tunbridge-wells
 - https://www.weofferwellness.co.uk/therapies/sound-bath/united-kingdom/kent/sevenoaks
 - https://www.weofferwellness.co.uk/therapies/sound-bath/united-kingdom/kent/west-malling
-- https://www.weofferwellness.co.uk/therapies/sound-bath/united-kingdom/surrey
 - https://www.weofferwellness.co.uk/therapies/sound-bath/united-kingdom/west-sussex
-- https://www.weofferwellness.co.uk/therapies/sound-bath/united-kingdom/west-sussex/bracklesham-bay
 - https://www.weofferwellness.co.uk/therapies/sound-bath/united-states
 - https://www.weofferwellness.co.uk/therapies/sound-bath/united-states/south-central-connecticut-planning-region
 - https://www.weofferwellness.co.uk/therapies/sound-bath/united-states/south-central-connecticut-planning-region/new-haven
-- https://www.weofferwellness.co.uk/therapies/sound-bath/yin-yoga-sound-bath-savasana
-- https://www.weofferwellness.co.uk/therapies/sound-bath/yin-yoga-sound-bath-savasana-in-person-class-6-class-pass
-- https://www.weofferwellness.co.uk/therapies/sound-bath/yin-yoga-sound-baths-full-annual-package
-- https://www.weofferwellness.co.uk/therapies/sound-bath/your-new-years-eve-sanctuary-step-into-serenity-this-new-year
 - https://www.weofferwellness.co.uk/therapies/sound-healing
 - https://www.weofferwellness.co.uk/therapies/sound-healing/a-candlelit-group-sound-journey-experience
 - https://www.weofferwellness.co.uk/therapies/sound-healing/acu-sound-treatment
@@ -1239,6 +1304,8 @@ We Offer Wellness® supports businesses with wellbeing-led services including co
 - https://www.weofferwellness.co.uk/therapies/sound-healing/parent-baby-sound-baths
 - https://www.weofferwellness.co.uk/therapies/sound-healing/private-gong-bathsound-healing-session
 - https://www.weofferwellness.co.uk/therapies/sound-healing/private-sound-journey-session-with-crystal-tibetan-bowls
+- https://www.weofferwellness.co.uk/therapies/sound-healing/product-6357-11-sound-healing-session-1-hour
+- https://www.weofferwellness.co.uk/therapies/sound-healing/product-6380-6-week-workplace-wellness-program
 - https://www.weofferwellness.co.uk/therapies/sound-healing/restorative-yoga-sound-healing-4-sessions
 - https://www.weofferwellness.co.uk/therapies/sound-healing/sisterhood-of-the-rose-online-divine-feminine-activation-8-week-program
 - https://www.weofferwellness.co.uk/therapies/sound-healing/soulful-sound-healing-two-sessions
@@ -1309,6 +1376,7 @@ We Offer Wellness® supports businesses with wellbeing-led services including co
 - https://www.weofferwellness.co.uk/therapies/wellness
 - https://www.weofferwellness.co.uk/therapies/wellness/annual-membership-kent-holistic-health-practitioner-collective
 - https://www.weofferwellness.co.uk/therapies/wellness/consultation
+- https://www.weofferwellness.co.uk/therapies/wellness/product-6376-30-minute-alignment-call
 - https://www.weofferwellness.co.uk/therapies/wellness/united-kingdom
 - https://www.weofferwellness.co.uk/therapies/wellness/united-kingdom/kent
 - https://www.weofferwellness.co.uk/therapies/wellness/united-kingdom/kent/ashford
@@ -1316,18 +1384,22 @@ We Offer Wellness® supports businesses with wellbeing-led services including co
 - https://www.weofferwellness.co.uk/therapies/wellness/wellness-audit-with-feedback-session
 - https://www.weofferwellness.co.uk/therapies/womens-circle
 - https://www.weofferwellness.co.uk/therapies/womens-circle/online-women-embodiment-circle
+- https://www.weofferwellness.co.uk/therapies/womens-circle/online-womens-circle
 - https://www.weofferwellness.co.uk/therapies/womens-health
 - https://www.weofferwellness.co.uk/therapies/womens-health/autumn-reboot-nutrition-and-lifestyle-plan
 - https://www.weofferwellness.co.uk/therapies/womens-health/find-your-flow
 - https://www.weofferwellness.co.uk/therapies/womens-health/holistic-gynaecology-consultation
+- https://www.weofferwellness.co.uk/therapies/womens-health/stress-relief-yoga-for-womens-health-reconnect-restore
 - https://www.weofferwellness.co.uk/therapies/womens-health/thailand
 - https://www.weofferwellness.co.uk/therapies/womens-health/thailand/ko-pha-ngan-district
 - https://www.weofferwellness.co.uk/therapies/wudang-taiji-sword
+- https://www.weofferwellness.co.uk/therapies/wudang-taiji-sword/product-6328-11-weeks-wudang-taiji-sword
 - https://www.weofferwellness.co.uk/therapies/wudang-taiji-sword/united-kingdom
 - https://www.weofferwellness.co.uk/therapies/wudang-taiji-sword/united-kingdom/kent
 - https://www.weofferwellness.co.uk/therapies/wudang-taiji-sword/united-kingdom/kent/new-ash-green
 - https://www.weofferwellness.co.uk/therapies/wudang-taiji-sword/united-kingdom/kent/sevenoaks
 - https://www.weofferwellness.co.uk/therapies/yang-tai-chi
+- https://www.weofferwellness.co.uk/therapies/yang-tai-chi/product-6325-11-week-online-yang-tai-chi-form
 - https://www.weofferwellness.co.uk/therapies/yang-tai-chi/united-kingdom
 - https://www.weofferwellness.co.uk/therapies/yang-tai-chi/united-kingdom/kent
 - https://www.weofferwellness.co.uk/therapies/yang-tai-chi/united-kingdom/kent/new-ash-green
@@ -1353,8 +1425,9 @@ We Offer Wellness® supports businesses with wellbeing-led services including co
 - https://www.weofferwellness.co.uk/therapies/yoga/lifeyoga-membership
 - https://www.weofferwellness.co.uk/therapies/yoga/mother-daughter-yoga-family-and-teen-yoga
 - https://www.weofferwellness.co.uk/therapies/yoga/nourish-in-yin-open-group
+- https://www.weofferwellness.co.uk/therapies/yoga/online-11-yoga-nidra-with-sound
+- https://www.weofferwellness.co.uk/therapies/yoga/online-11-yoga-sessions
 - https://www.weofferwellness.co.uk/therapies/yoga/online-introduction-to-yoga-course
-- https://www.weofferwellness.co.uk/therapies/yoga/online-prenatal-yoga-yogic-birth-prep-course-march-2025
 - https://www.weofferwellness.co.uk/therapies/yoga/online-yoga-class
 - https://www.weofferwellness.co.uk/therapies/yoga/online-yoga-classes-1-month-class-library-access
 - https://www.weofferwellness.co.uk/therapies/yoga/personalised-yoga-sessions
@@ -1366,6 +1439,11 @@ We Offer Wellness® supports businesses with wellbeing-led services including co
 - https://www.weofferwellness.co.uk/therapies/yoga/private-yoga-for-back-pain-relief-pack-of-5-classes
 - https://www.weofferwellness.co.uk/therapies/yoga/private-yoga-package
 - https://www.weofferwellness.co.uk/therapies/yoga/private-yoga-sessions
+- https://www.weofferwellness.co.uk/therapies/yoga/product-6322-1-hour-private-yoga-class
+- https://www.weofferwellness.co.uk/therapies/yoga/product-6332-11-bespoke-holistic-face-yoga-experience
+- https://www.weofferwellness.co.uk/therapies/yoga/product-6355-11-power-yoga
+- https://www.weofferwellness.co.uk/therapies/yoga/product-6366-11-yoga
+- https://www.weofferwellness.co.uk/therapies/yoga/product-6367-11-yoga-experience
 - https://www.weofferwellness.co.uk/therapies/yoga/revitalize-your-team-corporate-yoga-sessions-for-stress-relief
 - https://www.weofferwellness.co.uk/therapies/yoga/two-person-private-yoga-session
 - https://www.weofferwellness.co.uk/therapies/yoga/united-kingdom
@@ -1398,6 +1476,7 @@ We Offer Wellness® supports businesses with wellbeing-led services including co
 - https://www.weofferwellness.co.uk/therapies/yoga/united-states/wake-county
 - https://www.weofferwellness.co.uk/therapies/yoga/united-states/wake-county/raleigh
 - https://www.weofferwellness.co.uk/therapies/yoga/yoga-baby-shower-hen-do-birthday-parties
+- https://www.weofferwellness.co.uk/therapies/yoga/yoga-session-for-henstag
 
 ### Classes
 - https://www.weofferwellness.co.uk/classes/breathwork
@@ -1412,6 +1491,7 @@ We Offer Wellness® supports businesses with wellbeing-led services including co
 - https://www.weofferwellness.co.uk/classes/class/united-kingdom/berkshire/thatcham
 - https://www.weofferwellness.co.uk/classes/class/united-kingdom/kent
 - https://www.weofferwellness.co.uk/classes/class/united-kingdom/kent/maidstone
+- https://www.weofferwellness.co.uk/classes/class/vip-11-in-person-of-self-worth-yoga
 - https://www.weofferwellness.co.uk/classes/class/yoga-in-nature-to-start-the-day-right
 - https://www.weofferwellness.co.uk/classes/guides
 - https://www.weofferwellness.co.uk/classes/pilates/guides
@@ -1444,18 +1524,14 @@ We Offer Wellness® supports businesses with wellbeing-led services including co
 - https://www.weofferwellness.co.uk/workshops/low-tox-living-workshops/united-kingdom/kent
 - https://www.weofferwellness.co.uk/workshops/low-tox-living-workshops/united-kingdom/kent/maidstone
 - https://www.weofferwellness.co.uk/workshops/mindful-wellness-workshop
+- https://www.weofferwellness.co.uk/workshops/mindful-wellness-workshop/product-6378-4-week-mindful-wellness-workshop-series
 - https://www.weofferwellness.co.uk/workshops/mindful-wellness-workshop/united-kingdom
 - https://www.weofferwellness.co.uk/workshops/wellness-workshop
-- https://www.weofferwellness.co.uk/workshops/wellness-workshop/midsummer-mindfulness-wellness-workshop
 - https://www.weofferwellness.co.uk/workshops/wellness-workshop/teen-wellness-workshop-crystal-jewellery-making-mindfulness
 - https://www.weofferwellness.co.uk/workshops/wellness-workshop/united-kingdom
-- https://www.weofferwellness.co.uk/workshops/wellness-workshop/united-kingdom/kent
-- https://www.weofferwellness.co.uk/workshops/wellness-workshop/united-kingdom/kent/ashford
-- https://www.weofferwellness.co.uk/workshops/wellness-workshop/united-kingdom/kent/maidstone
-- https://www.weofferwellness.co.uk/workshops/wellness-workshop/united-kingdom/kent/ruckinge
-- https://www.weofferwellness.co.uk/workshops/wellness-workshop/united-kingdom/kent/west-malling
 - https://www.weofferwellness.co.uk/workshops/wellness-workshop/united-kingdom/west-sussex
 - https://www.weofferwellness.co.uk/workshops/wellness-workshop/united-kingdom/west-sussex/petworth
+- https://www.weofferwellness.co.uk/workshops/womens-health
 - https://www.weofferwellness.co.uk/workshops/womens-health/objects-of-desire-deconstructing-purity-cuture
 
 ### Events
@@ -1472,6 +1548,7 @@ We Offer Wellness® supports businesses with wellbeing-led services including co
 - https://www.weofferwellness.co.uk/events/gong-sound-bath/guides/what-is-gong-bath
 - https://www.weofferwellness.co.uk/events/gong-sound-bath/guides/what-to-expect-from-a-gong-bath
 - https://www.weofferwellness.co.uk/events/guides
+- https://www.weofferwellness.co.uk/events/sound-healing
 - https://www.weofferwellness.co.uk/events/sound-healing/austria
 - https://www.weofferwellness.co.uk/events/sound-healing/our-vibe-sound-healing-meditation-festival
 - https://www.weofferwellness.co.uk/events/sound-healing/united-kingdom
@@ -1524,6 +1601,7 @@ We Offer Wellness® supports businesses with wellbeing-led services including co
 - https://www.weofferwellness.co.uk/online/hatha-yoga
 - https://www.weofferwellness.co.uk/online/health-coaching
 - https://www.weofferwellness.co.uk/online/holistic-therapy
+- https://www.weofferwellness.co.uk/online/holistic-wellbeing-coaching
 - https://www.weofferwellness.co.uk/online/hypnotherapy
 - https://www.weofferwellness.co.uk/online/incense
 - https://www.weofferwellness.co.uk/online/life-coaching
@@ -1546,7 +1624,20 @@ We Offer Wellness® supports businesses with wellbeing-led services including co
 - https://www.weofferwellness.co.uk/online/yoga
 
 ### Locations
+- https://www.weofferwellness.co.uk/locations/australia
+- https://www.weofferwellness.co.uk/locations/australia/queensland
+- https://www.weofferwellness.co.uk/locations/australia/queensland/sunshine-coast
 - https://www.weofferwellness.co.uk/locations/austria
+- https://www.weofferwellness.co.uk/locations/indonesia
+- https://www.weofferwellness.co.uk/locations/indonesia/bali
+- https://www.weofferwellness.co.uk/locations/ireland
+- https://www.weofferwellness.co.uk/locations/ireland/cavan
+- https://www.weofferwellness.co.uk/locations/ireland/cavan/co-cavan-ireland
+- https://www.weofferwellness.co.uk/locations/ireland/county-cavan
+- https://www.weofferwellness.co.uk/locations/ireland/county-cavan/ballinagh
+- https://www.weofferwellness.co.uk/locations/thailand
+- https://www.weofferwellness.co.uk/locations/thailand/ko-pha-ngan-district
+- https://www.weofferwellness.co.uk/locations/thailand/ko-pha-ngan-district/koh-phangan
 - https://www.weofferwellness.co.uk/locations/united-kingdom
 - https://www.weofferwellness.co.uk/locations/united-kingdom/berkshire
 - https://www.weofferwellness.co.uk/locations/united-kingdom/berkshire/reading
@@ -1579,7 +1670,6 @@ We Offer Wellness® supports businesses with wellbeing-led services including co
 - https://www.weofferwellness.co.uk/locations/united-kingdom/dorset/north-dorset
 - https://www.weofferwellness.co.uk/locations/united-kingdom/drummond-cres
 - https://www.weofferwellness.co.uk/locations/united-kingdom/east-sussex
-- https://www.weofferwellness.co.uk/locations/united-kingdom/east-sussex/battle
 - https://www.weofferwellness.co.uk/locations/united-kingdom/east-sussex/brighton-and-hove
 - https://www.weofferwellness.co.uk/locations/united-kingdom/east-sussex/crowborough
 - https://www.weofferwellness.co.uk/locations/united-kingdom/east-sussex/eastbourne
@@ -1650,14 +1740,13 @@ We Offer Wellness® supports businesses with wellbeing-led services including co
 - https://www.weofferwellness.co.uk/locations/united-kingdom/london/richmond
 - https://www.weofferwellness.co.uk/locations/united-kingdom/london/sidcup
 - https://www.weofferwellness.co.uk/locations/united-kingdom/london/south-london
-- https://www.weofferwellness.co.uk/locations/united-kingdom/london/sutton
 - https://www.weofferwellness.co.uk/locations/united-kingdom/london/upminster
+- https://www.weofferwellness.co.uk/locations/united-kingdom/maidstone
 - https://www.weofferwellness.co.uk/locations/united-kingdom/manchester
 - https://www.weofferwellness.co.uk/locations/united-kingdom/manchester/hyde
 - https://www.weofferwellness.co.uk/locations/united-kingdom/manchester/prestwich
 - https://www.weofferwellness.co.uk/locations/united-kingdom/manchester/romiley
 - https://www.weofferwellness.co.uk/locations/united-kingdom/manchester/stockport
-- https://www.weofferwellness.co.uk/locations/united-kingdom/manchester/urmston
 - https://www.weofferwellness.co.uk/locations/united-kingdom/meridian-exc-channel-islands
 - https://www.weofferwellness.co.uk/locations/united-kingdom/meridian-exc-channel-islands/south-east-england
 - https://www.weofferwellness.co.uk/locations/united-kingdom/mid-dorset
@@ -1679,7 +1768,6 @@ We Offer Wellness® supports businesses with wellbeing-led services including co
 - https://www.weofferwellness.co.uk/locations/united-kingdom/surrey
 - https://www.weofferwellness.co.uk/locations/united-kingdom/surrey/ash
 - https://www.weofferwellness.co.uk/locations/united-kingdom/surrey/bisley
-- https://www.weofferwellness.co.uk/locations/united-kingdom/surrey/cheam-surrey
 - https://www.weofferwellness.co.uk/locations/united-kingdom/surrey/chertsey
 - https://www.weofferwellness.co.uk/locations/united-kingdom/surrey/dorking
 - https://www.weofferwellness.co.uk/locations/united-kingdom/surrey/esher
@@ -1708,6 +1796,14 @@ We Offer Wellness® supports businesses with wellbeing-led services including co
 - https://www.weofferwellness.co.uk/locations/united-kingdom/westmorland-and-furness/penruddock
 - https://www.weofferwellness.co.uk/locations/united-kingdom/wiltshire
 - https://www.weofferwellness.co.uk/locations/united-kingdom/wiltshire/lake
+- https://www.weofferwellness.co.uk/locations/united-states
+- https://www.weofferwellness.co.uk/locations/united-states/new-york
+- https://www.weofferwellness.co.uk/locations/united-states/niagara-county
+- https://www.weofferwellness.co.uk/locations/united-states/niagara-county/south-somerset
+- https://www.weofferwellness.co.uk/locations/united-states/south-central-connecticut-planning-region
+- https://www.weofferwellness.co.uk/locations/united-states/south-central-connecticut-planning-region/new-haven
+- https://www.weofferwellness.co.uk/locations/united-states/wake-county
+- https://www.weofferwellness.co.uk/locations/united-states/wake-county/raleigh
 
 ### Needs
 - https://www.weofferwellness.co.uk/needs/breathwork
@@ -1726,6 +1822,12 @@ We Offer Wellness® supports businesses with wellbeing-led services including co
 
 ### Corporate wellbeing
 - https://www.weofferwellness.co.uk/corporate
+- https://www.weofferwellness.co.uk/corporate/breathwork
+- https://www.weofferwellness.co.uk/corporate/employee-rewards
+- https://www.weofferwellness.co.uk/corporate/gift-vouchers
+- https://www.weofferwellness.co.uk/corporate/meditation
+- https://www.weofferwellness.co.uk/corporate/sound-bath
+- https://www.weofferwellness.co.uk/corporate/wellbeing-workshops
 
 ## Technical discovery
 - [Sitemap](https://www.weofferwellness.co.uk/sitemap.xml)

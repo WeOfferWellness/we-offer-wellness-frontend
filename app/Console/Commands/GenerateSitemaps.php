@@ -68,6 +68,12 @@ class GenerateSitemaps extends Command
             ));
         }
 
+        $validation = $this->call('sitemaps:validate', ['--skip-http' => true]);
+        if ($validation !== self::SUCCESS) {
+            $this->error('Generated sitemap failed structural validation; Search Console submission must not proceed.');
+            return self::FAILURE;
+        }
+
         if ($fileCount < 10) {
             $this->warn(sprintf('Critical: only %d sitemap file(s) were generated; expected at least 10.', $fileCount));
         }

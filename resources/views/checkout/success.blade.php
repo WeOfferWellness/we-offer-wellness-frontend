@@ -16,6 +16,12 @@
           'variant_id' => $item->variant_id ?? null,
           'variant_label' => (string) ($meta['variant_label'] ?? ''),
           'source_version' => $meta['source_version'] ?? null,
+          'catalogue_type' => $meta['catalogue_type'] ?? ($meta['source_version'] ?? 'offering'),
+          'provider_id' => $item->vendor_id ?? null,
+          'offering_id' => $meta['offering_id'] ?? null,
+          'modality' => $meta['modality'] ?? null,
+          'booking_source' => $meta['booking_source'] ?? null,
+          'checkout_source' => $meta['checkout_source'] ?? null,
       ];
   }
   $analyticsTotal = round((float) ($order?->amount_total ?? 0) / 100, 2);
@@ -54,18 +60,16 @@
     try {
       var payload = {
         items: @json($analyticsItems),
-        currency: 'GBP',
+        currency: @json(strtoupper((string) ($order?->currency ?: 'GBP'))),
         value: @json($analyticsTotal),
         item_count: @json($analyticsCount),
-        transaction_id: @json((string) ($order?->stripe_session_id ?? $order?->id ?? '')),
+        transaction_id: @json('WOW-' . (string) ($order?->id ?? '')),
         order_id: @json((string) ($order?->id ?? '')),
         checkout_status: 'success',
         source: 'checkout-success',
       };
-      if (window.WOWAnalytics && typeof window.WOWAnalytics.trackCommerce === 'function') {
-        window.WOWAnalytics.trackCommerce('wow_v3_payment_success', payload);
-      } else if (typeof window.gtag === 'function') {
-        window.gtag('event', 'wow_v3_payment_success', Object.assign({ flow_version: 'v3', wow_event_name: 'wow_v3_payment_success' }, payload));
+      if (@json((bool) ($purchaseAnalytics ?? false)) && window.WOWAnalytics && typeof window.WOWAnalytics.trackPurchase === 'function') {
+        window.WOWAnalytics.trackPurchase(payload);
       }
     } catch (_) {}
     try { localStorage.removeItem('wow_cart'); } catch (_) {}

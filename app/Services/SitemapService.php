@@ -214,7 +214,7 @@ class SitemapService
         File::ensureDirectoryExists($outputDirectory);
         File::ensureDirectoryExists(dirname($this->manifestPath()));
         File::ensureDirectoryExists(public_path('.well-known'));
-        File::put(public_path('sitemap.xsl'), $this->renderSitemapStylesheet());
+        $this->atomicPut(public_path('sitemap.xsl'), $this->renderSitemapStylesheet());
 
         $files = $this->buildSitemapFiles();
 
@@ -223,37 +223,37 @@ class SitemapService
             $files
         )));
 
-        foreach (File::files($outputDirectory) as $existingFile) {
-            if (strtolower((string) $existingFile->getExtension()) !== 'xml') {
-                continue;
-            }
+        foreach ($files as $file) {
+            $this->atomicPut($outputDirectory . '/' . $file['filename'], (string) $file['xml']);
+        }
 
-            if (!in_array($existingFile->getFilename(), $expectedFilenames, true)) {
+        // Remove obsolete child files only after every newly generated file has
+        // been written successfully, so a failed run leaves a valid previous
+        // sitemap available.
+        foreach (File::files($outputDirectory) as $existingFile) {
+            if (strtolower((string) $existingFile->getExtension()) === 'xml'
+                && ! in_array($existingFile->getFilename(), $expectedFilenames, true)) {
                 File::delete($existingFile->getPathname());
             }
         }
 
-        foreach ($files as $file) {
-            File::put($outputDirectory . '/' . $file['filename'], $file['xml']);
-        }
-
         $indexXml = $this->buildIndexXml();
-        File::put(public_path('sitemap.xml'), $indexXml);
-        File::put(public_path('sitemap-index.xml'), $indexXml);
+        $this->atomicPut(public_path('sitemap.xml'), $indexXml);
+        $this->atomicPut(public_path('sitemap-index.xml'), $indexXml);
 
         $staticXml = $this->buildSegmentXml('static');
         if ($staticXml !== null) {
-            File::put(public_path('sitemap-pages.xml'), $staticXml);
+            $this->atomicPut(public_path('sitemap-pages.xml'), $staticXml);
         }
 
         $schedulesXml = $this->buildScheduleSitemapXml();
         if ($schedulesXml !== '') {
-            File::put(public_path('sitemap-schedules.xml'), $schedulesXml);
+            $this->atomicPut(public_path('sitemap-schedules.xml'), $schedulesXml);
         }
 
         $aiFiles = $this->buildAiGuideFiles();
         foreach ($aiFiles as $file) {
-            File::put((string) ($file['path'] ?? public_path((string) $file['filename'])), (string) ($file['content'] ?? ''));
+            $this->atomicPut((string) ($file['path'] ?? public_path((string) $file['filename'])), (string) ($file['content'] ?? ''));
         }
 
         $manifest = [
@@ -276,9 +276,9 @@ class SitemapService
             )),
         ];
 
-        File::put(
+        $this->atomicPut(
             $this->manifestPath(),
-            json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
+            (string) json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
         );
 
         return [
@@ -786,17 +786,17 @@ class SitemapService
                 continue;
             }
 
-            if ((int) data_get($country, 'counts.total', 0) > 0 && !empty($country['path'])) {
+            if ((int) data_get($country, 'counts.total', 0) > 0 && $this->validLocationPath($country['path'] ?? null)) {
                 $this->addEntry($entries, $this->publicUrl((string) $country['path']), now()->toAtomString());
             }
 
             foreach ((array) data_get($country, 'counties', []) as $county) {
-                if ((int) data_get($county, 'counts.total', 0) > 0 && !empty($county['path'])) {
+                if ((int) data_get($county, 'counts.total', 0) > 0 && $this->validLocationPath($county['path'] ?? null)) {
                     $this->addEntry($entries, $this->publicUrl((string) $county['path']), now()->toAtomString());
                 }
 
                 foreach ((array) data_get($county, 'towns', []) as $town) {
-                    if ((int) data_get($town, 'counts.total', 0) > 0 && !empty($town['path'])) {
+                    if ((int) data_get($town, 'counts.total', 0) > 0 && $this->validLocationPath($town['path'] ?? null)) {
                         $this->addEntry($entries, $this->publicUrl((string) $town['path']), now()->toAtomString());
                     }
                 }
@@ -1234,7 +1234,7 @@ class SitemapService
             }
         }
 
-        $paths = array_values(array_filter(array_unique($paths), static fn (string $path): bool => str_starts_with($path, '/locations/')));
+        $paths = array_values(array_filter(array_unique($paths), fn (string $path): bool => $this->validLocationPath($path)));
         sort($paths);
 
         return $paths;
@@ -1252,19 +1252,19 @@ class SitemapService
         $index = [];
         foreach ((array) data_get($this->locationCatalog(), 'countries', []) as $country) {
             $countrySlug = $this->normalizeLocationSegment((string) data_get($country, 'slug', ''));
-            if ($countrySlug !== '' && !empty($country['path'])) {
+            if ($countrySlug !== '' && $this->validLocationPath($country['path'] ?? null)) {
                 $index[$countrySlug . '||'] = (string) $country['path'];
             }
 
             foreach ((array) data_get($country, 'counties', []) as $county) {
                 $countySlug = $this->normalizeLocationSegment((string) data_get($county, 'slug', ''));
-                if ($countrySlug !== '' && $countySlug !== '' && !empty($county['path'])) {
+                if ($countrySlug !== '' && $countySlug !== '' && $this->validLocationPath($county['path'] ?? null)) {
                     $index[$countrySlug . '|' . $countySlug . '|'] = (string) $county['path'];
                 }
 
                 foreach ((array) data_get($county, 'towns', []) as $town) {
                     $path = (string) data_get($town, 'path', '');
-                    if ($path === '') {
+                    if (! $this->validLocationPath($path)) {
                         continue;
                     }
 
@@ -1319,6 +1319,17 @@ class SitemapService
     private function normalizeLocationSegment(string $value): string
     {
         return Str::slug(trim($value));
+    }
+
+    private function validLocationPath(mixed $value): bool
+    {
+        $path = trim((string) $value);
+        if ($path === '' || ! str_starts_with($path, '/locations/')) {
+            return false;
+        }
+
+        return preg_match('~(?:^|/)(?:null|undefined)(?:/|$)~i', $path) !== 1
+            && ! str_contains($path, '//');
     }
 
     /**
@@ -1855,15 +1866,25 @@ XSL;
             }
         }
 
-        if (! $this->routeResolves($path)) {
-            return false;
-        }
+        // Route matching is intentionally not executed for every generated URL.
+        // That previously booted the full HTTP kernel once per candidate and
+        // caused sitemap timeouts/N+1 behaviour. Source queries establish
+        // eligibility; `sitemaps:validate` performs bounded HTTP/canonical/
+        // indexability checks before a generated artefact is submitted.
+        return preg_match('~^https?://[^/]+(?:/[^?#]*)?$~i', $loc) === 1
+            && ! preg_match('~(?:^|/)(?:null|undefined)(?:/|$)~i', $path)
+            && ! str_contains($path, '//');
+    }
 
-        if (! $this->routeReturnsNon404($path)) {
-            return false;
+    private function atomicPut(string $path, string $contents): void
+    {
+        File::ensureDirectoryExists(dirname($path));
+        $temporary = $path . '.tmp.' . bin2hex(random_bytes(6));
+        File::put($temporary, $contents);
+        if (! @rename($temporary, $path)) {
+            @unlink($temporary);
+            throw new \RuntimeException('Unable to atomically replace sitemap artefact: ' . $path);
         }
-
-        return true;
     }
 
     private function throttleSitemapGeneration(): void
@@ -2341,6 +2362,13 @@ XSL;
         return $links;
     }
 
+    private function legalLabelFromUrl(string $url): string
+    {
+        $path = trim((string) parse_url($url, PHP_URL_PATH), '/');
+        $slug = $path !== '' ? basename($path) : 'Legal information';
+        return Str::of($slug)->replace('-', ' ')->title()->toString();
+    }
+
     /**
      * @return array<int, array{0:string,1:string}>
      */
@@ -2512,13 +2540,8 @@ XSL;
      */
     private function submissionUrlsFromFiles(array $files): array
     {
-        $urls = [$this->publicUrl('/sitemap.xml')];
-        foreach ($files as $file) {
-            $urls[] = (string) ($file['url'] ?? '');
-        }
-
-        $urls = array_values(array_filter(array_unique(array_map('trim', $urls))));
-
-        return $urls;
+        // Search Console submission is intentionally limited to the canonical
+        // index; child files are discovered from its XML.
+        return [$this->publicUrl('/sitemap.xml')];
     }
 }

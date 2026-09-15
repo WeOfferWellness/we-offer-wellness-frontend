@@ -271,6 +271,11 @@ Schedule::command('sitemaps:generate')
     ->withoutOverlapping()
     ->runInBackground();
 
+Schedule::command('sitemaps:validate --skip-http')
+    ->dailyAt('00:10')
+    ->withoutOverlapping()
+    ->runInBackground();
+
 Schedule::command('search-console:submit-sitemap')
     ->dailyAt('00:20')
     ->withoutOverlapping()

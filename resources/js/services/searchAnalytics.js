@@ -6,6 +6,21 @@ const studioOrigin = String(
 ).replace(/\/$/, '');
 const endpoint = `${studioOrigin}/api/search-events`;
 const pendingSearchKey = 'wow_pending_search_event';
+const noResultsKey = 'wow_no_results_events';
+
+function analyticsContext() {
+  const params = new URLSearchParams(window.location.search);
+  const value = (key) => String(params.get(key) || '').trim() || null;
+  return {
+    query_intent: value('intent') || value('what') || value('q'),
+    catalogue_type: value('type') || value('catalogue_type'),
+    modality: value('modality') || value('category'),
+    location: value('where') || value('location'),
+    online_flag: value('online') || value('format'),
+    price_band: value('price_band'),
+    experiment_variant: value('variant'),
+  };
+}
 
 function searchEventId() {
   if (window.crypto?.randomUUID) return window.crypto.randomUUID();
@@ -75,6 +90,7 @@ function recordSearch({ searchTerm = '', locationQuery = '', source = 'site-sear
     device_type: window.matchMedia('(max-width: 767px)').matches ? 'mobile' : 'desktop',
     session_id: searchSessionId(),
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || null,
+    analytics_context: analyticsContext(),
   };
 
   window.sessionStorage?.setItem(pendingSearchKey, JSON.stringify(payload));
@@ -129,10 +145,35 @@ function updatePendingSearchWithResults(count) {
   }
 }
 
+function emitNoResults(count) {
+  if (count !== 0) return;
+  let pending;
+  try { pending = JSON.parse(window.sessionStorage?.getItem(pendingSearchKey) || 'null'); } catch (_) { pending = null; }
+  const key = pending?.event_uuid || `${window.location.pathname}?${window.location.search}`;
+  try {
+    const sent = JSON.parse(window.sessionStorage?.getItem(noResultsKey) || '[]');
+    if (sent.includes(key)) return;
+    sent.push(key);
+    window.sessionStorage?.setItem(noResultsKey, JSON.stringify(sent.slice(-30)));
+  } catch (_) {}
+  if (typeof window.WOWAnalytics?.track === 'function') {
+    window.WOWAnalytics.track('no_results', { ...analyticsContext(), query: new URLSearchParams(window.location.search).get('what') || new URLSearchParams(window.location.search).get('q') || null, result_count: 0 });
+  }
+}
+
+export function reportAvailabilityFallback(details = {}) {
+  if (typeof window.WOWAnalytics?.track !== 'function') return false;
+  return window.WOWAnalytics.track('availability_fallback', {
+    ...analyticsContext(),
+    ...details,
+  });
+}
+
 export function reportSearchResults(count) {
   const parsed = Number(count);
   if (Number.isInteger(parsed) && parsed >= 0) {
     updatePendingSearchWithResults(parsed);
+    emitNoResults(parsed);
     window.dispatchEvent(new CustomEvent('wow:search-results-loaded', { detail: { count: parsed } }));
   }
 }

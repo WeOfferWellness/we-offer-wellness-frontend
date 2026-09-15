@@ -134,7 +134,9 @@ class CheckoutController extends Controller
             $qty = max(1, (int)($it['qty'] ?? 1));
             $raw = (float)($it['price'] ?? 0);
             // Normalise to integer minor units (pence)
-            $unit = $raw >= 1000 ? (int)round($raw) : (int)round($raw * 100);
+            // Cart prices are canonical major currency units. Explicit minor
+            // units are converted at the boundary before they enter the cart.
+            $unit = (int) round($raw * 100);
             $amountTotal += ($unit * $qty);
             $image = $it['image'] ?? $it['img'] ?? null;
             if ($image && !str_starts_with($image, 'http')) {
@@ -342,7 +344,7 @@ class CheckoutController extends Controller
                 $title = (string)($it['title'] ?? ('Item '.$id));
                 $qty = max(1, (int)($it['qty'] ?? 1));
                 $raw = (float)($it['price'] ?? 0);
-                $unit = $raw >= 1000 ? (int)round($raw) : (int)round($raw * 100);
+                $unit = (int) round($raw * 100);
                 $linePrice = round($unit / 100, 2);
                 $image = $it['image'] ?? $it['img'] ?? null;
                 $productId = $it['product_id'] ?? $it['productId'] ?? null;
