@@ -3795,7 +3795,7 @@ SVG;
         </div>
         <button class="btn checkout-button js-buy-now" type="button" data-id="store-{{ $offering['id'] ?? 0 }}" data-product-id="{{ $offering['id'] ?? 0 }}" data-source-version="store" data-title="{{ $title }}" data-price="{{ number_format($price, 2, '.', '') }}" data-variant-id="{{ $selectedVariantId }}" data-variant-label="{{ $selectedVariantLabel }}" data-image="{{ $primaryImage }}" data-product-url="{{ $offering['url'] ?? url()->current() }}" data-url="{{ $offering['url'] ?? url()->current() }}" data-qty="1">Buy now</button>
     </div>
-    @elseif(! $usesLegacyBuybox)
+    @elseif(! $usesLegacyBuybox && ($showPaymentModule ?? true))
     <div class="mobile-ticket-bar" id="mobileTicketBar">
         <div>
             <strong id="mobilePrice">{{ $priceSummary }}</strong>
@@ -3934,7 +3934,7 @@ SVG;
     @endif
 </div>
 
-@if(! $usesLegacyBuybox)
+@if(! $usesLegacyBuybox && ($showPaymentModule ?? true))
 @push('scripts')
 <script data-cfasync="false" src="https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.js"></script>
 <script>
