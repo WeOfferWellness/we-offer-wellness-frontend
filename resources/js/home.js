@@ -1735,11 +1735,11 @@ onDocumentReady(() => {
   if (wrap && link && panel) {
     function isDesktop(){ try { return window.matchMedia('(min-width: 992px)').matches } catch(_) { return true } }
     let loaded = false; let hideTimer = null;
-    function money(n){ try{ var x=Number(n); if(x>=1000) x=x/100; return '£'+x.toFixed(2) }catch(_){ return '£0.00' } }
+    function money(n){ try{ var x=Number(n); return '£'+x.toFixed(2) }catch(_){ return '£0.00' } }
       function updateTotals(items){
         try{
           var sub = 0, count = 0;
-          (items||[]).forEach(function(it){ var p = Number(it.price||0); if(p>=1000) p=p/100; var q = Number(it.qty||1)||1; sub += p*q; count += q; });
+          (items||[]).forEach(function(it){ var p = Number(it.price||0); var q = Number(it.qty||1)||1; sub += p*q; count += q; });
           var subEl = panel.querySelector('#cartdd-subtotal'); if(subEl) subEl.textContent = money(sub);
           var label = panel.querySelector('#cartCountLabel'); if(label) label.textContent = count>0 ? (count===1?'1 item':(count+' items')) : '';
           var hint = panel.querySelector('#freeShipHint'); if(hint){ try{ hint.textContent = 'Instant delivery'; }catch(_e){} }
@@ -1991,7 +1991,7 @@ onDocumentReady(() => {
           var wrapU = panel.querySelector('#cartdd-upsell'); if(!wrapU) return;
           if(!Array.isArray(list) || !list.length){ wrapU.innerHTML = ''; return; }
           wrapU.innerHTML = list.map(function(it){
-            var p = Number(it.price_min ?? it.price ?? 0); if(p>=1000) p=p/100;
+            var p = Number(it.price_min ?? it.price ?? 0);
             var img = it.image || (it.images && it.images[0]) || '';
             var url = buildUpsellUrl(it);
             var title = esc(it.title||'');
