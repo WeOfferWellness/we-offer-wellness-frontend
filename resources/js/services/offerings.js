@@ -91,8 +91,9 @@ function isWeOfferWellnessProvider(item) {
 
 function customerPrice(value, item) {
   const amount = moneyValue(value);
-  if (amount === null || isWeOfferWellnessProvider(item)) return amount;
-  return moneyValue(amount * 1.05);
+  if (amount === null) return amount;
+  if (isWeOfferWellnessProvider(item)) return Math.ceil(amount);
+  return Math.ceil(amount * 1.05);
 }
 
 function hasDisplayableImageUrl(value) {

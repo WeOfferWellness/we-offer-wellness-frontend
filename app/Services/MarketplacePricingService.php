@@ -12,9 +12,11 @@ class MarketplacePricingService
     {
         $amount = max(0, (float) $amount);
 
-        return $this->isWeOfferWellness($vendor, $vendorId)
-            ? round($amount, 2)
-            : round($amount * (1 + self::RATE), 2);
+        $customerAmount = $this->isWeOfferWellness($vendor, $vendorId)
+            ? $amount
+            : $amount * (1 + self::RATE);
+
+        return (float) ceil($customerAmount);
     }
 
     public function isWeOfferWellness(mixed $vendor = null, ?int $vendorId = null): bool
