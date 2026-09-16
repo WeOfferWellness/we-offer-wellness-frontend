@@ -26,7 +26,58 @@ function isDismissedRecently() {
   return Number.isFinite(dismissedAt) && (Date.now() - dismissedAt) < (DISMISSAL_DAYS * 86400000);
 }
 
+function initUtilityRail() {
+  const rail = document.getElementById('wow-utility-rail');
+  if (!rail || rail.dataset.initialized === 'true') return;
+  rail.dataset.initialized = 'true';
+
+  const updateBounds = () => {
+    const header = document.getElementById('wow-header-container');
+    const headerBottom = header?.getBoundingClientRect?.().bottom || 0;
+    rail.style.setProperty('--wow-utility-rail-top', `${Math.max(0, Math.round(headerBottom))}px`);
+
+    let bottom = 0;
+    if (window.matchMedia('(max-width: 767px)').matches) {
+      const ticketBar = Array.from(document.querySelectorAll('.mobile-ticket-bar'))
+        .map((element) => ({
+          element,
+          rect: element.getBoundingClientRect(),
+          style: window.getComputedStyle(element),
+        }))
+        .filter(({ rect, style }) => (
+          style.display !== 'none'
+          && style.visibility !== 'hidden'
+          && rect.height > 0
+          && rect.bottom >= window.innerHeight - 2
+        ))
+        .sort((a, b) => a.rect.top - b.rect.top)[0];
+
+      if (ticketBar) bottom = Math.max(0, Math.round(window.innerHeight - ticketBar.rect.top));
+    }
+    rail.style.setProperty('--wow-utility-rail-bottom', `${bottom}px`);
+  };
+
+  const scheduleUpdate = () => window.requestAnimationFrame(updateBounds);
+  window.addEventListener('resize', scheduleUpdate, { passive: true });
+  window.addEventListener('orientationchange', scheduleUpdate, { passive: true });
+
+  if (typeof MutationObserver !== 'undefined') {
+    const observer = new MutationObserver((records) => {
+      if (records.some((record) => !rail.contains(record.target))) scheduleUpdate();
+    });
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['class', 'style', 'hidden'],
+    });
+  }
+
+  scheduleUpdate();
+}
+
 function initNewsletterModal() {
+  initUtilityRail();
   const reviewBadge = document.getElementById('wow-review-float');
   if (reviewBadge && !reviewBadge.dataset.initialized) {
     reviewBadge.dataset.initialized = 'true';

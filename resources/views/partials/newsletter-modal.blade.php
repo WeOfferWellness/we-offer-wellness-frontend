@@ -1,3 +1,5 @@
+<aside class="wow-utility-rail" id="wow-utility-rail" aria-label="WOW quick links">
+  <div class="wow-utility-rail__stack">
 @if (request()->path() === '/')
 <a class="wow-review-float" id="wow-review-float" href="#trust-reviews" data-review-count="{{ (int) ($verified_count ?? $review_count ?? 0) }}" aria-label="{{ number_format((int) ($verified_count ?? $review_count ?? 0)) }} verified practitioner reviews">
   <span class="wow-review-float__star" aria-hidden="true">
@@ -16,6 +18,8 @@
   </span>
   <span class="wow-newsletter-trigger-copy"><strong>Weekly WOW newsletter</strong><span>Festival news, Mindful Times &amp; more</span></span>
 </button>
+  </div>
+</aside>
 
 <div class="wow-newsletter-modal" id="wow-newsletter-modal" role="dialog" aria-modal="true" aria-labelledby="wow-newsletter-title" hidden>
   <div class="wow-newsletter-backdrop" data-wow-newsletter-close></div>
