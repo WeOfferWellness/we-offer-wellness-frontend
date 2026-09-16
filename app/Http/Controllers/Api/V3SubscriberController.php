@@ -408,17 +408,33 @@ class V3SubscriberController extends Controller
         try {
             $http = Http::timeout(5)
                 ->acceptJson()
-                ->asJson();
+                ->asJson()
+                ->withHeaders([
+                    'Origin' => 'https://www.weofferwellness.co.uk',
+                    'Referer' => 'https://www.weofferwellness.co.uk/',
+                ]);
             if (request()->headers->has('cookie')) {
                 $http = $http->withHeaders(['Cookie' => request()->headers->get('cookie')]);
             }
-            $http->post($backendUrl . $endpoint, $payload);
+            $response = $http->post($backendUrl . $endpoint, $payload);
+            if ($response->failed()) {
+                logger()->error('subscriber.backend_sync_rejected', [
+                    'email' => $subscriber->email,
+                    'endpoint' => $endpoint,
+                    'status' => $response->status(),
+                    'body' => $response->json() ?: $response->body(),
+                ]);
+
+                throw new \RuntimeException('The mailing list could not be updated. Please try again.');
+            }
         } catch (\Throwable $e) {
             logger()->warning('subscriber.backend_sync_failed', [
                 'email' => $subscriber->email,
                 'endpoint' => $endpoint,
                 'error' => $e->getMessage(),
             ]);
+
+            throw $e;
         }
     }
 
