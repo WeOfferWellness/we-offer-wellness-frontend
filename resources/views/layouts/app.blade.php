@@ -90,23 +90,34 @@
   min-width:110px;
 }
 .wow-location-btn{
-  appearance:none;
-  border:1px solid #cbd5e1;
+  height:36px;
+  min-height:36px;
+  border-radius:3px;
+  font-size:16px;
+  font-weight:400;
+  border:1px solid rgba(16,24,40,.22);
   background:#fff;
-  color:#0f172a;
-  border-radius:999px;
-  min-height:42px;
-  padding:.7rem 1rem;
-  font-weight:700;
+  color:rgba(11,18,32,.82);
   cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:0 10px 22px rgba(16,24,40,.08);
+  padding:0 18px;
+  transition:background .2s ease, color .2s ease, border-color .2s ease;
 }
-.wow-location-btn:hover{
-  border-color:#94a3b8;
+.wow-location-btn:hover,
+.wow-location-btn:focus-visible{
+  background:#000;
+  color:#fff;
+  border-color:#000;
+  outline:none;
 }
 .wow-location-btn--primary{
-  background:#0f62fe;
+  background:#0b1220;
   color:#fff;
-  border-color:#0f62fe;
+  border-color:#0b1220;
+  box-shadow:0 12px 28px rgba(11,18,32,.18);
 }
 .wow-location-btn:disabled{
   opacity:.7;
