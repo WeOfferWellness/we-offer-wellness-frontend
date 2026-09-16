@@ -53,10 +53,13 @@
         ? $product->hasDisplayableImage()
         : !str_contains((string) $image, 'no-product-image.jpg');
     $priceMin = $product->variants_min_price ?? ($product->price ?? null);
+    $pricing = app(\App\Services\MarketplacePricingService::class);
+    $priceMin = is_numeric($priceMin) ? $pricing->buyerPrice($priceMin, $product->vendor ?? null, (int) ($product->vendor_id ?? 0)) : $priceMin;
     $priceDisplay = is_numeric($priceMin)
         ? '£' . rtrim(rtrim(number_format((float) $priceMin, 2, '.', ''), '0'), '.')
         : '—';
     $compareMin = $product->variants_min_compare ?? ($product->compare_at_price ?? null);
+    $compareMin = is_numeric($compareMin) ? $pricing->buyerPrice($compareMin, $product->vendor ?? null, (int) ($product->vendor_id ?? 0)) : $compareMin;
     $vendorUser = data_get($product, 'vendor.user');
     $starterPlan = $vendorUser instanceof \App\Models\User
         ? $vendorUser->isStarterPlan()

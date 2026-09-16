@@ -15,6 +15,11 @@
         ?? ($initialVariant['product_id'] ?? null)
         ?? ($initialVariant['id'] ?? null);
     $initialPrice = $product['variants_min_price'] ?? ($product['price'] ?? 0);
+    $initialPrice = app(\App\Services\MarketplacePricingService::class)->buyerPrice(
+        $initialPrice,
+        ['vendor_name' => $product['vendor_name'] ?? data_get($product, 'vendor.name', '')],
+        (int) ($product['vendor_id'] ?? 0)
+    );
     $initialPriceFormatted = is_numeric($initialPrice) ? number_format((float)$initialPrice, 2, '.', '') : '0.00';
     $primaryImage = $product['images'][0] ?? ($product['image'] ?? '');
     $productTitleSafe = $product['title'] ?? 'Experience';

@@ -8,6 +8,7 @@ use App\Models\OrderCustomer;
 use App\Models\OrderItem;
 use App\Models\OfferingV3;
 use App\Models\Product;
+use App\Services\MarketplacePricingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -17,8 +18,6 @@ use Stripe\Checkout\Session as StripeSession;
 
 class CheckoutController extends Controller
 {
-    protected const BOOKING_FEE_RATE = 0.05;
-
     public function createSession(Request $request)
     {
         $items = [];
@@ -91,6 +90,7 @@ class CheckoutController extends Controller
         if (empty($items)) {
             $items = session('cart.items', []);
         }
+
         if (empty($items)) {
             $cookieRaw = $request->cookie('wow_cart');
             if ($cookieRaw) {
@@ -114,6 +114,25 @@ class CheckoutController extends Controller
             ]);
             return response()->json(['ok'=>false,'error'=>'empty_cart'], 400);
         }
+
+        // Cart prices are customer-facing prices. Older/local carts may not
+        // have been through CartController, so apply the same rule at the
+        // payment boundary unless they already carry the marker.
+        foreach ($items as &$item) {
+            $meta = is_array($item['meta'] ?? null) ? $item['meta'] : [];
+            if (! empty($meta['price_includes_marketplace_markup'])) {
+                continue;
+            }
+            $vendor = $this->resolveCheckoutVendor($item);
+            $item['price'] = app(MarketplacePricingService::class)->buyerPrice(
+                $item['price'] ?? 0,
+                $vendor,
+                isset($item['vendor_id']) && is_numeric($item['vendor_id']) ? (int) $item['vendor_id'] : null
+            );
+            $meta['price_includes_marketplace_markup'] = true;
+            $item['meta'] = $meta;
+        }
+        unset($item);
 
         $hasPhysicalProduct = collect($items)->contains(function ($item): bool {
             $meta = is_array($item['meta'] ?? null) ? $item['meta'] : [];
@@ -156,22 +175,6 @@ class CheckoutController extends Controller
             ];
         }
 
-        $bookingFee = $this->calculateBookingFee($amountTotal);
-        if ($bookingFee > 0) {
-            $lineItems[] = [
-                    'price_data' => [
-                        'currency' => $currency,
-                        'product_data' => [
-                            'name' => 'WOW Booking fee (5%)',
-                            'description' => 'Booking fee applied at 5%',
-                        ],
-                        'unit_amount' => $bookingFee,
-                    ],
-                'quantity' => 1,
-            ];
-            $amountTotal += $bookingFee;
-        }
-
         // Prepare checkout attempt (used to create the order only after payment succeeds)
         $attempt = null;
         $order = null;
@@ -204,8 +207,6 @@ class CheckoutController extends Controller
                         'last_name' => $guestLastName,
                         'ip' => $request->ip(),
                         'user_agent' => substr((string)$request->userAgent(), 0, 255),
-                        'booking_fee' => $bookingFee,
-                        'booking_fee_rate' => self::BOOKING_FEE_RATE,
                     ],
                 ]);
             } catch (\Throwable $e) {
@@ -298,9 +299,31 @@ class CheckoutController extends Controller
         return $hasTable;
     }
 
-    protected function calculateBookingFee(int $amountPence): int
+    protected function resolveCheckoutVendor(array $item): mixed
     {
-        return max(0, (int) round($amountPence * self::BOOKING_FEE_RATE));
+        $source = strtolower(trim((string) ($item['source_version'] ?? (data_get($item, 'meta.source_version', '')))));
+        $productId = $item['product_id'] ?? data_get($item, 'meta.product_id');
+        if (! $productId) {
+            $rawId = (string) ($item['id'] ?? '');
+            if (preg_match('/(?:store-|p:)(\d+)/', $rawId, $matches)) {
+                $productId = (int) $matches[1];
+            } elseif (is_numeric($rawId)) {
+                $productId = (int) $rawId;
+            }
+        }
+        if (! is_numeric($productId) || (int) $productId <= 0) {
+            return null;
+        }
+
+        try {
+            $model = $source === 'legacy'
+                ? Product::query()->with('vendor')->find((int) $productId)
+                : OfferingV3::query()->with('vendor')->find((int) $productId);
+            return $model?->vendor;
+        } catch (\Throwable $e) {
+            Log::warning('checkout.vendor_resolution_failed', ['e' => $e->getMessage()]);
+            return null;
+        }
     }
 
     protected function createPendingOrderFromItems(

@@ -6,6 +6,7 @@ use App\Models\OfferingV3;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Services\SeoStructureService;
+use App\Services\MarketplacePricingService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -26,6 +27,7 @@ class CartController extends Controller
                 );
             } catch (\Throwable $e) { report($e); }
         }
+
         return view('cart.index');
     }
 
@@ -262,6 +264,14 @@ class CartController extends Controller
             }
         }
 
+        // Store the customer-facing price in the cart. The checkout fee is no
+        // longer a separate line; eligible marketplace prices include it here.
+        $price = app(MarketplacePricingService::class)->buyerPrice(
+            $price,
+            $product?->vendor ?? $offering?->vendor,
+            $vendorId ? (int) $vendorId : null
+        );
+
         $selectedValues = array_values(array_filter(array_unique(array_merge(
             $incomingSelected,
             $variantOptions,
@@ -280,6 +290,7 @@ class CartController extends Controller
             'variant_options' => $variantOptions,
             'product_id' => $product ? (int) $productId : $productId,
             'source_version' => $resolvedSourceVersion,
+            'price_includes_marketplace_markup' => true,
         ]);
         $metaPayload = array_filter($metaPayload, static function ($value) {
             return $value !== null && $value !== '';
@@ -287,6 +298,7 @@ class CartController extends Controller
 
         if(isset($items[$key])){
             $items[$key]['qty'] = (int)($items[$key]['qty'] ?? 1) + $qty;
+            $items[$key]['price'] = $price;
             if($variantLabel){ $items[$key]['variant_label'] = $variantLabel; }
             $items[$key]['options'] = $variantOptions;
             $items[$key]['meta'] = array_merge((array) ($items[$key]['meta'] ?? []), $metaPayload);

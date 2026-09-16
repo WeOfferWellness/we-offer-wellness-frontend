@@ -78,6 +78,23 @@ function formatMoney(value) {
   return `£${price.toFixed(2)}`;
 }
 
+function isWeOfferWellnessProvider(item) {
+  const values = [
+    item?.vendor_name,
+    item?.vendor?.name,
+    item?.vendor_details?.name,
+    item?.vendor?.user?.name,
+    item?.vendor?.user?.email,
+  ].map((value) => lower(value).replace(/[^a-z0-9]/g, ''));
+  return values.some((value) => value.includes('weofferwellness'));
+}
+
+function customerPrice(value, item) {
+  const amount = moneyValue(value);
+  if (amount === null || isWeOfferWellnessProvider(item)) return amount;
+  return moneyValue(amount * 1.05);
+}
+
 function hasDisplayableImageUrl(value) {
   const url = lower(value);
   if (!url) return false;
@@ -840,8 +857,8 @@ export function renderOfferingCard(item) {
     || item?.vendor?.user?.tier?.tier
     || item?.vendor?.user?.account_type
   ) === 'business-accelerator';
-  const price = priceValue(item);
-  const priceLabel = item.price_label || formatMoney(price);
+  const price = customerPrice(priceValue(item), item);
+  const priceLabel = formatMoney(price);
   const categoryRaw = item?.category?.name || item?.category_name || item?.category_label || '';
   const typeRaw = item?.type?.name
     || item?.type_label

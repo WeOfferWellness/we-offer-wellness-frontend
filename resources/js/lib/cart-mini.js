@@ -58,6 +58,7 @@ import { trackCommerce } from './wow-analytics'
       variant_id: newItem.variantId || newItem.variant_id || null,
       variant_label: newItem.variantLabel || newItem.variant_label || '',
       source_version: newItem.sourceVersion || newItem.source_version || null,
+      meta: newItem.meta || {},
     };
     const qty = Number(newItem.qty||1)||1;
     if(idx>=0){
@@ -167,6 +168,7 @@ import { trackCommerce } from './wow-analytics'
     const url = btn.getAttribute('data-url')||'';
     const qty = Number(btn.getAttribute('data-qty')||'1') || 1;
     const variantLabel = btn.getAttribute('data-variant-label')||'';
+    const priceIncludesMarkup = btn.getAttribute('data-price-includes-marketplace-markup') === '1';
     const openCart = btn.classList.contains('js-open-cart') || btn.classList.contains('open-cart-dropdown');
     const cartKey = variantId ? `v:${variantId}` : `p:${productId || id || ''}`;
     const resolvedId = cartKey || id;
@@ -189,7 +191,7 @@ import { trackCommerce } from './wow-analytics'
         source: 'mini',
       })
     } catch(_){}
-    return addToCart({ id: resolvedId, cartKey: resolvedId, productId: productId || id, variantId: variantId || null, variantLabel, sourceVersion: btn.getAttribute('data-source-version') || null, title, price, image, url, qty }, { openCart });
+    return addToCart({ id: resolvedId, cartKey: resolvedId, productId: productId || id, variantId: variantId || null, variantLabel, sourceVersion: btn.getAttribute('data-source-version') || null, title, price, image, url, qty, meta: priceIncludesMarkup ? { price_includes_marketplace_markup: true } : {} }, { openCart });
   }
   // Delegate add-to-cart clicks (capture to beat anchor navigation)
   document.addEventListener('click', function(e){

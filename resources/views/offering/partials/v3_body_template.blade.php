@@ -14,9 +14,17 @@
     $productOnly = (bool) ($productOnly ?? false);
     $usesLegacyBuybox = $isStoreProduct;
     $currency = strtoupper(trim((string) ($offering['currency'] ?? 'GBP')));
-    $price = is_numeric($offering['price'] ?? null) ? (float) $offering['price'] : 0.0;
-    $priceMin = is_numeric($offering['price_min'] ?? null) ? (float) $offering['price_min'] : $price;
-    $priceMax = is_numeric($offering['price_max'] ?? null) ? (float) $offering['price_max'] : $price;
+    $rawPrice = is_numeric($offering['price'] ?? null) ? (float) $offering['price'] : 0.0;
+    $rawPriceMin = is_numeric($offering['price_min'] ?? null) ? (float) $offering['price_min'] : $rawPrice;
+    $rawPriceMax = is_numeric($offering['price_max'] ?? null) ? (float) $offering['price_max'] : $rawPrice;
+    $pricing = app(\App\Services\MarketplacePricingService::class);
+    $pricingVendor = [
+        'vendor_name' => $offering['vendor_name'] ?? data_get($offering, 'vendor.name', data_get($offering, 'vendor_details.name', '')),
+        'user' => ['name' => data_get($offering, 'vendor.user.name', ''), 'email' => data_get($offering, 'vendor.user.email', '')],
+    ];
+    $price = $pricing->buyerPrice($rawPrice, $pricingVendor, (int) ($offering['vendor_id'] ?? 0));
+    $priceMin = $pricing->buyerPrice($rawPriceMin, $pricingVendor, (int) ($offering['vendor_id'] ?? 0));
+    $priceMax = $pricing->buyerPrice($rawPriceMax, $pricingVendor, (int) ($offering['vendor_id'] ?? 0));
     $rating = is_numeric($offering['rating'] ?? null) ? (float) $offering['rating'] : null;
     $reviewCount = is_numeric($offering['review_count'] ?? null) ? (int) $offering['review_count'] : 0;
     if ($reviewCount > 0 && (! is_numeric($rating) || (float) $rating <= 0)) {
@@ -579,7 +587,7 @@ SVG;
         if ($variantLabel === '') {
             $variantLabel = 'Option ' . ($index + 1);
         }
-        $variantPrice = is_numeric($variant['price'] ?? null) ? (float) $variant['price'] : $price;
+        $variantPrice = is_numeric($variant['price'] ?? null) ? (float) $variant['price'] : $rawPrice;
         $variantCompare = is_numeric($variant['compare'] ?? null) ? (float) $variant['compare'] : null;
         $priceOptionId = null;
         if (preg_match('/^po_(\d+)(?:_tier_(\d+))?$/', $variantId, $variantMatches)) {
@@ -606,12 +614,19 @@ SVG;
             'label' => '1 Session',
             'meta' => 'Default option',
             'selection' => ['Default'],
-            'price' => $price,
+            'price' => $rawPrice,
             'compare' => null,
             'available' => true,
             'price_option_id' => null,
         ];
     }
+    foreach ($variantCards as &$variantCard) {
+        $variantCard['price'] = $pricing->buyerPrice($variantCard['price'] ?? 0, $pricingVendor, (int) ($offering['vendor_id'] ?? 0));
+        if (is_numeric($variantCard['compare'] ?? null)) {
+            $variantCard['compare'] = $pricing->buyerPrice($variantCard['compare'], $pricingVendor, (int) ($offering['vendor_id'] ?? 0));
+        }
+    }
+    unset($variantCard);
     $sessionCountForLabel = static function (string $label): int {
         if (preg_match('/(\d+)/', $label, $matches)) {
             return max(1, (int) $matches[1]);
@@ -3212,7 +3227,7 @@ SVG;
                         </div>
 
                         <div class="desktop-booking-buttons">
-                            <button class="btn checkout-button js-buy-now" type="button" data-id="store-{{ $offering['id'] ?? 0 }}" data-product-id="{{ $offering['id'] ?? 0 }}" data-source-version="store" data-title="{{ $title }}" data-price="{{ number_format($price, 2, '.', '') }}" data-variant-id="{{ $selectedVariantId }}" data-variant-label="{{ $selectedVariantLabel }}" data-image="{{ $primaryImage }}" data-product-url="{{ $offering['url'] ?? url()->current() }}" data-url="{{ $offering['url'] ?? url()->current() }}" data-qty="1">Buy now</button>
+                            <button class="btn checkout-button js-buy-now" type="button" data-id="store-{{ $offering['id'] ?? 0 }}" data-product-id="{{ $offering['id'] ?? 0 }}" data-source-version="store" data-price-includes-marketplace-markup="1" data-title="{{ $title }}" data-price="{{ number_format($price, 2, '.', '') }}" data-variant-id="{{ $selectedVariantId }}" data-variant-label="{{ $selectedVariantLabel }}" data-image="{{ $primaryImage }}" data-product-url="{{ $offering['url'] ?? url()->current() }}" data-url="{{ $offering['url'] ?? url()->current() }}" data-qty="1">Buy now</button>
                         </div>
                         <p class="secure-note">Secure checkout. Stripe payment. Email order confirmation.</p>
                     </aside>
@@ -3793,7 +3808,7 @@ SVG;
             <strong>£{{ number_format($price, 2) }}</strong>
             <span class="store-v3-mobile-stock {{ $stockStatusClass }}">{{ $stockStatusLabel }} · Ships to you</span>
         </div>
-        <button class="btn checkout-button js-buy-now" type="button" data-id="store-{{ $offering['id'] ?? 0 }}" data-product-id="{{ $offering['id'] ?? 0 }}" data-source-version="store" data-title="{{ $title }}" data-price="{{ number_format($price, 2, '.', '') }}" data-variant-id="{{ $selectedVariantId }}" data-variant-label="{{ $selectedVariantLabel }}" data-image="{{ $primaryImage }}" data-product-url="{{ $offering['url'] ?? url()->current() }}" data-url="{{ $offering['url'] ?? url()->current() }}" data-qty="1">Buy now</button>
+        <button class="btn checkout-button js-buy-now" type="button" data-id="store-{{ $offering['id'] ?? 0 }}" data-product-id="{{ $offering['id'] ?? 0 }}" data-source-version="store" data-price-includes-marketplace-markup="1" data-title="{{ $title }}" data-price="{{ number_format($price, 2, '.', '') }}" data-variant-id="{{ $selectedVariantId }}" data-variant-label="{{ $selectedVariantLabel }}" data-image="{{ $primaryImage }}" data-product-url="{{ $offering['url'] ?? url()->current() }}" data-url="{{ $offering['url'] ?? url()->current() }}" data-qty="1">Buy now</button>
     </div>
     @elseif(! $usesLegacyBuybox && ($showPaymentModule ?? true))
     <div class="mobile-ticket-bar" id="mobileTicketBar">

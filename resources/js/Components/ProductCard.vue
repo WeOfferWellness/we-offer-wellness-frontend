@@ -47,6 +47,18 @@ function money(value) {
   return new Intl.NumberFormat('en-GB', { style: 'currency', currency: props.product?.currency || 'GBP', maximumFractionDigits: 2 }).format(amount)
 }
 
+function isWeOfferWellness(product) {
+  return [
+    product?.vendor_name,
+    product?.practitioner_name,
+    product?.provider,
+    product?.vendor?.name,
+    product?.vendor_details?.name,
+    product?.vendor?.user?.name,
+    product?.vendor?.user?.email,
+  ].some((value) => text(value).toLowerCase().replace(/[^a-z0-9]/g, '').includes('weofferwellness'))
+}
+
 function planKey(value) {
   const raw = text(value).toLowerCase().replace(/[_\s]+/g, '-')
   return {
@@ -229,7 +241,12 @@ const provider = computed(() => {
 })
 const image = computed(() => product.value.image || product.value.image_url || product.value.featured_image || product.value.media?.[0]?.url || product.value.media?.[0]?.original_url || '')
 const url = computed(() => publicProductUrl(product.value))
-const price = computed(() => money(product.value.variants_min_price ?? product.value.price_min ?? product.value.price ?? product.value.base_price) || '£0')
+const price = computed(() => {
+  const raw = Number(product.value.variants_min_price ?? product.value.price_min ?? product.value.price ?? product.value.base_price)
+  if (!Number.isFinite(raw) || raw <= 0) return '£0'
+  const amount = isWeOfferWellness(product.value) ? raw : Math.round(raw * 1.05 * 100) / 100
+  return money(amount) || '£0'
+})
 const rating = computed(() => Number(product.value.rating ?? product.value.reviews_avg_rating ?? product.value.vendor_review_rating ?? product.value.vendor?.review_summary?.rating ?? 0))
 const reviews = computed(() => Number(product.value.review_count ?? product.value.reviews_count ?? product.value.vendor_review_count ?? product.value.vendor?.review_summary?.count ?? 0))
 const filledStars = computed(() => Math.max(0, Math.min(5, Math.round(rating.value))))

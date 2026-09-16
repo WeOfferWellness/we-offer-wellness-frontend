@@ -45,7 +45,6 @@
           <div class="panel" id="summaryWrap" style="{{ empty($serverCart) ? 'display:none' : '' }}">
             <div class="sum-row"><span>Subtotal</span><strong id="sum-subtotal">£0.00</strong></div>
             <div class="sum-row"><span>Discounts</span><strong id="sum-discount">-£0.00</strong></div>
-            <div class="sum-row"><span>WOW Booking fee (5%)</span><strong id="sum-booking-fee">£0.00</strong></div>
             <div class="sum-row muted"><span>Taxes</span><span>Included where applicable</span></div>
             <div class="sum-sep"></div>
             <div class="sum-row total"><span>Total</span><strong id="sum-total">£0.00</strong></div>
@@ -241,7 +240,6 @@
   var sumHeadTitle = document.getElementById('sumHeadTitle');
   var sumSubtotal = document.getElementById('sum-subtotal');
   var sumDiscount = document.getElementById('sum-discount');
-  var sumBookingFee = document.getElementById('sum-booking-fee');
   var sumTotal = document.getElementById('sum-total');
   var upsellListFull = document.getElementById('upsellListFull');
   var upsellListEmpty = document.getElementById('upsellListEmpty');
@@ -251,8 +249,7 @@
   function subtotal(){ return cart.reduce(function(s,it){ return s + (Number(it.unit||0) * Number(it.qty||1)); }, 0); }
   function discountAmount(){ return subtotal() * (promo.pct||0); }
   function feeBase(){ return Math.max(0, subtotal() - discountAmount()); }
-  function bookingFeeAmount(){ return Math.round(feeBase() * 0.05 * 100) / 100; }
-  function total(){ return Math.max(0, feeBase() + bookingFeeAmount()); }
+    function total(){ return feeBase(); }
   function trackViewCart(){
     if (viewCartTracked) return;
     viewCartTracked = true;
@@ -350,7 +347,6 @@
   function renderSummary(){
     sumSubtotal.textContent = money(subtotal());
     sumDiscount.textContent = '-' + money(discountAmount());
-    sumBookingFee.textContent = money(bookingFeeAmount());
     sumTotal.textContent = money(total());
     var checkoutBtn = document.getElementById('checkoutBtn');
     checkoutBtn.disabled = cart.length === 0;

@@ -12,6 +12,12 @@
         ? $product->getFirstImageUrl()
         : (string) ($value('image', $value('image_url', $value('featured_image', ''))));
     $price = $value('variants_min_price', $value('price_min', $value('price', $value('base_price'))));
+    $pricing = app(\App\Services\MarketplacePricingService::class);
+    $pricingVendor = [
+        'vendor_name' => $value('vendor_name', $value('practitioner_name', $value('vendor.name', $value('vendor_details.name', '')))),
+        'user' => ['name' => $value('vendor.user.name', ''), 'email' => $value('vendor.user.email', '')],
+    ];
+    $price = is_numeric($price) ? $pricing->buyerPrice($price, $pricingVendor, (int) $value('vendor_id', 0)) : $price;
     $priceLabel = is_numeric($price) ? '£' . rtrim(rtrim(number_format((float) $price, 2, '.', ''), '0'), '.') : '£0';
     $typeRaw = strtolower(trim((string) ($value('type.name', $value('type_label', $value('type_name', $value('product_type', 'therapy')))))));
     $categoryRaw = (string) $value('category.name', $value('category.label', $value('category_name', $value('category_label', $value('category', '')))));
