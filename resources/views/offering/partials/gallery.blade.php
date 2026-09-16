@@ -2,6 +2,8 @@
   $title = $title ?? 'Gallery';
   $imgs = collect($images ?? [])
     ->filter(fn($u) => is_string($u) && trim($u) !== '')
+    ->map(fn($u) => trim($u))
+    ->unique()
     ->map(function($u){
       // Replace v3.weofferwellness.co.uk with atease.weofferwellness.co.uk
       return str_replace('v3.weofferwellness.co.uk', 'atease.weofferwellness.co.uk', $u);
@@ -10,7 +12,7 @@
     ->all();
 @endphp
 
-<section id="wowGallery" data-arrows="off" aria-label="Image gallery" tabindex="0">
+<section id="wowGallery" data-image-count="{{ count($imgs) }}" data-arrows="{{ count($imgs) > 4 ? 'on' : 'off' }}" aria-label="Image gallery" tabindex="0">
   <style>
     /* Scoped styles for WOW gallery */
     #wowGallery{
@@ -74,6 +76,10 @@
     #wowGallery .arrow--left:hover svg{ transform: translateX(-1px); }
     #wowGallery .arrow--right:hover svg{ transform: translateX(1px); }
     #wowGallery[data-arrows="off"] .arrow{ display:none; }
+    #wowGallery[data-image-count="0"] .arrow,
+    #wowGallery[data-image-count="1"] .arrow,
+    #wowGallery[data-image-count="0"] .modal__nav,
+    #wowGallery[data-image-count="1"] .modal__nav{ display:none; }
 
     /* Edge fades */
     #wowGallery::before, #wowGallery::after{
