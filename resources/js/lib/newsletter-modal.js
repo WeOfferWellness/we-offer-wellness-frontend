@@ -27,18 +27,84 @@ function isDismissedRecently() {
 }
 
 function initNewsletterModal() {
+  const reviewBadge = document.getElementById('wow-review-float');
+  if (reviewBadge && !reviewBadge.dataset.initialized) {
+    reviewBadge.dataset.initialized = 'true';
+    let lastScrollY = window.scrollY;
+    let scrollTicking = false;
+
+    const updateReviewBadge = () => {
+      const currentScrollY = window.scrollY;
+      if (!window.matchMedia('(max-width: 767px)').matches) {
+        reviewBadge.classList.remove('is-hidden');
+        lastScrollY = currentScrollY;
+        scrollTicking = false;
+        return;
+      }
+      if (currentScrollY <= 24 || currentScrollY < lastScrollY) {
+        reviewBadge.classList.remove('is-hidden');
+      } else if (currentScrollY > lastScrollY) {
+        reviewBadge.classList.add('is-hidden');
+      }
+      lastScrollY = currentScrollY;
+      scrollTicking = false;
+    };
+
+    window.addEventListener('scroll', () => {
+      if (scrollTicking) return;
+      scrollTicking = true;
+      window.requestAnimationFrame(updateReviewBadge);
+    }, { passive: true });
+    window.addEventListener('resize', updateReviewBadge, { passive: true });
+
+    const countText = reviewBadge.querySelector('[data-review-count-text]');
+    const serverCount = Number(reviewBadge.dataset.reviewCount);
+    fetch('/api/review-stats', { headers: { Accept: 'application/json' } })
+      .then((response) => response.ok ? response.json() : null)
+      .then((data) => {
+        const verifiedCount = Number(data?.verified_count);
+        const reviewCount = Number(data?.review_count);
+        const count = Number.isFinite(verifiedCount) && verifiedCount > 0
+          ? verifiedCount
+          : Number.isFinite(reviewCount) && reviewCount > 0
+            ? reviewCount
+            : serverCount;
+        if (!countText || !Number.isFinite(count) || count <= 0) return;
+        const formatted = new Intl.NumberFormat().format(count);
+        countText.textContent = formatted;
+        reviewBadge.setAttribute('aria-label', `${formatted} verified practitioner reviews`);
+      })
+      .catch(() => {});
+  }
+
   const modal = document.getElementById('wow-newsletter-modal');
   const trigger = document.getElementById('wow-newsletter-trigger');
   const form = document.getElementById('wow-newsletter-form');
   const content = document.getElementById('wow-newsletter-content');
   const email = document.getElementById('wow-newsletter-email');
   const submit = document.getElementById('wow-newsletter-submit');
+
+  const updateReviewBadgePosition = () => {
+    if (!reviewBadge) return;
+
+    const newsletterUnavailable = !trigger || trigger.hidden || isSubscribed();
+    reviewBadge.classList.toggle('wow-review-float--bottom', newsletterUnavailable);
+  };
+
+  updateReviewBadgePosition();
+  if (trigger && typeof MutationObserver !== 'undefined') {
+    new MutationObserver(updateReviewBadgePosition).observe(trigger, {
+      attributes: true,
+      attributeFilter: ['hidden', 'class', 'style'],
+    });
+  }
   const message = document.getElementById('wow-newsletter-message');
 
   if (!modal || !trigger || !form || !content || !email || !submit || !message || modal.dataset.initialized) return;
   modal.dataset.initialized = 'true';
 
   let timer = null;
+  let deferredOpenTimer = null;
   let lastFocused = null;
   let originalOverflow = '';
   let autoOpened = false;
@@ -46,11 +112,36 @@ function initNewsletterModal() {
   const stopAutoTriggers = () => {
     window.removeEventListener('scroll', onScroll);
     if (timer !== null) window.clearTimeout(timer);
+    if (deferredOpenTimer !== null) window.clearTimeout(deferredOpenTimer);
     timer = null;
+    deferredOpenTimer = null;
+  };
+
+  const isNavigationOpen = () => {
+    const mobileMenu = document.getElementById('mobile-menu');
+    const mobileSearch = document.getElementById('mobile-search-drawer');
+    const megaMenu = document.getElementById('mega-panel');
+    const mobileMenuOpen = mobileMenu && window.getComputedStyle(mobileMenu).display !== 'none';
+    const mobileSearchOpen = mobileSearch && (mobileSearch.classList.contains('is-visible') || mobileSearch.getAttribute('aria-hidden') === 'false');
+    const megaMenuOpen = megaMenu && (megaMenu.classList.contains('is-open') || megaMenu.getAttribute('aria-hidden') === 'false');
+    const accountMenuOpen = document.querySelector('.account-trigger[aria-expanded="true"], .account-menu.show, [data-account-menu].is-open');
+    return Boolean(mobileMenuOpen || mobileSearchOpen || megaMenuOpen || accountMenuOpen);
+  };
+
+  const requestAutomaticOpen = () => {
+    if (!isNavigationOpen()) {
+      open(true);
+      return;
+    }
+    if (deferredOpenTimer !== null) return;
+    deferredOpenTimer = window.setTimeout(() => {
+      deferredOpenTimer = null;
+      requestAutomaticOpen();
+    }, 450);
   };
 
   const open = (automatic = false) => {
-    if (!modal.hidden || isSubscribed()) return;
+    if (!modal.hidden || isSubscribed() || isNavigationOpen()) return;
     lastFocused = document.activeElement;
     originalOverflow = document.body.style.overflow;
     modal.hidden = false;
@@ -73,7 +164,7 @@ function initNewsletterModal() {
   const onScroll = () => {
     const maxScroll = Math.max(document.documentElement.scrollHeight - window.innerHeight, 0);
     const scrollProgress = maxScroll ? window.scrollY / maxScroll : 0;
-    if (window.scrollY >= 320 || scrollProgress >= 0.3) open(true);
+    if (window.scrollY >= 320 || scrollProgress >= 0.3) requestAutomaticOpen();
   };
 
   trigger.addEventListener('click', () => open(false));
@@ -110,6 +201,7 @@ function initNewsletterModal() {
       stopAutoTriggers();
       content.classList.add('is-success');
       trigger.hidden = true;
+      updateReviewBadgePosition();
     } catch (error) {
       message.textContent = error.message || 'Something went wrong. Please try again.';
       message.classList.add('is-error');
@@ -121,14 +213,16 @@ function initNewsletterModal() {
 
   if (isSubscribed()) {
     trigger.hidden = true;
+    updateReviewBadgePosition();
     return;
   }
   trigger.hidden = false;
+  updateReviewBadgePosition();
   if (isDismissedRecently()) return;
 
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
-  timer = window.setTimeout(() => open(true), 12000);
+  timer = window.setTimeout(() => requestAutomaticOpen(), 12000);
 }
 
 if (document.readyState === 'loading') {
