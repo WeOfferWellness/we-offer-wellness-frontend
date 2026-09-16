@@ -1868,6 +1868,7 @@ SVG;
         display: none;
         position: relative;
         overflow: hidden;
+        touch-action: pan-y;
         border-radius: 10px;
         background: #dcebe5;
         box-shadow: 0 8px 18px rgba(0, 0, 0, 0.06);
@@ -3526,6 +3527,111 @@ SVG;
                         @endif
                     </div>
                 </section>
+                <script>
+                (() => {
+                    document.querySelectorAll('[data-mobile-gallery]').forEach(gallery => {
+                        if (gallery.dataset.initialized === 'true') return;
+
+                        const track = gallery.querySelector('[data-mobile-gallery-track]');
+                        const slides = Array.from(gallery.querySelectorAll('[data-mobile-gallery-slide]'));
+                        const previous = gallery.querySelector('[data-mobile-gallery-prev]');
+                        const next = gallery.querySelector('[data-mobile-gallery-next]');
+                        const dots = Array.from(gallery.querySelectorAll('[data-mobile-gallery-dot]'));
+
+                        if (!track || slides.length < 2) return;
+
+                        gallery.dataset.initialized = 'true';
+                        let index = 0;
+                        let timer = null;
+                        let resumeTimer = null;
+                        let startX = 0;
+                        let startY = 0;
+                        let dragging = false;
+
+                        const isMobile = () => window.matchMedia('(max-width: 767px)').matches;
+
+                        const render = () => {
+                            track.style.transform = `translate3d(-${index * 100}%, 0, 0)`;
+                            slides.forEach((slide, slideIndex) => {
+                                slide.classList.toggle('is-active', slideIndex === index);
+                            });
+                            dots.forEach((dot, dotIndex) => {
+                                dot.classList.toggle('is-active', dotIndex === index);
+                                dot.setAttribute('aria-current', dotIndex === index ? 'true' : 'false');
+                            });
+                        };
+
+                        const goTo = nextIndex => {
+                            index = (nextIndex + slides.length) % slides.length;
+                            render();
+                        };
+
+                        const stop = () => {
+                            if (timer !== null) window.clearInterval(timer);
+                            if (resumeTimer !== null) window.clearTimeout(resumeTimer);
+                            timer = null;
+                            resumeTimer = null;
+                        };
+
+                        const start = () => {
+                            stop();
+                            if (!isMobile()) return;
+                            timer = window.setInterval(() => {
+                                if (!document.hidden && !dragging) goTo(index + 1);
+                            }, 4800);
+                        };
+
+                        const resume = () => {
+                            if (!isMobile()) return;
+                            if (resumeTimer !== null) window.clearTimeout(resumeTimer);
+                            resumeTimer = window.setTimeout(start, 1200);
+                        };
+
+                        const onPointerDown = event => {
+                            if (event.pointerType === 'mouse' && event.button !== 0) return;
+                            startX = event.clientX;
+                            startY = event.clientY;
+                            dragging = true;
+                            stop();
+                            gallery.setPointerCapture?.(event.pointerId);
+                        };
+
+                        const onPointerUp = event => {
+                            if (!dragging) return;
+                            dragging = false;
+                            const deltaX = event.clientX - startX;
+                            const deltaY = event.clientY - startY;
+                            if (Math.abs(deltaX) > 45 && Math.abs(deltaX) > Math.abs(deltaY)) {
+                                goTo(index + (deltaX < 0 ? 1 : -1));
+                            }
+                            resume();
+                        };
+
+                        previous?.addEventListener('click', () => {
+                            goTo(index - 1);
+                            resume();
+                        });
+                        next?.addEventListener('click', () => {
+                            goTo(index + 1);
+                            resume();
+                        });
+                        dots.forEach(dot => dot.addEventListener('click', () => {
+                            goTo(Number(dot.dataset.mobileGalleryDot || 0));
+                            resume();
+                        }));
+                        gallery.addEventListener('pointerdown', onPointerDown);
+                        gallery.addEventListener('pointerup', onPointerUp);
+                        gallery.addEventListener('pointercancel', onPointerUp);
+                        gallery.addEventListener('pointerleave', event => {
+                            if (dragging) onPointerUp(event);
+                        });
+                        window.addEventListener('resize', start, { passive: true });
+
+                        render();
+                        start();
+                    });
+                })();
+                </script>
             @endif
 
             @if($sourceVersion === 'v3' && ! $isStoreProduct)
