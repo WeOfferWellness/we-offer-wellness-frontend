@@ -1091,7 +1091,7 @@ export function renderOfferingCard(item) {
             </div>
 
             <div class="wow-event-card-v4__actions">
-              <a href="${escapeHtml(url)}" class="wow-event-card-v4__book-btn">${isPastEvent ? 'View details' : 'Book'}</a>
+              <a href="${escapeHtml(url)}" class="wow-event-card-v4__book-btn">${isPastEvent ? 'VIEW' : 'VIEW & BOOK'}</a>
             </div>
           </footer>
         </div>
