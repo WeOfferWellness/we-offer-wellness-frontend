@@ -1958,6 +1958,15 @@ SVG;
         width: 60px;
         height: 60px;
     }
+    @media (min-width: 981px) {
+        .wow-v3-offering-page .quick-info-icon svg,
+        .wow-v3-offering-page .quick-info-icon img,
+        .wow-v3-offering-page .quick-info-icon--duration svg,
+        .wow-v3-offering-page .quick-info-icon--format img {
+            width: 55px;
+            height: 55px;
+        }
+    }
     .wow-v3-offering-page .quick-info-card small {
         margin-bottom: 0;
         color: var(--muted);
