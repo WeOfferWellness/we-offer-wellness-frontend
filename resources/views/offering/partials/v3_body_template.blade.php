@@ -1266,6 +1266,7 @@ SVG;
     .wow-v3-offering-page .hero-content {
         position: relative;
         z-index: 3;
+        width: 100%;
         display: grid;
         grid-template-columns: minmax(0, 1fr);
         gap: 0;
@@ -1273,7 +1274,11 @@ SVG;
         padding: 0;
         align-items: start;
     }
-    .wow-v3-offering-page .hero-main { max-width: 980px; color: #000; }
+    .wow-v3-offering-page .hero-main {
+        width: 100%;
+        max-width: none;
+        color: #000;
+    }
     /* The checkout is relocated into .side-stack by the page bootstrap. Keep
        it out of the hero grid while that move is pending so the title never
        renders with a blank reserved column or vertical gap. */
@@ -1307,10 +1312,11 @@ SVG;
         font-size: 13px;
     }
     .wow-v3-offering-page .hero h1 {
-        max-width: 780px;
+        width: 100%;
+        max-width: none;
         margin: 0;
         color: #000000;
-        font-size: clamp(42px, 5.8vw, 78px);
+        font-size: clamp(32px, 4.5vw, 56px);
         line-height: 0.94;
         letter-spacing: -0.065em;
         font-weight: 500;
@@ -1353,6 +1359,7 @@ SVG;
         gap: 10px;
         max-width: 1120px;
         margin-top: 34px;
+        margin-bottom: 22px;
     }
     .wow-v3-offering-page .quick-glance-section {
         display: none;
@@ -3166,31 +3173,6 @@ SVG;
                         </div>
                     @endif
 
-                    @if($sourceVersion === 'v3' && ! $isStoreProduct)
-                    <div class="hero-meta">
-                        @foreach($quickInfo as $card)
-                            @php
-                                $isDurationCard = ($card['label'] ?? '') === 'Duration';
-                                $isFormatImage = ($card['label'] ?? '') === 'Format' && ! empty($formatIconUrl);
-                            @endphp
-                            <article class="quick-info-card {{ $isFormatImage ? 'quick-info-card--image' : '' }}">
-                                <span class="quick-info-icon {{ $isDurationCard ? 'quick-info-icon--duration' : '' }} {{ $isFormatImage ? 'quick-info-icon--format' : '' }}" aria-hidden="true">
-                                    @if($isDurationCard)
-                                        {!! $renderDurationIconSvg($durationMinutes) !!}
-                                    @elseif($isFormatImage)
-                                        <img src="{{ $formatIconUrl }}" alt="" aria-hidden="true" loading="lazy" decoding="async">
-                                    @else
-                                        {!! $quickInfoIconSvg($card['icon']) !!}
-                                    @endif
-                                </span>
-                                <div>
-                                    <small>{{ $card['label'] }}</small>
-                                    <strong>{{ $card['value'] }}</strong>
-                                </div>
-                            </article>
-                        @endforeach
-                    </div>
-                    @endif
                 </div>
 
                 @if($showPaymentModule ?? true)
@@ -3537,6 +3519,32 @@ SVG;
                         @endif
                     </div>
                 </section>
+            @endif
+
+            @if($sourceVersion === 'v3' && ! $isStoreProduct)
+            <div class="hero-meta">
+                @foreach($quickInfo as $card)
+                    @php
+                        $isDurationCard = ($card['label'] ?? '') === 'Duration';
+                        $isFormatImage = ($card['label'] ?? '') === 'Format' && ! empty($formatIconUrl);
+                    @endphp
+                    <article class="quick-info-card {{ $isFormatImage ? 'quick-info-card--image' : '' }}">
+                        <span class="quick-info-icon {{ $isDurationCard ? 'quick-info-icon--duration' : '' }} {{ $isFormatImage ? 'quick-info-icon--format' : '' }}" aria-hidden="true">
+                            @if($isDurationCard)
+                                {!! $renderDurationIconSvg($durationMinutes) !!}
+                            @elseif($isFormatImage)
+                                <img src="{{ $formatIconUrl }}" alt="" aria-hidden="true" loading="lazy" decoding="async">
+                            @else
+                                {!! $quickInfoIconSvg($card['icon']) !!}
+                            @endif
+                        </span>
+                        <div>
+                            <small>{{ $card['label'] }}</small>
+                            <strong>{{ $card['value'] }}</strong>
+                        </div>
+                    </article>
+                @endforeach
+            </div>
             @endif
 
             <section class="section quick-glance-section">

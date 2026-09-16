@@ -2762,7 +2762,7 @@ class LandingController extends Controller
             'what_to_expect' => (string) ($details->what_to_expect ?? ''),
             'included' => (string) ($details->whats_included ?? ''),
             'aftercare' => '',
-            'duration' => $meta->duration_minutes ?? null,
+            'duration' => $bookingContext['duration'] ?? ($meta->duration_minutes ?? null),
             'tags' => array_values(array_filter(array_map('trim', array_filter([
                 $offering->type?->name,
                 $offering->category?->name,
