@@ -43,7 +43,7 @@
       --edgeWidth: 90px;
     }
 
-    #wowGallery .viewport{ overflow:hidden; border-radius:22px; }
+    #wowGallery .viewport{ overflow:hidden; border-radius:22px; touch-action:pan-y; }
     #wowGallery .track{ display:flex; width:100%; transition: transform 420ms cubic-bezier(.2,.9,.2,1); will-change: transform; }
     #wowGallery .page{ flex: 0 0 100%; padding: 18px 0px; }
 
@@ -268,6 +268,8 @@
 
       let pageIndex = 0;
       let pageCount = 0;
+      let autoplayTimer = null;
+      let autoplayResumeTimer = null;
 
       function chunk(array, size){
         const out = [];
@@ -334,6 +336,7 @@
         update();
         bindSwipe();
         observeHoverHint();
+        startAutoplay();
       }
 
       function update(){
@@ -352,6 +355,36 @@
       function next(){ if (pageIndex < pageCount - 1){ pageIndex++; update(); } }
       function prev(){ if (pageIndex > 0){ pageIndex--; update(); } }
 
+      function isMobile(){
+        return window.matchMedia && window.matchMedia('(max-width: 767px)').matches;
+      }
+
+      function stopAutoplay(){
+        if (autoplayTimer !== null) window.clearInterval(autoplayTimer);
+        if (autoplayResumeTimer !== null) window.clearTimeout(autoplayResumeTimer);
+        autoplayTimer = null;
+        autoplayResumeTimer = null;
+      }
+
+      function startAutoplay(){
+        stopAutoplay();
+        if (!isMobile() || pageCount <= 1) return;
+
+        autoplayTimer = window.setInterval(() => {
+          if (document.hidden) return;
+          pageIndex = pageIndex >= pageCount - 1 ? 0 : pageIndex + 1;
+          update();
+        }, 5000);
+      }
+
+      function resumeAutoplay(){
+        if (!isMobile() || pageCount <= 1) return;
+        if (autoplayResumeTimer !== null) window.clearTimeout(autoplayResumeTimer);
+        autoplayResumeTimer = window.setTimeout(startAutoplay, 1200);
+      }
+
+      window.addEventListener('resize', startAutoplay, { passive: true });
+
       prevBtn.addEventListener("click", prev);
       nextBtn.addEventListener("click", next);
 
@@ -369,6 +402,7 @@
         const onDown = (e) => {
           const p = "touches" in e ? e.touches[0] : e;
           startX = p.clientX; startY = p.clientY; dragging = true;
+          stopAutoplay();
         };
         const onMove = (e) => {
           if (!dragging) return;
@@ -385,6 +419,7 @@
           const dx = p.clientX - startX;
           if (dx < -50) next();
           if (dx > 50) prev();
+          resumeAutoplay();
         };
         const opts = { passive: false };
         gallery.addEventListener("mousedown", onDown);
@@ -394,6 +429,7 @@
         gallery.addEventListener("touchstart", onDown, opts);
         gallery.addEventListener("touchmove", onMove, opts);
         gallery.addEventListener("touchend", onUp, opts);
+        gallery.addEventListener("touchcancel", onUp, opts);
         cleanupSwipe = () => {
           gallery.removeEventListener("mousedown", onDown);
           gallery.removeEventListener("mousemove", onMove);
@@ -402,6 +438,7 @@
           gallery.removeEventListener("touchstart", onDown, opts);
           gallery.removeEventListener("touchmove", onMove, opts);
           gallery.removeEventListener("touchend", onUp, opts);
+          gallery.removeEventListener("touchcancel", onUp, opts);
         };
       }
 
