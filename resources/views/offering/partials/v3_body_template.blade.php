@@ -75,12 +75,8 @@
         return '#6AA8FD';
     };
     $durationCompactLabelFormatter = static function (int $minutes): string {
-        if ($minutes < 60) {
+        if ($minutes < 100) {
             return $minutes . ' MINS';
-        }
-
-        if ($minutes === 60) {
-            return '60 MIN';
         }
 
         $hours = round(($minutes / 60) * 2) / 2;
@@ -89,12 +85,8 @@
         return $hoursLabel . ' HOUR';
     };
     $durationLabelFormatter = static function (int $minutes): string {
-        if ($minutes < 60) {
+        if ($minutes < 100) {
             return $minutes . ' Minutes';
-        }
-
-        if ($minutes === 60) {
-            return '60 Minutes';
         }
 
         $hours = round(($minutes / 60) * 2) / 2;
