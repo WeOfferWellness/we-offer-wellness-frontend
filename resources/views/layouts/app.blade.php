@@ -5,7 +5,8 @@
 </head>
 <body class="antialiased @yield('body-class')">
 @php
-  $showLocationPrompt = request()->is('locations*')
+  $showLocationPrompt = request()->is('/')
+    || request()->is('locations*')
     || request()->is('near-me')
     || request()->is('*-near-me*')
     || request()->is('therapies*')
@@ -246,7 +247,7 @@
   }
 
   function shouldShow() {
-    return cookieGet(promptCookieName) !== '1' && cookieGet('wow_geo_done') !== '1';
+    return cookieGet(promptCookieName) !== '1';
   }
 
   allowBtn?.addEventListener('click', function () {
