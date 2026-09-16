@@ -127,7 +127,8 @@ class CheckoutController extends Controller
             $item['price'] = app(MarketplacePricingService::class)->buyerPrice(
                 $item['price'] ?? 0,
                 $vendor,
-                isset($item['vendor_id']) && is_numeric($item['vendor_id']) ? (int) $item['vendor_id'] : null
+                isset($item['vendor_id']) && is_numeric($item['vendor_id']) ? (int) $item['vendor_id'] : null,
+                strtolower(trim((string) ($item['source_version'] ?? data_get($item, 'meta.source_version', '')))) !== 'store'
             );
             $meta['price_includes_marketplace_markup'] = true;
             $item['meta'] = $meta;

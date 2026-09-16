@@ -244,6 +244,9 @@ const url = computed(() => publicProductUrl(product.value))
 const price = computed(() => {
   const raw = Number(product.value.variants_min_price ?? product.value.price_min ?? product.value.price ?? product.value.base_price)
   if (!Number.isFinite(raw) || raw <= 0) return '£0'
+  if (isStoreProduct.value) {
+    return money(isWeOfferWellness(product.value) ? raw : Math.round(raw * 1.05 * 100) / 100) || '£0'
+  }
   const amount = isWeOfferWellness(product.value) ? Math.ceil(raw) : Math.ceil(raw * 1.05)
   return money(amount) || '£0'
 })

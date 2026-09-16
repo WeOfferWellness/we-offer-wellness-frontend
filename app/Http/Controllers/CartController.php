@@ -269,7 +269,8 @@ class CartController extends Controller
         $price = app(MarketplacePricingService::class)->buyerPrice(
             $price,
             $product?->vendor ?? $offering?->vendor,
-            $vendorId ? (int) $vendorId : null
+            $vendorId ? (int) $vendorId : null,
+            $sourceVersion !== 'store'
         );
 
         $selectedValues = array_values(array_filter(array_unique(array_merge(

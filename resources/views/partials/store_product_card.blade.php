@@ -5,7 +5,7 @@
     $image = trim((string) data_get($product, 'image', data_get($product, 'image_url', '')));
     $url = (string) data_get($product, 'url', '#');
     $price = data_get($product, 'price');
-    $price = is_numeric($price) ? app(\App\Services\MarketplacePricingService::class)->buyerPrice($price, ['vendor_name' => $brand]) : $price;
+    $price = is_numeric($price) ? app(\App\Services\MarketplacePricingService::class)->buyerPrice($price, ['vendor_name' => $brand], null, false) : $price;
     $priceLabel = is_numeric($price) ? '£' . rtrim(rtrim(number_format((float) $price, 2, '.', ''), '0'), '.') : '£0';
     $trackingId = (int) data_get($product, 'id', 0);
     $rankingRequestId = trim((string) data_get($product, 'ranking_request_id', ''));

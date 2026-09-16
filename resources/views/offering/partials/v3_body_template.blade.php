@@ -22,9 +22,9 @@
         'vendor_name' => $offering['vendor_name'] ?? data_get($offering, 'vendor.name', data_get($offering, 'vendor_details.name', '')),
         'user' => ['name' => data_get($offering, 'vendor.user.name', ''), 'email' => data_get($offering, 'vendor.user.email', '')],
     ];
-    $price = $pricing->buyerPrice($rawPrice, $pricingVendor, (int) ($offering['vendor_id'] ?? 0));
-    $priceMin = $pricing->buyerPrice($rawPriceMin, $pricingVendor, (int) ($offering['vendor_id'] ?? 0));
-    $priceMax = $pricing->buyerPrice($rawPriceMax, $pricingVendor, (int) ($offering['vendor_id'] ?? 0));
+    $price = $pricing->buyerPrice($rawPrice, $pricingVendor, (int) ($offering['vendor_id'] ?? 0), ! $isStoreProduct);
+    $priceMin = $pricing->buyerPrice($rawPriceMin, $pricingVendor, (int) ($offering['vendor_id'] ?? 0), ! $isStoreProduct);
+    $priceMax = $pricing->buyerPrice($rawPriceMax, $pricingVendor, (int) ($offering['vendor_id'] ?? 0), ! $isStoreProduct);
     $rating = is_numeric($offering['rating'] ?? null) ? (float) $offering['rating'] : null;
     $reviewCount = is_numeric($offering['review_count'] ?? null) ? (int) $offering['review_count'] : 0;
     if ($reviewCount > 0 && (! is_numeric($rating) || (float) $rating <= 0)) {
@@ -621,9 +621,9 @@ SVG;
         ];
     }
     foreach ($variantCards as &$variantCard) {
-        $variantCard['price'] = $pricing->buyerPrice($variantCard['price'] ?? 0, $pricingVendor, (int) ($offering['vendor_id'] ?? 0));
+        $variantCard['price'] = $pricing->buyerPrice($variantCard['price'] ?? 0, $pricingVendor, (int) ($offering['vendor_id'] ?? 0), ! $isStoreProduct);
         if (is_numeric($variantCard['compare'] ?? null)) {
-            $variantCard['compare'] = $pricing->buyerPrice($variantCard['compare'], $pricingVendor, (int) ($offering['vendor_id'] ?? 0));
+            $variantCard['compare'] = $pricing->buyerPrice($variantCard['compare'], $pricingVendor, (int) ($offering['vendor_id'] ?? 0), ! $isStoreProduct);
         }
     }
     unset($variantCard);

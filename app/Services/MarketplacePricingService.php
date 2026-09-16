@@ -8,7 +8,7 @@ class MarketplacePricingService
 {
     public const RATE = 0.05;
 
-    public function buyerPrice(float|int|string|null $amount, mixed $vendor = null, ?int $vendorId = null): float
+    public function buyerPrice(float|int|string|null $amount, mixed $vendor = null, ?int $vendorId = null, bool $roundToPound = true): float
     {
         $amount = max(0, (float) $amount);
 
@@ -16,7 +16,7 @@ class MarketplacePricingService
             ? $amount
             : $amount * (1 + self::RATE);
 
-        return (float) ceil($customerAmount);
+        return $roundToPound ? (float) ceil($customerAmount) : round($customerAmount, 2);
     }
 
     public function isWeOfferWellness(mixed $vendor = null, ?int $vendorId = null): bool

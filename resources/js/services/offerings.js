@@ -92,6 +92,8 @@ function isWeOfferWellnessProvider(item) {
 function customerPrice(value, item) {
   const amount = moneyValue(value);
   if (amount === null) return amount;
+  const physical = ['physical_product', 'store_product'].includes(lower(item?.kind || item?.product_kind || item?.source_type));
+  if (physical) return moneyValue(isWeOfferWellnessProvider(item) ? amount : amount * 1.05);
   if (isWeOfferWellnessProvider(item)) return Math.ceil(amount);
   return Math.ceil(amount * 1.05);
 }

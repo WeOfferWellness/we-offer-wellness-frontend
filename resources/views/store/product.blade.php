@@ -9,7 +9,7 @@
     $categoryName = (string) data_get($product, 'category.name', 'Shop');
     $image = (string) data_get($product, 'image', '');
     $price = (float) data_get($product, 'price', 0);
-    $price = app(\App\Services\MarketplacePricingService::class)->buyerPrice($price, ['vendor_name' => data_get($product, 'brand', 'We Offer Wellness')]);
+    $price = app(\App\Services\MarketplacePricingService::class)->buyerPrice($price, ['vendor_name' => data_get($product, 'brand', 'We Offer Wellness')], null, false);
     $compare = data_get($product, 'compare_at_price');
     $variant = collect((array) data_get($product, 'variants', []))->first() ?: [];
     $variantId = (string) data_get($variant, 'id', '');
