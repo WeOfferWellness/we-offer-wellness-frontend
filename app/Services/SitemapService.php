@@ -7,6 +7,7 @@ use App\Models\LegalDocument;
 use App\Models\Platform;
 use App\Models\PageRedirect;
 use App\Models\Product;
+use App\Models\ProductSubcategory;
 use App\Models\User;
 use App\Support\WowEventsFeed;
 use App\Services\WhatCategoryCacheService;
@@ -19,6 +20,9 @@ use Illuminate\Support\Str;
 
 class SitemapService
 {
+    private const RETIRED_MODALITY_SLUGS = ['angel-reiki', 'reiki-healing', 'pregnancy-massage-pregnancy', 'eft'];
+
+    private const NON_MODALITY_SLUGS = ['class', 'course', 'workshop', 'retreat'];
     private const MAX_URLS_PER_FILE = 50000;
 
     private const SITEMAP_THROTTLE_EVERY = 100;
@@ -141,6 +145,8 @@ class SitemapService
 
     private ?Collection $liveOfferings = null;
 
+    private array $modalityStats = [];
+
     private ?array $locationCatalog = null;
 
     private ?array $locationPathIndex = null;
@@ -203,6 +209,11 @@ class SitemapService
     public function manifestPath(): string
     {
         return $this->outputDirectory() . '/manifest.json';
+    }
+
+    public function modalityStats(): array
+    {
+        return $this->modalityStats;
     }
 
     public function buildAndWriteAll(?string $outputDirectory = null): array
@@ -672,6 +683,13 @@ class SitemapService
      */
     private function buildModalityEntries(): array
     {
+        $this->modalityStats = [
+            'parent_count' => 0,
+            'subcategory_count' => 0,
+            'excluded_redirects' => 0,
+            'invalid_urls' => 0,
+            'duplicate_urls' => 0,
+        ];
         $entries = [];
         $latestByUrl = [];
         $seo = app(SeoStructureService::class);
@@ -703,6 +721,13 @@ class SitemapService
                 continue;
             }
 
+            if (! $this->isIndexableModality($product, $modality)) {
+                $this->modalityStats['excluded_redirects']++;
+                continue;
+            }
+
+            $this->modalityStats[$product->subcategory !== null ? 'subcategory_count' : 'parent_count']++;
+
             $url = $seo->modalityPageUrl($format, $modality);
             $rememberLatest($url, $product->updated_at ?? null);
         }
@@ -714,6 +739,13 @@ class SitemapService
                 continue;
             }
 
+            if (! $this->isIndexableModality($offering, $modality)) {
+                $this->modalityStats['excluded_redirects']++;
+                continue;
+            }
+
+            $this->modalityStats[$offering->subcategory !== null ? 'subcategory_count' : 'parent_count']++;
+
             $url = $seo->modalityPageUrl($format, $modality);
             $rememberLatest($url, $offering->updated_at ?? null);
         }
@@ -722,7 +754,23 @@ class SitemapService
             $this->addEntry($entries, $url, $lastmod);
         }
 
+        $this->modalityStats['duplicate_urls'] = max(0, $this->modalityStats['parent_count'] + $this->modalityStats['subcategory_count'] - count($latestByUrl));
+        $subcategorySlugs = $this->subcategorySlugs();
+        $this->modalityStats['parent_count'] = count(array_filter(array_keys($latestByUrl), fn (string $url): bool => ! in_array($this->slugFromUrl($url), $subcategorySlugs, true)));
+        $this->modalityStats['subcategory_count'] = count($latestByUrl) - $this->modalityStats['parent_count'];
+        $this->modalityStats['invalid_urls'] = count(array_filter(array_keys($latestByUrl), fn (string $url): bool => ! $this->shouldIncludeUrl($url)));
+
         return array_values($entries);
+    }
+
+    private function slugFromUrl(string $url): string
+    {
+        return trim((string) basename((string) parse_url($url, PHP_URL_PATH)));
+    }
+
+    private function subcategorySlugs(): array
+    {
+        return ProductSubcategory::query()->whereIn('status', ['approved', 'live'])->pluck('slug')->all();
     }
 
     /**
@@ -1097,9 +1145,10 @@ class SitemapService
         }
 
         return $this->liveProducts = Product::query()
-            ->select(['id', 'title', 'product_type', 'tags_list', 'updated_at', 'category_id', 'product_status_id', 'vendor_id'])
+            ->select(['id', 'title', 'product_type', 'tags_list', 'updated_at', 'category_id', 'subcategory_id', 'product_status_id', 'vendor_id'])
             ->with([
                 'category:id,name',
+                'subcategory:id,category_id,name,slug,status',
                 'options.values',
                 'vendor.locations',
             ])
@@ -1121,10 +1170,24 @@ class SitemapService
         }
 
         return $this->liveOfferings = OfferingV3::query()
-            ->select(['id', 'title', 'updated_at', 'status', 'category_id', 'type_id', 'vendor_id'])
-            ->with(['category:id,name', 'vendor.locations'])
+            ->select(['id', 'title', 'updated_at', 'status', 'category_id', 'subcategory_id', 'type_id', 'vendor_id'])
+            ->with(['category:id,name', 'subcategory:id,category_id,name,slug,status', 'vendor.locations'])
             ->whereIn('status', ['live', 'approved'])
             ->get();
+    }
+
+    private function isIndexableModality(mixed $listing, string $slug): bool
+    {
+        if (in_array(strtolower($slug), array_merge(self::RETIRED_MODALITY_SLUGS, self::NON_MODALITY_SLUGS), true)) {
+            return false;
+        }
+
+        $subcategory = data_get($listing, 'subcategory');
+        if ($subcategory instanceof ProductSubcategory) {
+            return in_array(strtolower((string) $subcategory->status), ['approved', 'live'], true);
+        }
+
+        return true;
     }
 
     private function locationCatalog(): array

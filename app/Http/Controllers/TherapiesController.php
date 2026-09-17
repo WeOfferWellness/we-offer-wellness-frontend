@@ -6,6 +6,7 @@ use App\Models\Booking;
 use App\Models\Reservation;
 use App\Models\Product;
 use App\Models\ProductCategory;
+use App\Models\ProductSubcategory;
 use App\Models\VendorAvailability;
 use App\Services\AvailabilityWindowService;
 use App\Support\EventListing;
@@ -196,7 +197,25 @@ class TherapiesController extends Controller
             });
 
         if (! $category) {
-            return null;
+            $subcategory = ProductSubcategory::query()
+                ->whereIn('status', ['approved', 'live'])
+                ->get()
+                ->first(fn (ProductSubcategory $subcategory): bool => Str::slug((string) ($subcategory->slug ?: $subcategory->name)) === $slug);
+            if (! $subcategory) {
+                return null;
+            }
+
+            $title = trim((string) ($subcategory->name ?? '')) ?: Str::headline($slug);
+
+            return [
+                'key' => $slug,
+                'slug' => $slug,
+                'title' => $title,
+                'category_id' => (int) $subcategory->category_id,
+                'subcategory_id' => (int) $subcategory->id,
+                'seo_title' => $title . ' | We Offer Wellness™',
+                'seo_description' => 'Explore ' . $title . ' experiences and therapies.',
+            ];
         }
 
         $title = trim((string) ($category->name ?? ''));
@@ -208,6 +227,8 @@ class TherapiesController extends Controller
             'key' => (string) ($category->slug ?: $slug),
             'slug' => (string) ($category->slug ?: $slug),
             'title' => $title,
+            'category_id' => (int) $category->id,
+            'subcategory_id' => null,
             'seo_title' => $title . ' | We Offer Wellness™',
             'seo_description' => 'Explore ' . $title . ' experiences and therapies.',
         ];
@@ -227,7 +248,7 @@ class TherapiesController extends Controller
             $page    = max(1, (int)($query['page'] ?? 1));
 
             $builder = Product::query()
-                ->with(['media', 'category', 'options.values', 'vendor.tiers', 'vendor.user.settings'])
+                ->with(['media', 'category', 'subcategory', 'options.values', 'vendor.tiers', 'vendor.user.settings'])
                 ->withCount('reviews')
                 ->withAvg('reviews', 'rating')
                 ->withMin('variants', 'price')
@@ -236,9 +257,12 @@ class TherapiesController extends Controller
                     $q->whereRaw("LOWER(COALESCE(product_type,'')) like '%therap%'");
                 })
                 ->where(function ($q) use ($therapyKey) {
-                    $ids = $this->categoryIdsForTherapy($therapyKey);
-                    if (!empty($ids)) {
-                        $q->whereIn('category_id', $ids);
+                    $taxonomy = $this->taxonomyForTherapy($therapyKey);
+                    if ($taxonomy) {
+                        $q->where('category_id', $taxonomy['category_id']);
+                        if ($taxonomy['subcategory_id']) {
+                            $q->where('subcategory_id', $taxonomy['subcategory_id']);
+                        }
                     } else {
                         $slug = strtolower($therapyKey);
                         $q->whereRaw("LOWER(COALESCE(tags_list,'')) like ?", ['%'.$slug.'%'])
@@ -299,20 +323,35 @@ class TherapiesController extends Controller
         });
     }
 
-    private function categoryIdsForTherapy(string $slug): array
+    private function taxonomyForTherapy(string $slug): ?array
     {
         $safe = strtolower($slug);
         $title = collect($this->therapiesIndex())
             ->firstWhere('slug', $slug)['title'] ?? $slug;
 
-        return ProductCategory::query()
+        $category = ProductCategory::query()
             ->where(function ($query) use ($safe, $title) {
                 $query->whereRaw('LOWER(slug) like ?', ['%'.$safe.'%'])
                     ->orWhereRaw('LOWER(name) like ?', ['%'.$safe.'%'])
                     ->orWhereRaw('LOWER(name) like ?', ['%'.strtolower($title).'%']);
             })
-            ->pluck('id')
-            ->all();
+            ->first();
+
+        if ($category) {
+            return ['category_id' => (int) $category->id, 'subcategory_id' => null];
+        }
+
+        $subcategory = ProductSubcategory::query()
+            ->whereIn('status', ['approved', 'live'])
+            ->where(function ($query) use ($safe, $title) {
+                $query->where('slug', $safe)
+                    ->orWhereRaw('LOWER(name) = ?', [strtolower($title)]);
+            })
+            ->first();
+
+        return $subcategory
+            ? ['category_id' => (int) $subcategory->category_id, 'subcategory_id' => (int) $subcategory->id]
+            : null;
     }
 
     private function nextAvailableAt(Product $item): ?Carbon

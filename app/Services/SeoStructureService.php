@@ -812,6 +812,11 @@ class SeoStructureService
 
     public function inferModalitySlugFromProduct(mixed $product): string
     {
+        $subcategory = trim((string) data_get($product, 'subcategory.slug', ''));
+        if ($subcategory !== '') {
+            return $this->categorySlug($subcategory);
+        }
+
         $category = trim((string) data_get($product, 'category.slug', ''));
         if ($category !== '') {
             return $this->categorySlug($category);
@@ -832,6 +837,11 @@ class SeoStructureService
 
     public function inferModalitySlugFromOffering(OfferingV3 $offering): string
     {
+        $subcategory = trim((string) optional($offering->subcategory)->slug);
+        if ($subcategory !== '') {
+            return $this->categorySlug($subcategory);
+        }
+
         $category = trim((string) optional($offering->category)->slug);
         if ($category !== '') {
             return $this->categorySlug($category);

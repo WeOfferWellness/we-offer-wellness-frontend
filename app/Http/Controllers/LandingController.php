@@ -8,6 +8,7 @@ use App\Models\OfferingV3;
 use App\Models\Platform;
 use App\Models\Product;
 use App\Models\ProductCategory;
+use App\Models\ProductSubcategory;
 use App\Models\Review;
 use App\Models\VendorDetail;
 use App\Services\BookingContextBuilder;
@@ -229,7 +230,7 @@ class LandingController extends Controller
             abort(404);
         }
 
-        $products = $this->queryProducts($format, $cat->id, $request)->limit(12)->get();
+        $products = $this->queryProducts($format, $this->taxonomyCategoryId($cat), $request, null, $this->taxonomySubcategoryId($cat))->limit(12)->get();
         $title = $cat->name.' '.ucfirst($format);
 
         return view('landing.show', [
@@ -293,7 +294,7 @@ class LandingController extends Controller
         $countyLabel = ucwords(str_replace('-', ' ', trim($county)));
         $townLabel = ucwords(str_replace('-', ' ', trim($town)));
         $locationLabel = trim(implode(', ', array_filter([$townLabel, $countyLabel, $countryLabel])));
-        $products = $this->queryProducts($format, $cat->id, $request, $locationLabel)->limit(12)->get();
+        $products = $this->queryProducts($format, $this->taxonomyCategoryId($cat), $request, $locationLabel, $this->taxonomySubcategoryId($cat))->limit(12)->get();
         $title = $cat->name.' '.ucfirst($format).' in '.$locationLabel;
 
         return view('landing.show', [
@@ -356,7 +357,7 @@ class LandingController extends Controller
             abort(404);
         }
 
-        $products = $this->queryProducts($type, $cat->id, $request)->limit(12)->get();
+        $products = $this->queryProducts($type, $this->taxonomyCategoryId($cat), $request, null, $this->taxonomySubcategoryId($cat))->limit(12)->get();
 
         $title = $cat->name.' '.ucfirst($type);
 
@@ -417,7 +418,7 @@ class LandingController extends Controller
         }
 
         $locationName = trim(str_replace(['-', '+'], ' ', $location));
-        $products = $this->queryProducts($type, $cat->id, $request, $locationName)->limit(12)->get();
+        $products = $this->queryProducts($type, $this->taxonomyCategoryId($cat), $request, $locationName, $this->taxonomySubcategoryId($cat))->limit(12)->get();
         $title = $cat->name.' '.ucfirst($type).' in '.ucwords($locationName);
 
         return view('landing.show', [
@@ -482,18 +483,19 @@ class LandingController extends Controller
         $perPage = max(6, min($perPage, 120));
         $page = (int) $request->integer('page', 1);
         $cookieCity = trim((string) $request->cookie('wow_city', ''));
-        $paginator = $this->queryProducts($type, $cat->id, $request)->paginate($perPage, ['*'], 'page', $page);
+        $paginator = $this->queryProducts($type, $this->taxonomyCategoryId($cat), $request, null, $this->taxonomySubcategoryId($cat))->paginate($perPage, ['*'], 'page', $page);
         if ($paginator->total() === 0 && $cookieCity !== '') {
-            $paginator = $this->queryProducts($type, $cat->id, $request, '')->paginate($perPage, ['*'], 'page', $page);
+            $paginator = $this->queryProducts($type, $this->taxonomyCategoryId($cat), $request, '', $this->taxonomySubcategoryId($cat))->paginate($perPage, ['*'], 'page', $page);
         }
         $paginator->setCollection($paginator->getCollection()->map(fn ($p) => $this->transformProduct($p)));
 
         return Inertia::render('Landing/Listing', [
             'type' => $type,
             'category' => [
-                'id' => $cat->id,
+                'id' => $this->taxonomyCategoryId($cat),
                 'name' => $cat->name,
                 'slug' => $this->slugify($cat->name),
+                'subcategory_id' => $this->taxonomySubcategoryId($cat),
             ],
             'products' => $paginator,
             'mapsKey' => env('GOOGLE_MAPS_API_KEY'),
@@ -529,7 +531,7 @@ class LandingController extends Controller
         $perPage = (int) $request->integer('per_page', 48);
         $perPage = max(6, min($perPage, 120));
         $page = (int) $request->integer('page', 1);
-        $paginator = $this->queryProducts($type, $cat->id, $request, $city)
+        $paginator = $this->queryProducts($type, $this->taxonomyCategoryId($cat), $request, $city, $this->taxonomySubcategoryId($cat))
             ->paginate($perPage, ['*'], 'page', $page);
         $paginator->setCollection($paginator->getCollection()->map(fn ($p) => $this->transformProduct($p)));
 
@@ -537,9 +539,10 @@ class LandingController extends Controller
             'city' => $city,
             'type' => $type,
             'category' => [
-                'id' => $cat->id,
+                'id' => $this->taxonomyCategoryId($cat),
                 'name' => $cat->name,
                 'slug' => $this->slugify($cat->name),
+                'subcategory_id' => $this->taxonomySubcategoryId($cat),
             ],
             'products' => $paginator,
             'mapsKey' => env('GOOGLE_MAPS_API_KEY'),
@@ -915,7 +918,7 @@ class LandingController extends Controller
         ]);
     }
 
-    private function findCategoryBySlug(string $slug): ?ProductCategory
+    private function findCategoryBySlug(string $slug): ProductCategory|ProductSubcategory|null
     {
         $slug = strtolower($slug);
         // Attempt to match by slugified name
@@ -926,7 +929,26 @@ class LandingController extends Controller
             }
         }
 
+        $subcategories = ProductSubcategory::query()
+            ->whereIn('status', ['approved', 'live'])
+            ->get();
+        foreach ($subcategories as $subcategory) {
+            if ($this->slugify($subcategory->slug ?: $subcategory->name) === $slug) {
+                return $subcategory;
+            }
+        }
+
         return null;
+    }
+
+    private function taxonomyCategoryId(ProductCategory|ProductSubcategory $taxonomy): int
+    {
+        return $taxonomy instanceof ProductSubcategory ? (int) $taxonomy->category_id : (int) $taxonomy->id;
+    }
+
+    private function taxonomySubcategoryId(ProductCategory|ProductSubcategory $taxonomy): ?int
+    {
+        return $taxonomy instanceof ProductSubcategory ? (int) $taxonomy->id : null;
     }
 
     private function slugify(?string $name): string
@@ -1034,12 +1056,12 @@ class LandingController extends Controller
         }
     }
 
-    private function queryProducts(?string $type, ?int $categoryId, Request $request, ?string $city = null)
+    private function queryProducts(?string $type, ?int $categoryId, Request $request, ?string $city = null, ?int $subcategoryId = null)
     {
         $q = Product::query()
             ->withCount('reviews')
             ->withAvg('reviews', 'rating')
-            ->with(['media', 'options.values', 'category']);
+            ->with(['media', 'options.values', 'category', 'subcategory']);
 
         $q->where(function ($visible) {
             $visible->whereHas('status', function ($qs) {
@@ -1049,6 +1071,9 @@ class LandingController extends Controller
 
         if ($categoryId) {
             $q->where('category_id', $categoryId);
+        }
+        if ($subcategoryId) {
+            $q->where('subcategory_id', $subcategoryId);
         }
         if ($type) {
             $this->applyTypeFilter($q, $type);

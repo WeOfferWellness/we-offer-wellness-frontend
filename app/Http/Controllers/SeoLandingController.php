@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\ProductCategory;
+use App\Models\ProductSubcategory;
 use App\Support\EventListing;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -137,17 +138,20 @@ class SeoLandingController extends Controller
         };
     }
 
-    private function queryProducts(Request $request, string $type, ?ProductCategory $category = null)
+    private function queryProducts(Request $request, string $type, ProductCategory|ProductSubcategory|null $category = null)
     {
         $builder = Product::query()
-            ->with(['media', 'options.values', 'category'])
+            ->with(['media', 'options.values', 'category', 'subcategory'])
             ->withCount('reviews')
             ->withAvg('reviews', 'rating');
 
         $this->applyTypeFilter($builder, $type);
 
         if ($category) {
-            $builder->where('category_id', $category->id);
+            $builder->where('category_id', $category instanceof ProductSubcategory ? $category->category_id : $category->id);
+            if ($category instanceof ProductSubcategory) {
+                $builder->where('subcategory_id', $category->id);
+            }
         }
 
         $mode = strtolower((string) $request->query('format', $request->query('mode', '')));
@@ -193,7 +197,7 @@ class SeoLandingController extends Controller
             ->values();
     }
 
-    private function findCategoryBySlug(string $slug): ?ProductCategory
+    private function findCategoryBySlug(string $slug): ProductCategory|ProductSubcategory|null
     {
         $slug = strtolower(trim($slug));
         if ($slug === '') {
@@ -203,6 +207,12 @@ class SeoLandingController extends Controller
         foreach (ProductCategory::query()->get() as $category) {
             if (Str::slug((string) $category->name) === $slug) {
                 return $category;
+            }
+        }
+
+        foreach (ProductSubcategory::query()->whereIn('status', ['approved', 'live'])->get() as $subcategory) {
+            if (Str::slug((string) ($subcategory->slug ?: $subcategory->name)) === $slug) {
+                return $subcategory;
             }
         }
 
