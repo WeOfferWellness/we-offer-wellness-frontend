@@ -21,12 +21,13 @@ class CatalogController extends Controller
         $includeAll = strtolower((string)$request->query('all', 'false')) === 'true';
 
         $categories = ProductCategory::query()
+            ->with('subcategories')
             ->with(['products' => function ($q) use ($productLimit, $includeAll) {
                 $q->withCount('reviews')
                   ->withAvg('reviews', 'rating')
                   ->withMin('variants','price')
                   ->withMax('variants','price')
-                  ->with(['media', 'options.values', 'category', 'vendor.tiers', 'vendor.user.settings']);
+                  ->with(['media', 'options.values', 'category', 'subcategory', 'vendor.tiers', 'vendor.user.settings']);
             }])
             ->orderBy('name')
             ->get();
@@ -46,6 +47,7 @@ class CatalogController extends Controller
                 'title' => $p->title,
                 'type' => $p->product_type ?: 'experience',
                 'category' => $p->category ? ['id' => $p->category->id, 'name' => $p->category->name] : null,
+                'subcategory' => $p->subcategory ? ['id' => $p->subcategory->id, 'category_id' => $p->subcategory->category_id, 'name' => $p->subcategory->name, 'slug' => $p->subcategory->slug] : null,
                 'vendor_name' => $p->vendor?->vendor_name ?? null,
                 'plan_key' => $vendorPlan['key'],
                 'plan_label' => $vendorPlan['label'],
@@ -75,6 +77,7 @@ class CatalogController extends Controller
                 'title' => $offering->title,
                 'type' => $offering->type?->name ?? $offering->category?->name ?? 'experience',
                 'category' => $offering->category ? ['id' => $offering->category->id, 'name' => $offering->category->name] : null,
+                'subcategory' => $offering->subcategory ? ['id' => $offering->subcategory->id, 'category_id' => $offering->subcategory->category_id, 'name' => $offering->subcategory->name, 'slug' => $offering->subcategory->slug] : null,
                 'vendor_name' => $offering->vendor?->vendor_name ?? null,
                 'plan_key' => $vendorPlan['key'],
                 'plan_label' => $vendorPlan['label'],
@@ -109,12 +112,21 @@ class CatalogController extends Controller
             return [
                 'id' => $cat->id,
                 'name' => $cat->name,
+                'subcategories' => $cat->subcategories->map(fn ($subcategory) => [
+                    'id' => $subcategory->id,
+                    'category_id' => $subcategory->category_id,
+                    'name' => $subcategory->name,
+                    'slug' => $subcategory->slug,
+                    'tagline' => $subcategory->tagline,
+                    'description' => $subcategory->description,
+                    'image_url' => $subcategory->image_url,
+                ])->values(),
                 'products' => $products->map($transformProduct)->values(),
             ];
         })->values();
 
         $offerings = OfferingV3::query()
-            ->with(['category', 'type', 'vendor.tiers', 'vendor.user.settings', 'media', 'coverMedia'])
+            ->with(['category', 'subcategory', 'type', 'vendor.tiers', 'vendor.user.settings', 'media', 'coverMedia'])
             ->whereIn('status', ['live', 'approved'])
             ->get()
             ->reject(fn ($offering) => EventListing::isPast($offering))

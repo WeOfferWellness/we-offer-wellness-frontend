@@ -26,6 +26,7 @@ class Product extends Model
         'vendor_id',
         'product_status_id',
         'category_id',
+        'subcategory_id',
         'is_women_owned',  // Added field
         'is_lgbtq_friendly', // Added field
         'tags_list',
@@ -103,6 +104,11 @@ class Product extends Model
     public function category()
     {
         return $this->belongsTo(ProductCategory::class, 'category_id');
+    }
+
+    public function subcategory()
+    {
+        return $this->belongsTo(ProductSubcategory::class, 'subcategory_id');
     }
 
     /**

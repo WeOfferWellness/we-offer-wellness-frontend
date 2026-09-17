@@ -27,6 +27,7 @@ class OfferingV3 extends Model
         'summary',
         'type_id',
         'category_id',
+        'subcategory_id',
         'price',
         'cover_media_id',
         'published_at',
@@ -50,6 +51,11 @@ class OfferingV3 extends Model
     public function category()
     {
         return $this->belongsTo(ProductCategory::class, 'category_id');
+    }
+
+    public function subcategory()
+    {
+        return $this->belongsTo(ProductSubcategory::class, 'subcategory_id');
     }
 
     public function media()

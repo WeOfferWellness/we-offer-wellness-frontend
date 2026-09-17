@@ -38,6 +38,16 @@ class ProductCategory extends Model
         return $this->hasMany(Product::class, 'category_id');
     }
 
+    public function offerings()
+    {
+        return $this->hasMany(OfferingV3::class, 'category_id');
+    }
+
+    public function subcategories()
+    {
+        return $this->hasMany(ProductSubcategory::class, 'category_id');
+    }
+
     public function parent()
     {
         return $this->belongsTo(ProductCategory::class, 'parent_id');
