@@ -21,7 +21,7 @@ class CatalogController extends Controller
         $includeAll = strtolower((string)$request->query('all', 'false')) === 'true';
 
         $categories = ProductCategory::query()
-            ->with('subcategories')
+            ->with(['subcategories' => fn ($query) => $query->approved()->orderBy('name')])
             ->with(['products' => function ($q) use ($productLimit, $includeAll) {
                 $q->withCount('reviews')
                   ->withAvg('reviews', 'rating')
