@@ -824,9 +824,59 @@
       }
     }
     @media (max-width: 640px){
-      .wow-locations-page{ padding:32px 0 56px; }
+      .wow-locations-page{ padding:16px 0 40px; }
       .wow-locations-container,
       .wow-page-grid{ width:min(100% - 28px, 1360px); }
+      .wow-locations-hero{
+        display:block;
+        margin-bottom:14px;
+      }
+      .wow-locations-hero .wow-kicker{
+        margin-bottom:7px;
+        font-size:11px;
+      }
+      .wow-locations-hero h1{
+        font-size:clamp(36px, 11vw, 54px);
+        line-height:.98;
+      }
+      .wow-locations-hero p{
+        margin-top:10px;
+        font-size:14px;
+        line-height:1.45;
+      }
+      .wow-search-panel{
+        display:none !important;
+      }
+      .wow-search-summary{
+        margin-bottom:18px;
+        padding:16px;
+        border-radius:16px;
+      }
+      .wow-search-summary strong{
+        font-size:16px;
+      }
+      .wow-search-summary p{
+        font-size:13px;
+        line-height:1.4;
+      }
+      .wow-locations-section{
+        margin-top:20px;
+      }
+      .wow-locations-section h2{
+        margin-bottom:8px;
+        font-size:30px;
+      }
+      .wow-locations-section__copy{
+        margin-bottom:12px;
+        font-size:13px;
+        line-height:1.45;
+      }
+      .wow-location-mobile-results{
+        margin:0 -14px;
+      }
+      .wow-location-desktop-results{
+        display:none !important;
+      }
       .wow-search-panel__row{
         grid-template-columns:1fr;
       }
@@ -896,8 +946,8 @@
     <header class="wow-locations-hero">
       <div>
         <p class="wow-kicker">Find</p>
-        <h1>Search by location and we’ll sort the nearest wellness options for you.</h1>
-        <p>Start typing a town, city or region and Mapbox will suggest the right place. We’ll then rank therapies, classes, events and practitioners by distance, with online shown when it’s the better fit.</p>
+        <h1>{{ $resolved ? 'Wellness in ' . ($resolved['place'] ?? $resolved['label'] ?? $locationQuery) : 'Search by location and we’ll sort the nearest wellness options for you.' }}</h1>
+        <p>{{ $resolved ? 'Browse therapies, classes, events and practitioners available in this area, with online options included when they are the better fit.' : 'Start typing a town, city or region and Mapbox will suggest the right place. We’ll then rank therapies, classes, events and practitioners by distance, with online shown when it’s the better fit.' }}</p>
       </div>
 
       <div class="wow-search-panel">
@@ -960,7 +1010,7 @@
 
       <section class="wow-locations-section">
         <h2>Offerings in this area</h2>
-        <p class="wow-locations-section__copy">These are the actual therapies, classes, workshops and retreats matched to your selected location, with the map dotted to those experiences.</p>
+        <p class="wow-locations-section__copy">Live therapies, classes, workshops and retreats available in this area.</p>
       </section>
 
       @if(isset($products) && $products->count())
@@ -983,9 +1033,9 @@
         </div>
       @endif
 
-      <section class="wow-locations-section">
+      <section class="wow-locations-section wow-locations-secondary">
         <h2>Nearest results</h2>
-        <p class="wow-locations-section__copy">These are ranked by distance from your selected location. If there’s a better local option later, the list updates automatically when you search again.</p>
+        <p class="wow-locations-section__copy">Explore nearby areas if you are happy to travel.</p>
 
         <div class="wow-location-list">
           @foreach($searchPhysicalResults as $location)
