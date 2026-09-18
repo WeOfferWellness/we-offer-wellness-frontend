@@ -78,7 +78,7 @@
           'url' => url('/'),
           'logo' => [
             '@type' => 'ImageObject',
-            'url' => 'https://www.weofferwellness.co.uk/cdn/shop/files/logo-google-icon_05080e3a-98e5-42cd-b479-3b443028308c.png',
+            'url' => url(config('app.favicon_url', '/favicon.png')),
           ],
           'sameAs' => [
             'https://www.instagram.com/weofferwellness',

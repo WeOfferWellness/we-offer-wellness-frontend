@@ -100,7 +100,7 @@
             '@id' => $siteUrl . '#organization',
             'name' => $appName,
             'url' => $siteUrl,
-            'logo' => 'https://www.weofferwellness.co.uk/cdn/shop/files/logo-google-icon_05080e3a-98e5-42cd-b479-3b443028308c.png',
+            'logo' => $favicon,
             'sameAs' => [
               'https://www.instagram.com/weofferwellness',
               'https://www.tiktok.com/@weofferwellness',
