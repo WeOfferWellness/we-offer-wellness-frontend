@@ -217,6 +217,7 @@ class SubscriberController extends Controller
         $displayName = $subscriber->name ?: trim(($subscriber->first_name ?? '') . ' ' . ($subscriber->last_name ?? ''));
         $payload = array_filter([
             'email' => $subscriber->email,
+            'behaviour_visitor_public_id' => request()->cookie(env('BEHAVIOUR_VISITOR_COOKIE', 'wow_visitor_id')),
             'name' => $displayName !== '' ? $displayName : null,
             'first_name' => $subscriber->first_name,
             'last_name' => $subscriber->last_name,
@@ -228,10 +229,13 @@ class SubscriberController extends Controller
         ], fn ($value) => !is_null($value) && $value !== '');
 
         try {
-            Http::timeout(5)
+            $http = Http::timeout(5)
                 ->acceptJson()
-                ->asJson()
-                ->post($backendUrl . '/api/v3-subscribers', $payload);
+                ->asJson();
+            if (request()->headers->has('cookie')) {
+                $http = $http->withHeaders(['Cookie' => request()->headers->get('cookie')]);
+            }
+            $http->post($backendUrl . '/api/v3-subscribers', $payload);
         } catch (\Throwable $e) {
             logger()->warning('subscriber.backend_sync_failed', [
                 'email' => $subscriber->email,

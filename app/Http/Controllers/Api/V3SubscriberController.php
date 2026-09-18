@@ -329,6 +329,7 @@ class V3SubscriberController extends Controller
 
         $payload = [
             'email' => $subscriber->email,
+            'behaviour_visitor_public_id' => request()->cookie(env('BEHAVIOUR_VISITOR_COOKIE', 'wow_visitor_id')),
             'name' => $displayName !== '' ? $displayName : null,
             'first_name' => $subscriber->first_name,
             'last_name' => $subscriber->last_name,
