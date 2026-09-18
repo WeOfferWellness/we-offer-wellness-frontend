@@ -1,4 +1,4 @@
-const backendUrl = String(import.meta.env.VITE_BACKEND_URL || '').replace(/\/$/, '');
+const backendUrl = String(import.meta.env.VITE_BACKEND_URL || 'https://studio.weofferwellness.co.uk').replace(/\/$/, '');
 const preferencesKey = 'wow_cookie_preferences';
 const consentEndpoint = `${backendUrl}/api/behaviour/consent`;
 const eventsEndpoint = `${backendUrl}/api/behaviour/events`;
@@ -14,6 +14,7 @@ let visibilityInstalled = false;
 const cards = new WeakMap();
 const hoverTimers = new WeakMap();
 let lastSearchContextKey = '';
+let consentSyncPromise = null;
 
 const uuid = () => window.crypto?.randomUUID?.() || 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
   const n = Math.floor(Math.random() * 16);
@@ -168,6 +169,8 @@ function installVisibility() {
 async function syncConsent(value) {
   const allowed = value?.personalization === true;
   if (!backendUrl) return;
+  if (consentSyncPromise) return consentSyncPromise;
+  consentSyncPromise = (async () => {
   try {
     const response = await fetch(consentEndpoint, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ enabled: allowed, consent_version: '1' }) });
     if (!response.ok) throw new Error(String(response.status));
@@ -175,10 +178,13 @@ async function syncConsent(value) {
     if (enabled) { queue('page_view', { search_context: searchContext(), metadata: pageMetadata() }); queueCurrentSearch(); installVisibility(); }
     else pending = [];
   } catch (_) { enabled = false; pending = []; }
+  })().finally(() => { consentSyncPromise = null; });
+  return consentSyncPromise;
 }
 
 export function installBehaviourTelemetry() {
-  if (!backendUrl || typeof window === 'undefined') return;
+  if (!backendUrl || typeof window === 'undefined' || window.__wowBehaviourTelemetryInstalled) return;
+  window.__wowBehaviourTelemetryInstalled = true;
   document.addEventListener('wow:cookie-preferences', (event) => { void syncConsent(event.detail || preferences()); });
   if (preferences()?.personalization === true) void syncConsent(preferences());
   window.addEventListener('wow:search-results-loaded', queueCurrentSearch);
