@@ -492,6 +492,16 @@
       font-size:12px;
       font-weight:700;
     }
+
+    /* The offering results use the shared search controls. Keep the desktop
+       sidebar out of the mobile layout and mount the same compact toolbar and
+       filter sheet used by the main search page instead. */
+    .wow-location-desktop-results{ display:block; }
+    .wow-location-mobile-results{ display:none; }
+    @media (max-width:1040px){
+      .wow-location-desktop-results{ display:none; }
+      .wow-location-mobile-results{ display:block; }
+    }
     .wow-trending-grid,
     .wow-country-stack,
     .wow-county-stack{
@@ -953,11 +963,22 @@
       </section>
 
       @if(isset($products) && $products->count())
-        @include('search.partials.desktop', [
-          'resultsHeading' => 'Offerings near ' . ($resolved['town'] ?? $resolved['place'] ?? $resolved['county'] ?? $resolved['country'] ?? 'your location'),
-          'products' => $products,
-          'resultCount' => $resultCount ?? $products->total(),
-        ])
+        <div class="wow-location-desktop-results">
+          @include('search.partials.desktop', [
+            'resultsHeading' => 'Offerings near ' . ($resolved['town'] ?? $resolved['place'] ?? $resolved['county'] ?? $resolved['country'] ?? 'your location'),
+            'products' => $products,
+            'resultCount' => $resultCount ?? $products->total(),
+          ])
+        </div>
+        <div class="wow-location-mobile-results">
+          @include('search.partials.mobile', [
+            'products' => $products,
+            'resultCount' => $resultCount ?? $products->total(),
+            'searchMapData' => $offeringMapItems,
+            'mobileFullNavigation' => true,
+            'mobileShowMap' => false,
+          ])
+        </div>
       @endif
 
       <section class="wow-locations-section">
@@ -1067,6 +1088,97 @@
     @include('home.sections.gift_cards_occasion')
   </div>
 </main>
+
+@push('scripts')
+  <script>
+    (() => {
+      const init = () => {
+        const root = document.querySelector('.wow-location-mobile-results #wowMobileSearch');
+        const modal = root?.querySelector('[data-filter-modal]');
+        if (!root || !modal || root.dataset.initialized === 'true') return;
+        root.dataset.initialized = 'true';
+        const close = () => {
+          modal.hidden = true;
+          document.body.classList.remove('wow-sr-v5-no-scroll');
+        };
+        const open = () => {
+          modal.hidden = false;
+          document.body.classList.add('wow-sr-v5-no-scroll');
+        };
+        const sync = () => {
+          const url = new URL(window.location.href);
+          const values = {
+            sort: url.searchParams.get('sort') || 'popular',
+            type: url.searchParams.get('type') || '',
+            rating: url.searchParams.get('rating') || '',
+            price: Number(url.searchParams.get('price_max') || 500),
+          };
+          root.querySelectorAll('[data-draft-name]').forEach((button) => {
+            button.classList.toggle('is-selected', values[button.dataset.draftName] === button.dataset.draftValue);
+          });
+          root.querySelectorAll('[data-draft-price]').forEach((range) => {
+            range.value = String(Math.min(500, Math.max(10, values.price)));
+          });
+          root.querySelectorAll('[data-draft-price-label]').forEach((label) => {
+            label.textContent = values.price >= 500 ? 'Any price' : 'Under £' + values.price;
+          });
+        };
+
+        root.addEventListener('click', (event) => {
+          if (event.target.closest('[data-open-filters]')) { open(); sync(); return; }
+          if (event.target.closest('[data-close-filters]')) { close(); return; }
+          const sectionToggle = event.target.closest('[data-mobile-section-toggle]');
+          if (sectionToggle) {
+            const section = sectionToggle.closest('.wow-sr-v5-mobile-filter-section');
+            section.classList.toggle('is-collapsed');
+            sectionToggle.setAttribute('aria-expanded', String(!section.classList.contains('is-collapsed')));
+            return;
+          }
+          const choice = event.target.closest('[data-draft-name]');
+          if (choice) {
+            root.querySelectorAll('[data-draft-name="' + choice.dataset.draftName + '"]').forEach((item) => {
+              item.classList.toggle('is-selected', item === choice);
+            });
+            return;
+          }
+          if (event.target.closest('[data-clear-filters]')) {
+            const url = new URL(window.location.href);
+            ['sort', 'type', 'rating', 'price_max'].forEach((name) => url.searchParams.delete(name));
+            window.history.replaceState({}, '', url.toString());
+            sync();
+            return;
+          }
+          if (event.target.closest('[data-apply-filters]')) {
+            const url = new URL(window.location.href);
+            const selected = (name) => root.querySelector('[data-draft-name="' + name + '"].is-selected')?.dataset.draftValue || '';
+            const sort = selected('sort');
+            const type = selected('type');
+            const rating = selected('rating');
+            const price = root.querySelector('[data-draft-price]')?.value || '500';
+            [['sort', sort, 'popular'], ['type', type, ''], ['rating', rating, ''], ['price_max', price, '500']].forEach(([name, value, defaultValue]) => {
+              if (!value || value === defaultValue) url.searchParams.delete(name);
+              else url.searchParams.set(name, value);
+            });
+            window.location.assign(url.toString());
+          }
+        });
+        root.querySelectorAll('[data-draft-price]').forEach((range) => {
+          range.addEventListener('input', () => {
+            root.querySelectorAll('[data-draft-price-label]').forEach((label) => {
+              label.textContent = Number(range.value) >= 500 ? 'Any price' : 'Under £' + range.value;
+            });
+          });
+        });
+        document.addEventListener('keydown', (event) => {
+          if (event.key === 'Escape' && !modal.hidden) close();
+        });
+        sync();
+      };
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
+      else init();
+    })();
+  </script>
+@endpush
 @endsection
 
 @push('scripts')

@@ -11,7 +11,6 @@
             --sr-ink: #141a2a;
             --sr-line: #dfe5ea;
             --sr-page: #fbfaf8;
-            background: var(--sr-page);
             color: var(--sr-ink);
             padding-bottom: 32px;
         }
@@ -37,7 +36,7 @@
         .wow-sr-v5-mobile-count span { color: #8c98aa; font-size: 9px; font-weight: 650; }
         .wow-sr-v5-mobile-count b { color: var(--sr-green); }
         .wow-sr-v5-mobile-actions { display: flex; align-items: center; gap: 7px; }
-        .wow-sr-v5-mobile [data-map-toggle] { display: none; }
+        .wow-sr-v5-mobile[data-show-map="true"] [data-map-toggle] { display: inline-flex; }
         .wow-sr-v5-mobile-tool {
             min-height: 35px;
             display: inline-flex;
@@ -159,7 +158,7 @@
     </style>
 @endonce
 
-<section class="wow-sr-v5-mobile" id="wowMobileSearch" data-search-url="{{ url('/search') }}" data-initial-map='@json($searchMapData ?? [])'>
+<section class="wow-sr-v5-mobile" id="wowMobileSearch" data-search-url="{{ url('/search') }}" data-full-navigation="{{ !empty($mobileFullNavigation) ? 'true' : 'false' }}" data-show-map="{{ !empty($mobileShowMap) ? 'true' : 'false' }}" data-initial-map='@json($searchMapData ?? [])'>
     <div class="wow-sr-v5-mobile-toolbar">
         <div class="wow-sr-v5-mobile-count"><strong>Recommended for you</strong><span><b data-result-count>{{ $mobileResultsCount }}</b> matching offerings</span></div>
         <div class="wow-sr-v5-mobile-actions">
@@ -397,6 +396,10 @@
 
             async function fetchResults(nextUrl, { push = false } = {}) {
                 const url = new URL(nextUrl, window.location.origin);
+                if (root.dataset.fullNavigation === 'true') {
+                    window.location.assign(url.toString());
+                    return;
+                }
                 if (activeRequest) activeRequest.abort();
                 activeRequest = new AbortController();
                 root.setAttribute('aria-busy', 'true');
@@ -467,7 +470,9 @@
             window.addEventListener('popstate', () => fetchResults(window.location.href));
             draft = readDraft();
             renderDraft();
-            window.requestAnimationFrame(() => fetchResults(window.location.href));
+            if (root.dataset.fullNavigation !== 'true') {
+                window.requestAnimationFrame(() => fetchResults(window.location.href));
+            }
         })();
     </script>
 @endonce

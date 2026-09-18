@@ -12,7 +12,6 @@
             --sr-copy: #53627a;
             --sr-line: #dfe5ea;
             --sr-page: #fbfaf8;
-            background: var(--sr-page);
             color: var(--sr-ink);
             padding: 18px 0 48px;
         }

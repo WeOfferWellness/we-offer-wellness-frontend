@@ -248,6 +248,21 @@ class SearchController extends Controller
         $items = $this->sortSearchItems($items, $sort, $locationContext);
         if (in_array(strtolower(trim($sort)), ['', 'popular', 'relevance'], true)) {
             $items = $this->prioritizeExactCategoryMatches($items, $what);
+
+            // Reorder only the already-filtered local candidate set. Explicit
+            // location searches and deliberate sorts remain authoritative.
+            if (Str::squish((string) $request->query('where', '')) === '' && (string) $request->cookie('wow_visitor_id') !== '') {
+                $items = app(\App\Services\BackendOfferingsClient::class)->reorder($items, [
+                    'search' => $what,
+                    'type' => $type,
+                    'mode' => $modeInput ?: 'all',
+                    'max_price' => $priceMax,
+                    'page' => 1,
+                    'per_page' => 100,
+                    'sort' => 'updated_at',
+                    'direction' => 'desc',
+                ], 6);
+            }
         }
 
         $ratingFilter = trim((string) $request->input('rating', ''));

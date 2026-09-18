@@ -11,6 +11,22 @@ class BackendOfferingsClient
 {
     private ?Collection $personalisedCatalogue = null;
 
+    public function reviewStats(): array
+    {
+        $baseUrl = rtrim((string) env('BACKEND_URL', env('BACKEND_ASSET_URL', '')), '/');
+        if ($baseUrl === '') {
+            return [];
+        }
+
+        try {
+            $response = Http::acceptJson()->timeout(8)->retry(1, 150)->get($baseUrl.'/api/reviews/stats');
+        } catch (\Throwable) {
+            return [];
+        }
+
+        return $response->successful() && is_array($response->json()) ? $response->json() : [];
+    }
+
     public function catalogue(array $filters = [], int $maxPages = 2): Collection
     {
         $baseUrl = rtrim((string) env('BACKEND_URL', env('BACKEND_ASSET_URL', '')), '/');
