@@ -132,6 +132,7 @@ function initNewsletterModal() {
   const trigger = document.getElementById('wow-newsletter-trigger');
   const form = document.getElementById('wow-newsletter-form');
   const content = document.getElementById('wow-newsletter-content');
+  const firstName = document.getElementById('wow-newsletter-first-name');
   const email = document.getElementById('wow-newsletter-email');
   const submit = document.getElementById('wow-newsletter-submit');
 
@@ -151,7 +152,7 @@ function initNewsletterModal() {
   }
   const message = document.getElementById('wow-newsletter-message');
 
-  if (!modal || !trigger || !form || !content || !email || !submit || !message || modal.dataset.initialized) return;
+  if (!modal || !trigger || !form || !content || !firstName || !email || !submit || !message || modal.dataset.initialized) return;
   modal.dataset.initialized = 'true';
 
   let timer = null;
@@ -232,8 +233,9 @@ function initNewsletterModal() {
     event.preventDefault();
     message.textContent = '';
     message.classList.remove('is-error');
-    if (!email.checkValidity()) {
-      email.reportValidity?.();
+    if (!firstName.checkValidity() || !email.checkValidity()) {
+      if (!firstName.checkValidity()) firstName.reportValidity?.();
+      else email.reportValidity?.();
       return;
     }
 
@@ -243,6 +245,7 @@ function initNewsletterModal() {
     try {
       await submitSubscriber({
         ...basePayload('site:newsletter-modal'),
+        first_name: firstName.value.trim(),
         email: email.value.trim(),
         source: 'site:newsletter-modal',
         tags: ['wow_weekly_newsletter'],

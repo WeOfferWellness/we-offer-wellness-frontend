@@ -3,6 +3,7 @@ const SESSION_START_KEY = 'wow_subscriber_session_started_at';
 const DEFAULT_SUCCESS_MESSAGE = 'Check your email to confirm your subscription.';
 const SUBSCRIBER_FORM_SELECTOR = 'form[data-subscriber-form]';
 const EMAIL_INPUT_SELECTOR = 'input[type="email"], input[name="email"]';
+const FIRST_NAME_INPUT_SELECTOR = 'input[name="first_name"]';
 // Post through the frontend proxy by default so the browser keeps the same
 // Laravel session/CSRF context. A direct Studio URL is opt-in for integrations.
 const subscriberApiBase = String(
@@ -264,6 +265,10 @@ function findEmailInput(form) {
   return form.querySelector(EMAIL_INPUT_SELECTOR);
 }
 
+function findFirstNameInput(form) {
+  return form.querySelector(FIRST_NAME_INPUT_SELECTOR);
+}
+
 async function handleSubscriberSubmit(form) {
   const input = findEmailInput(form);
   if (!input) return;
@@ -272,6 +277,12 @@ async function handleSubscriberSubmit(form) {
   const source = form.getAttribute('data-subscriber-source') || form.getAttribute('data-subscriber-form') || 'site:subscribe-form';
 
   showMessage(feedback);
+  const firstName = findFirstNameInput(form);
+  if (firstName && !firstName.value.trim()) {
+    showMessage(feedback, 'Please enter your first name.', false);
+    firstName.focus();
+    return;
+  }
   const email = input.value.trim();
   if (!email) {
     showMessage(feedback, 'Please enter your email address.', false);

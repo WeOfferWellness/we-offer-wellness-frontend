@@ -16,6 +16,9 @@
                         data-v-f43bb09d="" class="whero-subline">Therapies, classes, and workshops curated by practitioners you can trust so you can feel better, faster.</span>
                 </p>
                 <form data-v-f43bb09d="" class="whero-cta mt-4" data-subscriber-form="hero-main" data-subscriber-source="hero:community" novalidate>
+                    <input data-v-f43bb09d="" class="whero-cta-input" name="first_name"
+                           type="text" placeholder="First name" aria-label="First name"
+                           autocomplete="given-name" maxlength="80" required>
                     <input data-v-f43bb09d="" class="whero-cta-input" name="email"
                            type="email" placeholder="Email address"
                            aria-label="Email address" required>

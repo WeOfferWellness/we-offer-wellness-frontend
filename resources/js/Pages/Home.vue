@@ -738,8 +738,9 @@ onBeforeUnmount(() => {
               Every part of your well-being is connected — stress, sleep, energy, digestion, and calm all thread through one another.
               <span class="whero-subline">{{ heroSecondaryCopy }}</span>
             </p>
-            <form class="whero-cta mt-4" action="#" method="post" onsubmit="return false;">
-              <input class="whero-cta-input" type="email" placeholder="Email address" aria-label="Email address">
+            <form class="whero-cta mt-4" data-subscriber-form="hero-main" data-subscriber-source="hero:community" @submit.prevent>
+              <input class="whero-cta-input" name="first_name" type="text" placeholder="First name" aria-label="First name" autocomplete="given-name" maxlength="80" required>
+              <input class="whero-cta-input" name="email" type="email" placeholder="Email address" aria-label="Email address" required>
               <WowButton type="submit" size="md" :arrow="true" class="btn-arrow">Join our Community</WowButton>
             </form>
           </div>

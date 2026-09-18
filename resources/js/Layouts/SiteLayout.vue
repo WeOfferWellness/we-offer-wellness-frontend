@@ -610,8 +610,9 @@ function openV3NotifyModal(event){
                 </a>
               </div>
               <div class="sub-title">Join our Community</div>
-              <form class="subscribe" @submit.prevent>
-                <input class="sub-input" type="email" required placeholder="Email address" aria-label="Email address">
+              <form class="subscribe" data-subscriber-form="footer-community" data-subscriber-source="footer:community" @submit.prevent>
+                <input class="sub-input" name="first_name" type="text" required placeholder="First name" aria-label="First name" autocomplete="given-name" maxlength="80">
+                <input class="sub-input" name="email" type="email" required placeholder="Email address" aria-label="Email address">
                 <button class="sub-btn" type="submit">
                   <span>Join Community</span>
                   <i class="bi bi-arrow-right-short"></i>

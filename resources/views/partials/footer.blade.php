@@ -54,6 +54,8 @@
                         target="_blank" rel="noopener"><i class="bi bi-youtube"></i></a></div>
                     <div class="sub-title">Join our Community</div>
                     <form class="subscribe" data-subscriber-form="footer-community" data-subscriber-source="footer:community" novalidate>
+                        <input class="sub-input" type="text" name="first_name" required
+                               placeholder="First name" aria-label="First name" autocomplete="given-name" maxlength="80">
                         <input class="sub-input" type="email" name="email" required
                                placeholder="Email address" aria-label="Email address">
                         <button class="sub-btn" type="submit"><span>Join Community</span><i
