@@ -63,8 +63,16 @@
   .wow-utility-rail{width:90px;padding:10px 8px}
 }
 
-/* Keep the modal fields and action on one row when there is room for them. */
-.wow-newsletter-form{grid-template-columns:minmax(0,.72fr) minmax(0,1fr) auto}
+/* Keep the first name full width, then place email and the action together below it. */
+.wow-newsletter-form{grid-template-columns:minmax(0,1fr) auto}
+.wow-newsletter-form .wow-newsletter-input-wrap:first-child{grid-column:1 / -1}
 @media(max-width:767px){
   .wow-newsletter-form{grid-template-columns:1fr}
+}
+
+.wow-footer .subscribe{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center}
+.wow-footer .subscribe .sub-input:first-of-type{grid-column:1 / -1}
+.wow-footer .subscribe .subscribe-feedback{grid-column:1 / -1}
+@media(max-width:767px){
+  .wow-footer .subscribe{grid-template-columns:1fr}
 }

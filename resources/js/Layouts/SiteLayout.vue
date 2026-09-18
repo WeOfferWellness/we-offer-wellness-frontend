@@ -840,6 +840,10 @@ main.v3-mode{
 .wow-footer .subscribe-card{ background:rgba(15,23,42,.7); border:1px solid rgba(255,255,255,.15); border-radius:18px; padding:1.5rem; }
 .wow-footer .sub-title{ font-size:1.2rem; font-weight:600; margin-bottom:1rem; }
 .wow-footer .subscribe{ display:flex; gap:.75rem; flex-wrap:wrap; }
+.wow-footer .subscribe{ display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; }
+.wow-footer .subscribe .sub-input:first-of-type{ grid-column:1 / -1; }
+.wow-footer .subscribe .subscribe-feedback{ grid-column:1 / -1; }
+@media (max-width:767px){ .wow-footer .subscribe{ grid-template-columns:1fr; } }
 .wow-footer .sub-input{ flex:1; min-width:220px; border-radius:999px; border:1px solid rgba(255,255,255,.4); background:rgba(15,23,42,.6); padding:.75rem 1rem; color:#fff; }
 .wow-footer .sub-btn{ border-radius:999px; background:#fff; color:#0b1323; border:0; padding:.75rem 1.25rem; display:inline-flex; align-items:center; gap:.25rem; font-weight:600; }
 .wow-footer .links-col{ display:grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap:2rem; margin-bottom:2rem; }
