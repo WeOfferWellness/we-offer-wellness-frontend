@@ -498,6 +498,7 @@
        filter sheet used by the main search page instead. */
     .wow-location-desktop-results{ display:block; }
     .wow-location-mobile-results{ display:none; }
+    .wow-location-mobile-results [data-map-toggle]{ display:none !important; }
     @media (max-width:1040px){
       .wow-location-desktop-results{ display:none; }
       .wow-location-mobile-results{ display:block; }
@@ -968,6 +969,7 @@
             'resultsHeading' => 'Offerings near ' . ($resolved['town'] ?? $resolved['place'] ?? $resolved['county'] ?? $resolved['country'] ?? 'your location'),
             'products' => $products,
             'resultCount' => $resultCount ?? $products->total(),
+            'showMap' => false,
           ])
         </div>
         <div class="wow-location-mobile-results">

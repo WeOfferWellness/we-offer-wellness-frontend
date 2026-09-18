@@ -270,10 +270,12 @@
     <div class="wow-sr-v5-container">
         <header class="wow-sr-v5-header">
             <h1 class="wow-sr-v5-heading">Recommended for you <em><span data-result-count>{{ $desktopResultsCount }}</span> matching offerings</em></h1>
-            <button class="wow-sr-v5-map-toggle" type="button" data-map-toggle aria-pressed="false">
-                <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="m3 6 5-2 8 3 5-2v13l-5 2-8-3-5 2V6Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 4v13M16 7v13" stroke="currentColor" stroke-width="1.6"/></svg>
-                <span data-map-label>Map</span>
-            </button>
+            @if($showMap ?? true)
+                <button class="wow-sr-v5-map-toggle" type="button" data-map-toggle aria-pressed="false">
+                    <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="m3 6 5-2 8 3 5-2v13l-5 2-8-3-5 2V6Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 4v13M16 7v13" stroke="currentColor" stroke-width="1.6"/></svg>
+                    <span data-map-label>Map</span>
+                </button>
+            @endif
         </header>
 
         <div class="wow-sr-v5-layout">
