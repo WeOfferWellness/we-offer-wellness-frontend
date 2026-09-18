@@ -246,6 +246,7 @@ class SearchController extends Controller
         }
 
         $items = $this->sortSearchItems($items, $sort, $locationContext);
+        $personalisedSearch = false;
         if (in_array(strtolower(trim($sort)), ['', 'popular', 'relevance'], true)) {
             $items = $this->prioritizeExactCategoryMatches($items, $what);
 
@@ -262,6 +263,7 @@ class SearchController extends Controller
                     'sort' => 'updated_at',
                     'direction' => 'desc',
                 ], 6);
+                $personalisedSearch = true;
             }
         }
 
@@ -275,7 +277,7 @@ class SearchController extends Controller
         $items = $this->sortPastEventItemsLast($items);
 
         $total = $items->count();
-        $recommendations = $this->buildSearchRecommendations($items, $request, $locationContext);
+        $recommendations = $this->buildSearchRecommendations($items, $request, $locationContext, $personalisedSearch);
         $recommendedKeys = collect($recommendations)->pluck('item')->map(fn ($item) => $this->searchItemKey($item))->all();
         $catalogItems = $items->reject(fn ($item) => in_array($this->searchItemKey($item), $recommendedKeys, true))->values();
         $page = max(1, (int) $request->integer('page', 1));
@@ -663,7 +665,7 @@ class SearchController extends Controller
      * underlying catalogue ranking. Every badge is backed by a material
      * difference rather than simply decorating rows 1-4.
      */
-    private function buildSearchRecommendations(Collection $items, Request $request, ?array $locationContext): array
+    private function buildSearchRecommendations(Collection $items, Request $request, ?array $locationContext, bool $personalisedSearch = false): array
     {
         $items = $items
             ->reject(fn ($item) => (bool) data_get($item, 'is_past_event', false))
@@ -673,7 +675,9 @@ class SearchController extends Controller
             return [];
         }
 
-        $exactCategoryMatches = $this->exactCategoryMatches($items, (string) $request->input('what', ''));
+        $exactCategoryMatches = $personalisedSearch
+            ? collect()
+            : $this->exactCategoryMatches($items, (string) $request->input('what', ''));
         // A category selected exactly by the customer is stronger intent than
         // a broad text hit in a title or description.
         $ordered = ($exactCategoryMatches->isNotEmpty() ? $exactCategoryMatches : $items)->values();
