@@ -31,12 +31,15 @@
   <style>
     .location-landing{color:#17202b;padding:22px 0 72px}
     .location-landing__container{width:min(100% - 32px,1280px);margin:auto}
-    .location-landing__hero{padding:28px 0 32px;border-bottom:1px solid #e7ecef;background-color:#f7faf9;@if($locationImage)background-image:linear-gradient(rgba(255,255,255,.78),rgba(255,255,255,.78)),url('{{ e($locationImage) }}');background-size:cover;background-position:center;@endif}
-    .location-landing__eyebrow{margin:0 0 8px;color:#4f9381;font-size:12px;text-align:center;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
+    .location-landing__hero{padding:28px 0 32px;border-bottom:1px solid #e7ecef;background-color:#f7faf9;--location-hero-copy:#17202b;--location-hero-muted:#596275;--location-hero-accent:#2f7464;--location-hero-overlay:rgba(255,255,255,.78);@if($locationImage)background-image:linear-gradient(var(--location-hero-overlay),var(--location-hero-overlay)),url('{{ e($locationImage) }}');background-size:cover;background-position:center;@endif}
+    .location-landing__hero.is-dark{--location-hero-copy:#fff;--location-hero-muted:rgba(255,255,255,.88);--location-hero-accent:#d7fff1;--location-hero-overlay:rgba(7,24,21,.62)}
+    .location-landing__hero.is-light{--location-hero-copy:#17202b;--location-hero-muted:#465466;--location-hero-accent:#236957;--location-hero-overlay:rgba(255,255,255,.72)}
+    .location-landing__hero{color:var(--location-hero-copy)}
+    .location-landing__eyebrow{margin:0 0 8px;color:var(--location-hero-accent);font-size:12px;text-align:center;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
     .location-landing h1,.location-landing h2{margin:0;font-family:var(--wow-serif,'Playfair Display',Georgia,serif);font-weight:500;letter-spacing:-.045em}
     .location-landing h1{font-size:clamp(42px,6vw,74px);line-height:.95;text-align:center}
     .location-landing h2{font-size:clamp(30px,4vw,48px);line-height:1}
-    .location-landing__intro{max-width:none;margin:15px auto 22px;color:#596275;font-size:17px;line-height:1.55;text-align:center}
+    .location-landing__intro{max-width:none;margin:15px auto 22px;color:var(--location-hero-muted);font-size:17px;line-height:1.55;text-align:center}
     .location-landing__search{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:8px;max-width:900px}
     .location-landing__search label{display:block;margin:0 0 6px;color:#596275;font-size:12px;font-weight:800}
     .location-landing__search input{width:100%;height:46px;padding:0 12px;border:1px solid #ccd6dc;border-radius:4px;background:#fff;font:inherit}
@@ -67,7 +70,10 @@
 
   <main class="location-landing">
     <div class="location-landing__container">
-      <header class="location-landing__hero">
+      <header
+        class="location-landing__hero"
+        @if($locationImage) data-location-hero-image="{{ e($locationImage) }}" @endif
+      >
         <p class="location-landing__eyebrow">Local wellness discovery</p>
         <h1>Wellness in {{ $label }}</h1>
         <p class="location-landing__intro">Discover therapies, classes, events and wellness experiences from practitioners across {{ $label }}.</p>
@@ -93,4 +99,50 @@
       @if(!empty($directory['towns']))<section class="location-landing__section location-landing__directory"><div class="location-landing__head"><div><h2>Explore {{ $label }} towns</h2><p class="location-landing__copy">Browse towns with real public marketplace supply.</p></div></div><ul>@foreach($directory['towns'] as $town)<li><a href="{{ url($town['path'] ?? '/locations') }}">{{ $town['title'] ?? 'Town' }}</a></li>@endforeach</ul></section>@elseif(!empty($directory['counties']))<section class="location-landing__section location-landing__directory"><div class="location-landing__head"><div><h2>Explore UK counties</h2><p class="location-landing__copy">Browse regions with live wellness supply.</p></div></div><ul>@foreach($directory['counties'] as $county)<li><a href="{{ url($county['path'] ?? '/locations') }}">{{ $county['label'] ?? 'County' }}</a></li>@endforeach</ul></section>@endif
     </div>
   </main>
+  @if($locationImage)
+    <script>
+      (() => {
+        const hero = document.querySelector('.location-landing__hero[data-location-hero-image]');
+        if (!hero) return;
+
+        const image = new Image();
+        image.crossOrigin = 'anonymous';
+        image.onload = () => {
+          try {
+            const size = 32;
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d', { willReadFrequently: true });
+            if (!context) return;
+
+            canvas.width = size;
+            canvas.height = size;
+            context.drawImage(image, 0, 0, size, size);
+            const pixels = context.getImageData(0, 0, size, size).data;
+            let luminance = 0;
+            let weight = 0;
+
+            for (let index = 0; index < pixels.length; index += 4) {
+              const alpha = pixels[index + 3] / 255;
+              if (alpha === 0) continue;
+
+              const red = pixels[index] / 255;
+              const green = pixels[index + 1] / 255;
+              const blue = pixels[index + 2] / 255;
+              const relativeLuminance = 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+              luminance += relativeLuminance * alpha;
+              weight += alpha;
+            }
+
+            if (weight > 0) {
+              hero.classList.add(luminance / weight < 0.52 ? 'is-dark' : 'is-light');
+            }
+          } catch (error) {
+            // Keep the readable light-overlay default when the remote image
+            // does not permit canvas sampling.
+          }
+        };
+        image.src = hero.dataset.locationHeroImage;
+      })();
+    </script>
+  @endif
 @endsection
