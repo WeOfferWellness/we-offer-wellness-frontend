@@ -13,11 +13,11 @@ use Illuminate\Support\Str;
 
 class LocationCatalogService
 {
-    public function load(): array
+    public function load(bool $fresh = false): array
     {
         $path = $this->catalogPath();
 
-        if (File::exists($path)) {
+        if (! $fresh && File::exists($path)) {
             $decoded = json_decode((string) File::get($path), true);
             if (is_array($decoded)) {
                 return $decoded;
@@ -55,6 +55,7 @@ class LocationCatalogService
                 'country',
                 'lat',
                 'lng',
+                'image_path',
                 DB::raw("COALESCE({$countyColumn}, '') as county_raw"),
             ])
             ->where(function ($query) use ($countyColumn): void {
@@ -174,6 +175,7 @@ class LocationCatalogService
                 'online' => false,
                 'lat' => isset($row->lat) ? (float) $row->lat : null,
                 'lng' => isset($row->lng) ? (float) $row->lng : null,
+                'image_path' => trim((string) ($row->image_path ?? '')) ?: null,
                 'counts' => $counts,
                 'locations' => [$this->formatLocationSummary($townLabel, $countyLabel, $countryLabel)],
                 'source' => $this->formatSourceSummary($row),

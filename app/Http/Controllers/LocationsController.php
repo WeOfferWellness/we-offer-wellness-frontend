@@ -29,7 +29,7 @@ class LocationsController extends Controller
         'country',
     ];
 
-    public function index(Request $request)
+    public function index(Request $request, \App\Services\LocationDiscoveryService $discoveryService)
     {
         $catalog = app(LocationCatalogService::class)->load();
         $query = trim((string) $request->query('place', $request->query('postcode', $request->query('q', ''))));
@@ -50,29 +50,30 @@ class LocationsController extends Controller
             return redirect()->to($this->hierarchyPathFromResolved($resolved));
         }
 
-        $locations = $resolved ? $this->rankLocationsByDistance($resolved) : $this->locationsIndex();
-        $nearbyPhysical = collect($locations)
-            ->filter(fn (array $location): bool => !($location['online'] ?? false) && isset($location['distance_miles']))
-            ->values();
-        $nearestDistance = (float) ($nearbyPhysical->first()['distance_miles'] ?? 0);
-        $onlinePreferred = $resolved !== null && ($nearbyPhysical->isEmpty() || $nearestDistance > 40);
+        $locationContext = $resolved ?: [
+            'label' => $savedLocation['label'] ?? '',
+            'place' => $savedLocation['city'] ?? '',
+            'town' => $savedLocation['city'] ?? '',
+            'city' => $savedLocation['city'] ?? '',
+            'county' => $savedLocation['region'] ?? '',
+            'region' => $savedLocation['region'] ?? '',
+            'country' => $savedLocation['country'] ?? '',
+            'what' => trim((string) $request->query('what', '')),
+        ];
+        $locationContext['what'] = trim((string) $request->query('what', $locationContext['what'] ?? ''));
+        $discovery = $discoveryService->build($locationContext, $catalog);
 
-        return view('locations.index', [
+        return view('locations.discovery', [
             'seo' => [
-                'title' => $resolved
-                    ? $this->seoTitleForSearch($resolved['label'] ?? $query)
-                    : 'Locations | We Offer Wellness®',
-                'description' => $resolved
-                    ? 'Browse wellness locations ranked by distance from ' . ($resolved['label'] ?? $query) . ', plus online support if nearby options are limited.'
-                    : 'Browse wellness experiences by location, including online options and locations near you.',
-                'robots' => $resolved ? 'noindex,follow' : 'index,follow',
+                'title' => 'Wellness Near You | Therapies, Classes & Events | We Offer Wellness',
+                'description' => 'Discover wellness therapies, classes, events and practitioners near you. Browse local wellness experiences across the UK or explore online options.',
+                'robots' => 'index,follow',
             ],
-            'locations' => $locations,
             'locationSearch' => $resolved,
             'locationQuery' => $displayQuery,
             'savedLocation' => $savedLocation,
-            'onlinePreferred' => $onlinePreferred,
             'locationCatalog' => $catalog,
+            'discovery' => $discovery,
         ]);
     }
 
@@ -121,6 +122,7 @@ class LocationsController extends Controller
         $countyLabel = $countySlug ? Str::of(str_replace('-', ' ', $countySlug))->headline()->toString() : null;
         $townLabel = $townSlug ? Str::of(str_replace('-', ' ', $townSlug))->headline()->toString() : null;
         $placeLabel = $townLabel ?: $countyLabel ?: $countryLabel;
+        $scope = $townSlug !== null ? 'town' : ($countySlug !== null ? 'county' : 'country');
         $query = trim(implode(', ', array_filter([$placeLabel, $countryLabel])));
         $resolved = $this->resolveSearchOrigin($query) ?? [
             'label' => $query,
@@ -134,11 +136,53 @@ class LocationsController extends Controller
             'lng' => null,
         ];
 
+        // Geocoding London can return "Greater London" as the administrative
+        // county, while this canonical URL deliberately uses "London".
+        // Keep the URL hierarchy as the source of truth for marketplace
+        // matching so /locations/united-kingdom/london finds London listings.
+        if ($scope === 'county' && $countyLabel !== null) {
+            $resolved['place'] = $countyLabel;
+            $resolved['town'] = null;
+            $resolved['city'] = null;
+            $resolved['county'] = $countyLabel;
+            $resolved['region'] = $countyLabel;
+        } elseif ($scope === 'town' && $townLabel !== null) {
+            $resolved['place'] = $townLabel;
+            $resolved['town'] = $townLabel;
+            $resolved['city'] = $townLabel;
+            $resolved['county'] = $countyLabel;
+            $resolved['region'] = $countyLabel;
+        }
+
         $resolved['country_slug'] = $countrySlug;
         $resolved['county_slug'] = $countySlug;
         $resolved['town_slug'] = $townSlug;
         $resolved['path'] = $canonicalPath;
         $resolved['label'] = $query;
+        $catalogLocation = $this->catalogMatchBySlug($catalog, trim(str_replace('/locations/', '', $canonicalPath), '/'));
+        $resolved['image_path'] = is_array($catalogLocation)
+            ? ($catalogLocation['image_path'] ?? null)
+            : null;
+
+        $discovery = app(\App\Services\LocationDiscoveryService::class)->build($resolved, $catalog, $scope);
+
+        return view('locations.landing', [
+            'seo' => [
+                'title' => $scope === 'county'
+                    ? 'Wellness in '.$placeLabel.' | Therapies, Classes & Events | We Offer Wellness'
+                    : $this->seoTitleForHierarchy($countryLabel, $countyLabel, $placeLabel),
+                'description' => $scope === 'county'
+                    ? 'Explore wellness in '.$placeLabel.', including therapies, classes, events and local practitioners. Find in-person experiences across '.$placeLabel.' or browse online options.'
+                    : $this->seoDescriptionForHierarchy($countryLabel, $countyLabel, $placeLabel),
+                'robots' => 'index,follow',
+                'canonical' => url($resolved['path']),
+            ],
+            'scope' => $scope,
+            'location' => $resolved,
+            'locationCatalog' => $catalog,
+            'discovery' => $discovery,
+            'directory' => $this->directoryForScope($catalog, $resolved, $scope, $discovery['supply_paths'] ?? []),
+        ]);
 
         $locations = $this->rankLocationsByDistance($resolved);
         $locationTerms = $this->locationTermsFromResolved($resolved);
@@ -200,6 +244,33 @@ class LocationsController extends Controller
     public function locationPages(): array
     {
         return $this->locationsIndex();
+    }
+
+    private function directoryForScope(array $catalog, array $resolved, string $scope, array $supplyPaths = []): array
+    {
+        $countrySlug = (string) ($resolved['country_slug'] ?? 'united-kingdom');
+        $countySlug = (string) ($resolved['county_slug'] ?? '');
+        $country = collect($catalog['countries'] ?? [])->first(fn (array $item): bool => (string) ($item['slug'] ?? '') === $countrySlug);
+
+        if (! is_array($country)) {
+            return [];
+        }
+
+        if ($scope === 'country') {
+            return ['counties' => collect($country['counties'] ?? [])->filter(fn (array $item): bool => $supplyPaths === [] || in_array((string) ($item['path'] ?? ''), $supplyPaths, true) || collect($supplyPaths)->contains(fn (string $path): bool => str_starts_with($path, (string) ($item['path'] ?? '').'/')))->values()->all(), 'towns' => []];
+        }
+
+        $county = collect($country['counties'] ?? [])->first(fn (array $item): bool => (string) ($item['slug'] ?? '') === $countySlug);
+        if (! is_array($county)) {
+            return ['counties' => [], 'towns' => []];
+        }
+
+        $towns = collect($county['towns'] ?? [])->filter(fn (array $item): bool => $supplyPaths === [] || in_array((string) ($item['path'] ?? ''), $supplyPaths, true))->values();
+        if ($scope === 'town') {
+            $towns = $towns->reject(fn (array $item): bool => Str::slug((string) ($item['title'] ?? '')) === Str::slug((string) ($resolved['town'] ?? $resolved['place'] ?? '')));
+        }
+
+        return ['counties' => [], 'towns' => $towns->all()];
     }
 
     public function show(Request $request, string $slug)
