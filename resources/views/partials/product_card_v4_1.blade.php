@@ -11,6 +11,10 @@
     $image = is_object($product) && method_exists($product, 'getFirstImageUrl')
         ? $product->getFirstImageUrl()
         : (string) ($value('image', $value('image_url', $value('featured_image', ''))));
+    $placeholderImage = rtrim((string) config('services.location_media_url', 'https://studio.weofferwellness.co.uk'), '/').'/assets/img/no-product-image.jpg';
+    if (trim((string) $image) === '') {
+        $image = $placeholderImage;
+    }
     $price = $value('variants_min_price', $value('price_min', $value('price', $value('base_price'))));
     $pricing = app(\App\Services\MarketplacePricingService::class);
     $pricingVendor = [
@@ -21,6 +25,7 @@
     $priceLabel = is_numeric($price) ? '£' . rtrim(rtrim(number_format((float) $price, 2, '.', ''), '0'), '.') : '£0';
     $typeRaw = strtolower(trim((string) ($value('type.name', $value('type_label', $value('type_name', $value('product_type', 'therapy')))))));
     $categoryRaw = (string) $value('category.name', $value('category.label', $value('category_name', $value('category_label', $value('category', '')))));
+    $subcategoryRaw = trim((string) $value('subcategory.name', $value('subcategory.label', $value('subcategory_name', $value('subcategory_label', '')))));
     $typeSource = $typeRaw . ' ' . strtolower($categoryRaw) . ' ' . $url;
     $kind = 'therapy';
     if (str_contains($typeSource, 'retreat')) {
@@ -54,7 +59,8 @@
         || $channels->contains('online')
         || $locations->contains(fn ($location) => strtolower($location) === 'online')
         || str_contains(strtolower((string) $value('format', '')), 'online');
-    $location = $locations->first(fn ($item) => strtolower($item) !== 'online') ?: ($online ? 'Online' : 'In person');
+    $onlineOnly = $online && ($locations->isEmpty() || $locations->every(fn ($item) => strtolower($item) === 'online'));
+    $location = $locations->first(fn ($item) => strtolower($item) !== 'online') ?: ($onlineOnly ? 'Online Exclusive' : ($online ? 'Online' : 'In person'));
     $countryFallback = trim((string) $value('country', $value('vendor.country', $value('vendor.user.country', $value('vendor_details.country', '')))));
     $countryCode = function (string $country): string {
         return match (strtolower(trim($country))) {
@@ -84,8 +90,8 @@
         $place = (string) $parts->first();
         $locationLabel = implode(', ', array_filter([$place ?: $location, $country]));
     }
-    $planKey = strtolower(trim((string) $value('plan_key', $value('plan_label', $value('vendor.plan_key', $value('vendor_details.plan_key', $value('vendor.user.tier.tier', '')))))));
-    $businessAccelerator = in_array(str_replace(['_', ' '], '-', $planKey), ['business-accelerator', 'businessaccelerator', 'core'], true);
+    $planKey = strtolower(trim((string) $value('plan_key', $value('plan_label', $value('vendor.plan_key', $value('vendor.plan_label', $value('vendor.plan.slug', $value('vendor.plan.name', $value('vendor_details.plan_key', $value('vendor_details.plan_label', $value('vendor.tier.tier', $value('vendor.user.tier.tier', $value('vendor.user.account_type', '')))))))))))));
+    $businessAccelerator = in_array(str_replace(['_', ' '], '-', $planKey), ['business-accelerator', 'businessaccelerator', 'business-accelerator-package', 'core'], true);
     $rating = (float) $value('rating', $value('reviews_avg_rating', 0));
     $reviews = (int) $value('review_count', $value('reviews_count', 0));
     $description = collect([
@@ -168,23 +174,23 @@
 @if($gift)
 <article class="wow49-blade-card wow49-blade-card--gift" aria-label="Gift card {{ $title }}" @if($trackingId) data-product-id="{{ $trackingId }}" data-source-version="{{ $trackingSource }}" @endif @if($rankingRequestId !== '') data-ranking-request-id="{{ $rankingRequestId }}" @endif>
     <a href="{{ url('/giftcards') }}" class="wow49-blade-card__link" aria-label="Buy {{ $title }}"></a>
-    <div class="wow49-blade-card__gift-media">@if($image)<img src="{{ $image }}" alt="{{ $title }}" loading="lazy">@endif<span class="wow49-blade-card__gift-badge">Digital gift card</span></div>
+    <div class="wow49-blade-card__gift-media"><img src="{{ $image }}" alt="{{ $title }}" loading="lazy" onerror="this.onerror=null;this.src='{{ $placeholderImage }}';"><span class="wow49-blade-card__gift-badge">Digital gift card</span></div>
     <div class="wow49-blade-card__body"><h3>{{ $title }}</h3><p class="wow49-blade-card__provider">Instant email delivery</p></div>
     <footer class="wow49-blade-card__footer"><div><small>From</small><strong>{{ $priceLabel }}</strong></div><a href="{{ url('/giftcards') }}" class="wow49-blade-card__button">BUY GIFT CARD</a></footer>
 </article>
 @elseif($eventStyle)
 <article class="wow49-blade-card wow49-blade-card--event" aria-label="{{ $typeLabel }} card {{ $title }}" @if($trackingId) data-product-id="{{ $trackingId }}" data-source-version="{{ $trackingSource }}" @endif @if($rankingRequestId !== '') data-ranking-request-id="{{ $rankingRequestId }}" @endif>
     <a href="{{ $url }}" class="wow49-blade-card__link" aria-label="{{ $isPastEvent ? 'View details for' : 'View and book' }} {{ $title }}"></a>
-    <div class="wow49-blade-card__event-image">@if($image)<img src="{{ $image }}" alt="{{ $title }}" loading="lazy">@endif</div>
+    <div class="wow49-blade-card__event-image"><img src="{{ $image }}" alt="{{ $title }}" loading="lazy" onerror="this.onerror=null;this.src='{{ $placeholderImage }}';"></div>
     @if($start)<span class="wow49-blade-card__date"><b>{{ $eventMonth }}</b><strong>{{ $eventDay }}</strong></span>@endif
     @if($isPastEvent)<span class="wow49-blade-card__past-status">PAST EVENT</span>@endif
     @if($businessAccelerator)<img class="wow49-blade-card__rosette" src="https://studio.weofferwellness.co.uk/storage/uploads/images/78aa908f-334b-45c0-9220-1c4d84053c5e.png" alt="Business Accelerator partner">@endif
-    <div class="wow49-blade-card__event-content"><div class="wow49-blade-card__tags"><span class="wow49-blade-card__category {{ $categoryIsAbbreviated ? 'is-abbreviated' : '' }}" @if($categoryIsAbbreviated) data-mobile-label="{{ $categoryShort }}" @endif>{{ $category }}</span><span class="type">{{ $typeLabel }}</span></div><h3>{{ $title }}</h3>@if($provider)<p class="wow49-blade-card__provider">with {{ ucwords(strtolower($provider)) }}</p>@endif<p class="wow49-blade-card__location"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s7-4.4 7-11a7 7 0 1 0-14 0c0 7 7 11 7 11Z"/><circle cx="12" cy="10" r="3"/></svg>{{ $locationLabel }}</p><div class="wow49-blade-card__event-bottom"><div><small>From</small><strong>{{ $priceLabel }}</strong></div><a href="{{ $url }}" class="wow49-blade-card__button">{{ $isPastEvent ? 'VIEW' : 'VIEW & BOOK' }}</a></div></div>
+    <span class="wow49-blade-card__type-top">{{ $typeLabel }}</span><div class="wow49-blade-card__event-content"><div class="wow49-blade-card__tags"><span class="wow49-blade-card__category {{ $categoryIsAbbreviated ? 'is-abbreviated' : '' }}" @if($categoryIsAbbreviated) data-mobile-label="{{ $categoryShort }}" @endif>{{ $category }}</span>@if($subcategoryRaw)<span class="wow49-blade-card__subcategory">{{ $subcategoryRaw }}</span>@endif</div><h3>{{ $title }}</h3>@if($provider)<p class="wow49-blade-card__provider">with {{ ucwords(strtolower($provider)) }}</p>@endif<p class="wow49-blade-card__location"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s7-4.4 7-11a7 7 0 1 0-14 0c0 7 7 11 7 11Z"/><circle cx="12" cy="10" r="3"/></svg>{{ $locationLabel }}</p><div class="wow49-blade-card__event-bottom"><div><small>From</small><strong>{{ $priceLabel }}</strong></div><a href="{{ $url }}" class="wow49-blade-card__button">{{ $isPastEvent ? 'VIEW' : 'VIEW & BOOK' }}</a></div></div>
 </article>
 @else
 <article class="wow49-blade-card" aria-label="Offering card {{ $title }}" @if($trackingId) data-product-id="{{ $trackingId }}" data-source-version="{{ $trackingSource }}" @endif @if($rankingRequestId !== '') data-ranking-request-id="{{ $rankingRequestId }}" @endif>
     <a href="{{ $url }}" class="wow49-blade-card__link" aria-label="View and book {{ $title }}"></a>
-    <div class="wow49-blade-card__media">@if($image)<img src="{{ $image }}" alt="{{ $title }}" loading="lazy">@endif @if($value('fomo_text'))<span class="wow49-blade-card__signal">{{ $value('fomo_text') }}</span>@elseif($online && !$locations->contains(fn ($item) => strtolower($item) !== 'online'))<span class="wow49-blade-card__signal">Exclusively online</span>@endif @if($businessAccelerator)<img class="wow49-blade-card__rosette" src="https://studio.weofferwellness.co.uk/storage/uploads/images/78aa908f-334b-45c0-9220-1c4d84053c5e.png" alt="Business Accelerator partner">@endif<div class="wow49-blade-card__tags"><span class="wow49-blade-card__category {{ $categoryIsAbbreviated ? 'is-abbreviated' : '' }}" @if($categoryIsAbbreviated) data-mobile-label="{{ $categoryShort }}" @endif>{{ $category }}</span><span class="type">{{ $typeLabel }}</span></div></div>
+    <div class="wow49-blade-card__media"><img src="{{ $image }}" alt="{{ $title }}" loading="lazy" onerror="this.onerror=null;this.src='{{ $placeholderImage }}';">@if($value('fomo_text'))<span class="wow49-blade-card__signal">{{ $value('fomo_text') }}</span>@endif @if($businessAccelerator)<img class="wow49-blade-card__rosette" src="https://studio.weofferwellness.co.uk/storage/uploads/images/78aa908f-334b-45c0-9220-1c4d84053c5e.png" alt="Business Accelerator partner">@endif<span class="wow49-blade-card__type-top">{{ $typeLabel }}</span><div class="wow49-blade-card__tags"><span class="wow49-blade-card__category {{ $categoryIsAbbreviated ? 'is-abbreviated' : '' }}" @if($categoryIsAbbreviated) data-mobile-label="{{ $categoryShort }}" @endif>{{ $category }}</span>@if($subcategoryRaw)<span class="wow49-blade-card__subcategory">{{ $subcategoryRaw }}</span>@endif</div></div>
     <div class="wow49-blade-card__body"><h3>{{ $title }}</h3>@if($provider)<p class="wow49-blade-card__provider">with {{ ucwords(strtolower($provider)) }}</p>@endif<div class="wow49-blade-card__rating"><span class="wow49-blade-card__stars">{{ str_repeat('★', min(5, max(0, round($rating)))) }}{{ str_repeat('☆', 5 - min(5, max(0, round($rating)))) }}</span><span>{{ number_format($rating, 1) }} · {{ $reviews ? $reviews . ' reviews' : 'Be the first to review' }}</span></div><p class="wow49-blade-card__location">@if($online && !$locations->contains(fn ($item) => strtolower($item) !== 'online'))<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6.95 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1" fill="currentColor" stroke="none"/></svg>@else<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s7-4.4 7-11a7 7 0 1 0-14 0c0 6.6 7 11 7 11Z"/><circle cx="12" cy="10" r="3"/></svg>@endif{{ $locationLabel }}</p>@if($description)<p class="wow49-blade-card__description">{{ $description }}</p>@endif<div class="wow49-blade-card__availability {{ $availabilityTone }}"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span>{{ $availabilityLabel }}</span></div></div>
     <footer class="wow49-blade-card__footer"><div><small>From</small><strong>{{ $priceLabel }}</strong></div><a href="{{ $url }}" class="wow49-blade-card__button">VIEW &amp; BOOK</a></footer>
 </article>
