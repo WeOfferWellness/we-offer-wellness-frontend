@@ -1,5 +1,5 @@
 @php
-    $desktopResultsCount = method_exists($products, 'total') ? $products->total() : $products->count();
+    $desktopResultsCount = $desktopResultsCount ?? (method_exists($products, 'total') ? $products->total() : $products->count());
 @endphp
 
 @once
@@ -14,6 +14,9 @@
             --sr-page: #fbfaf8;
             color: var(--sr-ink);
             padding: 18px 0 48px;
+        }
+        @media (max-width: 1040px) {
+            .wow-sr-v5-desktop { display: none !important; }
         }
 
         .wow-sr-v5-container {
@@ -266,7 +269,7 @@
     </style>
 @endonce
 
-<section class="wow-sr-v5-desktop" id="wowDesktopSearch" data-search-url="{{ url('/search') }}" data-initial-map='@json($searchMapData ?? [])'>
+<section class="wow-sr-v5-desktop" id="wowDesktopSearch" data-search-url="{{ $searchUrl ?? url('/search') }}" data-full-navigation="{{ !empty($desktopFullNavigation) ? 'true' : 'false' }}" data-initial-map='@json($searchMapData ?? [])'>
     <div class="wow-sr-v5-container">
         <header class="wow-sr-v5-header">
             <h1 class="wow-sr-v5-heading">Recommended for you <em><span data-result-count>{{ $desktopResultsCount }}</span> matching offerings</em></h1>
@@ -345,6 +348,7 @@
                 </div>
             </aside>
 
+            @if(empty($filterOnly))
             <main class="wow-sr-v5-content" aria-label="Search results">
                 <div id="searchRecommendations">
                     {!! $searchRecommendationsHtml ?? '' !!}
@@ -364,6 +368,7 @@
                 <div class="wow-sr-v5-map-canvas" data-map-canvas></div>
                 <div class="wow-sr-v5-map-empty" data-map-empty>Choose Map to see nearby wellbeing offerings.</div>
             </section>
+            @endif
         </div>
     </div>
 </section>
@@ -491,6 +496,10 @@
 
             async function fetchResults(nextUrl, { push = false } = {}) {
                 const url = new URL(nextUrl, window.location.origin);
+                if (root.dataset.fullNavigation === 'true') {
+                    window.location.assign(url.toString());
+                    return;
+                }
                 if (activeRequest) activeRequest.abort();
                 activeRequest = new AbortController();
                 root.setAttribute('aria-busy', 'true');
@@ -559,7 +568,9 @@
             compactFilters.addEventListener('change', syncCompactFilterSections);
             syncCompactFilterSections();
             syncControls();
-            window.requestAnimationFrame(() => fetchResults(window.location.href));
+            if (root.dataset.fullNavigation !== 'true') {
+                window.requestAnimationFrame(() => fetchResults(window.location.href));
+            }
         })();
     </script>
 @endonce
