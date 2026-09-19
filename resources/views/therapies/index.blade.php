@@ -11,7 +11,7 @@
   }
   .therapies-hero{
     display:grid;
-    grid-template-columns:minmax(0,1.1fr) minmax(320px,.9fr);
+    grid-template-columns:minmax(0,1fr);
     gap:24px;
     align-items:stretch;
     padding: 28px;
@@ -444,8 +444,6 @@
 @php
   $items = collect($therapies ?? []);
   $total = $items->count();
-  $featured = $items->take(3);
-  $categories = $items->pluck('title')->take(5)->values();
   $offerings = collect($featuredOfferings ?? []);
 @endphp
 
@@ -467,9 +465,7 @@
       <div>
         <div class="therapies-kicker">Browse therapies</div>
         <h1>Find the therapy that fits how you want to feel.</h1>
-        <p>
-          Explore a curated collection of therapies across massage, Reiki, breathwork, sound healing and more. Use the search page when you want a broader mix of experiences, or dive into a therapy here when you already know the modality you want.
-        </p>
+        <p>Explore live massage, Reiki, breathwork, sound healing and other therapy experiences from trusted practitioners.</p>
 
         <div class="therapies-actions">
           <a href="/search?type=therapies" class="btn-wow btn-wow--cta btn-arrow" data-loader-init="1">
@@ -478,46 +474,40 @@
           </a>
           <a href="/search?mode=online&type=therapies" class="btn-wow btn-wow--ghost" data-loader-init="1">Browse online</a>
         </div>
-
-        <div class="therapies-pills" aria-label="Popular therapy themes">
-          @foreach($categories as $category)
-            <a class="therapies-pill" href="{{ url('/search?what=' . urlencode($category)) }}">{{ $category }}</a>
-          @endforeach
-        </div>
-
-        <div class="therapies-stats">
-          <div class="therapies-stat">
-            <strong>{{ number_format((int)($offeringCount ?? 0)) }}</strong>
-            <span>Live offerings linked to these therapies</span>
-          </div>
-          <div class="therapies-stat">
-            <strong>{{ $total }}</strong>
-            <span>Therapy modalities to browse</span>
-          </div>
-          <div class="therapies-stat">
-            <strong>Search</strong>
-            <span>Use `/search` to refine by location, time, and format</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="therapies-spotlight" aria-label="Featured therapies">
-        @foreach($featured as $spot)
-          <a class="therapy-spot" href="{{ route('therapies.show', ['slug' => $spot['slug']]) }}">
-            <small>Featured</small>
-            <h3>{{ $spot['title'] }}</h3>
-            <p>{{ $spot['seo_description'] ?? 'Explore this modality and see live offerings matched to it.' }}</p>
-          </a>
-        @endforeach
       </div>
     </div>
 
     <div class="therapies-section">
       <div class="therapies-section__head">
         <div>
-          <div class="kicker">All therapies</div>
-          <h2>Browse the full modality library</h2>
-          <p>Tap any therapy to see the related offerings, then refine by format, location, and price on the therapy page.</p>
+          <div class="kicker">Featured offerings</div>
+          <h2>Actual sessions you can book now</h2>
+          <p>Live offerings matched to the therapies above, shown only when there is current availability to book.</p>
+        </div>
+        <a href="/search?type=therapies" class="btn-wow btn-wow--outline btn-sm btn-arrow" data-loader-init="1">
+          <span class="btn-label">Browse all</span>
+        </a>
+      </div>
+
+      @if($offerings->count())
+        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          @foreach($offerings as $product)
+            @include('partials.product_card_v4_1', ['product' => $product, 'preferredLocation' => null])
+          @endforeach
+        </div>
+      @else
+        <div class="card p-4" style="border-radius:18px;">
+          <div class="text-muted">No live offerings with current availability were found for the current therapy collection yet.</div>
+        </div>
+      @endif
+    </div>
+
+    <div class="therapies-section">
+      <div class="therapies-section__head">
+        <div>
+          <div class="kicker">Therapy modalities</div>
+          <h2>Browse therapies</h2>
+          <p>Choose a therapy to see related offerings and refine by format, location, and price.</p>
         </div>
         <a href="/search?type=therapies" class="btn-wow btn-wow--outline btn-sm btn-arrow" data-loader-init="1">
           <span class="btn-label">Open search</span>
@@ -538,30 +528,6 @@
         @endforeach
       </div>
 
-      <div class="therapies-section" style="margin-top:28px;">
-        <div class="therapies-section__head">
-          <div>
-            <div class="kicker">Featured offerings</div>
-            <h2>Actual sessions you can book now</h2>
-            <p>These are live offerings matched to the therapies above and only shown when there is current availability to book.</p>
-          </div>
-          <a href="/search?type=therapies" class="btn-wow btn-wow--outline btn-sm btn-arrow" data-loader-init="1">
-            <span class="btn-label">Browse all</span>
-          </a>
-        </div>
-
-        @if($offerings->count())
-          <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            @foreach($offerings as $product)
-              @include('partials.product_card_v4_1', ['product' => $product, 'preferredLocation' => null])
-            @endforeach
-          </div>
-        @else
-          <div class="card p-4" style="border-radius:18px;">
-            <div class="text-muted">No live offerings with current availability were found for the current therapy collection yet.</div>
-          </div>
-        @endif
-      </div>
     </div>
 
     <div class="therapies-finish">
