@@ -488,6 +488,26 @@
 
   <section class="landing-wow__results">
     <div class="container-page">
+      @if(($type ?? '') === 'therapies')
+        <div class="landing-wow__results-head">
+          <div>
+            <div class="landing-wow__kicker">Featured offerings</div>
+            <h2>Actual sessions you can book now</h2>
+            <p>Live therapy offerings from trusted practitioners, ready to explore and book.</p>
+          </div>
+          <a href="/search?type=therapies" class="btn-wow btn-wow--outline btn-sm btn-arrow">
+            Browse all
+          </a>
+        </div>
+        @if(collect($featuredOfferings ?? [])->isNotEmpty())
+          <div class="landing-wow__grid" style="margin-bottom:32px;">
+            @foreach(collect($featuredOfferings)->take(8) as $product)
+              @include('partials.product_card_v4_1', ['product' => $product, 'preferredLocation' => null])
+            @endforeach
+          </div>
+        @endif
+      @endif
+
       <div class="landing-wow__results-head">
         <div>
           <div class="landing-wow__kicker">Featured results</div>
@@ -496,16 +516,27 @@
         </div>
       </div>
 
-      @include('partials.wow-filter-bar', [
-        'action' => url('/' . $slug . '/' . ($type ?? 'therapies') . '/'),
-        'clearUrl' => url('/' . $slug . '/' . ($type ?? 'therapies') . '/'),
-        'ariaLabel' => 'Filter listings',
-        'mobileLabel' => 'Filters',
-        'resultCount' => $items->count(),
-        'resultLabel' => 'results',
-        'filters' => $filters,
-        'segments' => $landingFilterSegments,
-        'chips' => $landingFilterChips,
+      @include('search.partials.mobile', [
+        'products' => $items,
+        'mobileResultsCount' => $items->count(),
+        'mobileFullNavigation' => true,
+        'mobileShowMap' => false,
+        'filterOnly' => true,
+        'searchMapData' => [],
+        'searchRecommendationsHtml' => '',
+        'searchAsyncBoot' => false,
+        'searchUrl' => url('/' . $slug . '/' . ($type ?? 'therapies') . '/'),
+      ])
+      @include('search.partials.desktop', [
+        'products' => $items,
+        'desktopResultsCount' => $items->count(),
+        'desktopFullNavigation' => true,
+        'showMap' => false,
+        'filterOnly' => true,
+        'searchMapData' => [],
+        'searchRecommendationsHtml' => '',
+        'searchAsyncBoot' => false,
+        'searchUrl' => url('/' . $slug . '/' . ($type ?? 'therapies') . '/'),
       ])
 
       @if($items->count())
