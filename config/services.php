@@ -18,6 +18,7 @@ if (! $mailRelayUrl) {
 }
 
 return [
+    'location_media_url' => rtrim((string) env('LOCATION_MEDIA_URL', 'https://studio.weofferwellness.co.uk'), '/'),
 
     /*
     |--------------------------------------------------------------------------

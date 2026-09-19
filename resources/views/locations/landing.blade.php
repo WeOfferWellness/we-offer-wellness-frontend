@@ -14,12 +14,18 @@
   $prices = collect($discovery['price_bands'] ?? []);
   $isTown = $scope === 'town';
   $isCounty = $scope === 'county';
+  $locationMediaBase = rtrim((string) config('services.location_media_url', 'https://studio.weofferwellness.co.uk'), '/');
   $locationImage = trim((string) ($location['image_path'] ?? ''));
-  if ($locationImage !== '' && !Str::startsWith(Str::lower($locationImage), ['http://', 'https://', '//'])) {
-    $backendAssets = rtrim((string) env('BACKEND_ASSET_URL', env('BACKEND_URL', '')), '/');
-    $locationImage = $backendAssets !== ''
-      ? $backendAssets.'/storage/'.ltrim($locationImage, '/')
-      : asset('/storage/'.ltrim($locationImage, '/'));
+  if ($locationImage !== '') {
+    if (Str::startsWith(Str::lower($locationImage), ['http://', 'https://', '//'])) {
+      $locationImage = preg_replace(
+        '#^https?://(?:atease|testing\.studio|v3)\.weofferwellness\.co\.uk#i',
+        $locationMediaBase,
+        $locationImage
+      ) ?: $locationImage;
+    } else {
+      $locationImage = $locationMediaBase.'/storage/'.ltrim($locationImage, '/');
+    }
   }
 @endphp
 
