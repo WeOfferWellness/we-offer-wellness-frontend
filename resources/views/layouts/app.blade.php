@@ -28,6 +28,7 @@
       </main>
       @include('partials.footer')
       @include('partials.cookie-banner')
+      @include('partials.analytics-bridge')
       @include('partials.newsletter-modal')
   </div>
 
@@ -1014,17 +1015,18 @@
     savedList: document.querySelector('[data-therapy-saved]')
   };
 
+  const needCatalogue = @json(array_values($publicNeeds ?? []));
   const needDefaults = {
-    popular: [
-      { slug: 'stress-and-anxiety', title: 'Stress & anxiety', url: '/needs/stress-and-anxiety' },
-      { slug: 'sleep-issues', title: 'Sleep issues', url: '/needs/sleep-issues' },
-      { slug: 'low-mood-burnout', title: 'Low mood & burnout', url: '/needs/low-mood-burnout' },
-    ],
-    trending: [
-      { slug: 'online-breathwork', title: 'Trending: Online breathwork', url: '/needs/breathwork' },
-      { slug: 'guided-meditation', title: 'Guided meditation & sound', url: '/needs/guided-meditation' },
-      { slug: 'corporate-wellbeing', title: 'Corporate wellbeing boosters', url: '/needs/corporate-wellbeing' },
-    ]
+    popular: needCatalogue.slice(0, 3).map((need) => ({
+      slug: need.slug,
+      title: need.name,
+      url: `/needs/${encodeURIComponent(need.slug)}`,
+    })),
+    trending: needCatalogue.slice(3, 6).map((need) => ({
+      slug: need.slug,
+      title: need.name,
+      url: `/needs/${encodeURIComponent(need.slug)}`,
+    })),
   };
 
   const therapyDefaults = {

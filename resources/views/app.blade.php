@@ -159,7 +159,10 @@
                 return { page_location: '', page_title: document.title || '' };
               }
             }
+            var initialPageViewSent = false;
             function trackInitialPageView(){
+              if (initialPageViewSent) return;
+              initialPageViewSent = true;
               track('page_view', currentPageParams());
             }
             function persistAttribution(){
@@ -178,16 +181,18 @@
                 localStorage.setItem('wow_first_touch', JSON.stringify(first));
               } catch (_) {}
             }
-            function syncConsent(){
+            function syncConsent(event){
               try {
-                var preferences = JSON.parse(localStorage.getItem('wow_cookie_preferences') || '{}');
-                var granted = preferences.analytics === true || preferences.performance === true;
+                var preferences = event && event.detail;
+                if (!preferences) preferences = JSON.parse(localStorage.getItem('wow_cookie_preferences') || '{}');
+                var granted = preferences.analytics === true;
                 if (typeof window.gtag === 'function') window.gtag('consent', 'update', {
                   analytics_storage: granted ? 'granted' : 'denied',
                   ad_storage: granted ? 'granted' : 'denied',
                   ad_user_data: granted ? 'granted' : 'denied',
                   ad_personalization: granted ? 'granted' : 'denied'
                 });
+                if (granted) trackInitialPageView();
               } catch (_) {}
             }
             persistAttribution();
