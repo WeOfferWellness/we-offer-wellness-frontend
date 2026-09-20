@@ -3,7 +3,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
 @php
-  $gaId = config('analytics.enabled') ? config('analytics.measurement_id') : null;
+  $isPublicProductionSite = in_array(request()->getHost(), ['www.weofferwellness.co.uk', 'weofferwellness.co.uk'], true);
+  $gaId = config('analytics.measurement_id');
+  if (!config('analytics.enabled') && !$isPublicProductionSite) {
+      $gaId = null;
+  }
+  // Keep the public property live while an older production config cache is
+  // being replaced; local and test hosts never use this fallback.
+  if ($isPublicProductionSite && !$gaId) {
+      $gaId = 'G-MZMQNETBYH';
+  }
 @endphp
 @if ($gaId)
 <!-- Google tag (gtag.js) -->
@@ -61,8 +70,8 @@
 @endif
 <link rel="canonical" href="{{ $canonicalUrl }}">
 <!-- Favicon -->
-<link rel="icon" type="image/png" href="{{ $favicon }}">
 <link rel="icon" type="image/png" sizes="192x192" href="{{ $favicon }}">
+<link rel="icon" type="image/png" href="{{ $favicon }}">
 <link rel="shortcut icon" href="{{ $favicon }}">
 <link rel="apple-touch-icon" href="{{ $favicon }}">
 <meta name="msapplication-TileImage" content="{{ $favicon }}">
