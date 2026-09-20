@@ -83,6 +83,7 @@ export default defineConfig(({ mode }) => {
                     // @vite('resources/css/we-offer-wellness-base-styles.css')
                     // resolve in production manifests when present.
                     'resources/css/we-offer-wellness-base-styles.css',
+                    'resources/css/head-inline.css',
                 ],
                 refresh: true,
             }),
