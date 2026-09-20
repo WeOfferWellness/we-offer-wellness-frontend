@@ -125,7 +125,6 @@
 <!-- Built assets via Vite (JS only here; keep inline <style> below intact) -->
 @php $manifest = public_path('build/manifest.json'); @endphp
 @if (file_exists($manifest))
-  @routes
   @vite('resources/js/app.js')
 @endif
 
