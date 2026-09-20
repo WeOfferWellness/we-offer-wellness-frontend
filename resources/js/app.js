@@ -2,7 +2,6 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import 'flatpickr/dist/flatpickr.min.css';
-import '../css/nuxt-ui.css';
 import '../css/app.css';
 import '../css/wow-buttons.css';
 import '../css/wow-cards.css';
@@ -16,21 +15,31 @@ import '../css/newsletter-modal.css';
 // Load Bootstrap JS (Popper included via dependency)
 import 'bootstrap';
 import './bootstrap';
-// Header + homepage interactivity (mega menu, mobile drawer, search panes)
-import './home';
-import './home-searchbar-v4';
-import './home-offerings';
 import { installSearchAnalytics } from './services/searchAnalytics';
 import { installBehaviourTelemetry } from './services/behaviourTelemetry';
 
 installSearchAnalytics();
 installBehaviourTelemetry();
 
-import { createInertiaApp } from '@inertiajs/vue3';
-import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
-import { createApp, h } from 'vue';
-import ui from '@nuxt/ui/vue-plugin';
-import { ZiggyVue } from '../../vendor/tightenco/ziggy';
+// Keep the first shared bundle small. These modules initialise homepage and
+// header enhancements after the server-rendered document is available; none
+// of them is required to paint the initial Blade page.
+function loadSiteEnhancements() {
+    return Promise.all([
+        import('./home'),
+        import('./home-searchbar-v4'),
+        import('./home-offerings'),
+    ]).catch((error) => {
+        console.error('[WOW] Site enhancements failed to load:', error);
+    });
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', loadSiteEnhancements, { once: true });
+} else {
+    void loadSiteEnhancements();
+}
+
 import { initDrawRandomUnderline } from './lib/wow-links';
 import { initClickLoaders } from './lib/wow-buttons';
 import './lib/wow-analytics';
@@ -43,41 +52,61 @@ const inertiaRoot = document.getElementById('app');
 const isInertiaPage = inertiaRoot && inertiaRoot.dataset && inertiaRoot.dataset.page;
 
 if (isInertiaPage) {
-    createInertiaApp({
-        // If a page passes a full title that already contains the app name,
-        // don't append it again. Otherwise, append using a hyphen separator.
-        title: (title) => {
-            const t = String(title || '').trim();
-            return t && t.includes(appName) ? t : `${t} - ${appName}`;
-        },
-        resolve: (name) =>
-            resolvePageComponent(
-                `./Pages/${name}.vue`,
-                import.meta.glob('./Pages/**/*.vue'),
-            ),
-        setup({ el, App, props, plugin }) {
-            const vue = createApp({ render: () => h(App, props) })
-                .use(plugin)
-                .use(ui)
-                .use(ZiggyVue)
-                .mount(el);
+    // Blade pages use this shared bundle for header/cart behavior but do not
+    // need the Inertia/Vue/Nuxt UI runtime. Load that larger stack only when
+    // Laravel has actually rendered an Inertia root.
+    Promise.all([
+        import('@inertiajs/vue3'),
+        import('laravel-vite-plugin/inertia-helpers'),
+        import('vue'),
+        import('@nuxt/ui/vue-plugin'),
+        import('../../vendor/tightenco/ziggy'),
+        import('../css/nuxt-ui.css'),
+    ]).then(([inertia, helpers, vueModule, uiModule, ziggyModule]) => {
+        const { createInertiaApp } = inertia;
+        const { resolvePageComponent } = helpers;
+        const { createApp, h } = vueModule;
+        const ui = uiModule.default;
+        const { ZiggyVue } = ziggyModule;
 
-            // Init link underline + button loaders on first mount
-            try { initDrawRandomUnderline(); initClickLoaders(); } catch {}
+        createInertiaApp({
+            // If a page passes a full title that already contains the app name,
+            // don't append it again. Otherwise, append using a hyphen separator.
+            title: (title) => {
+                const t = String(title || '').trim();
+                return t && t.includes(appName) ? t : `${t} - ${appName}`;
+            },
+            resolve: (name) =>
+                resolvePageComponent(
+                    `./Pages/${name}.vue`,
+                    import.meta.glob('./Pages/**/*.vue'),
+                ),
+            setup({ el, App, props, plugin }) {
+                const vue = createApp({ render: () => h(App, props) })
+                    .use(plugin)
+                    .use(ui)
+                    .use(ZiggyVue)
+                    .mount(el);
 
-            // Re-init after each successful Inertia navigation
-            try {
-                document.addEventListener('inertia:success', () => {
-                    initDrawRandomUnderline();
-                    initClickLoaders();
-                });
-            } catch {}
+                // Init link underline + button loaders on first mount
+                try { initDrawRandomUnderline(); initClickLoaders(); } catch {}
 
-            return vue;
-        },
-        progress: {
-            color: '#549483',
-        },
+                // Re-init after each successful Inertia navigation
+                try {
+                    document.addEventListener('inertia:success', () => {
+                        initDrawRandomUnderline();
+                        initClickLoaders();
+                    });
+                } catch {}
+
+                return vue;
+            },
+            progress: {
+                color: '#549483',
+            },
+        });
+    }).catch((error) => {
+        console.error('[WOW] Inertia runtime failed to load:', error);
     });
 } else {
     // Non-Inertia Blade views still load this bundle for shared UI behaviour (header, cart, etc.)
