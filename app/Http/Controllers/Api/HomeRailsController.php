@@ -23,7 +23,8 @@ class HomeRailsController extends Controller
 
         if ($section === 'latest') {
             return response($this->renderCards($this->catalogue()->sortByDesc(fn (array $item) => $this->timestamp($item))->take(12), true))
-                ->header('Content-Type', 'text/html; charset=UTF-8');
+                ->header('Content-Type', 'text/html; charset=UTF-8')
+                ->header('Cache-Control', 'public, max-age=60, s-maxage=300, stale-while-revalidate=60');
         }
 
         if ($section === 'gifts') {
@@ -40,6 +41,7 @@ class HomeRailsController extends Controller
 
             return response($this->renderCards($items->slice($offset, $limit)->values(), true))
                 ->header('Content-Type', 'text/html; charset=UTF-8')
+                ->header('Cache-Control', 'public, max-age=60, s-maxage=300, stale-while-revalidate=60')
                 ->header('X-Page', (string) $page)
                 ->header('X-Page-Size', (string) $limit)
                 ->header('X-Has-More', ($offset + $limit) < $items->count() ? '1' : '0')
@@ -47,18 +49,32 @@ class HomeRailsController extends Controller
         }
 
         if ($section === 'comfort') {
-            $limit = max(1, min((int) $request->integer('limit', 12), 24));
+            $limit = max(1, min((int) $request->integer('limit', 4), 12));
+            $page = max(1, (int) $request->integer('page', 1));
+            $priceMin = max(0, (float) $request->input('price_min', 0));
             $priceMax = max(1, (float) $request->input('price_max', 50));
-            $groupType = Str::lower(trim((string) $request->input('group_type', 'solo')));
+            $groupType = Str::lower(trim((string) $request->input('group_type', 'all')));
             $mode = Str::lower(trim((string) $request->input('mode', 'online')));
 
             $items = $this->catalogue(['max_price' => $priceMax], 6)
-                ->filter(fn (array $item) => $this->price($item) !== null)
+                ->filter(function (array $item) use ($priceMin, $priceMax): bool {
+                    $price = $this->price($item);
+
+                    return $price !== null && $price > $priceMin && $price <= $priceMax;
+                })
                 ->filter(fn (array $item) => $this->matchesMode($item, $mode))
                 ->filter(fn (array $item) => $this->matchesGroupType($item, $groupType));
+            $items = ProductRanking::sortCollection($items)->values();
+            $offset = ($page - 1) * $limit;
+            $pageItems = $items->slice($offset, $limit)->values();
 
-            return response($this->renderCards(ProductRanking::sortCollection($items)->take($limit)))
-                ->header('Content-Type', 'text/html; charset=UTF-8');
+            return response($this->renderCards($pageItems, true))
+                ->header('Content-Type', 'text/html; charset=UTF-8')
+                ->header('Cache-Control', 'public, max-age=60, s-maxage=300, stale-while-revalidate=60')
+                ->header('X-Page', (string) $page)
+                ->header('X-Page-Size', (string) $limit)
+                ->header('X-Has-More', ($offset + $limit) < $items->count() ? '1' : '0')
+                ->header('X-Total-Count', (string) $items->count());
         }
 
         return response('', 404);
@@ -66,7 +82,9 @@ class HomeRailsController extends Controller
 
     private function catalogue(array $filters = [], int $maxPages = 2): Collection
     {
-        return $this->offeringsClient->catalogue($filters, $maxPages)
+        // Homepage rails are shared public content. Do not make their first
+        // paint depend on a cold per-visitor ranking request.
+        return $this->offeringsClient->catalogue($filters, $maxPages, false)
             ->filter(fn (array $item): bool => $this->isPublicOffering($item))
             ->reject(fn (array $item) => EventListing::isPast($item))
             ->values();
@@ -110,8 +128,9 @@ class HomeRailsController extends Controller
     private function matchesMode(array $item, string $mode): bool
     {
         $locations = collect((array) data_get($item, 'locations', []))->map(fn ($location) => Str::lower((string) $location));
-        $online = (bool) data_get($item, 'online_only', false) || $locations->contains('online');
-        $physical = $locations->contains(fn (string $location) => $location !== 'online');
+        $channels = collect((array) data_get($item, 'channels', []))->map(fn ($channel) => Str::lower((string) $channel));
+        $online = (bool) data_get($item, 'online_only', false) || $channels->contains('online') || $locations->contains(fn (string $location) => Str::contains($location, 'online'));
+        $physical = $channels->contains('in_person') || $locations->contains(fn (string $location) => ! Str::contains($location, 'online'));
 
         return match ($mode) {
             'online' => $online && ! $physical,
@@ -122,6 +141,10 @@ class HomeRailsController extends Controller
 
     private function matchesGroupType(array $item, string $groupType): bool
     {
+        if ($groupType === '' || $groupType === 'all') {
+            return true;
+        }
+
         if (! in_array($groupType, ['solo', 'couple', 'group'], true)) {
             return true;
         }

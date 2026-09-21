@@ -125,12 +125,15 @@ class OnlineController extends Controller
     private function renderOnlinePage(Request $request, string $modality): \Illuminate\View\View
     {
         $modality = Str::slug($modality);
+        $isMobile = preg_match('/android|iphone|ipod|mobile|windows phone|opera mini|iemobile/i', (string) $request->userAgent()) === 1;
+        $defaultPerPage = $isMobile ? 12 : 24;
+        $requestedPerPage = (int) $request->query('per_page', $defaultPerPage);
         $filters = [
             'format' => 'online',
             'modality' => $modality,
             'sort' => (string) $request->query('sort', ''),
             'page' => max(1, (int) $request->query('page', 1)),
-            'per_page' => min(48, max(8, (int) $request->query('per_page', 24))),
+            'per_page' => min(48, max(8, $requestedPerPage)),
         ];
 
         $results = $this->fetchOfferings($filters);
