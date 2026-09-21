@@ -4,11 +4,11 @@ namespace App\Providers;
 
 use App\Models\Review;
 use App\Services\BackendOfferingsClient;
+use App\Services\NeedService;
 use App\Support\Navigation\EventsMenuState;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
-use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
@@ -40,8 +40,6 @@ class AppServiceProvider extends ServiceProvider
                 }
             }
         }
-
-        Vite::prefetch(concurrency: 3);
 
         View::composer('layouts.account', function ($view) {
             $reviews = Cache::remember('auth_review_snippets', now()->addMinutes(20), function () {
@@ -101,7 +99,12 @@ class AppServiceProvider extends ServiceProvider
         });
 
         View::composer('partials.header', function ($view) {
-            $view->with('eventsMenuState', EventsMenuState::make());
+            $view->with('eventsMenuState', EventsMenuState::make())
+                ->with('publicNeeds', app(NeedService::class)->all()->all());
+        });
+
+        View::composer('layouts.app', function ($view) {
+            $view->with('publicNeeds', app(NeedService::class)->all()->all());
         });
     }
 }
