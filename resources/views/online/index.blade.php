@@ -19,6 +19,7 @@
 
 @php
   $items = collect($results['items'] ?? []);
+  $isMobile = (bool) ($isMobile ?? false);
   $sortValue = (string) ($filters['sort'] ?? '');
   $sortLabel = match ($sortValue) {
     'price_asc' => 'Price: Low → High',
@@ -89,28 +90,31 @@
       ])
     @endif
 
-    @include('search.partials.mobile', [
-      'products' => $items,
-      'mobileResultsCount' => $items->count(),
-      'mobileFullNavigation' => true,
-      'mobileShowMap' => false,
-      'filterOnly' => true,
-      'searchMapData' => [],
-      'searchRecommendationsHtml' => '',
-      'searchAsyncBoot' => false,
-      'searchUrl' => $pageUrl ?? url('/online'),
-    ])
-    @include('search.partials.desktop', [
-      'products' => $items,
-      'desktopResultsCount' => $items->count(),
-      'desktopFullNavigation' => true,
-      'showMap' => false,
-      'filterOnly' => true,
-      'searchMapData' => [],
-      'searchRecommendationsHtml' => '',
-      'searchAsyncBoot' => false,
-      'searchUrl' => $pageUrl ?? url('/online'),
-    ])
+    @if($isMobile)
+      @include('search.partials.mobile', [
+        'products' => $items,
+        'mobileResultsCount' => $items->count(),
+        'mobileFullNavigation' => true,
+        'mobileShowMap' => false,
+        'filterOnly' => true,
+        'searchMapData' => [],
+        'searchRecommendationsHtml' => '',
+        'searchAsyncBoot' => false,
+        'searchUrl' => $pageUrl ?? url('/online'),
+      ])
+    @else
+      @include('search.partials.desktop', [
+        'products' => $items,
+        'desktopResultsCount' => $items->count(),
+        'desktopFullNavigation' => true,
+        'showMap' => false,
+        'filterOnly' => true,
+        'searchMapData' => [],
+        'searchRecommendationsHtml' => '',
+        'searchAsyncBoot' => false,
+        'searchUrl' => $pageUrl ?? url('/online'),
+      ])
+    @endif
 
     {{-- Results use the same responsive placement and card grid as Search,
          while intentionally omitting the search bar itself. --}}

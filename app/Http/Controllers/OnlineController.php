@@ -126,7 +126,7 @@ class OnlineController extends Controller
     {
         $modality = Str::slug($modality);
         $isMobile = preg_match('/android|iphone|ipod|mobile|windows phone|opera mini|iemobile/i', (string) $request->userAgent()) === 1;
-        $defaultPerPage = $isMobile ? 12 : 24;
+        $defaultPerPage = $isMobile ? 8 : 24;
         $requestedPerPage = (int) $request->query('per_page', $defaultPerPage);
         $filters = [
             'format' => 'online',
@@ -158,6 +158,7 @@ class OnlineController extends Controller
             'modality' => $modality,
             'modalityLabel' => $modality !== '' ? $label : 'Online',
             'pageUrl' => $modality !== '' ? url('/online/' . $modality) : url('/online'),
+            'isMobile' => $isMobile,
         ]);
     }
 
