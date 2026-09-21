@@ -18,16 +18,18 @@ class BackendOfferingsClient
             return [];
         }
 
-        try {
-            $response = Http::acceptJson()->timeout(8)->retry(1, 150)->get($baseUrl.'/api/reviews/stats');
-        } catch (\Throwable) {
-            return [];
-        }
+        return Cache::remember('backend:review-stats:'.sha1($baseUrl), now()->addMinutes(10), function () use ($baseUrl): array {
+            try {
+                $response = Http::acceptJson()->timeout(3)->get($baseUrl.'/api/reviews/stats');
+            } catch (\Throwable) {
+                return [];
+            }
 
-        return $response->successful() && is_array($response->json()) ? $response->json() : [];
+            return $response->successful() && is_array($response->json()) ? $response->json() : [];
+        });
     }
 
-    public function catalogue(array $filters = [], int $maxPages = 2): Collection
+    public function catalogue(array $filters = [], int $maxPages = 2, ?bool $personalised = null): Collection
     {
         $baseUrl = rtrim((string) env('BACKEND_URL', env('BACKEND_ASSET_URL', '')), '/');
 
@@ -45,9 +47,13 @@ class BackendOfferingsClient
 
         $request = request();
         $hasVisitorCookie = (string) $request->cookie('wow_visitor_id') !== '';
-        $cacheKey = 'backend:offerings:'.sha1($baseUrl.'|'.json_encode($filters).'|'.$maxPages);
+        $usePersonalisation = $personalised ?? $hasVisitorCookie;
+        $visitorScope = $usePersonalisation && $hasVisitorCookie
+            ? ':visitor:'.sha1((string) $request->cookie('wow_visitor_id'))
+            : ':public';
+        $cacheKey = 'backend:offerings:'.sha1($baseUrl.'|'.json_encode($filters).'|'.$maxPages.'|'.($usePersonalisation ? 'personalised' : 'public')).$visitorScope;
 
-        $load = function () use ($baseUrl, $filters, $maxPages, $request, $hasVisitorCookie): Collection {
+        $load = function () use ($baseUrl, $filters, $maxPages, $request, $usePersonalisation): Collection {
             $items = collect();
             $page = max(1, (int) ($filters['page'] ?? 1));
 
@@ -61,16 +67,15 @@ class BackendOfferingsClient
                         'X-WOW-Client-IP' => (string) $request->ip(),
                         ...($request->headers->has('cookie') ? ['Cookie' => $request->headers->get('cookie')] : []),
                     ])
-                    ->timeout(8)
-                    ->retry(1, 150);
+                    ->timeout(4);
                 try {
-                    $path = $hasVisitorCookie ? '/api/behaviour/offerings' : '/api/offerings';
+                    $path = $usePersonalisation ? '/api/behaviour/offerings' : '/api/offerings';
                     $response = $client->get($baseUrl.$path, array_merge($filters, ['page' => $page]));
-                    if ($hasVisitorCookie && ! $response->successful()) {
+                    if ($usePersonalisation && ! $response->successful()) {
                         $response = $client->get($baseUrl.'/api/offerings', array_merge($filters, ['page' => $page]));
                     }
                 } catch (\Throwable) {
-                    if (! $hasVisitorCookie) {
+                    if (! $usePersonalisation) {
                         break;
                     }
                     try {
@@ -117,18 +122,20 @@ class BackendOfferingsClient
                 ->values();
         };
 
-        return $hasVisitorCookie
-            ? $load()
-            : Cache::remember($cacheKey, now()->addMinutes(3), $load);
+        return Cache::remember(
+            $cacheKey,
+            now()->addSeconds($usePersonalisation ? 45 : 180),
+            $load
+        );
     }
 
-    public function reorder(Collection $items): Collection
+    public function reorder(Collection $items, array $filters = [], int $maxPages = 2): Collection
     {
         if ((string) request()->cookie('wow_visitor_id') === '' || $items->isEmpty()) {
             return $items->values();
         }
 
-        $catalogue = $this->personalisedCatalogue ??= $this->catalogue([], 2);
+        $catalogue = $this->personalisedCatalogue ??= $this->catalogue($filters, $maxPages);
         if ($catalogue->isEmpty()) {
             return $items->values();
         }
