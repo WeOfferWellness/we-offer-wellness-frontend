@@ -100,7 +100,8 @@ class HomeController extends Controller
         // catalogue data cached above, but always deliver current page markup.
         return response(view('home.index', $payload)->render())
             ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
-            ->header('Pragma', 'no-cache');
+            ->header('Pragma', 'no-cache')
+            ->header('X-WOW-Homepage-Performance', 'bounded-upstream-v1');
     }
 
     private function isGift(array $offering): bool
