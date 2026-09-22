@@ -18,11 +18,11 @@ class HomeController extends Controller
         $cacheVersion = $this->homeCacheVersion();
 
         if (request()->boolean('fresh')) {
-            Cache::forget('home:index:v6:'.$cacheVersion);
-            Cache::forget('home:index:html:v6:'.$cacheVersion);
+            Cache::forget('home:index:v7:'.$cacheVersion);
+            Cache::forget('home:index:html:v7:'.$cacheVersion);
         }
 
-        $payload = Cache::remember('home:index:v6:'.$cacheVersion, now()->addMinutes(10), function () use ($offeringsClient): array {
+        $payload = Cache::remember('home:index:v7:'.$cacheVersion, now()->addMinutes(10), function () use ($offeringsClient): array {
             // Product, offering, and review data belongs to the Backend API only.
             // The initial homepage must not wait for per-visitor ranking. The
             // generic catalogue is cached and personalisation can happen on
@@ -50,11 +50,15 @@ class HomeController extends Controller
             $giftsUnder50 = $explicitGifts->concat($physicalGifts)->concat($giftIdeas)->take(12)->values();
 
             $onlineUnder50 = ProductRanking::sortCollection(
-                $active->filter(fn (array $offering) => $this->isOnlineOnly($offering) && $this->price($offering) !== null && $this->price($offering) <= 50)
+                $active->filter(fn (array $offering) => $this->isOnlineOnly($offering) && $this->price($offering) !== null && $this->price($offering) < 50)
             )->take(12)->values();
 
             $onlineUnder100 = ProductRanking::sortCollection(
-                $active->filter(fn (array $offering) => $this->isOnlineOnly($offering) && $this->price($offering) !== null && $this->price($offering) > 50 && $this->price($offering) <= 100)
+                $active->filter(fn (array $offering) => $this->isOnlineOnly($offering) && $this->price($offering) !== null && $this->price($offering) >= 50 && $this->price($offering) < 100)
+            )->take(12)->values();
+
+            $online100Plus = ProductRanking::sortCollection(
+                $active->filter(fn (array $offering) => $this->isOnlineOnly($offering) && $this->price($offering) !== null && $this->price($offering) >= 100)
             )->take(12)->values();
 
             $latestCatalogue = $active
@@ -74,6 +78,7 @@ class HomeController extends Controller
                 'giftsUnder50' => $giftsUnder50,
                 'onlineUnder50' => $onlineUnder50,
                 'onlineUnder100' => $onlineUnder100,
+                'online100Plus' => $online100Plus,
                 'latestCatalogue' => $latestCatalogue,
                 'hasClassesThisWeek' => $this->hasClassesThisWeek($active),
                 'review_count' => $reviewCount,
@@ -89,6 +94,7 @@ class HomeController extends Controller
 
         $payload['onlineUnder50'] = $this->selectRotatingOnlineRow($payload['onlineUnder50']);
         $payload['onlineUnder100'] = $this->selectRotatingOnlineRow($payload['onlineUnder100']);
+        $payload['online100Plus'] = $this->selectRotatingOnlineRow($payload['online100Plus']);
 
         if (app()->environment('local') || auth()->check()) {
             return view('home.index', $payload);
