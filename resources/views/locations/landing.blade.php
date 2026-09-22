@@ -76,17 +76,17 @@
   @include('partials.breadcrumbs', ['crumbs' => $crumbs, 'schemaUrl' => $seo['canonical'] ?? url()->current()])
 
   <main class="location-landing">
+    @include('partials.landing-hero', [
+      'heroEyebrow' => 'Local wellness discovery',
+      'heroTitle' => 'Wellness in '.$label,
+      'heroIntro' => 'Discover therapies, classes, events and wellness experiences from practitioners across '.$label.'.',
+      'heroImage' => $locationImage,
+      'heroLocationLabel' => $label,
+      'heroAsideTitle' => null,
+      'heroAsideText' => '',
+      'heroActions' => [['label' => 'Search all', 'href' => url('/search?where='.urlencode($label))]],
+    ])
     <div class="location-landing__container">
-      @include('partials.landing-hero', [
-        'heroEyebrow' => 'Local wellness discovery',
-        'heroTitle' => 'Wellness in '.$label,
-        'heroIntro' => 'Discover therapies, classes, events and wellness experiences from practitioners across '.$label.'.',
-        'heroImage' => $locationImage,
-        'heroLocationLabel' => $label,
-        'heroAsideTitle' => null,
-        'heroAsideText' => '',
-        'heroActions' => [['label' => 'Search all', 'href' => url('/search?where='.urlencode($label))]],
-      ])
       <div class="location-landing__search-wrap">
         <x-home-searchbar-v4
           id-prefix="location-landing-search"

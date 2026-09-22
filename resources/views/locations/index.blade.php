@@ -942,16 +942,16 @@
 <main class="wow-locations-page">
   <div class="wow-page-grid" aria-hidden="true"></div>
 
+  @include('partials.landing-hero', [
+    'heroEyebrow' => 'Find',
+    'heroTitle' => $resolved ? 'Wellness in '.($resolved['place'] ?? $resolved['label'] ?? $locationQuery) : 'Find wellness by location',
+    'heroIntro' => $resolved ? 'Browse therapies, classes, events and practitioners available in this area, with online options included when they are the better fit.' : 'Start typing a town, city or region and we will rank therapies, classes, events and practitioners by distance, with online shown when it is the better fit.',
+    'heroImage' => data_get($locationSearch ?? [], 'image_path', ''),
+    'heroLocationLabel' => $resolved ? ($resolved['place'] ?? $resolved['label'] ?? '') : '',
+    'heroAsideTitle' => null,
+    'heroAsideText' => '',
+  ])
   <div class="wow-locations-container">
-    @include('partials.landing-hero', [
-      'heroEyebrow' => 'Find',
-      'heroTitle' => $resolved ? 'Wellness in '.($resolved['place'] ?? $resolved['label'] ?? $locationQuery) : 'Find wellness by location',
-      'heroIntro' => $resolved ? 'Browse therapies, classes, events and practitioners available in this area, with online options included when they are the better fit.' : 'Start typing a town, city or region and we will rank therapies, classes, events and practitioners by distance, with online shown when it is the better fit.',
-      'heroImage' => data_get($locationSearch ?? [], 'image_path', ''),
-      'heroLocationLabel' => $resolved ? ($resolved['place'] ?? $resolved['label'] ?? '') : '',
-      'heroAsideTitle' => null,
-      'heroAsideText' => '',
-    ])
     <div class="wow-search-panel" style="margin:0 0 24px;">
       <x-home-searchbar-v4
         id-prefix="locations-search-v4"

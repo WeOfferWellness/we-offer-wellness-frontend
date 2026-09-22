@@ -57,16 +57,16 @@
 @section('content')
   @include('partials.breadcrumbs', ['crumbs' => [['label' => 'Home', 'url' => url('/')], ['label' => 'Locations']], 'schemaUrl' => url('/locations')])
   <main class="locations-discovery">
+    @include('partials.landing-hero', [
+      'heroEyebrow' => 'Local wellness discovery',
+      'heroTitle' => 'Find wellness near you',
+      'heroIntro' => 'Discover therapies, classes, events and wellness experiences available near you.',
+      'heroImage' => data_get($locationSearch ?? [], 'image_path', ''),
+      'heroLocationLabel' => $locationLabel !== 'you' ? $locationLabel : '',
+      'heroAsideTitle' => null,
+      'heroAsideText' => '',
+    ])
     <div class="locations-discovery__container">
-      @include('partials.landing-hero', [
-        'heroEyebrow' => 'Local wellness discovery',
-        'heroTitle' => 'Find wellness near you',
-        'heroIntro' => 'Discover therapies, classes, events and wellness experiences available near you.',
-        'heroImage' => data_get($locationSearch ?? [], 'image_path', ''),
-        'heroLocationLabel' => $locationLabel !== 'you' ? $locationLabel : '',
-        'heroAsideTitle' => null,
-        'heroAsideText' => '',
-      ])
       <div class="locations-discovery__search-wrap">
         <x-home-searchbar-v4
           id-prefix="locations-discovery-search-v4"
