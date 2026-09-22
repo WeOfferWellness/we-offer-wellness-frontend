@@ -64,9 +64,35 @@
 .btn-wow--soft, .btn-wow--ghost, .btn-wow--secondary { background: var(--wow-soft); border-color: var(--wow-soft); color: var(--wow-green-dark); }
 .btn-wow--soft:hover, .btn-wow--ghost:hover, .btn-wow--secondary:hover { background: var(--wow-soft-hover); border-color: var(--wow-soft-hover); color: var(--wow-green-dark); }
 
-.btn-wow--text { height: auto; padding: 0; border: 0; border-radius: 0; color: var(--wow-green-dark); font-weight: 600; }
-.btn-wow--text:hover { color: var(--wow-green); }
-.btn-wow--card { --btn-height: 40px; --btn-font-size: 11px; --btn-radius: var(--btn-rd-card); min-width: 108px; padding-inline: 14px; letter-spacing: .02em; text-transform: uppercase; }
+.btn-wow--text,
+.btn-wow--link {
+  height: auto;
+  padding: 0;
+  border: 0 !important;
+  border-radius: 0;
+  background: transparent !important;
+  color: var(--wow-green-dark);
+  font-weight: 600;
+  box-shadow: none !important;
+}
+.btn-wow--text:hover, .btn-wow--link:hover { color: var(--wow-green); }
+.btn-wow--text:focus-visible, .btn-wow--link:focus-visible { box-shadow: none !important; }
+.btn-wow--card {
+  --btn-height: 40px;
+  --btn-font-size: 11px;
+  --btn-radius: var(--btn-rd-card);
+  min-width: 108px;
+  padding-inline: 14px;
+  border-width: 1px;
+  box-shadow: none !important;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+}
+.btn-wow--card:focus-visible {
+  outline: 2px solid var(--wow-green);
+  outline-offset: 3px;
+  box-shadow: none !important;
+}
 .btn-wow--icon { width: var(--btn-height); padding: 0; }
 .btn-wow--icon svg { width: 17px; height: 17px; }
 
@@ -75,7 +101,7 @@
 .btn-arrow:hover::after { transform: translateX(2px); }
 .btn-wow--primary.btn-arrow::after, .btn-wow--cta.btn-arrow::after, .cta-btn.btn-arrow::after { background: rgba(255,255,255,.15); color: #fff; }
 .btn-wow--soft.btn-arrow::after, .btn-wow--ghost.btn-arrow::after { background: #fff; }
-.btn-wow--text.btn-arrow::after { width: auto; height: auto; margin-left: 1px; background: transparent; border-radius: 0; color: currentColor; }
+.btn-wow--text.btn-arrow::after, .btn-wow--link.btn-arrow::after { width: auto; height: auto; margin-left: 1px; background: transparent; border-radius: 0; color: currentColor; }
 
 /* Compatibility aliases while templates migrate to deck names. */
 .btn-wow.btn-sm { --btn-height: var(--btn-h-sm); --btn-font-size: var(--btn-fz-sm); padding-inline: 14px; }
