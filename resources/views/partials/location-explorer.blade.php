@@ -33,15 +33,16 @@
 
 @if($tiles->isNotEmpty())
 <section class="wow-location-explorer" aria-labelledby="{{ $id ?? 'wow-location-explorer-heading' }}">
-    <div class="wow-location-explorer__header">
+    <div class="wow-component-container">
+      <div class="wow-location-explorer__header">
             <div>
                 <p class="wow-location-explorer__eyebrow">{{ $eyebrow }}</p>
                 <h2 id="{{ $id ?? 'wow-location-explorer-heading' }}">{{ $heading }}</h2>
                 <p class="wow-location-explorer__intro">{{ $intro }}</p>
             </div>
-    </div>
+      </div>
 
-    <div class="wow-location-explorer__grid">
+      <div class="wow-location-explorer__grid">
             @foreach($tiles as $index => $item)
                 @php
                     $title = trim((string) ($item['title'] ?? $item['label'] ?? 'Location'));
@@ -80,10 +81,13 @@
                     </div>
                 </article>
             @endforeach
+      </div>
     </div>
 </section>
 
 <style>
+    .wow-component-container { width: min(calc(100% - 48px), 1280px); margin-inline: auto; }
+    .location-landing__container .wow-component-container, .locations-discovery__container .wow-component-container { width: 100%; }
     .wow-location-explorer { padding: 33px 0 33px; }
     .wow-location-explorer__header { display: flex; align-items: flex-end; justify-content: space-between; gap: 36px; margin-bottom: 30px; }
     .wow-location-explorer__eyebrow { margin: 0 0 10px; color: var(--wow-green, #4f9482); font: 700 11px/1 "Instrument Sans", sans-serif; letter-spacing: .18em; text-transform: uppercase; }
@@ -108,7 +112,8 @@
         .wow-location-tile--featured { grid-column: span 2; grid-row: span 2; }
     }
     @media (max-width: 575.98px) {
-        .wow-location-explorer { padding: 42px 0; }
+        .wow-component-container { width: calc(100% - 30px); }
+        .wow-location-explorer { padding: 33px 0; }
         .wow-location-explorer__header { display: block; margin-bottom: 22px; }
         .wow-location-explorer h2 { font-size: 38px; }
         .wow-location-explorer__intro { font-size: 14px; }

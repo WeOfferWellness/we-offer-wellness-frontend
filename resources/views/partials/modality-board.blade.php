@@ -1,7 +1,7 @@
 @once
   @push('styles')
     <style>
-      .wow-modality-discovery{position:relative;padding:33px 0 33px;background:none;border-top:none;border-bottom:none}
+      .wow-component-container{width:min(calc(100% - 48px),1280px);margin-inline:auto}.wow-modality-discovery{position:relative;padding:33px 0 33px;background:none;border-top:none;border-bottom:none}
       .wow-modality-discovery__header{display:flex;align-items:flex-end;justify-content:space-between;gap:36px;margin-bottom:28px}
       .wow-modality-discovery__heading{max-width:720px}
       .wow-modality-discovery__eyebrow{margin:0 0 9px;color:#4f9482;font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase}
@@ -42,7 +42,7 @@
 
 @if($modalityItems->isNotEmpty())
   <section class="wow-modality-discovery" aria-label="{{ $sectionTitle }}">
-    <div>
+    <div class="wow-component-container">
       <header class="wow-modality-discovery__header">
         <div class="wow-modality-discovery__heading">
           <p class="wow-modality-discovery__eyebrow">{{ $sectionKicker }}</p>

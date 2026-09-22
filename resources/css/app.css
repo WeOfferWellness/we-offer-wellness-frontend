@@ -160,6 +160,15 @@ a:hover { text-decoration: none; }
 
 /* Layout */
 .container-page { max-width: 80rem; width: 100%; margin-left: auto; margin-right: auto; padding-left: 1rem; padding-right: 1rem; }
+
+/* Shared width contract for the newer Blade discovery components. */
+.wow-component-container { width: min(calc(100% - 48px), 1280px); margin-inline: auto; }
+.location-landing__container .wow-component-container,
+.locations-discovery__container .wow-component-container { width: 100%; }
+
+@media (max-width: 575.98px) {
+    .wow-component-container { width: calc(100% - 30px); }
+}
 @media (min-width: 640px){ .container-page { padding-left: 1.5rem; padding-right: 1.5rem; } }
 @media (min-width: 1024px){ .container-page { padding-left: 2rem; padding-right: 2rem; } }
 
