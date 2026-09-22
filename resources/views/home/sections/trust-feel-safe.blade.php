@@ -74,6 +74,7 @@
     .check i { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: #eef6f3; color: var(--wow-green, #4f9482); font-style: normal; font-weight: 700; }
     .check h3 { margin: 0 0 4px; font-size: 13px; }
     .check p { margin: 0; color: var(--wow-muted, #68736f); font-size: 11px; line-height: 1.5; }
+    @media (min-width: 901px) { #trust-reviews .check { height: 33.33%; } }
     @media (max-width: 900px) { .safe-grid { grid-template-columns: 1fr; } .hero-card { min-height: auto; } }
     @media (max-width: 575px) { .wrap { width: calc(100% - 30px); } .safe { padding: 42px 0; } .hero-card { padding: 26px 20px; } .stats { grid-template-columns: 1fr 1fr; } .stats .stat:last-child { grid-column: 1 / -1; } }
 </style>
