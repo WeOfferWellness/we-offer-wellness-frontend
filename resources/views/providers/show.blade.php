@@ -44,6 +44,28 @@
     $profilePicture = $user->profile_picture_url ?: null;
     $coverImage = $user->cover_image_url ?: null;
     $defaultImage = asset('images/default-social-preview.jpg');
+    $profileUrl = url('/practioner/' . ($slug ?? ''));
+    $profileSchema = [
+        '@context' => 'https://schema.org',
+        '@graph' => [
+            [
+                '@type' => 'ProfilePage',
+                '@id' => $profileUrl . '#profilepage',
+                'url' => $profileUrl,
+                'name' => $displayName . ' | We Offer Wellness®',
+                'mainEntity' => ['@id' => $profileUrl . '#person'],
+                'isPartOf' => ['@id' => url('/') . '#website'],
+            ],
+            [
+                '@type' => 'Person',
+                '@id' => $profileUrl . '#person',
+                'name' => $displayName,
+                'url' => $profileUrl,
+                'image' => $profilePicture ?: $defaultImage,
+                'worksFor' => ['@id' => url('/') . '#organization'],
+            ],
+        ],
+    ];
 
     $splitList = static function ($value): array {
         if (is_array($value)) {
@@ -522,6 +544,10 @@
     $navLinks[] = ['label' => 'Locations', 'href' => '#locations'];
     $navLinks[] = ['label' => 'Reviews', 'href' => '#reviews'];
 @endphp
+
+@push('head')
+    <script type="application/ld+json">{!! json_encode($profileSchema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) !!}</script>
+@endpush
 
 <div
     hidden
