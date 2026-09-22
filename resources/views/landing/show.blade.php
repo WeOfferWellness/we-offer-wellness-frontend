@@ -480,8 +480,9 @@
       !empty($landing['primary_cta']) ? ['label' => $landing['primary_cta']['label'], 'href' => $landing['primary_cta']['href']] : null,
       !empty($landing['secondary_cta']) ? ['label' => $landing['secondary_cta']['label'], 'href' => $landing['secondary_cta']['href'], 'style' => 'outline'] : null,
     ])),
-    'heroAsideTitle' => null,
-    'heroAsideText' => '',
+    'heroAsideLabel' => data_get($landing, 'hero_aside.label', 'A useful starting point'),
+    'heroAsideTitle' => data_get($landing, 'hero_aside.title', 'Find support that fits'),
+    'heroAsideText' => data_get($landing, 'hero_aside.text', 'Explore relevant wellness experiences without the noise.'),
   ])
 
   @include('partials.hero-meta', [
