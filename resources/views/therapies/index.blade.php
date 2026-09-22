@@ -6,7 +6,7 @@
   .therapies-shell{
     position:relative;
     overflow:hidden;
-    padding: 28px 0 72px;
+    padding: 0 0 72px;
     background:transparent;
   }
   .therapies-hero{
@@ -259,7 +259,7 @@
     .therapies-stats{ grid-template-columns:1fr; }
   }
   @media (max-width: 767.98px){
-    .therapies-shell{ padding-top:16px; }
+    .therapies-shell{ padding-top:0; }
     .therapies-grid{ grid-template-columns:1fr; }
     .therapies-section__head{ align-items:start; flex-direction:column; }
   }
@@ -476,6 +476,14 @@
         </div>
       </div>
     </div>
+
+    @include('partials.hero-meta', [
+      'items' => array_values(array_filter([
+        isset($offeringCount) ? ['label' => number_format((int) $offeringCount) . ' live offerings', 'strong' => true] : null,
+        isset($total) ? $total . ' therapies' : null,
+        'Online options',
+      ])),
+    ])
 
     <div class="therapies-section">
       <div class="therapies-section__head">

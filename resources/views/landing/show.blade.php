@@ -493,6 +493,13 @@
     'heroAsideText' => '',
   ])
 
+  @include('partials.hero-meta', [
+    'items' => array_values(array_filter([
+      !empty($landing['kicker']) ? ['label' => $landing['kicker'], 'strong' => true] : null,
+      isset($items) ? $items->count() . ' live listings' : null,
+    ])),
+  ])
+
   @include('home.sections.discover_category', [
     'discoveryCategories' => $discoveryCategories ?? [],
     'browseUrl' => url('/'.($type ?? 'therapies')),

@@ -273,6 +273,14 @@
   'heroAsideText' => 'Compare live offerings, formats and locations from trusted practitioners.',
 ])
 
+@include('partials.hero-meta', [
+  'items' => [
+    ['label' => 'Live availability', 'strong' => true],
+    'Online & in-person',
+    'Compare practitioners',
+  ],
+])
+
 <section class="section">
   <div class="container-page">
     <style>

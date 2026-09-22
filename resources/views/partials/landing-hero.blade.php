@@ -157,6 +157,10 @@
     .wow-consistent-hero__chips { margin-top: 20px; }
     .wow-consistent-hero__chip { display: inline-flex; align-items: center; min-height: 38px; padding: 8px 13px; border: 1px solid #cfe5da; border-radius: 999px; color: var(--wow-green); background: #eef8f3; font-size: 13px; font-weight: 700; text-decoration: none; }
     .wow-consistent-hero__search { margin-top: 24px; }
+    .wow-consistent-hero--location h1,
+    .wow-consistent-hero--location .wow-consistent-hero__intro {
+      text-align: left !important;
+    }
     @media (max-width: 991.98px) {
       .wow-consistent-hero__inner { grid-template-columns: 1fr; min-height: auto; }
       .wow-consistent-hero__copy { padding: 42px 0 36px; }
@@ -199,10 +203,11 @@
   }
   $heroLocationLabel = trim((string) ($heroLocationLabel ?? $heroTitle));
   $heroHasLocation = $heroImage !== '';
+  $heroIsLocation = (bool) ($heroIsLocation ?? $heroHasLocation);
   $heroHasAside = $heroAsideTitle || $heroAsideText || !empty($heroAsideItems);
 @endphp
 
-<section class="wow-consistent-hero">
+<section class="wow-consistent-hero{{ $heroIsLocation ? ' wow-consistent-hero--location' : '' }}">
   <div class="container-page wow-consistent-hero__inner">
     <div class="wow-consistent-hero__copy">
       <p class="wow-consistent-hero__eyebrow">{{ $heroEyebrow }}</p>

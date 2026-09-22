@@ -581,10 +581,6 @@
   'crumbs' => $pageCrumbs ?? [],
   'schemaUrl' => $pageCanonical ?? url()->current(),
   'currentIcon' => !empty($savedLocation['label']) ? 'location' : '',
-  'chips' => array_filter([
-    $page['kicker'] ?? null,
-    $products->isNotEmpty() ? ($products->count() . ' live listings') : 'Online & nearby options',
-  ]),
 ])
 
 <section class="seo-money-page">
@@ -645,6 +641,13 @@
         </div>
       </aside>
     </div>
+
+    @include('partials.hero-meta', [
+      'items' => array_values(array_filter([
+        !empty($page['kicker']) ? ['label' => $page['kicker'], 'strong' => true] : null,
+        $products->isNotEmpty() ? $products->count() . ' live listings' : 'Online & nearby options',
+      ])),
+    ])
 
     @include('partials.guide_panel', [
       'guidePanelModality' => data_get($page, 'modality', data_get($page, 'category_slug', request()->route('modality'))),

@@ -90,7 +90,7 @@
       overflow:hidden;
       background:none;
       color:#101828;
-      padding:44px 0 72px;
+      padding:0 0 72px;
     }
     .wow-page-grid{
       display:none;
@@ -949,6 +949,7 @@
     'heroIntro' => $resolved ? 'Browse therapies, classes, events and practitioners available in this area, with online options included when they are the better fit.' : 'Start typing a town, city or region and we will rank therapies, classes, events and practitioners by distance, with online shown when it is the better fit.',
     'heroImage' => data_get($locationSearch ?? [], 'image_path', ''),
     'heroLocationLabel' => $resolved ? ($resolved['place'] ?? $resolved['label'] ?? '') : '',
+    'heroIsLocation' => true,
     'heroAsideTitle' => null,
     'heroAsideText' => '',
   ])

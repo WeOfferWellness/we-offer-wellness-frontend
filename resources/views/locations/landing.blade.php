@@ -35,7 +35,7 @@
   <meta name="robots" content="{{ $seo['robots'] ?? 'index,follow' }}">
   @if(!empty($seo['canonical']))<link rel="canonical" href="{{ $seo['canonical'] }}">@endif
   <style>
-    .location-landing{color:#17202b;padding:22px 0 72px}
+    .location-landing{color:#17202b;padding:0 0 72px}
     .location-landing__container{width:min(100% - 32px,1280px);margin:auto}
     .location-landing__hero{padding:28px 0 32px;border-bottom:1px solid #e7ecef;background-color:#f7faf9;--location-hero-copy:#17202b;--location-hero-muted:#596275;--location-hero-accent:#2f7464;--location-hero-overlay:rgba(255,255,255,.78);@if($locationImage)background-image:linear-gradient(var(--location-hero-overlay),var(--location-hero-overlay)),url('{{ e($locationImage) }}');background-size:cover;background-position:center;@endif}
     .location-landing__hero.is-dark{--location-hero-copy:#fff;--location-hero-muted:rgba(255,255,255,.88);--location-hero-accent:#d7fff1;--location-hero-overlay:rgba(7,24,21,.62)}
@@ -81,6 +81,7 @@
       'heroIntro' => 'Discover therapies, classes, events and wellness experiences from practitioners across '.$label.'.',
       'heroImage' => $locationImage,
       'heroLocationLabel' => $label,
+      'heroIsLocation' => true,
       'heroAsideTitle' => null,
       'heroAsideText' => '',
       'heroActions' => [['label' => 'Search all', 'href' => url('/search?where='.urlencode($label))]],

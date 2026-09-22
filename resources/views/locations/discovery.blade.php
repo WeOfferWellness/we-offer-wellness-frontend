@@ -17,7 +17,7 @@
   <meta name="description" content="{{ $seo['description'] ?? 'Discover wellness therapies, classes, events and practitioners near you.' }}">
   <meta name="robots" content="{{ $seo['robots'] ?? 'index,follow' }}">
   <style>
-    .locations-discovery{color:#17202b;padding:28px 0 70px}
+    .locations-discovery{color:#17202b;padding:0 0 70px}
     .locations-discovery__container{width:min(100% - 32px,1280px);margin:0 auto}
     .locations-discovery__hero{padding:30px 0 34px;border-bottom:1px solid #e7ecef}
     .locations-discovery__search-wrap{width:min(100% - 32px,1280px);margin:-18px auto 0;position:relative;z-index:2}
@@ -61,8 +61,9 @@
       'heroEyebrow' => 'Local wellness discovery',
       'heroTitle' => 'Find wellness near you',
       'heroIntro' => 'Discover therapies, classes, events and wellness experiences available near you.',
-      'heroImage' => data_get($locationSearch ?? [], 'image_path', ''),
-      'heroLocationLabel' => $locationLabel !== 'you' ? $locationLabel : '',
+        'heroImage' => data_get($locationSearch ?? [], 'image_path', ''),
+        'heroLocationLabel' => $locationLabel !== 'you' ? $locationLabel : '',
+        'heroIsLocation' => true,
       'heroAsideTitle' => null,
       'heroAsideText' => '',
     ])

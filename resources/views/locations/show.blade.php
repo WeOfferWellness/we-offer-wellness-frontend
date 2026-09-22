@@ -28,6 +28,7 @@
   'heroIntro' => (string) ($seo['description'] ?? ($location['seo_description'] ?? 'Find therapies, classes and events near you.')),
   'heroImage' => $location['image_path'] ?? '',
   'heroLocationLabel' => $locationTitle,
+  'heroIsLocation' => true,
   'heroActions' => [
     ['label' => 'All locations', 'href' => route('locations.index'), 'style' => 'outline'],
     ['label' => 'Search all', 'href' => url('/search')],
