@@ -57,7 +57,7 @@
             'price' => number_format((float) $price, 2, '.', ''),
             'priceCurrency' => 'GBP',
             'availability' => $hasFutureAvailability ? 'https://schema.org/InStock' : null,
-          ], static fn ($value) => $value !== null && $value !== '')),
+          ], static fn ($value) => $value !== null && $value !== '') : null),
         ], static fn ($value) => $value !== null && $value !== '');
 
         return [
