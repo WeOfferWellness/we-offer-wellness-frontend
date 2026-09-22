@@ -238,7 +238,7 @@ class SeoMoneyPageController extends Controller
             $running[] = $segment;
             $crumbs[] = [
                 'label' => Str::headline(str_replace('-', ' ', $segment)),
-                'url' => $base . '/' . implode('/', $running),
+                'url' => url($base . '/' . implode('/', $running)),
             ];
         }
 

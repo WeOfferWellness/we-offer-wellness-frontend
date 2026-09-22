@@ -13,7 +13,7 @@
           $canonical = $seoService->canonicalUrl(request()->getPathInfo());
           $gtmId = config('services.gtm.id');
           $gaId = config('analytics.enabled') ? config('analytics.measurement_id') : null;
-          $favicon = config('app.favicon_url', '/favicon.ico');
+          $favicon = asset('favicon.ico');
           $ogTitle = $seoService->shortOgTitle($appName);
           $ogDesc = $seoService->shortOgDescription($defaultDesc);
         @endphp
@@ -50,21 +50,27 @@
 
         <!-- Google Analytics 4 (optional via env) -->
         @if ($gaId)
-        <script async src="https://www.googletagmanager.com/gtag/js?id={{ $gaId }}"></script>
-        <script>
+        <script async data-cfasync="false" src="https://www.googletagmanager.com/gtag/js?id={{ $gaId }}"></script>
+        <script data-cfasync="false">
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments)}
           gtag('consent', 'default', @json(config('analytics.consent_default')));
           gtag('js', new Date());
-          gtag('config', '{{ $gaId }}', { 'send_page_view': false });
+          gtag('config', 'G-MZMQNETBYH', {
+            send_page_view: true,
+            allow_google_signals: true,
+            allow_ad_personalization_signals: true
+          });
         </script>
         @endif
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
         <!-- Favicon -->
-        <link rel="icon" type="image/png" href="{{ $favicon }}">
+        <link rel="icon" href="{{ $favicon }}">
+        <link rel="icon" type="image/png" sizes="48x48" href="{{ asset('favicon-48x48.png') }}">
+        <link rel="icon" type="image/png" sizes="192x192" href="{{ asset('favicon-192x192.png') }}">
         <link rel="shortcut icon" href="{{ $favicon }}">
-        <link rel="apple-touch-icon" href="{{ $favicon }}">
+        <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
 
         <!-- Fonts: Instrument Sans -->
         <link rel="preconnect" href="https://fonts.googleapis.com">

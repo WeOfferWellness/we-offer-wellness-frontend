@@ -10,29 +10,34 @@
     @endphp
     @if ($gaId)
     <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id={{ $gaId }}"></script>
-    <script>
+    <script async data-cfasync="false" src="https://www.googletagmanager.com/gtag/js?id={{ $gaId }}"></script>
+    <script data-cfasync="false">
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('consent', 'default', @json(config('analytics.consent_default')));
       gtag('js', new Date());
-      gtag('config', '{{ $gaId }}', { 'send_page_view': false });
+      gtag('config', 'G-MZMQNETBYH', {
+        send_page_view: true,
+        allow_google_signals: true,
+        allow_ad_personalization_signals: true
+      });
     </script>
     @endif
     <title>@yield('page-title', 'We Offer Wellness™')</title>
     @php
-        $favicon = config('app.favicon_url', '/favicon.ico');
+        $favicon = asset('favicon.ico');
     @endphp
-    <link rel="icon" type="image/png" href="{{ $favicon }}">
-    <link rel="icon" type="image/png" sizes="192x192" href="{{ $favicon }}">
+    <link rel="icon" href="{{ $favicon }}">
+    <link rel="icon" type="image/png" sizes="48x48" href="{{ asset('favicon-48x48.png') }}">
+    <link rel="icon" type="image/png" sizes="192x192" href="{{ asset('favicon-192x192.png') }}">
     <link rel="shortcut icon" href="{{ $favicon }}">
-    <link rel="apple-touch-icon" href="{{ $favicon }}">
-    <meta name="msapplication-TileImage" content="{{ $favicon }}">
+    <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
+    <meta name="msapplication-TileImage" content="{{ asset('favicon-192x192.png') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <link rel="manifest" href="/manifest.json?v=4">
+    <link rel="manifest" href="/manifest.json?v=5">
     <meta name="theme-color" content="#90b9a9">  
 
     <style>

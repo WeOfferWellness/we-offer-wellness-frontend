@@ -943,50 +943,20 @@
   <div class="wow-page-grid" aria-hidden="true"></div>
 
   <div class="wow-locations-container">
-    <header class="wow-locations-hero">
-      <div>
-        <p class="wow-kicker">Find</p>
-        <h1>{{ $resolved ? 'Wellness in ' . ($resolved['place'] ?? $resolved['label'] ?? $locationQuery) : 'Search by location and we’ll sort the nearest wellness options for you.' }}</h1>
-        <p>{{ $resolved ? 'Browse therapies, classes, events and practitioners available in this area, with online options included when they are the better fit.' : 'Start typing a town, city or region and Mapbox will suggest the right place. We’ll then rank therapies, classes, events and practitioners by distance, with online shown when it’s the better fit.' }}</p>
-      </div>
-
-      <div class="wow-search-panel">
-        <form method="get" action="{{ url('/locations') }}" id="wowLocationSearchForm" autocomplete="off">
-          <label class="wow-search-panel__label" for="wowLocationQuery">Location</label>
-          <div class="wow-search-panel__menu">
-            <div class="wow-search-panel__row">
-              <input
-                id="wowLocationQuery"
-                name="place"
-                type="search"
-                value="{{ $locationQuery ?? '' }}"
-                placeholder="Start typing a city, town or area"
-                required
-                aria-autocomplete="list"
-                aria-expanded="false"
-              >
-              <button type="submit" class="btn-wow btn-wow--primary">Search</button>
-            </div>
-            <div id="wowLocationDropdown" class="wow-search-panel__dropdown" hidden></div>
-          </div>
-          <div class="wow-search-panel__helper">
-            Try “Maidstone”, “London”, “Cardiff” or a postcode. We’ll resolve the county, city, town and country for you.
-          </div>
-          @if(empty($resolved) && !empty($savedLocation['label'] ?? ''))
-            <div class="wow-search-panel__helper" style="margin-top:8px;">
-              Using your saved location: <strong>{{ $savedLocation['label'] }}</strong>
-            </div>
-          @endif
-          <input type="hidden" name="postcode" id="wowLocationPostcode" value="">
-          <input type="hidden" name="town" id="wowLocationTown" value="">
-          <input type="hidden" name="city" id="wowLocationCity" value="">
-          <input type="hidden" name="county" id="wowLocationCounty" value="">
-          <input type="hidden" name="country" id="wowLocationCountry" value="">
-          <input type="hidden" name="lat" id="wowLocationLat" value="">
-          <input type="hidden" name="lng" id="wowLocationLng" value="">
-        </form>
-      </div>
-    </header>
+    @include('partials.landing-hero', [
+      'heroEyebrow' => 'Find',
+      'heroTitle' => $resolved ? 'Wellness in '.($resolved['place'] ?? $resolved['label'] ?? $locationQuery) : 'Find wellness by location',
+      'heroIntro' => $resolved ? 'Browse therapies, classes, events and practitioners available in this area, with online options included when they are the better fit.' : 'Start typing a town, city or region and we will rank therapies, classes, events and practitioners by distance, with online shown when it is the better fit.',
+      'heroAsideTitle' => null,
+      'heroAsideText' => '',
+    ])
+    <div class="wow-search-panel" style="margin:0 0 24px;">
+      <x-home-searchbar-v4
+        id-prefix="locations-search-v4"
+        :search-url="url('/search')"
+        initial-where="{{ $locationQuery ?? '' }}"
+      />
+    </div>
 
     @if($resolved)
       <section class="wow-search-summary">

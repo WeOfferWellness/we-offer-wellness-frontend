@@ -63,11 +63,18 @@ function searchContext() {
   if (mode) context.delivery_mode = mode === 'online' ? 'online' : 'in_person';
   if (Number.isFinite(minPrice) && minPrice > 0) context.price_min = minPrice;
   if (Number.isFinite(maxPrice) && maxPrice > 0) context.price_max = maxPrice;
+  if (path.startsWith('/locations')) {
+    const searchedLocation = params.get('place') || params.get('where') || '';
+    const searchedWhat = params.get('what') || '';
+    if (searchedLocation) context.location_query = searchedLocation.slice(0, 100);
+    if (searchedWhat && !context.category_slug) context.category_slug = searchedWhat.slice(0, 100);
+  }
   return context;
 }
 
 function queueCurrentSearch() {
-  if (!enabled || !window.location.pathname.startsWith('/search')) return;
+  const isSearchSurface = window.location.pathname.startsWith('/search') || window.location.pathname.startsWith('/locations');
+  if (!enabled || !isSearchSurface) return;
   const key = `${window.location.pathname}?${new URLSearchParams(window.location.search).toString()}`;
   if (key === lastSearchContextKey) return;
   lastSearchContextKey = key;

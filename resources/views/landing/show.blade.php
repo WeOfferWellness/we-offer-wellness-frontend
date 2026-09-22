@@ -60,6 +60,52 @@
       padding:0 0 72px;
       background:none;
     }
+    .landing-wow__modalities{
+      padding:32px 0 12px;
+    }
+    .landing-wow__modalities-head{
+      display:flex;
+      align-items:end;
+      justify-content:space-between;
+      gap:18px;
+      margin-bottom:18px;
+    }
+    .landing-wow__modalities-head h2{
+      margin:0;
+      color:var(--ink);
+      font-family:"Playfair Display",Georgia,"Times New Roman",serif;
+      font-size:clamp(30px,4vw,50px);
+      font-weight:500;
+      letter-spacing:-.055em;
+      line-height:.98;
+    }
+    .landing-wow__modalities-head p{
+      max-width:66ch;
+      margin:9px 0 0;
+      color:var(--muted);
+      line-height:1.55;
+    }
+    .landing-wow__modality-grid{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:12px;
+    }
+    .landing-wow__modality-card{
+      display:block;
+      min-height:142px;
+      padding:18px;
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:#fff;
+      color:var(--ink);
+      text-decoration:none;
+      transition:border-color .16s ease,transform .16s ease,box-shadow .16s ease;
+    }
+    .landing-wow__modality-card:hover{border-color:#a9cfc1;box-shadow:0 12px 28px rgba(16,24,40,.07);transform:translateY(-2px)}
+    .landing-wow__modality-card strong{display:block;font-size:17px;line-height:1.2}
+    .landing-wow__modality-card span{display:block;margin-top:8px;color:var(--muted);font-size:13px;line-height:1.45}
+    @media(max-width:991px){.landing-wow__modality-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:640px){.landing-wow__modalities{padding-top:22px}.landing-wow__modalities-head{display:block}.landing-wow__modality-grid{gap:8px}.landing-wow__modality-card{min-height:0;padding:15px}.landing-wow__modality-card strong{font-size:15px}}
     .landing-wow__hero{
       padding:68px 0 24px;
     }
@@ -421,73 +467,57 @@
 ])
 
 <div class="landing-wow">
-  <section class="landing-wow__hero">
-    <div class="container-page">
-      <div class="landing-wow__hero-grid">
-        <div class="landing-wow__hero-copy">
-          <div class="landing-wow__kicker">{{ $landing['kicker'] ?? 'Explore' }}</div>
-          <h1>{{ $landing['title'] ?? 'Wellness' }}</h1>
-          <p>{{ $landing['intro'] ?? ($seo['description'] ?? '') }}</p>
+@include('partials.landing-hero', [
+    'heroEyebrow' => $landing['kicker'] ?? 'Explore',
+    'heroTitle' => $landing['title'] ?? 'Wellness',
+    'heroIntro' => $landing['intro'] ?? ($seo['description'] ?? ''),
+    'heroActions' => array_values(array_filter([
+      !empty($landing['primary_cta']) ? ['label' => $landing['primary_cta']['label'], 'href' => $landing['primary_cta']['href']] : null,
+      !empty($landing['secondary_cta']) ? ['label' => $landing['secondary_cta']['label'], 'href' => $landing['secondary_cta']['href'], 'style' => 'outline'] : null,
+    ])),
+    'heroAsideTitle' => null,
+    'heroAsideText' => '',
+  ])
 
-          @if(!empty($landing['points']))
-            <div class="landing-wow__points">
-              @foreach($landing['points'] as $point)
-                <div class="landing-wow__point">{{ $point }}</div>
-              @endforeach
-            </div>
-          @endif
+  @include('home.sections.discover_category', [
+    'discoveryCategories' => $discoveryCategories ?? [],
+    'browseUrl' => url('/'.($type ?? 'therapies')),
+  ])
 
-          <div class="landing-wow__actions">
-            @if(!empty($landing['primary_cta']))
-              <a href="{{ $landing['primary_cta']['href'] }}" class="btn-wow btn-wow--cta btn-arrow">
-                <span class="btn-label">{{ $landing['primary_cta']['label'] }}</span>
-                <span class="btn-icon-wrap" aria-hidden="true">
-                  <svg class="btn-icon-hover" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H5m14 0-4 4m4-4-4-4"/></svg>
-                  <svg class="btn-icon-default" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12l-4 4m4-4-4-4"/></svg>
-                </span>
-              </a>
-            @endif
-            @if(!empty($landing['secondary_cta']))
-              <a href="{{ $landing['secondary_cta']['href'] }}" class="btn-wow btn-wow--outline btn-arrow">
-                <span class="btn-label">{{ $landing['secondary_cta']['label'] }}</span>
-                <span class="btn-icon-wrap" aria-hidden="true">
-                  <svg class="btn-icon-hover" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H5m14 0-4 4m4-4-4-4"/></svg>
-                  <svg class="btn-icon-default" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12l-4 4m4-4-4-4"/></svg>
-                </span>
-              </a>
-            @endif
-          </div>
-        </div>
-
-        <div class="landing-wow__hero-panel">
-          <div>
-            <div class="landing-wow__kicker">Search-friendly</div>
-            <h3>Wellness, sorted with a calmer rhythm</h3>
-            <p>Browse curated results, then refine by format or location without losing the visual language of the newer homepage sections.</p>
-          </div>
-
-          @if(!empty($categories) && count($categories))
-            <div class="landing-wow__panel-list">
-              @foreach($categories as $category)
-                <a class="landing-wow__panel-item" href="{{ url('/' . $category['slug'] . '/' . $type . '/') }}">
-                  <strong>{{ $category['name'] }}</strong>
-                  <span>{{ number_format((int) ($category['count'] ?? 0)) }} listings</span>
-                </a>
-              @endforeach
-            </div>
-          @endif
-        </div>
-      </div>
-
-      @include('partials.guide_panel', [
-        'guidePanelModality' => request()->route('modality'),
-        'guidePanelFormat' => $type ?? null,
-      ])
-    </div>
-  </section>
+  <div class="container-page">
+    @include('partials.guide_panel', [
+      'guidePanelModality' => request()->route('modality'),
+      'guidePanelFormat' => $type ?? null,
+    ])
+  </div>
 
   <section class="landing-wow__results">
     <div class="container-page">
+      <style>
+        .landing-results-layout{display:grid;grid-template-columns:250px minmax(0,1fr);gap:25px;align-items:start}
+        .landing-results-filters .wow-sr-v5-desktop{padding:0}
+        .landing-results-filters .wow-sr-v5-container{width:100%}
+        .landing-results-filters .wow-sr-v5-header{display:none}
+        .landing-results-filters .wow-sr-v5-layout{display:block}
+        .landing-results-filters .wow-sr-v5-sidebar{position:sticky;top:140px}
+        .landing-results-content{min-width:0}
+        @media(max-width:1040px){.landing-results-layout{display:block}.landing-results-filters{display:none}}
+      </style>
+      <div class="landing-results-layout">
+        <div class="landing-results-filters">
+          @include('search.partials.desktop', [
+            'products' => $items,
+            'desktopResultsCount' => $items->count(),
+            'desktopFullNavigation' => true,
+            'showMap' => false,
+            'filterOnly' => true,
+            'searchMapData' => [],
+            'searchRecommendationsHtml' => '',
+            'searchAsyncBoot' => false,
+            'searchUrl' => url('/' . $slug . '/' . ($type ?? 'therapies') . '/'),
+          ])
+        </div>
+        <div class="landing-results-content">
       @if(($type ?? '') === 'therapies')
         <div class="landing-wow__results-head">
           <div>
@@ -527,18 +557,6 @@
         'searchAsyncBoot' => false,
         'searchUrl' => url('/' . $slug . '/' . ($type ?? 'therapies') . '/'),
       ])
-      @include('search.partials.desktop', [
-        'products' => $items,
-        'desktopResultsCount' => $items->count(),
-        'desktopFullNavigation' => true,
-        'showMap' => false,
-        'filterOnly' => true,
-        'searchMapData' => [],
-        'searchRecommendationsHtml' => '',
-        'searchAsyncBoot' => false,
-        'searchUrl' => url('/' . $slug . '/' . ($type ?? 'therapies') . '/'),
-      ])
-
       @if($items->count())
         <div id="landing-products" class="landing-wow__grid">
           @foreach($items as $product)
@@ -572,6 +590,8 @@
           No results yet. Try changing format, location or resetting filters.
         </div>
       @endif
+        </div>
+      </div>
     </div>
   </section>
 </div>

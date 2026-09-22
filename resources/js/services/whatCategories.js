@@ -1,5 +1,74 @@
 const backendUrl = String(import.meta.env.VITE_BACKEND_URL || '').replace(/\/$/, '')
 
+export async function fetchOfferingAndPractitionerSuggestions(query, limit = 6) {
+  const needle = String(query || '').trim()
+  if (needle.length < 2) return []
+
+  try {
+    const params = new URLSearchParams({
+      what: needle,
+      limit: String(Math.max(12, limit * 4)),
+    })
+    const response = await fetch('/api/products?' + params.toString(), {
+      cache: 'no-store',
+      headers: { Accept: 'application/json' },
+    })
+    if (!response.ok) throw new Error('Failed to load practitioner suggestions: ' + response.status)
+
+    const payload = await response.json()
+    const items = Array.isArray(payload) ? payload : []
+    const seenOfferings = new Set()
+    const offerings = items
+      .map((item) => {
+        const title = String(item?.title || '').trim()
+        const key = title.toLocaleLowerCase()
+        if (!key || seenOfferings.has(key)) return null
+        seenOfferings.add(key)
+        return {
+          cat: 'Offering',
+          title,
+          label: title,
+          value: title,
+          type: 'Offering',
+          subtitle: 'Offering',
+          slug: '',
+          search: [title, item?.vendor_name].filter(Boolean).join(' '),
+          counts: { products: 0, offerings: 1, total: 1 },
+        }
+      })
+      .filter(Boolean)
+      .slice(0, limit)
+
+    const seenPractitioners = new Set()
+    const practitioners = items
+      .map((item) => String(item?.vendor_name || '').trim())
+      .filter((name) => {
+        const key = name.toLocaleLowerCase()
+        if (!key || seenPractitioners.has(key)) return false
+        seenPractitioners.add(key)
+        return true
+      })
+      .slice(0, limit)
+      .map((name) => ({
+        cat: 'Practitioner',
+        title: name,
+        label: name,
+        value: name,
+        type: 'Practitioner',
+        subtitle: 'Practitioner',
+        slug: '',
+        search: name,
+        counts: { products: 0, offerings: 0, total: 0 },
+      }))
+    return [...offerings, ...practitioners]
+  } catch (error) {
+    console.warn('[what-categories] practitioner suggestions unavailable', error)
+    return []
+  }
+}
+
+export const fetchPractitionerSuggestions = fetchOfferingAndPractitionerSuggestions
+
 async function fetchPopularSearches() {
   if (!backendUrl) return []
 

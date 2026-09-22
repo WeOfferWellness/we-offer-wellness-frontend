@@ -54,20 +54,14 @@
     <div class="guide-shell">
       @include('partials.breadcrumbs', ['crumbs' => $page['breadcrumbs'] ?? [], 'schemaEnabled' => false])
 
-      <div class="guide-hero">
-        <div class="guide-panel guide-hero-copy">
-          <p class="guide-kicker">We Offer Wellness® Guides</p>
-          <h1>{{ $page['h1'] ?? 'Guides' }}</h1>
-          <p>{{ $page['intro'] ?? '' }}</p>
-        </div>
-        <div class="guide-panel guide-stat">
-          <div>
-            <strong>Guide Library</strong>
-            <div class="guide-stat-number">{{ count($page['popular_guides'] ?? []) }}</div>
-            <p>Useful landing pages linking education into real discovery, nearby browsing and live offerings.</p>
-          </div>
-        </div>
-      </div>
+      @include('partials.landing-hero', [
+        'heroEyebrow' => 'We Offer Wellness® Guides',
+        'heroTitle' => $page['h1'] ?? 'Guides',
+        'heroIntro' => $page['intro'] ?? '',
+        'heroAsideLabel' => 'Guide library',
+        'heroAsideTitle' => count($page['popular_guides'] ?? []).' ways to begin',
+        'heroAsideText' => 'Useful landing pages linking education into real discovery, nearby browsing and live offerings.',
+      ])
 
       <div class="guide-block guide-grid">
         <div class="guide-panel guide-card">

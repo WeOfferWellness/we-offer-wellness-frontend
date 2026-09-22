@@ -96,7 +96,8 @@
         'mobileResultsCount' => $items->count(),
         'mobileFullNavigation' => true,
         'mobileShowMap' => false,
-        'filterOnly' => true,
+        'filterOnly' => false,
+        'resultsHeading' => 'All online results',
         'searchMapData' => [],
         'searchRecommendationsHtml' => '',
         'searchAsyncBoot' => false,
@@ -108,7 +109,8 @@
         'desktopResultsCount' => $items->count(),
         'desktopFullNavigation' => true,
         'showMap' => false,
-        'filterOnly' => true,
+        'filterOnly' => false,
+        'resultsHeading' => 'All online results',
         'searchMapData' => [],
         'searchRecommendationsHtml' => '',
         'searchAsyncBoot' => false,
@@ -116,64 +118,6 @@
       ])
     @endif
 
-    {{-- Results use the same responsive placement and card grid as Search,
-         while intentionally omitting the search bar itself. --}}
-    @php
-      $meta = $results['meta'] ?? [];
-      $current = (int) ($meta['current_page'] ?? request()->query('page', 1));
-      $last = (int) ($meta['last_page'] ?? ($meta['total_pages'] ?? 1));
-      $q = request()->query();
-    @endphp
-
-    <style>
-      .online-results-grid {
-        display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 20px;
-        align-items: start;
-      }
-      .online-results-grid > .wow49-blade-card,
-      .online-results-grid > .wow49-store-blade {
-        width: 100%;
-        min-width: 0;
-        max-width: none;
-      }
-      @media (max-width: 1220px) {
-        .online-results-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      }
-      @media (max-width: 1040px) {
-        .online-results-grid { gap: 10px 11px; }
-      }
-      @media (max-width: 359px) {
-        .online-results-grid { grid-template-columns: minmax(0, 1fr); }
-      }
-    </style>
-
-    <section class="online-results" aria-label="Online results">
-      <h2 class="wow-sr-v5-all-results-title">All online results</h2>
-      <div class="online-results-grid" id="onlineResultsGrid">
-        @forelse($items as $item)
-          @include('partials.product_card_v4_1', ['product' => $item, 'preferredLocation' => null])
-        @empty
-          <div class="card p-4" style="border-radius:18px;">
-            <div class="text-muted">No results yet — try resetting filters.</div>
-          </div>
-        @endforelse
-      </div>
-      @if($last > 1)
-        <div class="wow-sr-v5-pagination">
-          <div class="flex items-center justify-center gap-3">
-            @if($current > 1)
-              <a class="btn btn-light" href="{{ request()->url() . '?' . http_build_query(array_merge($q, ['page' => $current - 1])) }}">← Prev</a>
-            @endif
-            <span class="text-muted">Page {{ $current }} of {{ $last }}</span>
-            @if($current < $last)
-              <a class="btn btn-light" href="{{ request()->url() . '?' . http_build_query(array_merge($q, ['page' => $current + 1])) }}">Next →</a>
-            @endif
-          </div>
-        </div>
-      @endif
-    </section>
   </div>
 </section>
 @endsection

@@ -270,31 +270,28 @@
   <div class="wow-page-grid" aria-hidden="true"></div>
 
   <div class="wow-needs-container">
-    <header class="wow-needs-hero">
-      <div>
-        <p class="wow-kicker">Browse</p>
-        <h1>By Need</h1>
-        <p>Start with what you need most, then we’ll match you with therapies, classes and experiences that fit.</p>
-      </div>
-
-      <aside class="wow-hero-note">
-        <strong>Simple, calm, useful.</strong>
-        <span>No clutter. Just clear pathways into the right support.</span>
-      </aside>
-    </header>
+    @include('partials.landing-hero', [
+      'heroEyebrow' => 'Browse',
+      'heroTitle' => 'By Need',
+      'heroIntro' => 'Start with what you need most, then we’ll match you with therapies, classes and experiences that fit.',
+      'heroAsideLabel' => 'Simple, calm, useful',
+      'heroAsideTitle' => 'A clearer place to start',
+      'heroAsideText' => 'No clutter. Just clear pathways into the right support.',
+    ])
 
     <section class="wow-needs-grid" aria-label="Need modalities">
       @foreach(($needs ?? []) as $need)
         <article class="wow-need-card">
+          @if(!empty($need['image_url']))<img src="{{ $need['image_url'] }}" alt="{{ $need['name'] }}" loading="lazy" style="width:100%;height:160px;object-fit:cover">@endif
           <div class="wow-need-card__inner">
-            <h2>{{ $need['title'] }}</h2>
-            @if(!empty($need['seo_description']))
-              <p>{{ $need['seo_description'] }}</p>
+            <h2>{{ $need['name'] }}</h2>
+            @if(!empty($need['description']))
+              <p>{{ $need['description'] }}</p>
             @endif
           </div>
           <footer class="wow-need-card__footer">
-            <small>Browse therapies and experiences for {{ $need['title'] }}.</small>
-            <a href="{{ route('needs.show', ['slug' => $need['slug']]) }}" class="btn-wow btn-wow--cta">View {{ $need['title'] }}</a>
+            <small>Browse therapies and experiences for {{ $need['name'] }}.</small>
+            <a href="{{ route('needs.show', ['slug' => $need['slug']]) }}" class="btn-wow btn-wow--cta">View {{ $need['name'] }}</a>
           </footer>
         </article>
       @endforeach

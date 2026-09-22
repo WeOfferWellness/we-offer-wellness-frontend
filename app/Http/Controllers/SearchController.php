@@ -439,7 +439,14 @@ class SearchController extends Controller
                     $categoryQuery->where('name', 'like', $pattern);
                 })
                 ->orWhereHas('vendor', function ($vendorQ) use ($pattern, $starterSql, $latestTierSql) {
-                    $vendorQ->where('vendor_name', 'like', $pattern)
+                    $vendorQ->where(function ($identityQ) use ($pattern) {
+                        $identityQ->where('vendor_name', 'like', $pattern)
+                            ->orWhereHas('user', function ($userQ) use ($pattern) {
+                                $userQ->where('first_name', 'like', $pattern)
+                                    ->orWhere('last_name', 'like', $pattern)
+                                    ->orWhere('name', 'like', $pattern);
+                            });
+                    })
                         ->whereHas('user', function ($userQ) use ($starterSql) {
                             $userQ->whereRaw("LOWER(COALESCE(account_type, '')) NOT IN ('{$starterSql}')");
                         })

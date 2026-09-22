@@ -1224,6 +1224,21 @@
   $schemaModalitySlug = \Illuminate\Support\Str::slug($schemaModalityLabel);
   $schemaFormatUrl = url('/' . $schemaFormatSlug);
   $schemaModalityUrl = $schemaModalitySlug !== '' ? url('/' . $schemaFormatSlug . '/' . $schemaModalitySlug) : $schemaFormatUrl;
+  $breadcrumbPricingVendor = [
+    'vendor_name' => data_get($p, 'vendor_name') ?: data_get($p, 'vendor.vendor_name'),
+    'user' => [
+      'name' => data_get($p, 'vendor.user.name', data_get($p, 'practitioner_name', '')),
+      'email' => data_get($p, 'vendor.user.email', ''),
+    ],
+  ];
+  $breadcrumbPrice = is_numeric($priceMin)
+    ? app(\App\Services\MarketplacePricingService::class)->buyerPrice(
+        $priceMin,
+        $breadcrumbPricingVendor,
+        (int) data_get($p, 'vendor_id', 0),
+        data_get($p, 'kind') !== 'physical_product'
+    )
+    : null;
 @endphp
 
 @push('head')
@@ -1251,7 +1266,7 @@
   'schemaUrl' => $schemaUrl,
   'chips' => array_filter([
     $mode !== '' ? $mode : null,
-    $priceMin !== null ? 'From £' . number_format((float) $priceMin, 2) : null,
+    $breadcrumbPrice !== null ? 'From £' . number_format((float) $breadcrumbPrice, 2) : null,
   ]),
 ])
 

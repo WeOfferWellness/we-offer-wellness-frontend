@@ -412,7 +412,79 @@ function initComfortRail() {
   fetchComfort();
 }
 
+function initComfortPriceRails() {
+  document.querySelectorAll('[data-comfort-rail]').forEach((list) => {
+    const section = list.closest('section');
+    const ghostTemplate = section?.querySelector('[data-comfort-ghost]');
+    const initialCards = Array.from(list.querySelectorAll(':scope > article'));
+    const initialHtml = initialCards.map((card) => card.outerHTML).join('');
+    if (!initialHtml) return;
+
+    let page = 1;
+    let hasMore = true;
+    let loading = false;
+
+    const loadNext = async () => {
+      if (loading) return;
+      loading = true;
+      list.dataset.loading = 'true';
+
+      if (ghostTemplate) {
+        list.insertAdjacentHTML('beforeend', ghostTemplate.innerHTML);
+      }
+
+      const params = new URLSearchParams({
+        section: 'comfort',
+        price_min: list.dataset.priceMin || '0',
+        price_max: list.dataset.priceMax || '50',
+        mode: 'online',
+        group_type: 'all',
+        page: String(page + 1),
+        limit: '4',
+      });
+
+      try {
+        const response = await fetch(`/api/home/rails?${params.toString()}`, {
+          credentials: 'same-origin',
+          headers: { Accept: 'text/html', 'X-Requested-With': 'XMLHttpRequest' },
+        });
+        const html = response.ok ? (await response.text()).trim() : '';
+        list.querySelectorAll('.product-v4-1-ghost-card-scope').forEach((node) => node.remove());
+
+        if (html) {
+          list.insertAdjacentHTML('beforeend', html);
+        }
+
+        hasMore = response.headers.get('X-Has-More') === '1';
+        if (hasMore) {
+          page += 1;
+        } else {
+          // Once this bracket is exhausted, put its first cards back at the end
+          // and continue from page one so the rail loops without a hard stop.
+          list.insertAdjacentHTML('beforeend', initialHtml);
+          page = 0;
+          hasMore = true;
+        }
+      } catch {
+        list.querySelectorAll('.product-v4-1-ghost-card-scope').forEach((node) => node.remove());
+      } finally {
+        loading = false;
+        list.dataset.loading = 'false';
+      }
+    };
+
+    list.addEventListener('scroll', () => {
+      const remaining = list.scrollWidth - list.scrollLeft - list.clientWidth;
+      if (remaining <= Math.max(48, list.clientWidth * 0.2)) {
+        void loadNext();
+      }
+    }, { passive: true });
+  });
+}
+
 onReady(() => {
+  initComfortPriceRails();
+
   initStaticRail({
     sectionId: 'home-latest-catalogue',
     listId: 'home-latest-catalogue-cards',
@@ -433,5 +505,4 @@ onReady(() => {
     emptyHtml: 'No gifts found under £50 right now. <a class="link-wow" href="/gifts">Browse all gifts</a>.',
   });
 
-  initComfortRail();
 });

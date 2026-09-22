@@ -513,7 +513,7 @@ function buildAvailabilityDays(item) {
 
 function buildSignalText(item) {
   if (item?.online_only) {
-    return 'Exclusively online';
+    return 'Online Exclusive';
   }
 
   const count = Number(item?.physical_location_count || 0);
@@ -1152,7 +1152,7 @@ export function renderOfferingCard(item) {
 
           <div class="therapy-card__meta">
             ${durationLabel ? `<span class="therapy-card__chip">${escapeHtml(durationLabel)}</span>` : ''}
-            ${hasOnline ? `<span class="therapy-card__chip therapy-card__chip--online">${exclusiveOnline ? 'Exclusively online' : 'Online'}</span>` : ''}
+            ${hasOnline ? `<span class="therapy-card__chip therapy-card__chip--online">${exclusiveOnline ? 'Online Exclusive' : 'Online'}</span>` : ''}
             ${!exclusiveOnline && physicalLocations.length ? buildLocationChip(item) : ''}
           </div>
 

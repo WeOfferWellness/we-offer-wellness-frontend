@@ -1,5 +1,5 @@
 @php
-    $mobileResultsCount = method_exists($products, 'total') ? $products->total() : $products->count();
+    $mobileResultsCount = $mobileResultsCount ?? (method_exists($products, 'total') ? $products->total() : $products->count());
 @endphp
 
 @once
@@ -13,6 +13,9 @@
             --sr-page: #fbfaf8;
             color: var(--sr-ink);
             padding-bottom: 32px;
+        }
+        @media (min-width: 1041px) {
+            .wow-sr-v5-mobile { display: none !important; }
         }
 
         .wow-sr-v5-mobile-toolbar {
@@ -158,7 +161,7 @@
     </style>
 @endonce
 
-<section class="wow-sr-v5-mobile" id="wowMobileSearch" data-search-url="{{ url('/search') }}" data-full-navigation="{{ !empty($mobileFullNavigation) ? 'true' : 'false' }}" data-show-map="{{ !empty($mobileShowMap) ? 'true' : 'false' }}" data-initial-map='@json($searchMapData ?? [])'>
+<section class="wow-sr-v5-mobile" id="wowMobileSearch" data-search-url="{{ $searchUrl ?? url('/search') }}" data-full-navigation="{{ !empty($mobileFullNavigation) ? 'true' : 'false' }}" data-show-map="{{ !empty($mobileShowMap) ? 'true' : 'false' }}" data-initial-map='@json($searchMapData ?? [])'>
     <div class="wow-sr-v5-mobile-toolbar">
         <div class="wow-sr-v5-mobile-count"><strong>Recommended for you</strong><span><b data-result-count>{{ $mobileResultsCount }}</b> matching offerings</span></div>
         <div class="wow-sr-v5-mobile-actions">
@@ -166,13 +169,16 @@
                 <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M7 12h10M10 17h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
                 Filters
             </button>
+            @if(!empty($mobileShowMap))
             <button class="wow-sr-v5-mobile-tool" type="button" data-map-toggle aria-pressed="false">
                 <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="m3 6 5-2 8 3 5-2v13l-5 2-8-3-5 2V6Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 4v13M16 7v13" stroke="currentColor" stroke-width="1.6"/></svg>
                 <span data-map-label>Map</span>
             </button>
+            @endif
         </div>
     </div>
 
+    @if(empty($filterOnly))
     <section class="wow-sr-v5-mobile-map" aria-label="Map view" data-map-panel>
         <div class="wow-sr-v5-mobile-map-canvas" data-map-canvas></div>
         <div class="wow-sr-v5-mobile-map-empty" data-map-empty>Choose Map to see nearby wellbeing offerings.</div>
@@ -192,6 +198,7 @@
             @endif
         </div>
     </main>
+    @endif
 
     <div class="wow-sr-v5-mobile-modal" data-filter-modal hidden>
         <button class="wow-sr-v5-mobile-backdrop" type="button" data-close-filters aria-label="Close filters"></button>
@@ -257,12 +264,8 @@
     </div>
 </section>
 
-@once
-    <script>
+<script>
         (() => {
-            const mobileQuery = window.matchMedia('(max-width: 1040px)');
-            if (!mobileQuery.matches) return;
-
             const root = document.getElementById('wowMobileSearch');
             if (!root || root.dataset.initialized === 'true') return;
             root.dataset.initialized = 'true';
@@ -276,6 +279,7 @@
             const mapKey = @json(config('services.google_maps.key'));
             const countNodes = root.querySelectorAll('[data-result-count]');
             const applyCount = root.querySelector('[data-apply-count]');
+            if (!modal) return;
             let draft;
             let activeRequest;
             let map;
@@ -397,7 +401,10 @@
             async function fetchResults(nextUrl, { push = false } = {}) {
                 const url = new URL(nextUrl, window.location.origin);
                 if (root.dataset.fullNavigation === 'true') {
-                    window.location.assign(url.toString());
+                    // Category and landing pages render their filtered result set
+                    // server-side, so keep the page context and perform a normal
+                    // navigation rather than trying to fetch a JSON response.
+                    window.location.href = url.toString();
                     return;
                 }
                 if (activeRequest) activeRequest.abort();
@@ -435,19 +442,21 @@
             }
 
             root.addEventListener('click', event => {
-                if (event.target.closest('[data-open-filters]')) { openFilters(); return; }
-                if (event.target.closest('[data-close-filters]')) { closeFilters(); return; }
-                if (event.target.closest('[data-map-toggle]')) { setMapMode(!root.classList.contains('is-map-mode')); return; }
-                if (event.target.closest('[data-clear-filters]')) { draft = { sort: 'popular', type: '', rating: '', price: 500 }; renderDraft(); return; }
-                if (event.target.closest('[data-apply-filters]')) { applyDraft(); return; }
-                const sectionToggle = event.target.closest('[data-mobile-section-toggle]');
+                const target = event.target instanceof Element ? event.target : event.target?.parentElement;
+                if (!target) return;
+                if (target.closest('[data-open-filters]')) { openFilters(); return; }
+                if (target.closest('[data-close-filters]')) { closeFilters(); return; }
+                if (target.closest('[data-map-toggle]')) { setMapMode(!root.classList.contains('is-map-mode')); return; }
+                if (target.closest('[data-clear-filters]')) { draft = { sort: 'popular', type: '', rating: '', price: 500 }; renderDraft(); return; }
+                if (target.closest('[data-apply-filters]')) { applyDraft(); return; }
+                const sectionToggle = target.closest('[data-mobile-section-toggle]');
                 if (sectionToggle) {
                     const section = sectionToggle.closest('.wow-sr-v5-mobile-filter-section');
                     section.classList.toggle('is-collapsed');
                     sectionToggle.setAttribute('aria-expanded', String(!section.classList.contains('is-collapsed')));
                     return;
                 }
-                const filter = event.target.closest('[data-draft-name]');
+                const filter = target.closest('[data-draft-name]');
                 if (filter) {
                     const name = filter.dataset.draftName;
                     const value = filter.dataset.draftValue;
@@ -455,9 +464,9 @@
                     renderDraft();
                     return;
                 }
-                const priceChip = event.target.closest('[data-draft-price-chip]');
+                const priceChip = target.closest('[data-draft-price-chip]');
                 if (priceChip) { draft.price = Number(priceChip.dataset.draftPriceChip); renderDraft(); return; }
-                const pageLink = event.target.closest('#mobileSearchResultsPagination a');
+                const pageLink = target.closest('#mobileSearchResultsPagination a');
                 if (pageLink && pageLink.href) { event.preventDefault(); fetchResults(pageLink.href, { push: true }); }
             });
 
@@ -474,5 +483,4 @@
                 window.requestAnimationFrame(() => fetchResults(window.location.href));
             }
         })();
-    </script>
-@endonce
+</script>

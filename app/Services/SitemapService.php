@@ -55,22 +55,6 @@ class SitemapService
         'guides',
     ];
 
-    private const NEED_SLUGS = [
-        'stress-and-anxiety',
-        'sleep-issues',
-        'low-mood-burnout',
-        'overwhelm',
-        'worry',
-        'pain-management',
-        'mens-wellbeing',
-        'digestive-health',
-        'fertility-pregnancy',
-        'nervous-system',
-        'breathwork',
-        'guided-meditation',
-        'corporate-wellbeing',
-    ];
-
     private const RESERVED_CATEGORY_SLUGS = [
         'about',
         'cart',
@@ -161,6 +145,8 @@ class SitemapService
 
     private ?array $submissionUrlsCache = null;
 
+    private array $guideStats = [];
+
     private ?array $redirectPathMatchers = null;
 
     private ?array $redirectExactPaths = null;
@@ -214,6 +200,11 @@ class SitemapService
     public function modalityStats(): array
     {
         return $this->modalityStats;
+    }
+
+    public function guideStats(): array
+    {
+        return $this->guideStats;
     }
 
     public function buildAndWriteAll(?string $outputDirectory = null): array
@@ -729,6 +720,9 @@ class SitemapService
             $this->modalityStats[$product->subcategory !== null ? 'subcategory_count' : 'parent_count']++;
 
             $url = $seo->modalityPageUrl($format, $modality);
+            if ($url === $seo->formatPageUrl($format)) {
+                continue;
+            }
             $rememberLatest($url, $product->updated_at ?? null);
         }
 
@@ -747,8 +741,39 @@ class SitemapService
             $this->modalityStats[$offering->subcategory !== null ? 'subcategory_count' : 'parent_count']++;
 
             $url = $seo->modalityPageUrl($format, $modality);
+            if ($url === $seo->formatPageUrl($format)) {
+                continue;
+            }
             $rememberLatest($url, $offering->updated_at ?? null);
         }
+
+        // Listings normally establish the public format for a modality. Keep
+        // approved subcategory landing pages discoverable even when they do not
+        // currently have a live listing to seed that URL. The public taxonomy
+        // resolver supports the established therapy route for these orphaned
+        // modality pages; this is deliberately generic rather than a 9D-only
+        // exception.
+        $listingSlugs = array_fill_keys(array_map(
+            fn (string $url): string => $this->slugFromUrl($url),
+            array_keys($latestByUrl)
+        ), true);
+        ProductSubcategory::query()
+            ->whereIn('status', ['approved', 'live'])
+            ->whereHas('category')
+            ->get(['id', 'slug', 'updated_at'])
+            ->each(function (ProductSubcategory $subcategory) use (&$listingSlugs, &$rememberLatest, $seo): void {
+                $slug = $seo->categorySlug((string) $subcategory->slug);
+                if ($slug === '' || isset($listingSlugs[$slug])) {
+                    return;
+                }
+
+                $url = $seo->modalityPageUrl('therapies', $slug);
+                if ($url === $seo->formatPageUrl('therapies')) {
+                    return;
+                }
+                $rememberLatest($url, $subcategory->updated_at ?? null);
+                $listingSlugs[$slug] = true;
+            });
 
         foreach ($latestByUrl as $url => $lastmod) {
             $this->addEntry($entries, $url, $lastmod);
@@ -801,6 +826,11 @@ class SitemapService
                 $latestByUrl[$url] = $atom;
             }
         };
+
+        // The therapies landing page is a canonical public type route even
+        // when the current listing feed does not contain a record that seeds
+        // the format automatically.
+        $rememberLatest($seo->formatPageUrl('therapies'), now()->toAtomString());
 
         foreach ($this->liveProducts()->filter(fn (Product $product): bool => $product->category !== null) as $product) {
             $format = $seo->inferFormatKeyFromProduct($product);
@@ -996,7 +1026,12 @@ class SitemapService
     {
         $entries = [];
         $latestByUrl = [];
-        $needHits = array_fill_keys(self::NEED_SLUGS, now()->toAtomString());
+        $needs = app(NeedService::class)->all()
+            ->filter(fn (array $need): bool => ($need['status'] ?? 'approved') === 'approved' && trim((string) ($need['slug'] ?? '')) !== '');
+        $needHits = $needs->mapWithKeys(fn (array $need): array => [trim((string) $need['slug']) => [
+            'url' => trim((string) ($need['url'] ?? '')) ?: $this->publicUrl('/needs/'.trim((string) $need['slug'])),
+            'lastmod' => $this->dateToAtom($need['updated_at'] ?? null),
+        ]])->all();
 
         foreach ($this->liveProducts() as $product) {
             $needs = array_values(array_filter(array_map(
@@ -1010,27 +1045,27 @@ class SitemapService
 
             $updated = $this->dateToAtom($product->updated_at ?? null);
             foreach ($needs as $needSlug) {
-                if (!isset($needHits[$needSlug])) {
+                if (! isset($needHits[$needSlug])) {
                     continue;
                 }
 
                 try {
-                    $current = Carbon::parse($needHits[$needSlug])->getTimestamp();
+                    $current = Carbon::parse($needHits[$needSlug]['lastmod'])->getTimestamp();
                     $candidate = Carbon::parse($updated)->getTimestamp();
 
                     if ($candidate > $current) {
-                        $needHits[$needSlug] = $updated;
+                        $needHits[$needSlug]['lastmod'] = $updated;
                     }
                 } catch (\Throwable $e) {
-                    $needHits[$needSlug] = $updated;
+                    $needHits[$needSlug]['lastmod'] = $updated;
                 }
             }
         }
 
         $latestByUrl[$this->publicUrl('/needs')] = now()->toAtomString();
 
-        foreach ($needHits as $slug => $lastmod) {
-            $latestByUrl[$this->publicUrl('/needs/' . $slug)] = $lastmod;
+        foreach ($needHits as $need) {
+            $latestByUrl[$need['url']] = $need['lastmod'];
         }
 
         foreach ($latestByUrl as $url => $lastmod) {
@@ -1132,7 +1167,33 @@ class SitemapService
      */
     private function buildGuideEntries(): array
     {
-        return array_values(app(GuideRegistryService::class)->publishedGuideEntries());
+        $entries = [];
+        $backendCount = 0;
+        foreach (app(BackendGuideService::class)->all(true) as $guide) {
+            $format = trim((string) ($guide['format'] ?? ''));
+            $modality = trim((string) ($guide['modality'] ?? ''));
+            $slug = trim((string) ($guide['slug'] ?? ''));
+            if (! in_array($format, self::CANONICAL_FORMATS, true) || $modality === '' || $slug === '') {
+                continue;
+            }
+
+            $backendCount++;
+            $url = trim((string) ($guide['url'] ?? '')) ?: $this->publicUrl('/'.$format.'/'.$modality.'/guides/'.$slug);
+            $entries[] = ['loc' => $url, 'lastmod' => $this->dateToAtom($guide['updated_at'] ?? $guide['published_at'] ?? null)];
+        }
+
+        $unique = [];
+        foreach ($entries as $entry) {
+            if (! empty($entry['loc'])) $unique[$entry['loc']] = $entry;
+        }
+        $this->guideStats = [
+            'legacy_count' => 0,
+            'backend_count' => $backendCount,
+            'total_count' => count($unique),
+            'duplicate_count' => max(0, $backendCount - count($unique)),
+        ];
+
+        return array_values($unique);
     }
 
     /**
@@ -1196,7 +1257,7 @@ class SitemapService
             return $this->locationCatalog;
         }
 
-        return $this->locationCatalog = app(LocationCatalogService::class)->load();
+        return $this->locationCatalog = app(LocationCatalogService::class)->load(true);
     }
 
     /**
@@ -1466,9 +1527,12 @@ class SitemapService
         return User::query()
             ->with('roles')
             ->where(function ($query): void {
-                $query->where('is_vendor', true)
+                    $query->where('is_vendor', true)
                     ->orWhereHas('roles', function ($roles): void {
                         $roles->whereRaw('LOWER(name) = ?', ['provider']);
+                    })
+                    ->orWhereHas('roles', function ($roles): void {
+                        $roles->whereRaw('LOWER(name) = ?', ['practitioner']);
                     })
                     ->orWhereHas('roles', function ($roles): void {
                         $roles->whereRaw('LOWER(name) = ?', ['admin']);
@@ -1915,17 +1979,27 @@ XSL;
             return false;
         }
 
+        // These are canonical format landing pages. A stale redirect record
+        // must not suppress a live canonical route from the type sitemap.
+        $canonicalTypePaths = array_map(
+            static fn (string $format): string => '/'.$format,
+            self::CANONICAL_FORMATS
+        );
+        $isCanonicalType = in_array($path, $canonicalTypePaths, true);
+
         if ($this->redirectExactPaths === null && $this->redirectPathMatchers === null) {
             $this->redirectPathMatchers();
         }
 
-        if (isset($this->redirectExactPaths[$path])) {
+        if (! $isCanonicalType && isset($this->redirectExactPaths[$path])) {
             return false;
         }
 
-        foreach ($this->redirectPathMatchers() as $pattern) {
-            if ($this->redirectPatternMatchesPath($path, (string) $pattern)) {
-                return false;
+        if (! $isCanonicalType) {
+            foreach ($this->redirectPathMatchers() as $pattern) {
+                if ($this->redirectPatternMatchesPath($path, (string) $pattern)) {
+                    return false;
+                }
             }
         }
 

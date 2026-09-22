@@ -162,7 +162,7 @@
     $signalText = $fomoText !== ''
         ? $fomoText
         : ($exclusiveOnline
-            ? 'Exclusively online'
+            ? 'Online Exclusive'
             : ($remainingCount > 0
                 ? '+' . $remainingCount . ' more locations'
                 : ($nextLabel ? 'Next: ' . $nextLabel : null)));
@@ -1092,7 +1092,7 @@
 
           <div class="wow-meta">
             @if($exclusiveOnline)
-              <span class="item">Exclusively online</span>
+              <span class="item">Online Exclusive</span>
             @elseif($hasOnline && $primaryLocation)
               <span class="item">Online + <span class="wow-location-label">{{ $primaryLocation }}</span></span>
             @elseif($primaryLocation)

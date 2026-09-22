@@ -1,6 +1,7 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { router } from '@inertiajs/vue3'
+import { fetchOfferingAndPractitionerSuggestions } from '@/services/whatCategories'
 
 const props = defineProps({
   idPrefix: { type: String, default: 'home-search-v4' },
@@ -41,6 +42,17 @@ const mobileWhatResults = computed(() => {
 const locationResults = computed(() => {
   const query = where.value.trim().toLowerCase()
   return referenceLocations.filter((location) => !query || location.toLowerCase().includes(query))
+})
+const practitionerResults = ref([])
+let practitionerTimer = null
+let practitionerRequest = 0
+const whatResults = computed(() => {
+  const query = what.value.trim().toLowerCase()
+  const practitioners = practitionerResults.value.filter((item) => !query || item.title.toLowerCase().includes(query))
+  const experiences = query
+    ? referenceWhat.filter((item) => (item.title + ' ' + item.cat).toLowerCase().includes(query))
+    : referenceWhat
+  return [...practitioners, ...experiences]
 })
 const isMenuOpen = computed(() => !!activeDesktopMenu.value || !!activeMobileMenu.value)
 
@@ -88,6 +100,22 @@ function selectWhat(item) {
   if (wasDesktop) nextTick(() => whereInput.value?.focus())
 }
 
+function refreshPractitioners() {
+  if (practitionerTimer) window.clearTimeout(practitionerTimer)
+  const query = what.value.trim()
+  if (query.length < 2) {
+    practitionerResults.value = []
+    return
+  }
+  const requestId = ++practitionerRequest
+  practitionerTimer = window.setTimeout(async () => {
+    const items = await fetchOfferingAndPractitionerSuggestions(query)
+    if (requestId === practitionerRequest) practitionerResults.value = items
+  }, 180)
+}
+
+watch(what, refreshPractitioners)
+
 function selectWhere(item) {
   where.value = typeof item === 'string' ? item : (item.value || item.title)
   closeMenus()
@@ -131,11 +159,13 @@ onMounted(async () => {
   const params = new URLSearchParams(window.location.search)
   what.value = params.get('what') || ''
   where.value = params.get('mode') === 'near-me' ? 'Near me' : (params.get('where') || '')
+  refreshPractitioners()
   document.addEventListener('keydown', handleKeydown)
   document.addEventListener('click', handleDocumentClick)
 })
 
 onBeforeUnmount(() => {
+  if (practitionerTimer) window.clearTimeout(practitionerTimer)
   document.documentElement.classList.remove('home-v4-search-open')
   document.removeEventListener('keydown', handleKeydown)
   document.removeEventListener('click', handleDocumentClick)
@@ -152,12 +182,12 @@ onBeforeUnmount(() => {
         <button v-if="what" class="home-v4-search__clear" type="button" aria-label="Clear search" @click.stop="what = ''">×</button>
         <div v-show="activeDesktopMenu === 'what'" class="home-v4-search__menu home-v4-search__menu--what">
           <p>{{ what ? 'Suggestions' : 'Popular experiences' }}</p>
-          <button v-for="item in popularWhat" :key="item.title" type="button" @click="selectWhat(item)">
+          <button v-for="item in whatResults.slice(0, 8)" :key="item.cat + '-' + item.title" type="button" @click="selectWhat(item)">
             <i class="bi bi-stars" aria-hidden="true"></i>
             <strong>{{ item.title }}</strong>
             <small class="home-v4-search__category" :class="`is-${item.cat.toLowerCase().replace(/\s+/g, '-')}`">{{ item.cat }}</small>
           </button>
-          <span v-if="!popularWhat.length" class="home-v4-search__empty">No matching experiences.</span>
+          <span v-if="!whatResults.length" class="home-v4-search__empty">No matching experiences or practitioners.</span>
         </div>
       </div>
 
@@ -212,8 +242,8 @@ onBeforeUnmount(() => {
           <button v-for="location in locationResults" :key="location" type="button" @click="selectWhere(location)"><i class="bi bi-building"></i><span><strong>{{ location }}</strong></span><i class="bi bi-chevron-right"></i></button>
         </div>
         <div v-else class="home-v4-search__sheet-list">
-          <button v-for="item in mobileWhatResults" :key="item.title" type="button" @click="selectWhat(item)"><span><strong>{{ item.title }}</strong><small>{{ item.cat }}</small></span><i class="bi bi-chevron-right"></i></button>
-          <span v-if="!mobileWhatResults.length" class="home-v4-search__empty">No matching experiences.</span>
+          <button v-for="item in whatResults" :key="item.cat + '-' + item.title" type="button" @click="selectWhat(item)"><span><strong>{{ item.title }}</strong><small>{{ item.cat }}</small></span><i class="bi bi-chevron-right"></i></button>
+          <span v-if="!whatResults.length" class="home-v4-search__empty">No matching experiences or practitioners.</span>
         </div>
       </section>
     </teleport>

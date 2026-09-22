@@ -1,4 +1,4 @@
-<section class="wow-safe-card" aria-label="Safety and review proof">
+<section class="wow-safe-card" id="trust-reviews" aria-label="Safety and review proof">
     <div class="wow-safe-intro">
         <p class="wow-kicker">Feel safe to try</p>
         <h2>You’re in safe hands</h2>

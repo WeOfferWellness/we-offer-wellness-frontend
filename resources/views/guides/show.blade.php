@@ -59,23 +59,19 @@
     <div class="guide-wrap">
       @include('partials.breadcrumbs', ['crumbs' => $page['breadcrumbs'] ?? [], 'schemaEnabled' => false])
 
-      <div class="guide-top">
-        <div class="guide-box guide-hero">
-          <p class="guide-kicker">We Offer Wellness® Guide</p>
-          <h1>{{ $page['h1'] }}</h1>
-          <p>{{ $page['intro'] }}</p>
-          <div class="guide-chip-row">
-            <a class="guide-chip" href="{{ url('/' . ($page['format'] ?? 'therapies')) }}">{{ \Illuminate\Support\Str::headline($page['format'] ?? 'therapies') }}</a>
-            <a class="guide-chip" href="{{ url('/' . ($page['format'] ?? 'therapies') . '/' . ($page['modality'] ?? '')) }}">{{ $page['modality_label'] }}</a>
-            <a class="guide-chip" href="{{ url('/online/' . ($page['modality'] ?? '')) }}">Online options</a>
-          </div>
-        </div>
-
-        <div class="guide-box guide-answer">
-          <small>Quick answer</small>
-          <p>{{ $page['quick_answer'] }}</p>
-        </div>
-      </div>
+      @include('partials.landing-hero', [
+        'heroEyebrow' => 'We Offer Wellness® Guide',
+        'heroTitle' => $page['h1'],
+        'heroIntro' => $page['intro'],
+        'heroChips' => [
+          ['label' => \Illuminate\Support\Str::headline($page['format'] ?? 'therapies'), 'href' => url('/'.($page['format'] ?? 'therapies'))],
+          ['label' => $page['modality_label'], 'href' => url('/'.($page['format'] ?? 'therapies').'/'.($page['modality'] ?? ''))],
+          ['label' => 'Online options', 'href' => url('/online/'.($page['modality'] ?? ''))],
+        ],
+        'heroAsideLabel' => 'Quick answer',
+        'heroAsideTitle' => 'Start with what matters',
+        'heroAsideText' => $page['quick_answer'],
+      ])
 
       <div class="guide-grid">
         <div class="guide-main">

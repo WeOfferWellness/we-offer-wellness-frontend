@@ -3,7 +3,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://www.weofferwellness.co.uk/classes</loc>
-    <lastmod>2026-03-03T10:43:59+00:00</lastmod>
+    <lastmod>2026-09-17T11:41:00+00:00</lastmod>
   </url>
   <url>
     <loc>https://www.weofferwellness.co.uk/events</loc>
@@ -11,10 +11,14 @@
   </url>
   <url>
     <loc>https://www.weofferwellness.co.uk/retreats</loc>
-    <lastmod>2026-09-14T13:52:57+00:00</lastmod>
+    <lastmod>2026-09-17T11:41:00+00:00</lastmod>
+  </url>
+  <url>
+    <loc>https://www.weofferwellness.co.uk/therapies</loc>
+    <lastmod>2026-09-18T15:47:07+00:00</lastmod>
   </url>
   <url>
     <loc>https://www.weofferwellness.co.uk/workshops</loc>
-    <lastmod>2026-03-03T10:43:59+00:00</lastmod>
+    <lastmod>2026-09-17T11:52:30+00:00</lastmod>
   </url>
 </urlset>

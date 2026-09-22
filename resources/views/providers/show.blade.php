@@ -191,12 +191,12 @@
             'category' => $categoryName !== '' ? $categoryName : 'Therapy',
             'location_label' => $hasOnline && ! empty($physicalLocations)
                 ? 'Online & studio'
-                : ($hasOnline ? 'Exclusively online' : (! empty($physicalLocations) ? 'Studio' : 'Session')),
+                : ($hasOnline ? 'Online Exclusive' : (! empty($physicalLocations) ? 'Studio' : 'Session')),
             'filters' => array_values(array_unique($filters)),
             'url' => app(\App\Services\SeoStructureService::class)->canonicalProductUrl($product),
             'badge' => $hasOnline && ! empty($physicalLocations)
                 ? 'Online & studio'
-                : ($hasOnline ? 'Exclusively online' : (empty($physicalLocations) ? 'Session' : 'Studio')),
+                : ($hasOnline ? 'Online Exclusive' : (empty($physicalLocations) ? 'Session' : 'Studio')),
             'location_count' => count($physicalLocations),
         ];
     })->values();
@@ -299,11 +299,11 @@
         ? 'Team profile'
         : ($hasOnlineLocation && $hasPhysicalLocations
             ? 'Online & studio'
-            : ($hasOnlineLocation ? 'Exclusively online' : 'Studio'));
+            : ($hasOnlineLocation ? 'Online Exclusive' : 'Studio'));
 
     $locationSummary = $hasOnlineLocation && $hasPhysicalLocations
         ? $physicalLocations->count() . ' locations + online'
-        : ($hasOnlineLocation ? 'Exclusively online' : ($hasPhysicalLocations ? $physicalLocations->count() . ' locations' : 'Not listed'));
+        : ($hasOnlineLocation ? 'Online Exclusive' : ($hasPhysicalLocations ? $physicalLocations->count() . ' locations' : 'Not listed'));
 
     $bookingSummary = $visibleProducts->isNotEmpty()
         ? 'Live availability'
@@ -450,7 +450,7 @@
         : ($hasOnlineLocation ? 'online-only' : ($hasPhysicalLocations ? 'studio-only' : 'none'));
 
     $locationTitle = $locationMode === 'online-only'
-        ? 'Exclusively online.'
+        ? 'Online Exclusive.'
         : ($locationMode === 'mixed'
             ? 'Online or studio.'
             : ($locationMode === 'studio-only'
@@ -465,7 +465,7 @@
                 ? 'Pick your preferred location during checkout or switch it from the booking panel.'
                 : 'Location details will appear here once the profile is completed.'));
 
-    $onlineOverlayTitle = $locationMode === 'online-only' ? 'Exclusively online' : 'Online session selected';
+    $onlineOverlayTitle = $locationMode === 'online-only' ? 'Online Exclusive' : 'Online session selected';
     $onlineOverlayCopy = $locationMode === 'online-only'
         ? 'No venue map is needed. Your joining link is sent after booking.'
         : 'No venue map is needed while online is selected. Your joining link is sent after booking.';
@@ -479,7 +479,7 @@
     if ($hasOnlineLocation) {
         $locationCards[] = [
             'id' => 'loc-online',
-            'label' => $locationMode === 'online-only' ? 'Exclusively online' : 'Online session',
+            'label' => $locationMode === 'online-only' ? 'Online Exclusive' : 'Online session',
             'address' => 'Live session link sent after booking',
             'online' => true,
         ];

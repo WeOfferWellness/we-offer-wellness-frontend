@@ -79,6 +79,9 @@ class TherapiesController extends Controller
             'format'   => (string) $request->query('format', ''),
             'location' => (string) $request->query('location', ''),
             'sort'     => (string) $request->query('sort', ''),
+            'price_max' => max(0, (int) $request->query('price_max', 0)),
+            'type'     => (string) $request->query('type', ''),
+            'rating'   => (string) $request->query('rating', ''),
             'page'     => max(1, (int) $request->query('page', 1)),
             'per_page' => min(48, max(8, (int) $request->query('per_page', 24))),
         ];
@@ -89,6 +92,9 @@ class TherapiesController extends Controller
             $filters['format'] ||
             $filters['location'] ||
             $filters['sort'] ||
+            $filters['price_max'] ||
+            $filters['type'] ||
+            $filters['rating'] ||
             $request->has('page') ||
             $request->has('per_page')
         );
@@ -298,6 +304,28 @@ class TherapiesController extends Controller
                         ->whereHas('values', function ($q2) use ($location) {
                             $q2->where('value', 'like', "%{$location}%");
                         });
+                });
+            }
+
+            if (($priceMax = (int) ($query['price_max'] ?? 0)) > 0 && $priceMax < 500) {
+                $builder->whereHas('variants', function ($q) use ($priceMax) {
+                    $q->where('price', '<=', $priceMax);
+                });
+            }
+
+            $type = strtolower(trim((string) ($query['type'] ?? '')));
+            if ($type !== '' && $type !== 'therapies') {
+                $builder->whereRaw('LOWER(COALESCE(product_type, \'\')) like ?', ['%' . str_replace(['%', '_'], ['\\%', '\\_'], $type) . '%']);
+            }
+
+            $rating = strtolower(trim((string) ($query['rating'] ?? '')));
+            if ($rating === 'reviewed') {
+                $builder->has('reviews');
+            } elseif (is_numeric($rating) && (float) $rating > 0) {
+                $builder->whereHas('reviews', function ($q) use ($rating) {
+                    $q->selectRaw('1')
+                        ->groupBy('product_id')
+                        ->havingRaw('AVG(rating) >= ?', [(float) $rating]);
                 });
             }
 

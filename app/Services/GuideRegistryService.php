@@ -751,7 +751,9 @@ class GuideRegistryService
                 ['label' => 'Guides', 'url' => $this->seo()->modalityGuidesUrl($definition['format'], $definition['route_modality'])],
             ],
             'popular_guides' => collect($records)->take(12)->map(fn (array $record): array => $this->hubLink($record))->values()->all(),
-            'what_is_guides' => collect($records)->where('guide_type', 'what_is')->map(fn (array $record): array => $this->hubLink($record))->values()->all(),
+            // The modality hub's educational panel is the complete guide set
+            // for that modality: What Is, How Can It Help, and What to Expect.
+            'what_is_guides' => collect($records)->map(fn (array $record): array => $this->hubLink($record))->values()->all(),
             'guides_by_need' => [],
             'guides_by_modality' => [],
             'guides_by_format' => [],
@@ -849,6 +851,38 @@ class GuideRegistryService
         }
 
         return array_values($entries);
+    }
+
+    /**
+     * Export the currently published registry pages for the Studio guide
+     * library. The importer receives page data only; taxonomy IDs are resolved
+     * by Backend from canonical slugs.
+     */
+    public function backendImportRecords(): array
+    {
+        return collect($this->publishedRecords())
+            ->map(function (array $record): array {
+                $page = $this->buildGuidePage($record);
+
+                return [
+                    'format' => (string) ($record['format'] ?? ''),
+                    'modality' => (string) ($record['route_modality'] ?? ''),
+                    'slug' => (string) ($record['slug'] ?? ''),
+                    'title' => (string) ($page['title'] ?? $record['title'] ?? ''),
+                    'summary' => (string) ($page['summary'] ?? $record['summary'] ?? ''),
+                    'intro' => (string) ($page['intro'] ?? $record['intro'] ?? ''),
+                    'quick_answer' => (string) ($page['quick_answer'] ?? $record['quick_answer'] ?? ''),
+                    'sections' => (array) ($page['sections'] ?? $record['sections'] ?? []),
+                    'faqs' => (array) ($page['faqs'] ?? $record['faqs'] ?? []),
+                    'safety_note' => $page['safety_note'] ?? $record['safety_note'] ?? null,
+                    'seo_title' => data_get($page, 'seo.title') ?: ($record['seo_title'] ?? null),
+                    'seo_description' => data_get($page, 'seo.description') ?: ($record['seo_description'] ?? null),
+                    'published_at' => $record['published_at'] ?? self::PUBLISHED_AT,
+                ];
+            })
+            ->filter(fn (array $record): bool => $record['format'] !== '' && $record['modality'] !== '' && $record['slug'] !== '')
+            ->values()
+            ->all();
     }
 
     public function legacyRedirects(): array

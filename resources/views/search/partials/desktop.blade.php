@@ -353,7 +353,7 @@
                 <div id="searchRecommendations">
                     {!! $searchRecommendationsHtml ?? '' !!}
                 </div>
-                <h2 class="wow-sr-v5-all-results-title">All results</h2>
+                <h2 class="wow-sr-v5-all-results-title">{{ $resultsHeading ?? 'All results' }}</h2>
                 <div class="wow-sr-v5-grid" id="searchResultsGrid">
                     @include('search.partials.results_cards', ['searchAsyncBoot' => (bool) ($searchAsyncBoot ?? false)])
                 </div>

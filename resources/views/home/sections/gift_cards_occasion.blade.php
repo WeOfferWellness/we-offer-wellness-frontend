@@ -2,14 +2,14 @@
     <div class="container-page wow-container">
         <section class="wow-gift-panel" aria-label="Gift cards">
             <div class="wow-gift-copy">
-                <p class="wow-kicker">Gifting made easy</p>
-                <h2>Gift cards for every kind of wellbeing</h2>
-                <p>Choose an amount, add a message and send a thoughtful e-gift card that can be used on therapies, classes, events and workshops.</p>
+                <p class="wow-kicker">A gift that feels personal</p>
+                <h2>Give them room to feel good</h2>
+                <p>Send a WOW gift card in seconds and let them choose the support, session or experience that feels right for them.</p>
 
                 <div class="wow-gift-points">
-                    <span>Instant email delivery to you or your recipient.</span>
-                    <span>Works across eligible We Offer Wellness® experiences.</span>
-                    <span>Ideal for birthdays, thank-yous, recovery gifts and "please relax" moments.</span>
+                    <span>Instant delivery, with a personal message.</span>
+                    <span>They choose how and when to use it.</span>
+                    <span>For birthdays, thank-yous and well-earned resets.</span>
                 </div>
 
                 <div class="wow-gift-actions">
@@ -54,8 +54,8 @@
 
                     <div class="wow-gift-card-preview__body">
                         <span class="wow-tag wow-tag--green">E-gift card</span>
-                        <h3>A calmer gift, delivered instantly</h3>
-                        <p>Give someone the freedom to choose the wellbeing support that suits them best.</p>
+                        <h3>Something good to look forward to</h3>
+                        <p>One thoughtful gift. Their choice of wellbeing.</p>
 
                         <div class="wow-gift-amounts">
                             <span>£25</span>

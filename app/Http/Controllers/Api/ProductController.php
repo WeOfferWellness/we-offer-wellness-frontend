@@ -271,7 +271,8 @@ class ProductController extends Controller
                 'mode' => $isOnline && count($physicalLocations) === 0 ? 'Online' : (count($physicalLocations) ? 'In-person' : null),
                 'location' => $physicalLocations[0] ?? ($isOnline ? 'Online' : null),
                 'locations' => $locations,
-                'vendor_name' => $vendor?->vendor_name,
+                'vendor_name' => $vendor?->vendor_name
+                    ?: ($vendorUser?->full_name ?: $vendorUser?->name),
                 'plan_key' => $planKey ?: ($vendorUser?->account_type ?? null),
                 'availability_days' => $availabilityDays,
                 'lat' => is_numeric($lat) ? (float)$lat : null,
@@ -313,7 +314,14 @@ class ProductController extends Controller
                 ->orWhere('included', 'like', $pattern)
                 ->orWhere('tags_list', 'like', $pattern)
                 ->orWhereHas('vendor', function ($vendorQ) use ($pattern, $starterSql, $latestTierSql) {
-                    $vendorQ->where('vendor_name', 'like', $pattern)
+                    $vendorQ->where(function ($identityQ) use ($pattern) {
+                        $identityQ->where('vendor_name', 'like', $pattern)
+                            ->orWhereHas('user', function ($userQ) use ($pattern) {
+                                $userQ->where('first_name', 'like', $pattern)
+                                    ->orWhere('last_name', 'like', $pattern)
+                                    ->orWhere('name', 'like', $pattern);
+                            });
+                    })
                         ->whereHas('user', function ($userQ) use ($starterSql) {
                             $userQ->whereRaw("LOWER(COALESCE(account_type, '')) NOT IN ('{$starterSql}')");
                         })

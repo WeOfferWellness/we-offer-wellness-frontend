@@ -593,19 +593,17 @@
                                 <div class="wow-mega-col">
                                     <p class="mega-kicker">How are you feeling?</p>
                                     <div class="wow-menu-list">
-                                        <a class="menu-link" href="/needs/stress-and-anxiety"><strong>Stress &amp; anxiety</strong><span>Calming therapies for an overloaded nervous system.</span></a>
-                                        <a class="menu-link" href="/needs/sleep-issues"><strong>Sleep issues</strong><span>Gentle support for deeper rest and better routines.</span></a>
-                                        <a class="menu-link" href="/needs/low-mood-burnout"><strong>Low mood &amp; burnout</strong><span>Reset your energy without pretending everything is fine.</span></a>
-                                        <a class="menu-link" href="/needs/pain-management"><strong>Pain, tension &amp; tightness</strong><span>Body-based support for aches, stress and physical tension.</span></a>
+                                        @foreach(collect($publicNeeds ?? [])->take(4) as $need)
+                                            <a class="menu-link" href="{{ route('needs.show', ['slug' => $need['slug']]) }}"><strong>{{ $need['name'] }}</strong>@if($need['description'] !== '')<span>{{ Str::limit($need['description'], 90) }}</span>@endif</a>
+                                        @endforeach
                                     </div>
                                 </div>
                                 <div class="wow-mega-col">
                                     <p class="mega-kicker">What do you want?</p>
                                     <div class="wow-menu-list">
-                                        <a class="menu-link" href="/needs/digestive-health"><strong>Gut health &amp; digestion</strong><span>Support for bloating, digestion and feeling human again.</span></a>
-                                        <a class="menu-link" href="/needs/mens-wellbeing"><strong>Men’s wellbeing</strong><span>Practical sessions for stress, strength and emotional health.</span></a>
-                                        <a class="menu-link" href="/needs/fertility-pregnancy"><strong>Pregnancy support</strong><span>Therapies for fertility, pregnancy and postnatal wellbeing.</span></a>
-                                        <a class="menu-link" href="/needs/nervous-system"><strong>Nervous system support</strong><span>Grounding experiences for overwhelm and trauma support.</span></a>
+                                        @foreach(collect($publicNeeds ?? [])->slice(4, 4) as $need)
+                                            <a class="menu-link" href="{{ route('needs.show', ['slug' => $need['slug']]) }}"><strong>{{ $need['name'] }}</strong>@if($need['description'] !== '')<span>{{ Str::limit($need['description'], 90) }}</span>@endif</a>
+                                        @endforeach
                                     </div>
                                 </div>
                                 <div class="wow-mega-col wow-mega-col--divider">
@@ -1355,6 +1353,14 @@
                     <li><a class="mobile-menu__link" href="https://times.weofferwellness.co.uk">Mindful Times</a></li>
                     <li><a class="mobile-menu__link" href="/cart">Cart</a></li>
                 </ul>
+                <div class="mobile-menu__section">
+                    <div class="mobile-menu__section-title">By need</div>
+                    <ul class="mobile-menu__list">
+                        @foreach(collect($publicNeeds ?? []) as $need)
+                            <li><a class="mobile-menu__link" href="{{ route('needs.show', ['slug' => $need['slug']]) }}">{{ $need['name'] }}</a></li>
+                        @endforeach
+                    </ul>
+                </div>
                 <div class="mobile-menu__section">
                     <div class="mobile-menu__section-title">Modality</div>
                     <ul class="mobile-menu__list">

@@ -260,7 +260,20 @@ const physicalLocations = computed(() => locations(product.value).filter((locati
 const location = computed(() => online.value && !physicalLocations.value.length ? 'Online' : (physicalLocations.value[0] || (online.value ? 'Online' : 'In person')))
 const distance = computed(() => text(product.value.distance || product.value.distance_label))
 const locationLine = computed(() => distance.value ? `${location.value} · ${distance.value}` : location.value)
+const serverAvailability = computed(() => product.value.availability || {})
 const availability = computed(() => {
+  if (serverAvailability.value.next_available_human) {
+    return {
+      label: `Next available: ${serverAvailability.value.next_available_human}`,
+      today: Boolean(serverAvailability.value.next_available_at && new Date(serverAvailability.value.next_available_at).toDateString() === new Date().toDateString()),
+    }
+  }
+  if (serverAvailability.value.availability_state === 'unavailable') {
+    return { label: 'No availability in the next 30 days', today: false }
+  }
+  if (serverAvailability.value.availability_state === 'unknown') {
+    return { label: 'Availability on request', today: false }
+  }
   if (!days.value.length) return { label: 'Contact to check availability', today: false }
   if (days.value.length === 7) return { label: 'Available every day', today: true }
   const today = new Date().getDay()
@@ -272,7 +285,7 @@ const availability = computed(() => {
   return { label: 'Contact to book', today: false }
 })
 const isBusinessAccelerator = computed(() => planKey(product.value.plan_key || product.value.plan_label || product.value.vendor?.plan_key || product.value.vendor?.plan_label || product.value.vendor_details?.plan_key || product.value.vendor_details?.plan_label || product.value.vendor?.user?.tier?.tier) === 'business-accelerator')
-const signal = computed(() => text(product.value.fomo_text) || (online.value && !physicalLocations.value.length ? 'Exclusively online' : (physicalLocations.value.length > 1 ? `+${physicalLocations.value.length - 1} more locations` : (text(product.value.next_label || product.value.next) ? `Next: ${text(product.value.next_label || product.value.next)}` : ''))))
+const signal = computed(() => text(product.value.fomo_text) || (online.value && !physicalLocations.value.length ? 'Online Exclusive' : (physicalLocations.value.length > 1 ? `+${physicalLocations.value.length - 1} more locations` : (text(product.value.next_label || product.value.next) ? `Next: ${text(product.value.next_label || product.value.next)}` : ''))))
 const eventStart = computed(() => eventDate(product.value))
 const eventMonth = computed(() => eventStart.value ? eventStart.value.toLocaleDateString('en-GB', { month: 'short' }) : 'Soon')
 const eventDay = computed(() => eventStart.value ? String(eventStart.value.getDate()).padStart(2, '0') : '—')

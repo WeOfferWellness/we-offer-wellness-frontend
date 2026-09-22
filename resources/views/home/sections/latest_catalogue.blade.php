@@ -1,12 +1,12 @@
 @include('partials.product_showcase_section', [
         'section' => [
         'id' => 'home-latest-catalogue',
-        'section_class' => 'section',
-        'kicker' => 'Freshly added',
-        'title' => 'Just landed on WOW',
-        'description' => 'Freshly published listings lead the rail, followed by the newest live favourites in one seamless flow.',
+        'section_class' => 'section home-latest-section',
+        'kicker' => 'New this week',
+        'title' => 'Find what’s new',
+        'description' => 'Discover newly published sessions, classes and products alongside recent favourites that are ready to explore.',
         'cta' => [
-            'label' => 'Browse therapies',
+            'label' => 'Explore new offerings',
             'href' => '/therapies',
         ],
         'ghost_view' => 'partials.product_card_v4_1_ghost',

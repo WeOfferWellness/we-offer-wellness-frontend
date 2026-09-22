@@ -183,7 +183,7 @@
         #home-gifts{
             height:auto !important;
             min-height:0 !important;
-            margin-bottom:0 !important;
+            margin-bottom:50px !important;
             padding-bottom:0 !important;
         }
         #home-gifts > .container-page,

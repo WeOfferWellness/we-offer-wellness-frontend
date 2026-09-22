@@ -103,8 +103,8 @@ const itemListLd = computed(() => ({
     <section class="section">
       <div class="container-page">
         <Breadcrumbs :items="[
-          props.city ? { label: props.city, href: `/${props.city.toLowerCase()}` } : null,
-          props.type ? { label: props.type.charAt(0).toUpperCase()+props.type.slice(1), href: `/${props.type}` } : null,
+          props.city ? { label: props.city, href: canonicalUrl(`/locations/united-kingdom/${props.city.toLowerCase()}`) } : null,
+          props.type ? { label: props.type.charAt(0).toUpperCase()+props.type.slice(1), href: canonicalUrl(`/${props.type}`) } : null,
           props.category?.name ? { label: props.category.name } : null,
         ].filter(Boolean)" />
         <div class="mb-5">

@@ -21,25 +21,17 @@
   'schemaUrl' => $seo['canonical'] ?? url('/locations/' . ($location['slug'] ?? request()->route('slug'))),
 ])
 
-<section class="pt-4 pb-2 bg-transparent">
-  <div class="container-page">
-    <div class="d-flex flex-wrap align-items-end justify-content-between gap-3">
-      <div>
-        <div class="kicker mb-1 text-ink-600">Locations</div>
-        <h1 class="text-ink-900" style="font-size:2rem;font-weight:700;">
-          {{ $locationTitle }}
-        </h1>
-        <p class="text-ink-600 mt-2" style="max-width:72ch;">
-          {!! nl2br(e((string) ($seo['description'] ?? ($location['seo_description'] ?? 'Find therapies, classes and events near you.')))) !!}
-        </p>
-      </div>
-      <div class="d-flex flex-wrap align-items-center gap-2">
-        <a href="{{ route('locations.index') }}" class="btn btn-light">All locations</a>
-        <a href="{{ url('/search') }}" class="btn btn-primary">Search all</a>
-      </div>
-    </div>
-  </div>
-</section>
+@include('partials.landing-hero', [
+  'heroEyebrow' => 'Locations',
+  'heroTitle' => $locationTitle,
+  'heroIntro' => (string) ($seo['description'] ?? ($location['seo_description'] ?? 'Find therapies, classes and events near you.')),
+  'heroActions' => [
+    ['label' => 'All locations', 'href' => route('locations.index'), 'style' => 'outline'],
+    ['label' => 'Search all', 'href' => url('/search')],
+  ],
+  'heroAsideTitle' => null,
+  'heroAsideText' => '',
+])
 
 <div class="search-content-wrapper">
   @include('search.partials.desktop', [

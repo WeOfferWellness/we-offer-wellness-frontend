@@ -16,6 +16,7 @@ Interpretation notes:
 - [Homepage](https://www.weofferwellness.co.uk/)
 - [About](https://www.weofferwellness.co.uk/about)
 - [Contact](https://www.weofferwellness.co.uk/contact)
+- [Therapies](https://www.weofferwellness.co.uk/therapies)
 - [Classes](https://www.weofferwellness.co.uk/classes)
 - [Workshops](https://www.weofferwellness.co.uk/workshops)
 - [Events](https://www.weofferwellness.co.uk/events)

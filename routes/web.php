@@ -7,6 +7,12 @@ use Illuminate\Support\Facades\Http;
 use App\Http\Controllers\StoreProductsController;
 use Inertia\Inertia;
 use App\Http\Controllers\LandingController;
+use App\Http\Controllers\TypeController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\LocationController;
+use App\Http\Controllers\OfferingController;
+use App\Http\Controllers\ScheduleDiscoveryController;
+use App\Http\Controllers\HelpController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use App\Models\Product;
@@ -26,8 +32,6 @@ use App\Http\Controllers\SeoLandingController;
 use App\Http\Controllers\OnlineController;
 use App\Http\Controllers\LocationsController;
 use App\Http\Controllers\OnlineNearMeController;
-use App\Http\Controllers\ScheduleDiscoveryController;
-use App\Http\Controllers\WellnessEventsController;
 use App\Http\Controllers\SeoMoneyPageController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\SearchController;
@@ -52,10 +56,44 @@ use App\Services\IndexNowService;
 // catch-all SEO routes so it can never be treated as a page slug.
 Route::view('/404', 'errors.404');
 
+Route::get('/favicon.ico', function () {
+    return redirect()->route('favicon', [], 308);
+});
+
 Route::get('/favicon.png', function () {
     $image = Http::timeout(5)->get('https://studio.weofferwellness.co.uk/storage/uploads/images/a4a125ff-e25a-48e3-bdf2-12af9182cdce.png');
     abort_unless($image->successful(), 404);
-    return response($image->body(), 200, [
+
+    // Google accepts square favicon assets at a multiple of 48px. Normalize
+    // the upstream brand mark once per response so browser and crawler
+    // consumers receive the same valid 192px favicon.
+    $source = @imagecreatefromstring($image->body());
+    if ($source !== false) {
+        $sourceWidth = imagesx($source);
+        $sourceHeight = imagesy($source);
+        $canvas = imagecreatetruecolor(192, 192);
+        imagealphablending($canvas, false);
+        imagesavealpha($canvas, true);
+        $transparent = imagecolorallocatealpha($canvas, 255, 255, 255, 127);
+        imagefill($canvas, 0, 0, $transparent);
+
+        $scale = min(192 / $sourceWidth, 192 / $sourceHeight);
+        $width = max(1, (int) round($sourceWidth * $scale));
+        $height = max(1, (int) round($sourceHeight * $scale));
+        $x = (int) floor((192 - $width) / 2);
+        $y = (int) floor((192 - $height) / 2);
+        imagecopyresampled($canvas, $source, $x, $y, 0, 0, $width, $height, $sourceWidth, $sourceHeight);
+
+        ob_start();
+        imagepng($canvas, null, 9);
+        $body = ob_get_clean();
+        imagedestroy($canvas);
+        imagedestroy($source);
+    } else {
+        $body = $image->body();
+    }
+
+    return response($body, 200, [
         'Content-Type' => 'image/png',
         'Cache-Control' => 'public, max-age=86400, s-maxage=86400',
         'X-Content-Type-Options' => 'nosniff',
@@ -83,7 +121,7 @@ $countryPattern = $countrySlugs !== []
 $seoSlugPattern = '[A-Za-z0-9][A-Za-z0-9\-]*';
 
 // Online & Near Me hub
-Route::get('/online-near-me', [OnlineNearMeController::class, 'index'])->name('onlineNearMe.index');
+Route::get('/online-near-me', [LocationController::class, 'onlineNearMe'])->name('onlineNearMe.index');
 Route::get('/schedule-discovery', [ScheduleDiscoveryController::class, 'index'])->name('schedule-discovery.index');
 
 $wellnessEventTopicRoutes = [
@@ -107,7 +145,7 @@ $wellnessEventTopicRoutes = [
 
 foreach ($wellnessEventTopicRoutes as $topic => $config) {
     foreach ($config['timeframes'] as $timeframe) {
-        Route::get("/{$topic}/{$timeframe}", [WellnessEventsController::class, 'show'])
+        Route::get("/{$topic}/{$timeframe}", [ScheduleDiscoveryController::class, 'show'])
             ->defaults('topic', $topic)
             ->defaults('timeframe', $timeframe)
             ->name("wellness-events.{$topic}.{$timeframe}");
@@ -115,7 +153,7 @@ foreach ($wellnessEventTopicRoutes as $topic => $config) {
 
     foreach (($config['locations'] ?? []) as $location) {
         foreach (['this-week', 'this-weekend'] as $timeframe) {
-            Route::get("/{$topic}/{$timeframe}/{$location}", [WellnessEventsController::class, 'show'])
+            Route::get("/{$topic}/{$timeframe}/{$location}", [ScheduleDiscoveryController::class, 'show'])
                 ->defaults('topic', $topic)
                 ->defaults('timeframe', $timeframe)
                 ->defaults('location', $location)
@@ -154,22 +192,22 @@ Route::get('/needs/{slug}', [NeedsController::class, 'show'])
     ->name('needs.show');
 
 /** Therapies */
-Route::get('/therapies', [TherapiesController::class, 'index'])->name('therapies.index');
-Route::get('/therapies/{slug}', [TherapiesController::class, 'show'])
+Route::get('/therapies', [TypeController::class, 'therapies'])->name('therapies.index');
+Route::get('/therapies/{slug}', [CategoryController::class, 'therapy'])
     ->where('slug', $seoSlugPattern)
     ->name('therapies.show');
 
 /** Events & Workshops */
-Route::get('/events-workshops/{slug}', [EventsController::class, 'show'])
+Route::get('/events-workshops/{slug}', [OfferingController::class, 'showEvent'])
     ->where('slug', $seoSlugPattern)
     ->name('events-workshops.show');
 
 /** Online */
-Route::get('/online', [OnlineController::class, 'index'])->name('online.index');
-Route::get('/online/{modality}', [OnlineController::class, 'show'])
+Route::get('/online', [LocationController::class, 'online'])->name('online.index');
+Route::get('/online/{modality}', [LocationController::class, 'onlineModality'])
     ->where('modality', $seoSlugPattern)
     ->name('online.modality');
-Route::get('/{format}/{modality}/{country}/{county?}/{town?}', [SeoMoneyPageController::class, 'showStructuredNearMe'])
+Route::get('/{format}/{modality}/{country}/{county?}/{town?}', [LocationController::class, 'modalityLocation'])
     ->where([
         'format' => '(therapies|classes|events|workshops|retreats)',
         'modality' => $seoSlugPattern,
@@ -178,10 +216,10 @@ Route::get('/{format}/{modality}/{country}/{county?}/{town?}', [SeoMoneyPageCont
         'town' => $seoSlugPattern,
     ])
     ->name('seo-money.structured-near-me');
-Route::get('/holistic-therapies-uk', [SeoMoneyPageController::class, 'show'])
+Route::get('/holistic-therapies-uk', [TypeController::class, 'holisticTherapiesUk'])
     ->defaults('slug', 'holistic-therapies-uk')
     ->name('seo-money.holistic-therapies-uk');
-Route::get('/{category}-near-me/{country?}/{county?}/{town?}', [SeoMoneyPageController::class, 'showNearMe'])
+Route::get('/{category}-near-me/{country?}/{county?}/{town?}', [LocationController::class, 'categoryNearMe'])
     ->where([
         'category' => $seoSlugPattern,
         'country' => $seoSlugPattern,
@@ -191,27 +229,27 @@ Route::get('/{category}-near-me/{country?}/{county?}/{town?}', [SeoMoneyPageCont
     ->name('seo-money.near-me');
 
 /** Locations + Near Me */
-Route::get('/locations', [LocationsController::class, 'index'])->name('locations.index');
-Route::get('/locations/{country}/{county?}/{town?}', [LocationsController::class, 'hierarchy'])
+Route::get('/locations', [LocationController::class, 'index'])->name('locations.index');
+Route::get('/locations/{country}/{county?}/{town?}', [LocationController::class, 'hierarchy'])
     ->where([
         'country' => 'united-kingdom',
         'county' => '[A-Za-z][A-Za-z0-9\-]*',
         'town' => '[A-Za-z][A-Za-z0-9\-]*',
     ])
     ->name('locations.hierarchy');
-Route::get('/locations/{slug}', [LocationsController::class, 'show'])
+Route::get('/locations/{slug}', [LocationController::class, 'show'])
     ->where('slug', '[A-Za-z][A-Za-z0-9\-]*')
     ->name('locations.show');
-Route::get('/near-me', [LocationsController::class, 'nearMe'])->name('nearMe');
-Route::get('/products', [StoreProductsController::class, 'index'])->name('store.products.index');
-Route::get('/product/{category}/{slug}', [StoreProductsController::class, 'show'])
+Route::get('/near-me', [LocationController::class, 'nearMe'])->name('nearMe');
+Route::get('/products', [OfferingController::class, 'indexLegacy'])->name('store.products.index');
+Route::get('/product/{category}/{slug}', [OfferingController::class, 'showLegacyByCategory'])
     ->where(['category' => '[^/]+', 'slug' => '[^/]+'])
     ->name('store.product.show');
-Route::post('/product/{category}/{slug}/reviews', [StoreProductsController::class, 'storeReview'])
+Route::post('/product/{category}/{slug}/reviews', [OfferingController::class, 'storeReview'])
     ->middleware('auth')
     ->where(['category' => '[^/]+', 'slug' => '[^/]+'])
     ->name('store.product.reviews.store');
-Route::get('/products/{slug}', [StoreProductsController::class, 'legacyShow'])->where('slug', '[^/]+')->name('store.products.show');
+Route::get('/products/{slug}', [OfferingController::class, 'showLegacy'])->where('slug', '[^/]+')->name('store.products.show');
 Route::get('/{prefix}/custom/{pixel}/sandbox/modern/products/{handle}', [RedirectsController::class, 'shopifyProductSandbox'])
     ->where([
         'prefix' => '[^/]+',
@@ -279,18 +317,18 @@ Route::post('/api/geo', [\App\Http\Controllers\GeoController::class, 'update']);
 // ------------------------------------------------------------------
 
 // Canonical hub pages
-Route::get('/events', [EventsController::class, 'index'])->name('events.index');
-Route::get('/events/{slug}', [EventsController::class, 'show'])
+Route::get('/events', [TypeController::class, 'events'])->name('events.index');
+Route::get('/events/{slug}', [OfferingController::class, 'showEvent'])
     ->where('slug', '[A-Za-z][A-Za-z0-9\-]*')
     ->name('events.show');
 Route::get('/giftcards', [GiftCardsController::class, 'index'])->name('giftcards.index');
-Route::get('/workshops', [SeoLandingController::class, 'show'])
+Route::get('/workshops', [TypeController::class, 'workshops'])
     ->defaults('type', 'workshops')
     ->name('workshops.index');
-Route::get('/classes', [SeoLandingController::class, 'show'])
+Route::get('/classes', [TypeController::class, 'classes'])
     ->defaults('type', 'classes')
     ->name('classes.index');
-Route::get('/retreats', [SeoLandingController::class, 'show'])
+Route::get('/retreats', [TypeController::class, 'retreats'])
     ->defaults('type', 'retreats')
     ->name('retreats.index');
 Route::get('/gifts', [SeoLandingController::class, 'show'])
@@ -298,13 +336,13 @@ Route::get('/gifts', [SeoLandingController::class, 'show'])
     ->name('gifts.index');
 
 // Canonical format/modality landing pages
-Route::get('/online/{modality}/{offering}', [LandingController::class, 'onlineOffering'])
+Route::get('/online/{modality}/{offering}', [OfferingController::class, 'showOnline'])
     ->where([
         'modality' => $seoSlugPattern,
         'offering' => '[A-Za-z0-9][A-Za-z0-9\-]*',
     ])
     ->name('online.modality-offering');
-Route::get('/{format}/{modality}/{country}/{county}/{town}/{offering}', [LandingController::class, 'offeringLocation'])
+Route::get('/{format}/{modality}/{country}/{county}/{town}/{offering}', [OfferingController::class, 'showAtLocation'])
     ->where([
         'format' => 'therapies|events|workshops|classes|retreats|gifts',
         'modality' => $seoSlugPattern,
@@ -314,7 +352,7 @@ Route::get('/{format}/{modality}/{country}/{county}/{town}/{offering}', [Landing
         'offering' => '[A-Za-z0-9][A-Za-z0-9\-]*',
     ])
     ->name('landing.format-modality-location-offering');
-Route::get('/{format}/{modality}/{country}/{county}/{town}', [LandingController::class, 'formatModalityLocation'])
+Route::get('/{format}/{modality}/{country}/{county}/{town}', [LocationController::class, 'modalityLocation'])
     ->where([
         'format' => 'therapies|events|workshops|classes|retreats|gifts',
         'modality' => $seoSlugPattern,
@@ -323,14 +361,14 @@ Route::get('/{format}/{modality}/{country}/{county}/{town}', [LandingController:
         'town' => $seoSlugPattern,
     ])
     ->name('landing.format-modality-location');
-Route::get('/{format}/{modality}/{offering}', [LandingController::class, 'offering'])
+Route::get('/{format}/{modality}/{offering}', [OfferingController::class, 'show'])
     ->where([
         'format' => 'therapies|events|workshops|classes|retreats|gifts',
         'modality' => $seoSlugPattern,
         'offering' => '[A-Za-z0-9][A-Za-z0-9\-]*',
     ])
     ->name('landing.format-modality-offering');
-Route::get('/{format}/{modality}', [LandingController::class, 'formatModality'])
+Route::get('/{format}/{modality}', [CategoryController::class, 'show'])
     ->where([
         'format' => 'therapies|events|workshops|classes|retreats|gifts',
         'modality' => $seoSlugPattern,
@@ -387,7 +425,7 @@ $reservedCategoryPattern = implode('|', array_map(
     static fn (string $slug): string => preg_quote($slug, '/'),
     $reservedCategorySlugs
 ));
-Route::get('/{category}', [LandingController::class, 'categoryHub'])
+Route::get('/{category}', [CategoryController::class, 'hub'])
     ->where('category', '(?!(?:' . $reservedCategoryPattern . ')$)[A-Za-z][A-Za-z0-9\-]*')
     ->name('landing.category');
 
@@ -548,9 +586,9 @@ Route::get('/refunds-and-cancellations', [StaticPagesController::class, 'show'])
 Route::get('/safety-and-contraindications', [SafetyContraindicationsController::class, 'index'])
     ->name('safety-and-contraindications');
 
-Route::get('/help', [HelpCentreController::class, 'index'])->name('help');
-Route::get('/help/faq', [HelpPagesController::class, 'faq'])->name('help.faq');
-Route::get('/help/gift-cards', [HelpPagesController::class, 'giftCards'])->name('help.gift-cards');
+Route::get('/help', [HelpController::class, 'index'])->name('help');
+Route::get('/help/faq', [HelpController::class, 'faq'])->name('help.faq');
+Route::get('/help/gift-cards', [HelpController::class, 'giftCards'])->name('help.gift-cards');
 
 Route::get('/about', [AboutController::class, 'index'])
     ->name('about');

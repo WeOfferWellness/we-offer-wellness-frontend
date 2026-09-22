@@ -6,8 +6,10 @@ use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\ProductSubcategory;
 use App\Support\EventListing;
+use App\Services\BackendDiscoveryClient;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * Public offering-type entry points.
@@ -85,9 +87,11 @@ class TypeController extends Controller
             $category = $this->findCategoryBySlug($slug);
         }
         $hasFilters = $request->hasAny(['format', 'location', 'sort', 'page', 'per_page']);
-        $categories = ProductCategory::query()->withCount(['products as products_count' => fn ($q) => $this->applyTypeFilter($q, $type)])
-            ->orderByDesc('products_count')->orderBy('name')->take(8)->get()->map(fn (ProductCategory $c) => ['name' => $c->name, 'slug' => Str::slug($c->name), 'count' => (int) $c->products_count])
-            ->filter(fn (array $c) => $c['count'] > 0)->values();
+        $categories = Cache::remember('type-landing:categories:'.$type, now()->addMinutes(5), function () use ($type) {
+            return ProductCategory::query()->withCount(['products as products_count' => fn ($q) => $this->applyTypeFilter($q, $type)])
+                ->orderByDesc('products_count')->orderBy('name')->take(8)->get()->map(fn (ProductCategory $c) => ['name' => $c->name, 'slug' => Str::slug($c->name), 'count' => (int) $c->products_count])
+                ->filter(fn (array $c) => $c['count'] > 0)->values();
+        });
         $products = $this->queryProducts($request, $type, $category)->take(12)->values();
         if ($category) {
             $baseTitle = $config['title'];
@@ -100,6 +104,7 @@ class TypeController extends Controller
             'landing' => $config,
             'type' => $type,
             'categories' => $categories,
+            'discoveryCategories' => app(BackendDiscoveryClient::class)->modalityBoard(5),
             'products' => $products,
             'featuredOfferings' => $type === 'therapies' ? $products->take(8)->values() : collect(),
         ]);
@@ -120,7 +125,7 @@ class TypeController extends Controller
             'newest' => $builder->latest('id'), 'price_asc' => $builder->orderBy('price'), 'price_desc' => $builder->orderByDesc('price'),
             default => $builder->orderByRaw('COALESCE(reviews_avg_rating, 0) * LOG(1 + COALESCE(reviews_count, 0)) DESC')->orderByDesc('reviews_avg_rating')->orderByDesc('reviews_count'),
         };
-        return $builder->get()->reject(fn ($product) => EventListing::isPast($product))->values();
+        return $builder->limit(24)->get()->reject(fn ($product) => EventListing::isPast($product))->take(12)->values();
     }
 
     private function applyTypeFilter($query, string $type): void

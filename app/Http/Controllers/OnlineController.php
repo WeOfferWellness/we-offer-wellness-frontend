@@ -25,16 +25,19 @@ class OnlineController extends Controller
 
     private function fetchOfferings(array $query): array
     {
-        $cacheKey = 'online:list:local:' . md5(json_encode($query));
-
-        return $this->rememberSafely($cacheKey, now()->addMinutes(5), function () use ($query) {
-            return $this->buildOfferingsPage($query);
+        // Cache the expensive catalogue once per modality. Pagination and sort
+        // are applied to that shared collection below, so mobile and desktop do
+        // not each rebuild all products and offerings.
+        $catalogueKey = 'online:catalogue:local:' . md5((string) ($query['modality'] ?? ''));
+        $catalogue = $this->rememberSafely($catalogueKey, now()->addMinutes(10), function () use ($query) {
+            return $this->localOnlineItems((string) ($query['modality'] ?? ''))->all();
         });
+
+        return $this->paginateOfferings(collect($catalogue), $query);
     }
 
-    private function buildOfferingsPage(array $query): array
+    private function paginateOfferings(Collection $items, array $query): array
     {
-        $items = $this->localOnlineItems((string) ($query['modality'] ?? ''));
         $sorted = ProductRanking::sortCollection($items, (string) ($query['sort'] ?? 'popular'))->values();
 
         $perPage = max(8, min((int) ($query['per_page'] ?? 24), 48));
@@ -78,6 +81,11 @@ class OnlineController extends Controller
                         $vq->whereRaw('LOWER(value) = ?', ['online']);
                     });
             })
+            // The page only renders 8 mobile / 24 desktop cards. Keep the
+            // catalogue warm-up bounded so a cold cache cannot load the whole
+            // marketplace and block the first response.
+            ->latest('id')
+            ->limit(120)
             ->get()
             ->reject(fn (Product $product) => EventListing::isPast($product))
             ->filter(function (Product $product): bool {
@@ -99,6 +107,8 @@ class OnlineController extends Controller
             ->whereIn('status', ['live', 'approved'])
             ->whereNotNull('published_at')
             ->where('published_at', '<=', now())
+            ->latest('id')
+            ->limit(120)
             ->get()
             ->reject(fn (OfferingV3 $offering) => EventListing::isPast($offering))
             ->filter(function (OfferingV3 $offering): bool {

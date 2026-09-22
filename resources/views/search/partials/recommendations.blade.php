@@ -9,7 +9,7 @@
         </div>
         <div class="wow-search-recommendations__grid">
             @foreach($recommendations as $recommendation)
-                <article class="wow-search-recommendation {{ !empty($recommendation['priority']) ? 'is-primary' : '' }}" data-pid="{{ $recommendation['item']->id }}">
+                <article class="wow-search-recommendation {{ !empty($recommendation['priority']) ? 'is-primary' : '' }}" data-pid="{{ data_get($recommendation['item'], 'id', '') }}">
                     <span class="wow-search-recommendation__label">{{ $recommendation['label'] }}</span>
                     @include('partials.product_card_v4_1', ['product' => $recommendation['item'], 'preferredLocation' => null])
                 </article>

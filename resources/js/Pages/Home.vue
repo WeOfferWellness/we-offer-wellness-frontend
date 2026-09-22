@@ -442,9 +442,6 @@ const giftsUnder50 = ref([])
 
 // Comfort of home — smart dual filters
 const comfortAllOnline = ref([])
-const comfortRef = ref(null)
-const comfortPriceMax = ref(50)
-const comfortPeople = ref('solo') // 'solo' | 'couple' | 'group'
 
 function isOnline(p){
   const loc = String(p?.location || '').toLowerCase()
@@ -499,21 +496,22 @@ function fitsPeople(p, kind){
   return true
 }
 const comfortFiltered = computed(() => {
-  const max = Number(comfortPriceMax.value) || 50
-  // Premium tier does not affect filtering logic; map to base types
-  const who = String(comfortPeople.value || 'solo')
   return comfortAllOnline.value
-    .filter(p => priceMin(p) < max)
-    .filter(p => fitsPeople(p, who))
-    .slice(0, 12)
+    .sort((a, b) => priceMin(a) - priceMin(b))
 })
 
-function comfortScrollBy(dir){
-  const el = comfortRef.value
-  if (!el) return
-  const amount = Math.min(900, el.clientWidth * 0.9)
-  el.scrollBy({ left: dir * amount, behavior: 'smooth' })
-}
+const comfortRows = computed(() => {
+  const under50 = comfortFiltered.value.filter(p => priceMin(p) < 50).slice(0, 4)
+  const firstIds = new Set(under50.map(p => p?.id))
+  const under100 = comfortFiltered.value
+    .filter(p => priceMin(p) < 100 && !firstIds.has(p?.id))
+    .slice(0, 4)
+
+  return [
+    { label: 'Under £50', items: under50 },
+    { label: 'Under £100', items: under100 },
+  ].filter(row => row.items.length)
+})
 
 async function mixByType(sort = 'popular', take = 12) {
   // Pull a balanced mix across types; interleave to avoid one type (events) dominating
@@ -833,10 +831,10 @@ onBeforeUnmount(() => {
 
     
     <ProductCarousel
-      title="Gifts that glow (under £50)"
-      subtitle="Thoughtful ways to nourish someone you love"
+      title="Thoughtful wellbeing gifts under £50"
+      subtitle="Give something that feels good"
       :products="giftsUnder50"
-      cta-label="Find a thoughtful gift"
+      cta-label="Browse gifts"
       cta-href="/search?tag=Gift&price_max=50"
     />
 
@@ -1042,62 +1040,38 @@ onBeforeUnmount(() => {
       </div>
     </section>
 
-    <!-- Comfort of your own home (Tabbed) -->
+    <!-- Online wellbeing from home (Tabbed) -->
     <section class="section" aria-labelledby="comfort-title">
       <div class="container-page">
-        <div class="mb-6">
-          <div class="kicker">No travel needed</div>
-          <h2 id="comfort-title">From the comfort of your own home</h2>
-          <p class="text-ink-600 mt-2 max-w-2xl">
-            When your mind won’t slow down, soften into rituals that meet you where you are — gentle sessions that bring calm, clarity and care right to your space.
-          </p>
+        <div class="mb-6 flex items-end justify-between gap-4 flex-wrap">
+          <div>
+            <div class="kicker">Online support when you need it</div>
+            <h2 id="comfort-title">Support From the comfort of your own home</h2>
+            <p class="text-ink-600 mt-2 max-w-2xl">
+              Find online therapies, classes and one-to-one sessions that fit around your day — whether you want quiet time alone or support you can share.
+            </p>
+          </div>
+          <a href="/search?format=online" class="btn-wow btn-wow--outline btn-sm btn-arrow">
+            <span class="btn-label">View all online offerings</span>
+            <span class="btn-icon-wrap" aria-hidden="true">
+              <svg class="btn-icon-hover" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H5m14 0-4 4m4-4-4-4"/></svg>
+              <svg class="btn-icon-default" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12l-4 4m4-4-4-4"/></svg>
+            </span>
+          </a>
         </div>
 
-        <div class="flex items-center justify-between gap-4 mb-4 flex-wrap">
-          <div class="flex items-center gap-4 flex-wrap">
-            <div class="flex items-center gap-2">
-              <span class="font-semibold text-ink-800">Under</span>
-              <div class="seg-group" role="tablist" aria-label="Under price">
-                <button class="seg" :class="{ active: comfortPriceMax===50 }" @click="comfortPriceMax=50" role="tab" :aria-selected="comfortPriceMax===50">£50</button>
-                <button class="seg" :class="{ active: comfortPriceMax===100 }" @click="comfortPriceMax=100" role="tab" :aria-selected="comfortPriceMax===100">£100</button>
-                <button class="seg" :class="{ active: comfortPriceMax===500 }" @click="comfortPriceMax=500" role="tab" :aria-selected="comfortPriceMax===500">£500</button>
-              </div>
+        <div class="space-y-8">
+          <section v-for="row in comfortRows" :key="row.label" :aria-label="row.label">
+            <div class="mb-3 flex items-center justify-between gap-4">
+              <h3 class="m-0 text-xl font-semibold text-ink-900">{{ row.label }}</h3>
+              <span class="text-sm text-ink-500">{{ row.items.length }} picks</span>
             </div>
-            <div class="flex items-center gap-2">
-              <span class="font-semibold text-ink-800">For</span>
-              <div class="seg-group" role="tablist" aria-label="For">
-                <button class="seg" :class="{ active: comfortPeople==='solo' }" @click="comfortPeople='solo'" role="tab" :aria-selected="comfortPeople==='solo'">Solo</button>
-                <button class="seg" :class="{ active: comfortPeople==='couple' }" @click="comfortPeople='couple'" role="tab" :aria-selected="comfortPeople==='couple'">Couple</button>
-              </div>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <ProductCard v-for="p in row.items" :key="`${row.label}-${p.id}`" :product="p" />
             </div>
-          </div>
-          <div class="hidden sm:flex items-center gap-2 ml-auto">
-            <button class="carousel-arrow" @click="comfortScrollBy(-1)" aria-label="Previous">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
-            </button>
-            <button class="carousel-arrow" @click="comfortScrollBy(1)" aria-label="Next">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
-            </button>
-          </div>
-        </div>
-
-        <div>
-          <div ref="comfortRef" class="flex gap-6 overflow-x-auto overflow-y-visible no-scrollbar snap-x snap-mandatory pt-2 pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 bg-transparent">
-            <ProductCard v-for="p in comfortFiltered" :key="p.id" :product="p" class="snap-start" />
-          </div>
-          <div class="mt-4 text-right">
-            <a :href="`/search?price_max=${comfortPriceMax}&format=online&group_type=${comfortPeople}`" class="btn-wow btn-wow--outline btn-sm btn-arrow">
-              <span class="btn-label">See all under £{{ comfortPriceMax }} ({{ comfortPeople }})</span>
-              <span class="btn-icon-wrap" aria-hidden="true">
-                <svg class="btn-icon-hover" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H5m14 0-4 4m4-4-4-4"/>
-                </svg>
-                <svg class="btn-icon-default" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                  <path fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12l-4 4m4-4-4-4"/>
-                </svg>
-              </span>
-              <span class="btn-spinner" aria-hidden="true"><span class="spin"></span></span>
-            </a>
+          </section>
+          <div v-if="!comfortRows.length" class="rounded-xl border border-ink-200 bg-white p-6 text-ink-600">
+            No online offerings match those choices yet. Try another filter or browse everything online.
           </div>
         </div>
       </div>
@@ -1354,9 +1328,9 @@ onBeforeUnmount(() => {
       <div class="container-page">
         <div class="card p-6 md:p-10 flex flex-col md:flex-row items-center gap-8">
           <div class="flex-1">
-            <div class="kicker mb-3">Gifting made easy</div>
-            <h3>Gift cards for any occasion</h3>
-            <p class="text-ink-600 mt-2 max-w-xl">Choose the amount, add a message, and we’ll email an instant e-gift card to you or your recipient to use on therapies, classes, events and workshops.</p>
+            <div class="kicker mb-3">A gift that feels personal</div>
+            <h3>Give them room to feel good</h3>
+            <p class="text-ink-600 mt-2 max-w-xl">Send a WOW gift card in seconds and let them choose the support, session or experience that feels right for them.</p>
             <div class="mt-5 flex gap-3">
               <a href="/gift-cards" class="btn-wow is-square btn-md btn-wow--cta">Send a gift card</a>
               <a href="/help/gift-cards" class="btn-wow is-square btn-md btn-wow--outline">How gifting works</a>
@@ -2005,6 +1979,7 @@ onBeforeUnmount(() => {
   gap: 28px;
   align-items: center;
   margin-top: 74px;
+  margin-bottom: 50px;
   background: var(--wow-dark);
   color: #fff;
   border: 1px solid rgba(255, 255, 255, 0.12);

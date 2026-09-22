@@ -480,24 +480,24 @@ SVG;
     if ($hasOnlineAvailability && $hasInPersonAvailability) {
         $formatLabel = 'Online + In-person';
     } elseif ($hasOnlineAvailability) {
-        $formatLabel = 'Exclusively online';
+        $formatLabel = 'Online Exclusive';
     } else {
         $formatLabel = 'In-person';
     }
 
     $locationSummary = count($physicalLocations) > 1
         ? (count($physicalLocations) . ' locations')
-        : (count($physicalLocations) === 1 ? $physicalLocations[0]['label'] : ($hasOnlineLocation ? 'Exclusively online' : 'Location to be confirmed'));
+        : (count($physicalLocations) === 1 ? $physicalLocations[0]['label'] : ($hasOnlineLocation ? 'Online Exclusive' : 'Location to be confirmed'));
     if ($hasOnlineLocation && count($physicalLocations) > 0) {
         $locationSummary = count($physicalLocations) . ' locations + online';
     } elseif ($onlineOnlyLocation) {
         $locationSummary = 'Online session';
     }
-    $locationHeading = $onlineOnlyLocation ? 'Exclusively online.' : 'Choose the studio that works for you.';
+    $locationHeading = $onlineOnlyLocation ? 'Online Exclusive.' : 'Choose the studio that works for you.';
     $locationIntro = $onlineOnlyLocation
         ? 'Your sessions are delivered online only. The joining link is sent after booking.'
         : 'Pick your preferred location during checkout or switch it from the booking panel.';
-    $onlineOverlayTitle = $onlineOnlyLocation ? 'Exclusively online' : 'Online session selected';
+    $onlineOverlayTitle = $onlineOnlyLocation ? 'Online Exclusive' : 'Online session selected';
     $onlineOverlayCopy = $onlineOnlyLocation
         ? 'No venue map is needed. Your joining link is sent after booking.'
         : 'No venue map needed. Your joining link is sent after booking.';
@@ -866,7 +866,7 @@ SVG;
     if ($onlineOnlyLocation) {
         $locations = array_map(static function (array $location): array {
             if (! empty($location['online'])) {
-                $location['label'] = 'Exclusively online';
+                $location['label'] = 'Online Exclusive';
                 $location['address'] = 'Live session link sent after booking';
                 $location['notes'] = 'Online appointment';
             }

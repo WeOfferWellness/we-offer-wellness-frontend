@@ -5,6 +5,16 @@
   <title>{{ $seo['title'] ?? (($need['title'] ?? 'Need').' | We Offer Wellness™') }}</title>
   @if(!empty($seo['description']))<meta name="description" content="{{ $seo['description'] }}">@endif
   @if(!empty($seo['robots']))<meta name="robots" content="{{ $seo['robots'] }}">@endif
+  <style>
+    .wow-search-mobile-shell { display: none; }
+    @media (max-width: 1040px) {
+      .wow-search-mobile-shell { display: block; }
+      .wow-search-desktop-shell { display: none !important; }
+    }
+    @media (min-width: 1041px) {
+      .wow-search-mobile-shell { display: none !important; }
+    }
+  </style>
 @endpush
 
 @section('content')
@@ -14,107 +24,6 @@
   if (!($items instanceof \Illuminate\Support\Collection)) {
     $items = collect($items ?? []);
   }
-  $sortValue = (string) ($filters['sort'] ?? '');
-  $formatValue = (string) ($filters['format'] ?? '');
-  $locationValue = trim((string) ($filters['location'] ?? ''));
-  $sortLabel = match ($sortValue) {
-    'price_asc' => 'Price: Low → High',
-    'price_desc' => 'Price: High → Low',
-    'rating_desc' => 'Top rated',
-    default => 'Recommended',
-  };
-  $formatLabel = match ($formatValue) {
-    'online' => 'Online',
-    'in_person' => 'Near me',
-    default => 'All',
-  };
-  $needFilterSegments = [
-    [
-      'key' => 'sort',
-      'label' => 'Sort',
-      'value' => $sortLabel,
-      'placeholder' => 'Recommended',
-      'panelTitle' => 'Sort results',
-      'panelSubtitle' => 'Choose how results are ordered.',
-      'panelWidth' => 430,
-      'options' => [
-        [
-          'label' => 'Recommended',
-          'value' => '',
-          'subtitle' => 'Best match for this page',
-          'count' => 'Default',
-          'selected' => $sortValue === '',
-        ],
-        [
-          'label' => 'Price: Low → High',
-          'value' => 'price_asc',
-          'subtitle' => 'Cheaper options first',
-          'selected' => $sortValue === 'price_asc',
-        ],
-        [
-          'label' => 'Price: High → Low',
-          'value' => 'price_desc',
-          'subtitle' => 'Higher-priced options first',
-          'selected' => $sortValue === 'price_desc',
-        ],
-        [
-          'label' => 'Top rated',
-          'value' => 'rating_desc',
-          'subtitle' => 'Highest reviewed offerings first',
-          'selected' => $sortValue === 'rating_desc',
-        ],
-      ],
-    ],
-    [
-      'key' => 'format',
-      'label' => 'Format',
-      'value' => $formatLabel,
-      'placeholder' => 'All',
-      'panelTitle' => 'Choose format',
-      'panelSubtitle' => 'Online or in-person sessions.',
-      'panelWidth' => 430,
-      'options' => [
-        [
-          'label' => 'All',
-          'value' => '',
-          'subtitle' => 'Any format',
-          'selected' => $formatValue === '',
-        ],
-        [
-          'label' => 'Online',
-          'value' => 'online',
-          'subtitle' => 'Join from anywhere',
-          'selected' => $formatValue === 'online',
-        ],
-        [
-          'label' => 'Near me',
-          'value' => 'in_person',
-          'subtitle' => 'Physical sessions near you',
-          'selected' => $formatValue === 'in_person',
-        ],
-      ],
-    ],
-    [
-      'key' => 'location',
-      'label' => 'Location',
-      'value' => $locationValue !== '' ? $locationValue : 'Anywhere',
-      'placeholder' => 'Anywhere',
-      'panelTitle' => 'Filter by location',
-      'panelSubtitle' => 'Search by city, county, or area.',
-      'panelWidth' => 480,
-      'kind' => 'input',
-      'param' => 'location',
-      'inputLabel' => 'Location',
-      'inputValue' => $locationValue,
-      'inputPlaceholder' => 'e.g. London, Kent',
-      'buttonLabel' => 'Update location',
-    ],
-  ];
-  $needFilterChips = array_values(array_filter([
-    $sortValue !== '' ? ['param' => 'sort', 'label' => 'Sort', 'value' => $sortLabel] : null,
-    $formatValue !== '' ? ['param' => 'format', 'label' => 'Format', 'value' => $formatLabel] : null,
-    $locationValue !== '' ? ['param' => 'location', 'label' => 'Location', 'value' => $locationValue] : null,
-  ]));
 @endphp
 
 @include('partials.breadcrumbs', [
@@ -126,68 +35,44 @@
   'schemaUrl' => url('/needs/' . $slug),
 ])
 
+@include('partials.landing-hero', [
+  'heroEyebrow' => 'By need',
+  'heroTitle' => $need['title'] ?? 'Need',
+  'heroIntro' => $need['seo_description'] ?? '',
+  'heroActions' => [['label' => 'All needs', 'href' => route('needs.index'), 'style' => 'outline']],
+  'heroAsideLabel' => 'A useful starting point',
+  'heroAsideTitle' => 'Find support that fits',
+  'heroAsideText' => 'Explore relevant therapies, classes and experiences without the noise.',
+])
+
 <section class="section">
   <div class="container-page">
-    <div class="flex items-end justify-between gap-4 mb-4">
-      <div>
-        <div class="kicker">By Need</div>
-        <h1>{{ $need['title'] ?? 'Need' }}</h1>
-        @if(!empty($need['seo_description']))
-          <p class="text-ink-600 mt-2" style="max-width:70ch;">{{ $need['seo_description'] }}</p>
-        @endif
-      </div>
-      <div class="hidden md:block">
-        <a href="{{ route('needs.index') }}" class="btn btn-light">All needs</a>
-      </div>
+
+    <div class="wow-search-mobile-shell">
+      @include('search.partials.mobile', [
+        'products' => $items,
+        'mobileResultsCount' => $results['meta']['total'] ?? $items->count(),
+        'mobileFullNavigation' => true,
+        'mobileShowMap' => false,
+        'searchMapData' => [],
+        'searchRecommendationsHtml' => '',
+        'searchAsyncBoot' => false,
+        'searchUrl' => url('/needs/' . $slug),
+      ])
     </div>
 
-    @include('partials.wow-filter-bar', [
-      'action' => url('/needs/' . $slug),
-      'clearUrl' => url('/needs/' . $slug),
-      'ariaLabel' => 'Filter needs',
-      'mobileLabel' => 'Filters',
-      'resultCount' => $items->count(),
-      'resultLabel' => 'results',
-      'filters' => $filters,
-      'segments' => $needFilterSegments,
-      'chips' => $needFilterChips,
-    ])
-
-    {{-- Results --}}
-    @if($items->count())
-      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        @foreach($items as $product)
-          @include('partials.product_card_v4_1', [
-            'product' => $product,
-            'preferredLocation' => $filters['location'] ?? null,
-          ])
-        @endforeach
-      </div>
-
-      {{-- Pagination --}}
-      @php
-        $meta = $results['meta'] ?? [];
-        $current = (int)($meta['current_page'] ?? request()->query('page', 1));
-        $last = (int)($meta['last_page'] ?? ($meta['total_pages'] ?? 1));
-        $q = request()->query();
-      @endphp
-
-      @if($last > 1)
-        <div class="flex items-center justify-center gap-3 mt-5">
-          @if($current > 1)
-            <a class="btn btn-light" href="{{ request()->url() . '?' . http_build_query(array_merge($q, ['page' => $current - 1])) }}">← Prev</a>
-          @endif
-          <span class="text-muted">Page {{ $current }} of {{ $last }}</span>
-          @if($current < $last)
-            <a class="btn btn-light" href="{{ request()->url() . '?' . http_build_query(array_merge($q, ['page' => $current + 1])) }}">Next →</a>
-          @endif
-        </div>
-      @endif
-    @else
-      <div class="card p-4" style="border-radius:18px;">
-        <div class="text-muted">No results yet — try changing format/location or resetting filters.</div>
-      </div>
-    @endif
+    <div class="wow-search-desktop-shell">
+      @include('search.partials.desktop', [
+        'products' => $items,
+        'desktopResultsCount' => $results['meta']['total'] ?? $items->count(),
+        'desktopFullNavigation' => true,
+        'showMap' => false,
+        'searchMapData' => [],
+        'searchRecommendationsHtml' => '',
+        'searchAsyncBoot' => false,
+        'searchUrl' => url('/needs/' . $slug),
+      ])
+    </div>
   </div>
 </section>
 @endsection
@@ -195,6 +80,15 @@
 @push('scripts')
 <script>
 (function(){
+  const mobileRoot = document.getElementById('wowMobileSearch');
+  const mobileModal = mobileRoot?.querySelector('[data-filter-modal]');
+  const mobileOpen = mobileRoot?.querySelector('[data-open-filters]');
+  if (mobileRoot && mobileModal && mobileOpen) {
+    mobileOpen.addEventListener('click', () => {
+      mobileModal.hidden = false;
+      document.body.classList.add('wow-sr-v5-no-scroll');
+    });
+  }
   const slug = @json($slug ?? null);
   const title = @json($need['title'] ?? 'Need');
   if (!slug) return;

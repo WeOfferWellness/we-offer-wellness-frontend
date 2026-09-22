@@ -36,10 +36,11 @@ class ArticleController extends Controller
           $res = Http::timeout(4)->acceptJson()->get($timesBase.'/api/articles', [ 'limit' => $limit ]);
           if ($res->successful()) {
             $json = $res->json();
-            if (is_array($json)) {
+            $rows = is_array($json['data'] ?? null) ? $json['data'] : $json;
+            if (is_array($rows)) {
               // Force image host
               $out = [];
-              foreach ($json as $row) {
+              foreach ($rows as $row) {
                   if (is_array($row) && isset($row['img'])) {
                       $row['img'] = $normalizeImg($row['img']);
                   }
@@ -140,6 +141,7 @@ class ArticleController extends Controller
           'tag' => optional($a->category)->name ?? 'MindfulTimes',
           'img' => $img,
           'href' => $href,
+          'created_at' => optional($a->created_at)->toIso8601String(),
         ];
       });
 

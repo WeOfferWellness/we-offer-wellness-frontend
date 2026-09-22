@@ -1,6 +1,7 @@
 @php
   $siteUrl = rtrim((string) config('app.url', url('/')), '/') . '/';
   $studioUrl = 'https://studio.weofferwellness.co.uk/';
+  $faviconUrl = url(config('app.favicon_url', '/favicon.png'));
 
   $categoryCatalog = app(\App\Services\WhatCategoryCacheService::class)->load();
   $homepageCategories = [];
@@ -67,11 +68,11 @@
       'url' => $siteUrl,
       'logo' => [
           '@type' => 'ImageObject',
-          'url' => $studioUrl . 'storage/uploads/images/e9dc87f9-01bf-4ffd-be8f-e1f49a85bf41.png',
+          'url' => $faviconUrl,
       ],
       'image' => [
           '@type' => 'ImageObject',
-          'url' => $studioUrl . 'storage/uploads/images/6f5d7016-42bb-45b9-ae15-de148b2d508a.png',
+          'url' => url('/favicon-192x192.png'),
       ],
       'email' => 'hello@weofferwellness.co.uk',
       'telephone' => '+447958587756',
@@ -176,7 +177,7 @@
       ],
       'primaryImageOfPage' => [
           '@type' => 'ImageObject',
-          'url' => $studioUrl . 'storage/uploads/images/6f5d7016-42bb-45b9-ae15-de148b2d508a.png',
+          'url' => url('/favicon-192x192.png'),
       ],
   ];
 
@@ -185,7 +186,7 @@
       '@id' => $siteUrl . '#business',
       'name' => 'We Offer Wellness®',
       'url' => $siteUrl,
-      'image' => $studioUrl . 'storage/uploads/images/6f5d7016-42bb-45b9-ae15-de148b2d508a.png',
+      'image' => url('/favicon-192x192.png'),
       'address' => [
           '@type' => 'PostalAddress',
           'streetAddress' => '48 Salisbury Road, Penenden Heath',

@@ -307,21 +307,15 @@
   }
 </style>
 
-<section class="schedule-hero">
-  <div class="container">
-    <div class="row align-items-end g-4">
-      <div class="col-lg-8">
-        <span class="schedule-kicker">Live wellness schedule</span>
-        <h1 class="schedule-title wow-serif">{{ $pageHeading }}</h1>
-        <p class="lead schedule-subtitle">{{ $heroCopy }}</p>
-        <div class="schedule-range">{{ $rangeLabel }}</div>
-      </div>
-      <div class="col-lg-4 text-lg-end">
-        <a href="{{ url('/wellness-events/online') }}" class="btn btn-dark btn-lg rounded-pill px-4">Browse online events</a>
-      </div>
-    </div>
-  </div>
-</section>
+@include('partials.landing-hero', [
+  'heroEyebrow' => 'Live wellness schedule',
+  'heroTitle' => $pageHeading,
+  'heroIntro' => $heroCopy,
+  'heroActions' => [['label' => 'Browse online events', 'href' => url('/wellness-events/online'), 'style' => 'outline']],
+  'heroAsideLabel' => 'Schedule window',
+  'heroAsideTitle' => $rangeLabel !== '' ? $rangeLabel : 'Find your next event',
+  'heroAsideText' => 'Live listings, useful timing and clear routes into wellness experiences.',
+])
 
 <section class="schedule-section pt-0">
   <div class="container">

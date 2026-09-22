@@ -22,7 +22,11 @@
   function gtag(){dataLayer.push(arguments);}
   gtag('consent', 'default', @json(config('analytics.consent_default')));
   gtag('js', new Date());
-  gtag('config', '{{ $gaId }}', { 'send_page_view': false });
+  gtag('config', 'G-MZMQNETBYH', {
+    send_page_view: true,
+    allow_google_signals: true,
+    allow_ad_personalization_signals: true
+  });
 </script>
 @endif
 
@@ -39,7 +43,7 @@
   $siteName = $seo['site_name'] ?? config('app.name', 'We Offer Wellness');
   $twitterCard = $seo['twitter_card'] ?? 'summary_large_image';
   $ogType = $seo['og_type'] ?? 'website';
-  $favicon = config('app.favicon_url', '/favicon.ico');
+  $favicon = asset('favicon.ico');
   $isHomePage = trim((string) request()->getPathInfo(), '/') === '';
   $keywords = $seo['keywords'] ?? $seoService->keywordsForPage([
     'type' => $type ?? null,
@@ -70,11 +74,12 @@
 @endif
 <link rel="canonical" href="{{ $canonicalUrl }}">
 <!-- Favicon -->
-<link rel="icon" type="image/png" sizes="192x192" href="{{ $favicon }}">
-<link rel="icon" type="image/png" href="{{ $favicon }}">
+<link rel="icon" href="{{ $favicon }}">
+<link rel="icon" type="image/png" sizes="48x48" href="{{ asset('favicon-48x48.png') }}">
+<link rel="icon" type="image/png" sizes="192x192" href="{{ asset('favicon-192x192.png') }}">
 <link rel="shortcut icon" href="{{ $favicon }}">
-<link rel="apple-touch-icon" href="{{ $favicon }}">
-<meta name="msapplication-TileImage" content="{{ $favicon }}">
+<link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
+<meta name="msapplication-TileImage" content="{{ asset('favicon-192x192.png') }}">
 <meta property="og:type" content="{{ $ogType }}">
 <meta property="og:title" content="{{ $ogTitle }}">
 <meta property="og:description" content="{{ $ogDesc }}">
@@ -119,7 +124,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
 @stack('styles')
 
-<link rel="manifest" href="/manifest.json?v=4">
+<link rel="manifest" href="/manifest.json?v=5">
 <meta name="theme-color" content="#90b9a9">
 
 <!-- Built assets via Vite (JS only here; keep inline <style> below intact) -->

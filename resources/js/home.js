@@ -4,7 +4,7 @@ import ui from '@nuxt/ui/vue-plugin';
 import { initSubscriberForms } from './lib/subscriber-forms';
 import SearchRangeCalendar from './Components/SearchRangeCalendar.vue';
 import SearchBarV4 from './Components/SearchBarV4.vue';
-import { fetchWhatCategories } from './services/whatCategories';
+import { fetchOfferingAndPractitionerSuggestions, fetchWhatCategories } from './services/whatCategories';
 import { fetchLocations } from './services/locations';
 
 function runIdle(fn) {
@@ -644,10 +644,13 @@ function initHeaderSearchModal() {
     mobileWhere: '',
     mobileWhereSelected: '',
     whatItems: [],
+    dynamicWhatItems: [],
     whereItems: [],
     returnFocus: null,
     previousOverflow: '',
   };
+  let dynamicWhatTimer = null;
+  let dynamicWhatRequest = 0;
 
   const desktopForm = $('#wowsearch-desktop-search-form');
   const desktopShell = $('#wowsearch-desktop-search-shell');
@@ -743,6 +746,8 @@ function initHeaderSearchModal() {
       case 'retreat': return { background: '#fff1f2', color: '#be123c' };
       case 'session': return { background: '#eef2ff', color: '#4338ca' };
       case 'workshop': return { background: '#faf5ff', color: '#7e22ce' };
+      case 'practitioner': return { background: '#e8f5f1', color: '#2a5e52' };
+      case 'offering': return { background: '#eff6ff', color: '#1d4ed8' };
       default: return { background: '#f4f6fb', color: '#344054' };
     }
   };
@@ -764,8 +769,24 @@ function initHeaderSearchModal() {
   };
 
   function renderWhatItems() {
-    const items = state.whatItems;
-    desktopWhatList?.replaceChildren(...items.map((item) => {
+    const items = [...state.dynamicWhatItems, ...state.whatItems];
+    const desktopNodes = [];
+    let previousSection = '';
+    items.forEach((item) => {
+      const sectionCategory = String(item.cat || item.type || 'Modalities').trim().toLowerCase();
+      const section = sectionCategory === 'practitioner'
+        ? 'Popular practitioners'
+        : sectionCategory === 'offering'
+          ? 'Popular offerings'
+          : 'Popular experiences';
+      if (section !== previousSection) {
+        const heading = document.createElement('li');
+        heading.className = 'wowsearch-suggestion-section';
+        heading.style.cssText = 'padding:12px 16px 4px;color:#98a2b3;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;';
+        heading.textContent = section;
+        desktopNodes.push(heading);
+        previousSection = section;
+      }
       const li = document.createElement('li');
       li.className = 'wowsearch-desktop-what-option';
       li.dataset.label = item.title || item.label || item.value;
@@ -775,14 +796,31 @@ function initHeaderSearchModal() {
       const button = li.querySelector('button');
       button.prepend(createSparklesIcon(13));
       li.querySelector('span').textContent = li.dataset.label;
-      const category = li.querySelectorAll('span')[1];
-      category.textContent = li.dataset.cat;
-      category.style.backgroundColor = tone.background;
-      category.style.color = tone.color;
-      return li;
-    }) || []);
+      const categoryBadge = li.querySelectorAll('span')[1];
+      categoryBadge.textContent = li.dataset.cat;
+      categoryBadge.style.backgroundColor = tone.background;
+      categoryBadge.style.color = tone.color;
+      desktopNodes.push(li);
+    });
+    desktopWhatList?.replaceChildren(...desktopNodes);
 
-    const mobileOptions = state.whatItems.map((item) => {
+    const mobileOptions = [];
+    previousSection = '';
+    items.forEach((item) => {
+      const sectionCategory = String(item.cat || item.type || 'Modalities').trim().toLowerCase();
+      const section = sectionCategory === 'practitioner'
+        ? 'Popular practitioners'
+        : sectionCategory === 'offering'
+          ? 'Popular offerings'
+          : 'Popular experiences';
+      if (section !== previousSection) {
+        const heading = document.createElement('div');
+        heading.className = 'wowsearch-suggestion-section';
+        heading.style.cssText = 'padding:12px 16px 4px;color:#98a2b3;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;';
+        heading.textContent = section;
+        mobileOptions.push(heading);
+        previousSection = section;
+      }
       const button = document.createElement('button');
       button.type = 'button';
       button.className = 'wowsearch-mobile-what-option wowsearch-w-full wowsearch-flex wowsearch-items-center wowsearch-gap-3.5 wowsearch-px-3 wowsearch-py-[14px] wowsearch-border-b wowsearch-border-[#eef0f3] wowsearch-text-left';
@@ -792,10 +830,32 @@ function initHeaderSearchModal() {
       button.querySelector('span').append(createSparklesIcon(16));
       button.querySelector('strong').textContent = button.dataset.label;
       button.querySelector('small').textContent = button.dataset.cat;
-      return button;
+      mobileOptions.push(button);
     });
     const mobileWhatList = whatModal.querySelector('.wowsearch-flex-1.wowsearch-overflow-y-auto');
     mobileWhatList?.replaceChildren(...mobileOptions);
+  }
+
+  function refreshDynamicWhat(value) {
+    if (dynamicWhatTimer) window.clearTimeout(dynamicWhatTimer);
+    const query = String(value || '').trim();
+    if (query.length < 2) {
+      dynamicWhatRequest += 1;
+      state.dynamicWhatItems = [];
+      renderWhatItems();
+      filterDesktopWhat();
+      filterMobileWhat();
+      return;
+    }
+    const requestId = ++dynamicWhatRequest;
+    dynamicWhatTimer = window.setTimeout(async () => {
+      const items = await fetchOfferingAndPractitionerSuggestions(query);
+      if (requestId !== dynamicWhatRequest) return;
+      state.dynamicWhatItems = Array.isArray(items) ? items : [];
+      renderWhatItems();
+      filterDesktopWhat();
+      filterMobileWhat();
+    }, 180);
   }
 
   function renderLocationItems() {
@@ -825,7 +885,7 @@ function initHeaderSearchModal() {
     let visible = 0;
     if (whatHeading) whatHeading.textContent = query
       ? 'Suggestions'
-      : (state.whatItems.some((item) => item.cat === 'Popular searches') ? 'Popular searches' : 'Popular experiences');
+      : ([...state.dynamicWhatItems, ...state.whatItems].some((item) => item.cat === 'Popular searches') ? 'Popular searches' : 'Popular experiences');
     $$('.wowsearch-desktop-what-option', desktopWhatList).forEach((item) => {
       const matches = !query || `${item.dataset.label} ${item.dataset.cat}`.toLowerCase().includes(query);
       item.hidden = !matches || visible >= 8;
@@ -1034,7 +1094,10 @@ function initHeaderSearchModal() {
 
   whatInput.addEventListener('focus', () => setDesktopActive('desktop-what'));
   whereInput.addEventListener('focus', () => setDesktopActive('desktop-where'));
-  whatInput.addEventListener('input', filterDesktopWhat);
+  whatInput.addEventListener('input', () => {
+    refreshDynamicWhat(whatInput.value);
+    filterDesktopWhat();
+  });
   whereInput.addEventListener('input', () => { state.desktopWhereSelected = ''; filterDesktopWhere(); });
   whatField?.addEventListener('click', (event) => { if (!event.target.closest('button')) whatInput.focus(); });
   whereField?.addEventListener('click', (event) => { if (!event.target.closest('button')) whereInput.focus(); });
@@ -1081,7 +1144,10 @@ function initHeaderSearchModal() {
     const sheet = element.closest('#wowsearch-mobile-what-modal, #wowsearch-mobile-where-modal');
     closeSubModal(sheet?.id === 'wowsearch-mobile-what-modal' ? 'what' : 'where');
   }));
-  mobileWhatInput.addEventListener('input', filterMobileWhat);
+  mobileWhatInput.addEventListener('input', () => {
+    refreshDynamicWhat(mobileWhatInput.value);
+    filterMobileWhat();
+  });
   mobileWhereInput.addEventListener('input', filterMobileWhere);
   mobileWhatInput.addEventListener('keydown', (event) => {
     if (event.key !== 'Enter') return;
@@ -1417,8 +1483,11 @@ function mountHomeSearchBarV4() {
         where: initialWhere,
         mode: initialMode,
         whatItems: [],
+        dynamicWhatItems: [],
         whereItems: [],
       }
+      let dynamicWhatTimer = null
+      let dynamicWhatRequest = 0
 
       const syncHiddenInputs = () => {
         if (desktopModeInput) desktopModeInput.value = state.mode
@@ -1451,11 +1520,34 @@ function mountHomeSearchBarV4() {
         mobileWhereIcon.classList.toggle('is-active', !!state.where)
       }
 
+      const suggestionSection = (item) => {
+        const category = String(item?.cat || item?.type || '').trim().toLowerCase()
+        if (category === 'practitioner') return 'Popular practitioners'
+        if (category === 'offering') return 'Popular offerings'
+        return 'Popular experiences'
+      }
+
+      const addSuggestionSectionHeadings = (list, selector) => {
+        if (!list) return
+        let previous = ''
+        list.querySelectorAll(selector).forEach((item) => {
+          const section = suggestionSection({ cat: item.dataset.cat })
+          if (section === previous) return
+          previous = section
+          const heading = document.createElement('li')
+          heading.className = 'wowsearch-suggestion-section'
+          heading.style.cssText = 'padding:12px 16px 4px;color:#98a2b3;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;'
+          heading.textContent = section
+          list.insertBefore(heading, item)
+        })
+      }
+
       const renderDesktopWhat = () => {
         const query = whatInput.value.trim().toLowerCase()
+        const whatSource = [...state.dynamicWhatItems, ...state.whatItems]
         const source = query.length < 2
-          ? state.whatItems.slice(0, 8)
-          : state.whatItems
+          ? whatSource.slice(0, 8)
+          : whatSource
             .map((item) => ({ item, score: scoreItem(query, item) }))
             .filter((row) => row.score < 999)
             .sort((a, b) => a.score - b.score || String(a.item.title || '').localeCompare(String(b.item.title || '')))
@@ -1463,8 +1555,9 @@ function mountHomeSearchBarV4() {
             .map((row) => row.item)
         whatHeading.textContent = query
           ? 'Suggestions'
-          : (state.whatItems.some((item) => item.cat === 'Popular searches') ? 'Popular searches' : 'Popular experiences')
+          : (whatSource.some((item) => item.cat === 'Popular searches') ? 'Popular searches' : 'Popular experiences')
         desktopWhatList.innerHTML = renderDesktopWhatItems(source)
+        addSuggestionSectionHeadings(desktopWhatList, '.desktop-what-option')
         whatDropdown.hidden = state.activeDesktop !== 'what' || source.length === 0
       }
 
@@ -1486,12 +1579,33 @@ function mountHomeSearchBarV4() {
 
       const renderMobileWhat = () => {
         const query = mobileWhatInput.value.trim().toLowerCase()
+        const whatSource = [...state.dynamicWhatItems, ...state.whatItems]
         const source = query
-          ? state.whatItems
+          ? whatSource
             .filter((item) => scoreItem(query, item) < 999)
             .slice(0, 20)
-          : state.whatItems.slice(0, 25)
+          : whatSource.slice(0, 25)
         mobileWhatList.innerHTML = renderMobileWhatItems(source, state.what)
+        addSuggestionSectionHeadings(mobileWhatList, '.mobile-what-option')
+      }
+
+      const refreshDynamicWhat = (value) => {
+        if (dynamicWhatTimer) window.clearTimeout(dynamicWhatTimer)
+        const query = String(value || '').trim()
+        if (query.length < 2) {
+          state.dynamicWhatItems = []
+          renderDesktopWhat()
+          renderMobileWhat()
+          return
+        }
+        const requestId = ++dynamicWhatRequest
+        dynamicWhatTimer = window.setTimeout(async () => {
+          const items = await fetchOfferingAndPractitionerSuggestions(query)
+          if (requestId !== dynamicWhatRequest) return
+          state.dynamicWhatItems = items
+          renderDesktopWhat()
+          renderMobileWhat()
+        }, 180)
       }
 
       const renderMobileWhere = () => {
@@ -1629,6 +1743,7 @@ function mountHomeSearchBarV4() {
       whereInput.addEventListener('focus', () => setDesktopActive('where'))
       whatInput.addEventListener('input', () => {
         state.what = whatInput.value.trim()
+        refreshDynamicWhat(state.what)
         clearWhat.hidden = !(state.what && state.activeDesktop === 'what')
         updateMobileMainDisplay()
         renderDesktopWhat()
@@ -1675,7 +1790,10 @@ function mountHomeSearchBarV4() {
       enableSheetDrag(whatModal)
       enableSheetDrag(whereModal)
 
-      mobileWhatInput.addEventListener('input', renderMobileWhat)
+      mobileWhatInput.addEventListener('input', () => {
+        refreshDynamicWhat(mobileWhatInput.value)
+        renderMobileWhat()
+      })
       mobileWhereInput.addEventListener('input', renderMobileWhere)
       $('#mobile-use-location')?.addEventListener('click', () => {
         applyWhere('Near me', 'near-me')

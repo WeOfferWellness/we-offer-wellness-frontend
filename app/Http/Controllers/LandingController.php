@@ -136,7 +136,7 @@ class LandingController extends Controller
             }
         }
         // Map products into view model while preserving paginator meta
-        $mapped = $paginator->getCollection()->map(fn ($p) => $this->transformProduct($p));
+        $mapped = $this->transformProducts($paginator->getCollection());
         $paginator->setCollection($mapped);
 
         if ($type === 'near-me') {
@@ -487,7 +487,7 @@ class LandingController extends Controller
         if ($paginator->total() === 0 && $cookieCity !== '') {
             $paginator = $this->queryProducts($type, $this->taxonomyCategoryId($cat), $request, '', $this->taxonomySubcategoryId($cat))->paginate($perPage, ['*'], 'page', $page);
         }
-        $paginator->setCollection($paginator->getCollection()->map(fn ($p) => $this->transformProduct($p)));
+        $paginator->setCollection($this->transformProducts($paginator->getCollection()));
 
         return Inertia::render('Landing/Listing', [
             'type' => $type,
@@ -509,7 +509,7 @@ class LandingController extends Controller
         $products = $this->queryProducts(null, null, $request, $city)
             ->limit(24)
             ->get()
-            ->map(fn ($p) => $this->transformProduct($p));
+            ->pipe(fn ($items) => $this->transformProducts($items));
 
         return Inertia::render('Landing/City', [
             'city' => $city,
@@ -533,7 +533,7 @@ class LandingController extends Controller
         $page = (int) $request->integer('page', 1);
         $paginator = $this->queryProducts($type, $this->taxonomyCategoryId($cat), $request, $city, $this->taxonomySubcategoryId($cat))
             ->paginate($perPage, ['*'], 'page', $page);
-        $paginator->setCollection($paginator->getCollection()->map(fn ($p) => $this->transformProduct($p)));
+        $paginator->setCollection($this->transformProducts($paginator->getCollection()));
 
         return Inertia::render('Landing/Listing', [
             'city' => $city,
@@ -613,7 +613,7 @@ class LandingController extends Controller
             ->orderByRaw('COALESCE(reviews_count, 0) DESC');
 
         $items = $q->limit($limit)->get();
-        $products = $items->map(fn ($p) => $this->transformProduct($p));
+        $products = $this->transformProducts($items);
 
         // Broaden if empty: include any type while keeping text relevance
         if ($products->isEmpty()) {
@@ -636,7 +636,7 @@ class LandingController extends Controller
                 ->orderByRaw('COALESCE(reviews_avg_rating, 0) DESC')
                 ->orderByRaw('COALESCE(reviews_count, 0) DESC');
             $items = $q2->limit($limit)->get();
-            $products = $items->map(fn ($p) => $this->transformProduct($p));
+            $products = $this->transformProducts($items);
         }
 
         $name = ucwords(str_replace('-', ' ', strtolower($slug)));
@@ -753,7 +753,7 @@ class LandingController extends Controller
             ->orderByRaw('COALESCE(reviews_avg_rating, 0) DESC')
             ->orderByRaw('COALESCE(reviews_count, 0) DESC');
 
-        $products = $q->limit(48)->get()->map(fn ($p) => $this->transformProduct($p));
+        $products = $this->transformProducts($q->limit(48)->get());
 
         return Inertia::render('Landing/Need', [
             'need' => ['slug' => $slug, 'name' => $conf['name']],
@@ -870,7 +870,7 @@ class LandingController extends Controller
         $perPage = max(6, min($perPage, 120));
         $page = (int) $request->integer('page', 1);
         $paginator = $q->paginate($perPage, ['*'], 'page', $page);
-        $paginator->setCollection($paginator->getCollection()->map(fn ($p) => $this->transformProduct($p)));
+        $paginator->setCollection($this->transformProducts($paginator->getCollection()));
 
         $fallback = [];
         if ($paginator->total() === 0) {
@@ -901,7 +901,7 @@ class LandingController extends Controller
             $fb->orderByRaw('COALESCE(reviews_avg_rating, 0) * LOG(1 + COALESCE(reviews_count, 0)) DESC')
                 ->orderByRaw('COALESCE(reviews_avg_rating, 0) DESC')
                 ->orderByRaw('COALESCE(reviews_count, 0) DESC');
-            $fallback = $fb->limit(24)->get()->map(fn ($p) => $this->transformProduct($p))->values();
+            $fallback = $this->transformProducts($fb->limit(24)->get())->values();
         }
 
         return Inertia::render('Landing/Plan', [
@@ -924,7 +924,7 @@ class LandingController extends Controller
         // Attempt to match by slugified name
         $cats = ProductCategory::query()->get();
         foreach ($cats as $c) {
-            if ($this->slugify($c->name) === $slug) {
+            if ($this->slugify($c->slug ?: $c->name) === $slug || $this->slugify($c->name) === $slug) {
                 return $c;
             }
         }
@@ -1061,7 +1061,7 @@ class LandingController extends Controller
         $q = Product::query()
             ->withCount('reviews')
             ->withAvg('reviews', 'rating')
-            ->with(['media', 'options.values', 'category', 'subcategory']);
+            ->with(['media', 'options.values', 'category', 'subcategory', 'vendor.user']);
 
         $q->where(function ($visible) {
             $visible->whereHas('status', function ($qs) {
@@ -1144,7 +1144,38 @@ class LandingController extends Controller
         return $q;
     }
 
-    private function transformProduct(Product $p): array
+    private function transformProducts($products): \Illuminate\Support\Collection
+    {
+        $products = collect($products);
+        $userIds = $products
+            ->map(fn (Product $product) => $product->vendor?->user_id)
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+        $durations = $products
+            ->filter(fn (Product $product): bool => $product->vendor?->user_id !== null)
+            ->mapWithKeys(function (Product $product): array {
+                $duration = data_get($product->meta_json, 'duration_minutes')
+                    ?? data_get($product->meta_json, 'duration')
+                    ?? data_get($product->meta_json, 'duration_in_minutes');
+
+                return is_numeric($duration)
+                    ? [(string) $product->vendor->user_id => max(15, (int) $duration)]
+                    : [];
+            })
+            ->all();
+        $availability = app(\App\Services\BackendAvailabilityClient::class)->forUsers($userIds, $durations);
+
+        return $products
+            ->map(fn (Product $product): array => $this->transformProduct(
+                $product,
+                $availability[(string) ($product->vendor?->user_id ?? '')] ?? []
+            ))
+            ->values();
+    }
+
+    private function transformProduct(Product $p, array $availability = []): array
     {
         $locations = method_exists($p, 'getLocations') ? $p->getLocations() : [];
         $isOnline = in_array('Online', $locations, true);
@@ -1174,6 +1205,15 @@ class LandingController extends Controller
             'currency' => $meta['currency'] ?? 'GBP',
             'rating' => round((float) ($p->reviews_avg_rating ?? 0), 1) ?: null,
             'review_count' => (int) ($p->reviews_count ?? 0),
+            'practitioner_name' => $p->vendor?->vendor_name ?: $p->vendor?->user?->name,
+            'vendor_id' => $p->vendor_id,
+            'vendor_user_id' => $p->vendor?->user_id,
+            'availability' => $availability,
+            'availability_state' => $availability['availability_state'] ?? 'unknown',
+            'calendar_configured' => (bool) ($availability['calendar_configured'] ?? false),
+            'next_available_at' => $availability['next_available_at'] ?? null,
+            'next_available_end_at' => $availability['next_available_end_at'] ?? null,
+            'next_available_human' => $this->humanAvailability($availability['next_available_at'] ?? null),
             'image' => method_exists($p, 'getFirstImageUrl') ? $p->getFirstImageUrl() : null,
             'tags' => $p->tags_list ? array_map('trim', explode(',', $p->tags_list)) : [],
             'booking_flow' => $this->legacyProductBookingFlow($p),
@@ -1182,6 +1222,19 @@ class LandingController extends Controller
             'event' => is_array($eventPayload) ? $eventPayload : [],
             'url' => $seo->canonicalProductUrl($p),
         ];
+    }
+
+    private function humanAvailability(?string $value): ?string
+    {
+        if (! $value) {
+            return null;
+        }
+
+        try {
+            return Carbon::parse($value)->timezone(config('app.timezone', 'Europe/London'))->isoFormat('ddd D MMM, h:mm A');
+        } catch (\Throwable) {
+            return null;
+        }
     }
 
     private function extractPrimaryDateValue(mixed $payload): ?string

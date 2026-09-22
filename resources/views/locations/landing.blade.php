@@ -41,6 +41,7 @@
     .location-landing__hero.is-dark{--location-hero-copy:#fff;--location-hero-muted:rgba(255,255,255,.88);--location-hero-accent:#d7fff1;--location-hero-overlay:rgba(7,24,21,.62)}
     .location-landing__hero.is-light{--location-hero-copy:#17202b;--location-hero-muted:#465466;--location-hero-accent:#236957;--location-hero-overlay:rgba(255,255,255,.72)}
     .location-landing__hero{color:var(--location-hero-copy)}
+    .location-landing__search-wrap{width:min(100% - 32px,900px);margin:-14px auto 0;position:relative;z-index:2}
     .location-landing__eyebrow{margin:0 0 8px;color:var(--location-hero-accent);font-size:12px;text-align:center;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
     .location-landing h1,.location-landing h2{margin:0;font-family:var(--wow-serif,'Playfair Display',Georgia,serif);font-weight:500;letter-spacing:-.045em}
     .location-landing h1{font-size:clamp(42px,6vw,74px);line-height:.95;text-align:center}
@@ -61,7 +62,7 @@
     .location-landing__tile strong{display:block;font-size:17px}.location-landing__tile span{display:block;margin-top:5px;color:#667085;font-size:13px;line-height:1.4}
     .location-landing__directory{border-top:1px solid #e7ecef}.location-landing__directory details{border-bottom:1px solid #e7ecef}.location-landing__directory summary{padding:15px 0;cursor:pointer;font-weight:800;list-style:none}.location-landing__directory summary::-webkit-details-marker{display:none}.location-landing__directory ul{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:0;padding:0;list-style:none}.location-landing__directory li{min-width:0}.location-landing__directory a{display:block;height:100%;padding:15px 16px;border:1px solid #dfe7ea;border-radius:4px;background:#fff;color:#17202b;font-size:15px;font-weight:700;text-decoration:none;transition:border-color .15s,background-color .15s,transform .15s}.location-landing__directory a:hover{border-color:#4f9381;background:#f8fcfb;color:#2f7464;transform:translateY(-1px)}
     @media(max-width:900px){.location-landing__grid{grid-template-columns:repeat(2,minmax(0,1fr))}.location-landing__tiles,.location-landing__directory ul{grid-template-columns:repeat(2,minmax(0,1fr))}}
-    @media(max-width:620px){.location-landing__container{width:min(100% - 24px,520px)}.location-landing__search{grid-template-columns:1fr 1fr}.location-landing__search button{grid-column:1/-1}.location-landing__head{display:block}.location-landing__grid,.location-landing__tiles,.location-landing__directory ul{gap:8px}.location-landing__directory a{padding:13px 12px;font-size:14px}.location-landing__grid .wow49-blade-card__event-content{padding:12px!important}}
+    @media(max-width:620px){.location-landing__container{width:min(100% - 24px,520px)}.location-landing__search-wrap{width:min(100% - 24px,520px);margin:-8px auto 0}.location-landing__search{grid-template-columns:1fr 1fr}.location-landing__search button{grid-column:1/-1}.location-landing__head{display:block}.location-landing__grid,.location-landing__tiles,.location-landing__directory ul{gap:8px}.location-landing__directory a{padding:13px 12px;font-size:14px}.location-landing__grid .wow49-blade-card__event-content{padding:12px!important}}
   </style>
 @endpush
 
@@ -76,19 +77,22 @@
 
   <main class="location-landing">
     <div class="location-landing__container">
-      <header
-        class="location-landing__hero"
-        @if($locationImage) data-location-hero-image="{{ e($locationImage) }}" @endif
-      >
-        <p class="location-landing__eyebrow">Local wellness discovery</p>
-        <h1>Wellness in {{ $label }}</h1>
-        <p class="location-landing__intro">Discover therapies, classes, events and wellness experiences from practitioners across {{ $label }}.</p>
+      @include('partials.landing-hero', [
+        'heroEyebrow' => 'Local wellness discovery',
+        'heroTitle' => 'Wellness in '.$label,
+        'heroIntro' => 'Discover therapies, classes, events and wellness experiences from practitioners across '.$label.'.',
+        'heroImage' => $locationImage,
+        'heroAsideTitle' => null,
+        'heroAsideText' => '',
+        'heroActions' => [['label' => 'Search all', 'href' => url('/search?where='.urlencode($label))]],
+      ])
+      <div class="location-landing__search-wrap">
         <x-home-searchbar-v4
           id-prefix="location-landing-search"
           :search-url="url('/search')"
           initial-where="{{ $label }}"
         />
-      </header>
+      </div>
 
       <section class="location-landing__section" aria-labelledby="local-offerings-title"><div class="location-landing__head"><div><h2 id="local-offerings-title">{{ $isTown ? 'Wellness near '.$label : 'Explore wellness in '.$label }}</h2><p class="location-landing__copy">Live marketplace offerings, ordered for local relevance and useful quality signals.</p></div>@if($nearby->isNotEmpty())<a class="btn-wow btn-wow--outline btn-sm" href="{{ url('/search?where='.urlencode($label)) }}">View all</a>@endif</div>@if($nearby->isNotEmpty())<div class="location-landing__grid">@foreach($nearby->take(8) as $product)@include('partials.product_card_v4_1',['product'=>$product,'preferredLocation'=>$label])@endforeach</div>@else<div class="location-landing__empty">We don't have any wellness offerings listed in {{ $label }} yet. Try a nearby area or explore online options.</div>@endif</section>
 

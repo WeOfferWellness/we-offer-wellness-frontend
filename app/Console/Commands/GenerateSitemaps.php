@@ -45,6 +45,7 @@ class GenerateSitemaps extends Command
         $fileCount = (int) data_get($manifest, 'file_count', count($files));
         $aiFileCount = count($aiFiles);
         $modalityStats = $service->modalityStats();
+        $guideStats = $service->guideStats();
 
         $this->info(sprintf('Generated %d sitemap segment file(s).', count($files)));
         $this->info(sprintf('Generated %d AI guide file(s).', $aiFileCount));
@@ -57,6 +58,13 @@ class GenerateSitemaps extends Command
             (int) ($modalityStats['excluded_redirects'] ?? 0),
             (int) ($modalityStats['invalid_urls'] ?? 0),
             (int) ($modalityStats['duplicate_urls'] ?? 0),
+        ));
+        $this->line(sprintf(
+            'Guides: %d legacy, %d Backend, %d emitted, %d duplicate URL(s).',
+            (int) ($guideStats['legacy_count'] ?? 0),
+            (int) ($guideStats['backend_count'] ?? 0),
+            (int) ($guideStats['total_count'] ?? 0),
+            (int) ($guideStats['duplicate_count'] ?? 0),
         ));
 
         foreach ($files as $file) {

@@ -261,38 +261,61 @@
   'schemaUrl' => url('/therapies/' . $slug),
 ])
 
+@include('partials.landing-hero', [
+  'heroEyebrow' => 'Therapies',
+  'heroTitle' => $therapy['title'] ?? 'Therapy',
+  'heroIntro' => $therapy['seo_description'] ?? '',
+  'heroActions' => [['label' => 'All therapies', 'href' => route('therapies.index'), 'style' => 'outline']],
+  'heroAsideLabel' => 'Explore with confidence',
+  'heroAsideTitle' => 'A calmer way to choose',
+  'heroAsideText' => 'Compare live offerings, formats and locations from trusted practitioners.',
+])
+
 <section class="section">
   <div class="container-page">
-    <div class="flex items-end justify-between gap-4 mb-4">
-      <div>
-        <div class="kicker">Therapies</div>
-        <h1>{{ $therapy['title'] ?? 'Therapy' }}</h1>
-        @if(!empty($therapy['seo_description']))
-          <p class="text-ink-600 mt-2" style="max-width:70ch;">{{ $therapy['seo_description'] }}</p>
-        @endif
+    <style>
+      .therapy-results-layout{display:grid;grid-template-columns:250px minmax(0,1fr);gap:25px;align-items:start}
+      .therapy-results-filters .wow-sr-v5-desktop{padding:0}
+      .therapy-results-filters .wow-sr-v5-container{width:100%}
+      .therapy-results-filters .wow-sr-v5-header{display:none}
+      .therapy-results-filters .wow-sr-v5-layout{display:block}
+      .therapy-results-filters .wow-sr-v5-sidebar{position:sticky;top:140px}
+      .therapy-results-content{min-width:0}
+      @media(max-width:1040px){.therapy-results-layout{display:block}.therapy-results-filters{display:none}}
+    </style>
+
+    <div class="therapy-results-layout">
+      <div class="therapy-results-filters">
+        @include('search.partials.desktop', [
+          'products' => $items,
+          'desktopResultsCount' => $items->count(),
+          'desktopFullNavigation' => true,
+          'showMap' => false,
+          'filterOnly' => true,
+          'searchMapData' => [],
+          'searchRecommendationsHtml' => '',
+          'searchAsyncBoot' => false,
+          'searchUrl' => url('/therapies/' . $slug),
+        ])
       </div>
-      <div class="hidden md:block">
-        <a href="{{ route('therapies.index') }}" class="btn btn-light">All therapies</a>
-      </div>
-    </div>
+      <div class="therapy-results-content">
 
     @include('partials.guide_panel', [
       'guidePanelModality' => $slug,
       'guidePanelFormat' => 'therapies',
     ])
 
-    @include('partials.wow-filter-bar', [
-      'action' => url('/therapies/' . $slug),
-      'clearUrl' => url('/therapies/' . $slug),
-      'ariaLabel' => 'Filter therapies',
-      'mobileLabel' => 'Filters',
-      'resultCount' => $items->count(),
-      'resultLabel' => 'results',
-      'filters' => $filters,
-      'segments' => $therapyFilterSegments,
-      'chips' => $therapyFilterChips,
+    @include('search.partials.mobile', [
+      'products' => $items,
+      'mobileResultsCount' => $items->count(),
+      'mobileFullNavigation' => true,
+      'mobileShowMap' => false,
+      'filterOnly' => true,
+      'searchMapData' => [],
+      'searchRecommendationsHtml' => '',
+      'searchAsyncBoot' => false,
+      'searchUrl' => url('/therapies/' . $slug),
     ])
-
     {{-- Results --}}
     @if($items->count())
       <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -328,6 +351,8 @@
         <div class="text-muted">No results yet — try changing format/location or resetting filters.</div>
       </div>
     @endif
+      </div>
+    </div>
   </div>
 </section>
 @endsection

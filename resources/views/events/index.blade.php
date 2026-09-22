@@ -256,78 +256,108 @@
   };
 @endphp
 
+@include('partials.landing-hero', [
+  'heroEyebrow' => 'Browse',
+  'heroTitle' => $pageHeading,
+  'heroIntro' => $pageDescription,
+  'heroAsideTitle' => null,
+  'heroAsideText' => '',
+])
+
 <section class="section">
   <div class="container-page">
-    <div class="mb-4">
-      <div class="kicker">Browse</div>
-      <h1>{{ $pageHeading }}</h1>
-      <p class="text-ink-600 mt-2" style="max-width:70ch;">
-        {{ $pageDescription }}
-      </p>
-    </div>
+    <style>
+      .events-results-layout { display:grid; grid-template-columns:250px minmax(0,1fr); gap:25px; align-items:start; }
+      .events-results-filters .wow-sr-v5-desktop { padding:0; }
+      .events-results-filters .wow-sr-v5-container { width:100%; }
+      .events-results-filters .wow-sr-v5-header { display:none; }
+      .events-results-filters .wow-sr-v5-layout { display:block; }
+      .events-results-filters .wow-sr-v5-sidebar { position:sticky; top:140px; }
+      .events-results-content { min-width:0; }
+      @media (max-width:1040px) {
+        .events-results-layout { display:block; }
+        .events-results-filters { display:none; }
+      }
+    </style>
 
-    @include('partials.wow-filter-bar', [
-      'action' => url('/events'),
-      'clearUrl' => url('/events'),
-      'ariaLabel' => 'Filter events',
-      'mobileLabel' => 'Filters',
-      'resultCount' => $eventCount,
-      'resultLabel' => 'events',
-      'filters' => $filters,
-      'segments' => $eventFilterSegments,
-      'chips' => $eventFilterChips,
+    @include('search.partials.mobile', [
+      'products' => collect(),
+      'mobileResultsCount' => $eventCount,
+      'mobileFullNavigation' => true,
+      'mobileShowMap' => false,
+      'filterOnly' => true,
+      'searchMapData' => [],
+      'searchRecommendationsHtml' => '',
+      'searchAsyncBoot' => false,
+      'searchUrl' => url('/events'),
     ])
-
-    {{-- Results --}}
-    @if(count($upcomingEvents) || count($pastEvents))
-      @foreach($eventSections as $section)
-        <section class="mb-5">
-          <div class="d-flex align-items-end justify-content-between gap-3 mb-3">
-            <div>
-              <h2 class="h3 mb-1">{{ $section['title'] }}</h2>
-              <p class="text-ink-600 mb-0">{{ $section['subtitle'] }}</p>
-            </div>
-            <span class="badge rounded-pill text-bg-light">{{ count($section['items']) }}</span>
-          </div>
-
-          @if(count($section['items']))
-            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              @foreach($section['items'] as $it)
-                @include('partials.product_card_v4_1', ['product' => $eventCardProduct($it), 'preferredLocation' => null])
-              @endforeach
-            </div>
-          @else
-            <div class="card p-4" style="border-radius:18px;">
-              <div class="text-muted">{{ $section['empty'] }}</div>
-            </div>
-          @endif
-        </section>
-      @endforeach
-
-      {{-- Pagination --}}
-      @php
-        $meta = $results['meta'] ?? [];
-        $current = (int)($meta['current_page'] ?? request()->query('page', 1));
-        $last = (int)($meta['last_page'] ?? ($meta['total_pages'] ?? 1));
-        $q = request()->query();
-      @endphp
-
-      @if($last > 1)
-        <div class="flex items-center justify-center gap-3 mt-5">
-          @if($current > 1)
-            <a class="btn btn-light" href="{{ request()->url() . '?' . http_build_query(array_merge($q, ['page' => $current - 1])) }}">← Prev</a>
-          @endif
-          <span class="text-muted">Page {{ $current }} of {{ $last }}</span>
-          @if($current < $last)
-            <a class="btn btn-light" href="{{ request()->url() . '?' . http_build_query(array_merge($q, ['page' => $current + 1])) }}">Next →</a>
-          @endif
-        </div>
-      @endif
-    @else
-      <div class="card p-4" style="border-radius:18px;">
-        <div class="text-muted">No events found — try resetting filters.</div>
+    <div class="events-results-layout">
+      <div class="events-results-filters">
+        @include('search.partials.desktop', [
+          'products' => collect(),
+          'desktopResultsCount' => $eventCount,
+          'desktopFullNavigation' => true,
+          'showMap' => false,
+          'filterOnly' => true,
+          'searchMapData' => [],
+          'searchRecommendationsHtml' => '',
+          'searchAsyncBoot' => false,
+          'searchUrl' => url('/events'),
+        ])
       </div>
-    @endif
+
+      <div class="events-results-content">
+        @if(count($upcomingEvents) || count($pastEvents))
+          @foreach($eventSections as $section)
+            <section class="mb-5">
+              <div class="d-flex align-items-end justify-content-between gap-3 mb-3">
+                <div>
+                  <h2 class="h3 mb-1">{{ $section['title'] }}</h2>
+                  <p class="text-ink-600 mb-0">{{ $section['subtitle'] }}</p>
+                </div>
+                <span class="badge rounded-pill text-bg-light">{{ count($section['items']) }}</span>
+              </div>
+
+              @if(count($section['items']))
+                <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  @foreach($section['items'] as $it)
+                    @include('partials.product_card_v4_1', ['product' => $eventCardProduct($it), 'preferredLocation' => null])
+                  @endforeach
+                </div>
+              @else
+                <div class="card p-4" style="border-radius:18px;">
+                  <div class="text-muted">{{ $section['empty'] }}</div>
+                </div>
+              @endif
+            </section>
+          @endforeach
+        @else
+          <div class="card p-4" style="border-radius:18px;">
+            <div class="text-muted">No events found — try resetting filters.</div>
+          </div>
+        @endif
+
+        {{-- Pagination --}}
+        @php
+          $meta = $results['meta'] ?? [];
+          $current = (int)($meta['current_page'] ?? request()->query('page', 1));
+          $last = (int)($meta['last_page'] ?? ($meta['total_pages'] ?? 1));
+          $q = request()->query();
+        @endphp
+
+        @if($last > 1)
+          <div class="flex items-center justify-center gap-3 mt-5">
+            @if($current > 1)
+              <a class="btn btn-light" href="{{ request()->url() . '?' . http_build_query(array_merge($q, ['page' => $current - 1])) }}">← Prev</a>
+            @endif
+            <span class="text-muted">Page {{ $current }} of {{ $last }}</span>
+            @if($current < $last)
+              <a class="btn btn-light" href="{{ request()->url() . '?' . http_build_query(array_merge($q, ['page' => $current + 1])) }}">Next →</a>
+            @endif
+          </div>
+        @endif
+      </div>
+    </div>
   </div>
 </section>
 @endsection

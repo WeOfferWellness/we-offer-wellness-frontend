@@ -122,7 +122,7 @@
     .wow-kicker {
         margin: 0 0 10px;
         color: #344054;
-        font-size: 13px;
+        font-size: 13px !important;
         font-weight: 300;
         letter-spacing: 0.16em;
         text-transform: uppercase;
@@ -379,7 +379,7 @@
         max-width: 620px;
         margin: 18px 0 0;
         color: #596275;
-        font-size: 17px;
+        font-size: 13px;
         line-height: 1.6;
     }
 
@@ -438,6 +438,7 @@
         gap: 28px;
         align-items: center;
         margin-top: 74px;
+        margin-bottom: 50px;
         background: var(--wow-dark);
         color: #fff;
         border: 1px solid rgba(255, 255, 255, 0.12);
@@ -581,6 +582,17 @@
         margin-bottom: 64px;
     }
 
+    .home-latest-section {
+        padding-top: 30px;
+        padding-bottom: 34px;
+        border-top: 1px solid var(--wow-soft-line);
+        border-bottom: 0;
+    }
+
+    .home-latest-section .product-showcase-heading__copy {
+        max-width: 820px;
+    }
+
     .wow-section-heading {
         display: grid;
         grid-template-columns: minmax(0, 1fr) auto;
@@ -615,14 +627,10 @@
     }
 
     .wow-modality-board {
-        display: grid;
-        grid-template-columns: minmax(0, 1.06fr) minmax(0, 0.94fr);
-        gap: 22px;
-        align-items: stretch;
         margin-bottom: 72px;
+        padding: 8px 0 18px;
     }
 
-    .wow-modality-feature,
     .wow-modality-card,
     .wow-gift-panel {
         background: rgba(255, 255, 255, 0.98);
@@ -630,101 +638,81 @@
         box-shadow: 0 14px 42px rgba(16, 24, 40, 0.055);
     }
 
-    .wow-modality-feature {
-        position: relative;
-        min-height: 520px;
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-end;
-        overflow: hidden;
-        border-radius: 18px;
-        text-decoration: none;
-    }
-
-    .wow-modality-feature img {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        display: block;
-        object-fit: cover;
-    }
-
-    .wow-modality-feature::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background: rgba(16, 24, 40, 0.48);
-    }
-
-    .wow-modality-feature__content {
-        position: relative;
-        z-index: 1;
-        max-width: 620px;
-        padding: 28px;
-        color: #fff;
-    }
-
-    .wow-modality-feature .wow-tag {
-        margin-bottom: 14px;
-    }
-
-    .wow-modality-feature h3 {
-        color: #fff;
-        font-size: clamp(42px, 5vw, 70px);
-        line-height: 0.94;
-    }
-
-    .wow-modality-feature p {
-        max-width: 540px;
-        margin: 16px 0 0;
-        color: rgba(255, 255, 255, 0.82);
-        font-size: 16px;
-        line-height: 1.56;
-    }
-
-    .wow-modality-feature__footer {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 18px;
-        margin-top: 24px;
-        padding-top: 18px;
-        border-top: 1px solid rgba(255, 255, 255, 0.24);
-        color: rgba(255, 255, 255, 0.82);
-        font-size: 13px;
-    }
-
-    .wow-modality-feature__footer strong {
-        color: #fff;
-        white-space: nowrap;
-    }
-
     .wow-modality-grid {
         display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 16px;
+        grid-template-columns: repeat(10, minmax(0, 1fr));
+        grid-auto-rows: minmax(170px, 1fr);
+        gap: 14px;
     }
 
     .wow-modality-card {
-        display: grid;
-        grid-template-rows: 170px 1fr;
-        min-height: 252px;
+        position: relative;
+        min-height: 0;
         overflow: hidden;
-        border-radius: 14px;
+        border-radius: 18px;
         text-decoration: none;
-        transition: transform 160ms ease, border-color 160ms ease;
+        transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
     }
 
+    .wow-modality-card:not(.wow-modality-card--lead) {
+        grid-column: span 3;
+        order: 2;
+    }
+
+    .wow-modality-card--lead {
+        position: relative;
+        grid-column: 4 / span 4;
+        grid-row: 1 / span 2;
+        min-height: 0;
+        order: 1;
+    }
+
+    .wow-modality-card--side-left { grid-column: 1 / span 3; }
+    .wow-modality-card--side-right { grid-column: 8 / span 3; }
+    .wow-modality-card--side-left.wow-modality-card--top,
+    .wow-modality-card--side-right.wow-modality-card--top { grid-row: 1; }
+    .wow-modality-card--side-left.wow-modality-card--bottom,
+    .wow-modality-card--side-right.wow-modality-card--bottom { grid-row: 2; }
+
     .wow-modality-card:hover {
-        transform: translateY(-2px);
+        transform: translateY(-4px);
         border-color: rgba(79, 147, 129, 0.42);
+        box-shadow: 0 18px 44px rgba(16, 24, 40, 0.10);
+    }
+
+    .wow-modality-card--lead {
+        border-color: rgba(47, 111, 96, 0.42);
+        box-shadow: 0 16px 42px rgba(47, 111, 96, 0.10);
     }
 
     .wow-modality-card__image {
-        position: relative;
-        overflow: hidden;
-        background: #eef2f4;
+        position: absolute;
+        inset: 0;
+        aspect-ratio: auto;
+    }
+
+    .wow-modality-card__image::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(13, 34, 31, 0.04) 22%, rgba(13, 34, 31, 0.84) 100%);
+    }
+
+    .wow-modality-card__body {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 1;
+        justify-content: flex-end;
+        color: #fff;
+        background: linear-gradient(180deg, transparent 20%, rgba(13, 34, 31, 0.58) 100%);
+    }
+
+    .wow-modality-card h3,
+    .wow-modality-card p,
+    .wow-modality-card .wow-card-link {
+        color: #fff;
     }
 
     .wow-modality-card__image img {
@@ -734,27 +722,43 @@
         object-fit: cover;
     }
 
+    .wow-modality-card__badge {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        padding: 6px 9px;
+        border-radius: 999px;
+        background: #2f6f60;
+        color: #fff;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+    }
+
     .wow-modality-card__body {
-        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 18px;
     }
 
     .wow-modality-card h3 {
-        font-size: 28px;
+        font-size: clamp(22px, 2vw, 30px);
         line-height: 0.98;
     }
 
     .wow-modality-card p {
-        margin: 9px 0 0;
-        color: #596275;
-        font-size: 14px;
+        margin: 10px 0 0;
+        font-size: 13px;
         line-height: 1.45;
     }
 
     .wow-card-link {
         display: inline-flex;
-        margin-top: 14px;
-        color: #24594d;
-        font-size: 14px;
+        margin-top: auto;
+        padding-top: 16px;
+        font-size: 13px;
         font-weight: 800;
         text-underline-offset: 0.18em;
     }
@@ -956,6 +960,62 @@
         color: #24594d;
     }
 
+    .wow-gift-panel {
+        position: relative;
+        overflow: hidden;
+        grid-template-columns: minmax(0, .9fr) minmax(420px, 1.1fr);
+        gap: 42px;
+        border: 0;
+        border-radius: 22px;
+        background: #183d34;
+        box-shadow: 0 24px 70px rgba(24, 61, 52, .18);
+        padding: 12px;
+    }
+
+    .wow-gift-copy {
+        position: relative;
+        z-index: 1;
+        min-height: 390px;
+        padding: 34px 24px 34px 30px;
+    }
+
+    .wow-gift-copy h2,
+    .wow-gift-copy p,
+    .wow-gift-copy .wow-kicker {
+        color: #fff;
+    }
+
+    .wow-gift-copy h2 { max-width: 560px; font-size: clamp(42px, 5vw, 68px); }
+    .wow-gift-copy p { color: rgba(255,255,255,.76); }
+    .wow-gift-points span { color: rgba(255,255,255,.84); }
+    .wow-gift-points span::before { background: rgba(220,235,228,.18); color: #dcebe4; }
+
+    .wow-gift-visual {
+        min-height: 390px;
+        border: 0;
+        border-radius: 16px;
+        background: #dcebe4;
+        padding: 28px;
+        transform: rotate(1.2deg);
+    }
+
+    .wow-gift-card-preview {
+        border: 0;
+        border-radius: 14px;
+        box-shadow: 0 24px 48px rgba(24,61,52,.2);
+        transform: rotate(-1.2deg);
+    }
+
+    .wow-gift-card-preview__body { padding: 26px; }
+    .wow-gift-card-preview h3 { font-size: clamp(30px, 3.5vw, 46px); }
+    .wow-gift-card-preview__footer { background: #f4f8f6; }
+
+    @media (max-width: 980px) {
+        .wow-gift-copy { min-height: 0; padding: 28px 22px 16px; }
+        .wow-gift-visual { min-height: 340px; transform: none; }
+        .wow-gift-card-preview { transform: none; }
+    }
+
     @media (max-width: 980px) {
         .wow-safe-card,
         .wow-approach-section,
@@ -974,12 +1034,32 @@
             position: static;
         }
 
-        .wow-modality-feature {
-            min-height: 440px;
+        .wow-modality-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            grid-auto-rows: auto;
+            gap: 16px;
         }
 
+        .wow-modality-card {
+            grid-column: auto !important;
+            grid-row: auto !important;
+            order: initial !important;
+            min-height: 350px;
+        }
+
+        .wow-modality-card--lead {
+            min-height: 350px;
+        }
+    }
+
+    @media (max-width: 700px) {
         .wow-modality-grid {
             grid-template-columns: 1fr;
+        }
+
+        .wow-modality-card {
+            min-height: 260px;
         }
     }
 
@@ -1036,11 +1116,6 @@
             width: 100%;
         }
 
-        .wow-modality-feature {
-            min-height: 380px;
-        }
-
-        .wow-modality-feature__content,
         .wow-gift-panel,
         .wow-gift-card-preview__top,
         .wow-gift-card-preview__body,
@@ -1048,7 +1123,6 @@
             padding: 20px;
         }
 
-        .wow-modality-feature h3,
         .wow-gift-copy h2 {
             font-size: 42px;
         }
@@ -1113,28 +1187,30 @@
 
 @include('home.sections.popular_searches')
 
-@include('home.sections.discover_category')
-
 @if (!empty($hasClassesThisWeek))
 @include('home.sections.schedule')
 @endif
 
 @include('home.sections.latest_catalogue')
 
+@include('home.sections.discover_category')
+
+@include('home.sections.gift_cards_occasion')
+
+@include('home.sections.no-travel-needed')
+
 @include('home.sections.gifts')
 
 <div class="container-page">
     @include('home.sections.trust-feel-safe')
-
-    @include('home.sections.no-travel-needed')
-
-    @include('home.sections.our_approach')
-
-    @include('home.sections.practitioner_chats_converstions')
 </div>
 
 @include('home.sections.mindfultimes_guides_interviews')
 
-@include('home.sections.gift_cards_occasion')
+<div class="container-page">
+    @include('home.sections.practitioner_chats_converstions')
+
+    @include('home.sections.our_approach')
+</div>
 
 @endsection

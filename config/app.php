@@ -54,7 +54,7 @@ return [
 
     'url' => env('APP_URL', 'http://localhost'),
 
-    'favicon_url' => env('APP_FAVICON_URL', 'https://studio.weofferwellness.co.uk/storage/uploads/images/6f5d7016-42bb-45b9-ae15-de148b2d508a.png'),
+    'favicon_url' => env('APP_FAVICON_URL', '/favicon.ico'),
 
     /*
     |--------------------------------------------------------------------------

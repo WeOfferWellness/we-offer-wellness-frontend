@@ -2,12 +2,11 @@
     'section' => [
         'id' => 'home-gifts',
         'section_class' => 'section',
-        'kicker' => 'Thoughtful ways to nourish someone you love',
-        'title' => 'Gifts that glow',
-        'title_suffix' => '(under £50)',
-        'description' => 'Cleaner cards with availability-first booking cues. Practitioners with live availability stand out, while request-only bookings stay usable without stealing the show.',
+        'kicker' => 'Give the gift of wellbeing',
+        'title' => 'Thoughtful gifts under £50',
+        'description' => 'Choose an instant digital gift card, a wellbeing product or a bookable experience they can enjoy in their own time.',
         'cta' => [
-            'label' => 'Find a thoughtful gift',
+            'label' => 'Browse gifts',
             'href' => '/search?tag=Gift&price_max=50',
         ],
         'loading' => false,

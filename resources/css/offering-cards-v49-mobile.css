@@ -1,7 +1,25 @@
 @media (max-width: 560px) {
-  .wow49-blade-card,
-  .wow49-store-blade {
-    min-width: 214px;
+  /* Horizontal mobile rails use one consistent card size. Vertical grids
+     remain fluid through their existing grid-column rules. */
+  .overflow-x-auto > .wow49-blade-card,
+  .overflow-x-auto > .wow49-store-blade,
+  .comfort-price-rail > .wow49-blade-card,
+  .comfort-price-rail > .wow49-store-blade {
+    width: 214px !important;
+    min-width: 214px !important;
+    max-width: 214px !important;
+  }
+
+  .grid:has(> .wow49-blade-card),
+  .grid:has(> .wow49-store-blade) {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .grid:not(.overflow-x-auto) > .wow49-blade-card,
+  .grid:not(.overflow-x-auto) > .wow49-store-blade {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
   }
 
   .wow49-blade-card__rating > span:not(.wow49-blade-card__stars) {

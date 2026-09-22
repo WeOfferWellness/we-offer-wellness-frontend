@@ -4,6 +4,21 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="refresh" content="0;url={{ $target }}">
+    @php($gaId = config('analytics.enabled') ? config('analytics.measurement_id') : null)
+    @if ($gaId)
+    <script async data-cfasync="false" src="https://www.googletagmanager.com/gtag/js?id={{ $gaId }}"></script>
+    <script data-cfasync="false">
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('consent', 'default', @json(config('analytics.consent_default')));
+        gtag('js', new Date());
+        gtag('config', 'G-MZMQNETBYH', {
+            send_page_view: true,
+            allow_google_signals: true,
+            allow_ad_personalization_signals: true
+        });
+    </script>
+    @endif
     <title>Taking you to We Offer Wellness</title>
     <style>
         :root { color-scheme: light; font-family: Manrope, Arial, sans-serif; }

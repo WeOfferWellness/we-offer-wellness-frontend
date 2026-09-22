@@ -2,7 +2,7 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import SearchRangeCalendar from './SearchRangeCalendar.vue'
 import { fetchLocations } from '@/services/locations'
-import { fetchWhatCategories } from '@/services/whatCategories'
+import { fetchOfferingAndPractitionerSuggestions, fetchWhatCategories } from '@/services/whatCategories'
 import { logSearchValues } from '@/services/searchAnalytics'
 
 const props = defineProps({
@@ -63,9 +63,12 @@ const whereSuggestions = ref([])
 const whatCatalog = ref([])
 const whatLoaded = ref(false)
 const whereLoaded = ref(false)
+const practitionerSuggestions = ref([])
 
 let queryTimer = null
 let whereTimer = null
+let practitionerTimer = null
+let practitionerRequest = 0
 let ignoreQueryEmit = false
 let resultsListener = null
 let outsideClickHandler = null
@@ -598,6 +601,7 @@ function openSegment(name) {
   nextTick(syncActivePanelPosition)
 
   if (activeSegment.value === 'what') {
+    refreshPractitionerSuggestions(state.what)
     refreshWhatSuggestions(state.what)
   }
 
@@ -783,7 +787,10 @@ function syncFromQuery() {
 
 function refreshWhatSuggestions(query) {
   const needle = normalizeText(query)
-  const source = Array.isArray(whatCatalog.value) ? whatCatalog.value : []
+  const source = [
+    ...(Array.isArray(practitionerSuggestions.value) ? practitionerSuggestions.value : []),
+    ...(Array.isArray(whatCatalog.value) ? whatCatalog.value : []),
+  ]
 
   if (!needle) {
     whatSuggestions.value = source.slice(0, 3)
@@ -811,6 +818,31 @@ function refreshWhatSuggestions(query) {
     .sort((left, right) => (left.score - right.score) || String(left.item.title || '').localeCompare(String(right.item.title || '')))
     .slice(0, 3)
     .map((row) => row.item)
+}
+
+function suggestionSectionLabel(item) {
+  const category = String(item?.cat || item?.type || '').trim().toLowerCase()
+  if (category === 'practitioner') return 'Popular practitioners'
+  if (category === 'offering') return 'Popular offerings'
+  return 'Popular experiences'
+}
+
+function refreshPractitionerSuggestions(query) {
+  if (practitionerTimer) window.clearTimeout(practitionerTimer)
+  const needle = String(query || '').trim()
+  if (needle.length < 2) {
+    practitionerSuggestions.value = []
+    refreshWhatSuggestions(needle)
+    return
+  }
+
+  const requestId = ++practitionerRequest
+  practitionerTimer = window.setTimeout(async () => {
+    const items = await fetchOfferingAndPractitionerSuggestions(needle)
+    if (requestId !== practitionerRequest) return
+    practitionerSuggestions.value = items
+    refreshWhatSuggestions(state.what)
+  }, 180)
 }
 
 let whatLoadPromise = null
@@ -856,6 +888,7 @@ function refreshWhereSuggestions(query) {
 
 function onWhatInput(event) {
   setWhatValue(event.target.value)
+  refreshPractitionerSuggestions(state.what)
   if (activeSegment.value === 'what') {
     refreshWhatSuggestions(state.what)
   }
@@ -1210,6 +1243,7 @@ const typeSummary = computed(() => (state.type ? (typeLabels[state.type] || toTi
 onMounted(async () => {
   syncFromQuery()
   await loadWhatSuggestions()
+  refreshPractitionerSuggestions(state.what)
   refreshWhereSuggestions(state.where)
   updateScrollCollapsedSearch()
 
@@ -1267,6 +1301,7 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
+  if (practitionerTimer) window.clearTimeout(practitionerTimer)
   if (queryTimer) clearTimeout(queryTimer)
   if (whereTimer) clearTimeout(whereTimer)
 
@@ -1439,10 +1474,13 @@ onBeforeUnmount(() => {
               <span>Pick a popular search or type your own.</span>
             </div>
             <div class="wow-location-list">
-              <button type="button" v-for="item in whatSuggestions" :key="item.title" @mousedown.prevent="selectWhat(item)">
-                <strong>{{ item.title }}</strong>
-                <span>{{ item.subtitle || item.cat || 'Modality' }}</span>
-              </button>
+              <template v-for="(item, index) in whatSuggestions" :key="item.cat + '-' + item.title">
+                <div v-if="index === 0 || suggestionSectionLabel(item) !== suggestionSectionLabel(whatSuggestions[index - 1])" class="wow-suggestion-section">{{ suggestionSectionLabel(item) }}</div>
+                <button type="button" @mousedown.prevent="selectWhat(item)">
+                  <strong>{{ item.title }}</strong>
+                  <span>{{ item.subtitle || item.cat || 'Modality' }}</span>
+                </button>
+              </template>
             </div>
             <div v-if="!whatLoaded" class="wow-panel-empty">Loading categories...</div>
             <div v-else-if="whatSuggestions.length === 0" class="wow-panel-empty">No matches found.</div>
@@ -1883,6 +1921,15 @@ onBeforeUnmount(() => {
   -webkit-font-smoothing:antialiased;
   text-rendering:optimizeLegibility;
   overflow-x:clip;
+}
+
+.wow-suggestion-section{
+  padding:12px 16px 4px;
+  color:#98a2b3;
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:.12em;
+  text-transform:uppercase;
 }
 
 .wow-search-filter.is-static-layout{
