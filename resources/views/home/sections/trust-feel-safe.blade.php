@@ -49,7 +49,7 @@
 </section>
 
 <style>
-    .safe { padding: 68px 0; background: #f8faf9; border-block: 1px solid var(--wow-line-soft, #e9eeeb); }
+    .safe { padding: 33px 0; background: none; border-block: none; }
     .safe-grid { display: grid; grid-template-columns: 1.05fr .95fr; gap: 22px; }
     .hero-card { position: relative; min-height: 410px; padding: 38px; border: 1px solid var(--wow-line, #dce4e0); border-radius: 4px; background: linear-gradient(145deg, rgba(79,148,130,.12), rgba(255,255,255,.82) 48%, #fff); overflow: hidden; }
     .hero-card::after { content: ""; position: absolute; width: 300px; height: 300px; right: -120px; bottom: -120px; border: 1px solid rgba(79,148,130,.15); border-radius: 50%; box-shadow: 0 0 0 55px rgba(79,148,130,.035), 0 0 0 110px rgba(79,148,130,.02); }
@@ -71,5 +71,5 @@
     .check h3 { margin: 0 0 4px; font-size: 13px; }
     .check p { margin: 0; color: var(--wow-muted, #68736f); font-size: 11px; line-height: 1.5; }
     @media (max-width: 900px) { .safe-grid { grid-template-columns: 1fr; } .hero-card { min-height: auto; } }
-    @media (max-width: 575px) { .safe { padding: 42px 0; } .hero-card { padding: 26px 20px; } .stats { grid-template-columns: 1fr 1fr; } .stats .stat:last-child { grid-column: 1 / -1; } }
+    @media (max-width: 575px) { .safe { padding: 33px 0; } .hero-card { padding: 26px 20px; } .stats { grid-template-columns: 1fr 1fr; } .stats .stat:last-child { grid-column: 1 / -1; } }
 </style>
