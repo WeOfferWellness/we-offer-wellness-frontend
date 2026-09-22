@@ -198,11 +198,12 @@ function trackVisibleItemLists(root = document) {
 
   const implicitCards = Array.from(root.querySelectorAll?.('[data-wow-analytics-item]') || [])
     .filter((element) => !element.closest('[data-wow-analytics-page="offering"], [data-wow-analytics-page="product"], [data-wow-analytics-practitioner]'))
-  if (implicitCards.length && !root.body?.dataset?.wowAnalyticsImplicitListViewed) {
+  const implicitItems = implicitCards.map(readAnalyticsItem).filter(Boolean).slice(0, 24)
+  if (implicitItems.length && !root.body?.dataset?.wowAnalyticsImplicitListViewed) {
     root.body.dataset.wowAnalyticsImplicitListViewed = '1'
     trackCommerce('view_item_list', {
       item_list_name: root.body.dataset.wowAnalyticsListName || 'Marketplace results',
-      items: implicitCards.map(readAnalyticsItem).filter(Boolean).slice(0, 24),
+      items: implicitItems,
     })
   }
 }
@@ -300,6 +301,16 @@ function installAnalyticsRuntime() {
   } else {
     scan()
   }
+
+  let scanTimer = null
+  const observer = new MutationObserver(() => {
+    if (scanTimer) return
+    scanTimer = win.setTimeout(() => {
+      scanTimer = null
+      scan()
+    }, 250)
+  })
+  observer.observe(document.body, { childList: true, subtree: true })
 }
 
 const WOWAnalytics = {
