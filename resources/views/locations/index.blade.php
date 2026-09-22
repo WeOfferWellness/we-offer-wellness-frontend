@@ -953,6 +953,13 @@
     'heroAsideTitle' => null,
     'heroAsideText' => '',
   ])
+  @include('partials.hero-meta', [
+    'items' => [
+      ['label' => 'Local listings', 'strong' => true],
+      'Nearby options',
+      'Online sessions',
+    ],
+  ])
   <div class="wow-locations-container">
     <div class="wow-search-panel" style="margin:0 0 24px;">
       <x-home-searchbar-v4

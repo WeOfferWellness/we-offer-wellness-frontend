@@ -974,6 +974,7 @@ class SeoMoneyPageController extends Controller
             'city' => (string) ($node['town'] ?? $node['city'] ?? ''),
             'region' => (string) ($node['county'] ?? $node['district'] ?? $node['region'] ?? ''),
             'country' => (string) ($node['country'] ?? ''),
+            'image_path' => (string) ($node['image_path'] ?? ''),
             'lat' => is_numeric($node['lat'] ?? null) ? (float) $node['lat'] : null,
             'lng' => is_numeric($node['lng'] ?? null) ? (float) $node['lng'] : null,
             'path' => (string) ($node['path'] ?? $path),

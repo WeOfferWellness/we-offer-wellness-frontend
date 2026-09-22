@@ -37,6 +37,14 @@
   'heroAsideText' => '',
 ])
 
+@include('partials.hero-meta', [
+  'items' => [
+    ['label' => 'Local listings', 'strong' => true],
+    'Nearby options',
+    'Online sessions',
+  ],
+])
+
 <div class="search-content-wrapper">
   @include('search.partials.desktop', [
       'resultsHeading' => $locationTitle.' results',

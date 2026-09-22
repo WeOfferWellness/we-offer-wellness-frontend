@@ -67,6 +67,13 @@
       'heroAsideTitle' => null,
       'heroAsideText' => '',
     ])
+    @include('partials.hero-meta', [
+      'items' => array_values(array_filter([
+        $nearby->isNotEmpty() ? ['label' => 'Local listings', 'strong' => true] : null,
+        ($nearby->isNotEmpty() || $popularPlaces->isNotEmpty()) ? 'Nearby options' : null,
+        $online->isNotEmpty() ? 'Online sessions' : null,
+      ])),
+    ])
     <div class="locations-discovery__container">
       <div class="locations-discovery__search-wrap">
         <x-home-searchbar-v4

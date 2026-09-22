@@ -86,6 +86,13 @@
       'heroAsideText' => '',
       'heroActions' => [['label' => 'Search all', 'href' => url('/search?where='.urlencode($label))]],
     ])
+    @include('partials.hero-meta', [
+      'items' => array_values(array_filter([
+        $nearby->isNotEmpty() ? ['label' => 'Local listings', 'strong' => true] : null,
+        ($nearby->isNotEmpty() || $places->isNotEmpty()) ? 'Nearby options' : null,
+        $online->isNotEmpty() ? 'Online sessions' : null,
+      ])),
+    ])
     <div class="location-landing__container">
       <section class="location-landing__section" aria-labelledby="local-offerings-title"><div class="location-landing__head"><div><h2 id="local-offerings-title">{{ $isTown ? 'Wellness near '.$label : 'Explore wellness in '.$label }}</h2><p class="location-landing__copy">Live marketplace offerings, ordered for local relevance and useful quality signals.</p></div>@if($nearby->isNotEmpty())<a class="btn-wow btn-wow--outline btn-sm" href="{{ url('/search?where='.urlencode($label)) }}">View all</a>@endif</div>@if($nearby->isNotEmpty())<div class="location-landing__grid">@foreach($nearby->take(8) as $product)@include('partials.product_card_v4_1',['product'=>$product,'preferredLocation'=>$label])@endforeach</div>@else<div class="location-landing__empty">We don't have any wellness offerings listed in {{ $label }} yet. Try a nearby area or explore online options.</div>@endif</section>
 
