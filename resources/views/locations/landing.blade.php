@@ -96,7 +96,21 @@
     <div class="location-landing__container">
       <section class="location-landing__section" aria-labelledby="local-offerings-title"><div class="location-landing__head"><div><h2 id="local-offerings-title">{{ $isTown ? 'Wellness near '.$label : 'Explore wellness in '.$label }}</h2><p class="location-landing__copy">Live marketplace offerings, ordered for local relevance and useful quality signals.</p></div>@if($nearby->isNotEmpty())<a class="btn-wow btn-wow--outline btn-sm" href="{{ url('/search?where='.urlencode($label)) }}">View all</a>@endif</div>@if($nearby->isNotEmpty())<div class="location-landing__grid">@foreach($nearby->take(8) as $product)@include('partials.product_card_v4_1',['product'=>$product,'preferredLocation'=>$label])@endforeach</div>@else<div class="location-landing__empty">We don't have any wellness offerings listed in {{ $label }} yet. Try a nearby area or explore online options.</div>@endif</section>
 
-      @if($categories->isNotEmpty())<section class="location-landing__section"><div class="location-landing__head"><div><h2>Top wellness modalities in {{ $label }}</h2><p class="location-landing__copy">Modalities with genuine local marketplace supply.</p></div></div><div class="location-landing__tiles">@foreach($categories as $category)@php($categoryPath = trim((string) ($location['path'] ?? ''), '/'))<a class="location-landing__tile" href="{{ url('/therapies/'.($category['slug'] ?? Str::slug($category['name'] ?? '')).($categoryPath !== '' ? '/'.Str::after($categoryPath, 'locations/') : '')) }}"><strong>{{ $category['name'] }}</strong><span>{{ $category['count'] }} local {{ $category['count'] === 1 ? 'offering' : 'offerings' }}</span></a>@endforeach</div></section>@endif
+      @if($categories->isNotEmpty())
+        @php
+          $categoryPath = trim((string) ($location['path'] ?? ''), '/');
+          $modalityBoardItems = $categories->map(function (array $category) use ($categoryPath): array {
+              $slug = $category['slug'] ?? Str::slug($category['name'] ?? '');
+              return array_merge($category, [
+                  'url' => url('/therapies/'.$slug.($categoryPath !== '' ? '/'.Str::after($categoryPath, 'locations/') : '')),
+              ]);
+          });
+        @endphp
+        <section class="location-landing__section">
+          <div class="location-landing__head"><div><h2>Top wellness modalities in {{ $label }}</h2><p class="location-landing__copy">Modalities with genuine local marketplace supply.</p></div></div>
+          @include('partials.modality-board', ['items' => $modalityBoardItems])
+        </section>
+      @endif
 
       @if($places->isNotEmpty())<section class="location-landing__section"><div class="location-landing__head"><div><h2>Popular places{{ $isCounty ? ' in '.$label : '' }}</h2><p class="location-landing__copy">Towns with useful live marketplace supply and local interest.</p></div></div><div class="location-landing__tiles">@foreach($places as $place)<a class="location-landing__tile" href="{{ url($place['path'] ?? '/locations') }}"><strong>{{ $place['title'] ?? 'Location' }}</strong><span>{{ number_format((int) ($place['supply_count'] ?? 0)) }} wellness offerings</span></a>@endforeach</div></section>@endif
 

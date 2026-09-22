@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\ProductCategory;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
@@ -57,7 +58,7 @@ class LocationDiscoveryService
 
     private function categories(Collection $items, array $insights): Collection
     {
-        return $items
+        $categories = $items
             ->map(function (array $item) use ($insights): ?array {
                 $name = trim((string) data_get($item, 'category.name', data_get($item, 'category_name', data_get($item, 'category', ''))));
                 $slug = Str::slug($name);
@@ -83,6 +84,28 @@ class LocationDiscoveryService
             ->sortByDesc(fn (array $item): float => $item['count'] * 100 + $item['demand_score'])
             ->take(8)
             ->values();
+
+        $images = ProductCategory::query()
+            ->whereIn('slug', $categories->pluck('slug')->all())
+            ->get(['slug', 'image_path'])
+            ->mapWithKeys(function (ProductCategory $category): array {
+                $path = trim((string) ($category->image_path ?? ''));
+                if ($path === '') {
+                    return [];
+                }
+
+                $url = preg_match('#^(?:https?:)?//#i', $path)
+                    ? $path
+                    : rtrim((string) config('services.location_media_url', 'https://studio.weofferwellness.co.uk'), '/') . '/storage/' . ltrim($path, '/');
+
+                return [(string) $category->slug => $url];
+            });
+
+        return $categories->map(function (array $category) use ($images): array {
+            $category['image_url'] = $images->get($category['slug']);
+            $category['description'] = (int) ($category['count'] ?? 0) . ' local ' . ((int) ($category['count'] ?? 0) === 1 ? 'offering' : 'offerings');
+            return $category;
+        });
     }
 
     private function popularPlaces(array $catalog, array $insights, array $context, string $scope, Collection $catalogue): Collection

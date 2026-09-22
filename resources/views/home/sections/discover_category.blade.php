@@ -52,24 +52,6 @@
             </div>
             <a href="{{ $browseUrl }}" class="btn-wow btn-wow--outline btn-arrow" data-loader-init="1"><span class="btn-label">Browse all modalities</span><span class="btn-icon-wrap" aria-hidden="true"><svg class="btn-icon-hover" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H5m14 0-4 4m4-4-4-4"></path></svg><svg class="btn-icon-default" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12l-4 4m4-4-4-4"></path></svg></span></a>
         </header>
-        <div class="wow-modality-board"><div class="wow-modality-grid">
-            @foreach($items as $index => $item)
-                @php
-                    $isLead = $index === 0;
-                    $cardClass = match (true) {
-                        $isLead => 'wow-modality-card wow-modality-card--lead',
-                        $index === 1 => 'wow-modality-card wow-modality-card--side-left wow-modality-card--top',
-                        $index === 2 => 'wow-modality-card wow-modality-card--side-left wow-modality-card--bottom',
-                        $index === 3 => 'wow-modality-card wow-modality-card--side-right wow-modality-card--top',
-                        default => 'wow-modality-card wow-modality-card--side-right wow-modality-card--bottom',
-                    };
-                @endphp
-                <a href="{{ $item['url'] ?? url('/'.($item['slug'] ?? 'therapies')) }}" class="{{ $cardClass }}" data-loader-init="1">
-                    <div class="wow-modality-card__image"><img src="{{ $item['image_url'] ?? '' }}" alt="{{ $item['name'] ?? 'Wellness modality' }}"></div>
-                    @if($isLead)<span class="wow-modality-card__badge">A place to start</span>@endif
-                    <div class="wow-modality-card__body"><h3>{{ $item['name'] ?? 'Wellness' }}</h3><p>{{ $item['description'] ?? 'Explore supportive wellness experiences for your next step.' }}</p><span class="wow-card-link">Browse modality &rarr;</span></div>
-                </a>
-            @endforeach
-        </div></div>
+        @include('partials.modality-board', ['items' => $items])
     </div>
 </section>
