@@ -73,6 +73,10 @@ class HomeController extends Controller
                 $verifiedCount = $reviewCount;
             }
             $ratings = $active->map(fn (array $offering) => (float) data_get($offering, 'rating', 0))->filter(fn (float $rating) => $rating > 0);
+            $averageRating = (float) ($reviewStats['avg_rating'] ?? 0);
+            if ($averageRating <= 0 && $ratings->isNotEmpty()) {
+                $averageRating = round($ratings->avg(), 1);
+            }
 
             return [
                 'giftsUnder50' => $giftsUnder50,
@@ -83,7 +87,8 @@ class HomeController extends Controller
                 'hasClassesThisWeek' => $this->hasClassesThisWeek($active),
                 'review_count' => $reviewCount,
                 'verified_count' => $verifiedCount,
-                'avg_rating' => $ratings->isNotEmpty() ? round($ratings->avg(), 1) : null,
+                'avg_rating' => $averageRating > 0 ? $averageRating : null,
+                'live_offering_count' => $active->count(),
             ];
         });
 

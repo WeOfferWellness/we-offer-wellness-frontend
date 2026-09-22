@@ -1035,15 +1035,13 @@
 
 @include('home.sections.gifts')
 
-<div class="container">
-    @include('home.sections.trust-feel-safe')
-</div>
+@include('home.sections.trust-feel-safe')
 
 @include('home.sections.mindfultimes_guides_interviews')
 
-<div class="container">
-    @include('home.sections.practitioner_chats_converstions')
+@include('home.sections.practitioner_chats_converstions')
 
+<div class="container">
     @include('home.sections.our_approach')
 </div>
 
