@@ -7,7 +7,15 @@
                 <p>Find online therapies, classes and one-to-one sessions that fit around your day — whether you want quiet time alone or support you can share.</p>
             </div>
             <div class="product-showcase-heading__actions">
-                <a href="/search?format=online" class="btn-wow btn-wow--outline btn-sm btn-arrow" data-loader-init="1">
+                <div class="product-showcase-heading__controls">
+                    <button class="hidden sm:inline-flex carousel-arrow btn-wow btn-wow--outline btn-wow--icon" id="comfort-prev" type="button" aria-label="Previous online offerings" aria-controls="comfort-section">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>
+                    </button>
+                    <button class="hidden sm:inline-flex carousel-arrow btn-wow btn-wow--outline btn-wow--icon" id="comfort-next" type="button" aria-label="Next online offerings" aria-controls="comfort-section">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+                    </button>
+                </div>
+                <a href="/search?format=online" class="btn-wow btn-wow--outline btn-wow--sm btn-arrow" data-loader-init="1">
                     <span class="btn-label">View all online offerings</span>
                     <span class="btn-icon-wrap" aria-hidden="true">
                         <svg class="btn-icon-hover" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H5m14 0-4 4m4-4-4-4"></path></svg>
@@ -38,10 +46,13 @@
                         @forelse($row['items'] as $product)
                             @include('partials.product_card_v4_1', ['product' => $product, 'preferredLocation' => null, 'forceNewCard' => true, 'cardVersion' => 'v4.10'])
                         @empty
-                            <p class="text-muted col-span-2 lg:col-span-4">No online offerings are available in this price range right now.</p>
+                            <p class="text-muted col-span-2 lg:col-span-5">No online offerings are available in this price range right now.</p>
                         @endforelse
                     </div>
                     <template data-comfort-ghost>
+                        @include('partials.product_card_v4_1_ghost')
+                        @include('partials.product_card_v4_1_ghost')
+                        @include('partials.product_card_v4_1_ghost')
                         @include('partials.product_card_v4_1_ghost')
                         @include('partials.product_card_v4_1_ghost')
                     </template>
@@ -60,6 +71,18 @@
         width: 100%;
         min-width: 0;
         max-width: none;
+    }
+
+    @media (min-width: 1200px) {
+        .comfort-price-rail {
+            grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+        }
+    }
+
+    @media (min-width: 768px) and (max-width: 1199.98px) {
+        .comfort-price-rail {
+            grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        }
     }
 
     @media (max-width: 767.98px) {

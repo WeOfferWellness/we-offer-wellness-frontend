@@ -413,7 +413,22 @@ function initComfortRail() {
 }
 
 function initComfortPriceRails() {
-  document.querySelectorAll('[data-comfort-rail]').forEach((list) => {
+  const rails = Array.from(document.querySelectorAll('[data-comfort-rail]'));
+  const previous = document.getElementById('comfort-prev');
+  const next = document.getElementById('comfort-next');
+  const loaders = [];
+  const scrollRails = (direction) => {
+    rails.forEach((rail) => {
+      const amount = Math.min(900, rail.clientWidth * 0.9);
+      try {
+        rail.scrollBy({ left: direction * amount, behavior: 'smooth' });
+      } catch {
+        rail.scrollLeft += direction * amount;
+      }
+    });
+  };
+
+  rails.forEach((list) => {
     const section = list.closest('section');
     const ghostTemplate = section?.querySelector('[data-comfort-ghost]');
     const initialCards = Array.from(list.querySelectorAll(':scope > article'));
@@ -440,7 +455,7 @@ function initComfortPriceRails() {
         mode: 'online',
         group_type: 'all',
         page: String(page + 1),
-        limit: '4',
+        limit: '5',
       });
 
       try {
@@ -479,6 +494,14 @@ function initComfortPriceRails() {
         void loadNext();
       }
     }, { passive: true });
+
+    loaders.push(() => loadNext());
+  });
+
+  previous?.addEventListener('click', () => scrollRails(-1));
+  next?.addEventListener('click', () => {
+    scrollRails(1);
+    loaders.forEach((loadNext) => loadNext());
   });
 }
 
