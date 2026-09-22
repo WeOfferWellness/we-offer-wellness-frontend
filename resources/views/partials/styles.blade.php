@@ -25071,10 +25071,12 @@
         background: #0b0e12;
         color: #c7cdd4;
         border-top: 1px solid #1f232b;
-        overflow: hidden
+        overflow: hidden;
+        margin-top: 100px;
+        padding: 100px;
     }
 
-    .wow-footer .container-page {
+    .wow-footer .container {
         padding-top: 2rem;
     }
 

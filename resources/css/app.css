@@ -791,8 +791,8 @@ header .nav-item > a:hover{ background: rgba(17,24,39,.06) }
 /* Search UI styles removed */
 
 /* Clean footer styling (Spotify-like) */
-.wow-footer { position: relative; background: #0b0e12; color: #c7cdd4; border-top: 1px solid #1f232b; overflow:hidden; margin-top: 50px }
-.wow-footer .container-page { padding-top: 2rem; }
+.wow-footer { position: relative; background: #0b0e12; color: #c7cdd4; border-top: 1px solid #1f232b; overflow:hidden; margin-top: 100px; padding: 100px; }
+.wow-footer .container { padding-top: 2rem; }
 .wow-footer::before { content:""; position:absolute; inset:-20% -10% auto -10%; height:320px; background: radial-gradient(1200px 240px at 30% 0%, rgba(29,185,84,0.15), rgba(29,185,84,0.00) 60%), radial-gradient(900px 180px at 70% 0%, rgba(84,148,131,0.14), rgba(84,148,131,0.00) 60%); pointer-events:none; }
 .wow-footer::after { content:""; position:absolute; inset:0; background-image: linear-gradient(transparent 97%, rgba(255,255,255,0.04) 100%), linear-gradient(90deg, transparent 97%, rgba(255,255,255,0.04) 100%); background-size: 22px 22px; opacity:.15; pointer-events:none }
 .wow-footer a { color: #b5beca; text-decoration: none }
