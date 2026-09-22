@@ -61,7 +61,7 @@
 </section>
 
 <style>
-    .wow-offering-tabs { padding: 58px 0 68px; background: #fff; border-top: 1px solid var(--wow-line-soft, #e9eeeb); border-bottom: 1px solid var(--wow-line-soft, #e9eeeb); }
+    .wow-offering-tabs { padding: 33px 0 33px; background: #fff; border-top: none; border-bottom: none; }
     .wow-offering-tabs__header { display: flex; align-items: flex-end; justify-content: space-between; gap: 32px; margin-bottom: 26px; }
     .wow-offering-tabs__eyebrow { margin: 0 0 8px; color: var(--wow-green, #4f9482); font-size: 11px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; }
     .wow-offering-tabs__title { margin: 0; color: var(--wow-green-dark, #0b3028); font: 500 clamp(38px, 4vw, 54px)/1 "Playfair Display", serif; letter-spacing: -.04em; }

@@ -84,7 +84,7 @@
 </section>
 
 <style>
-    .wow-location-explorer { padding: 68px 0 76px; }
+    .wow-location-explorer { padding: 33px 0 33px; }
     .wow-location-explorer__header { display: flex; align-items: flex-end; justify-content: space-between; gap: 36px; margin-bottom: 30px; }
     .wow-location-explorer__eyebrow { margin: 0 0 10px; color: var(--wow-green, #4f9482); font: 700 11px/1 "Instrument Sans", sans-serif; letter-spacing: .18em; text-transform: uppercase; }
     .wow-location-explorer h2 { margin: 0; color: #092c25; font: 500 clamp(40px, 4vw, 56px)/1 "Playfair Display", serif; letter-spacing: -.04em; }

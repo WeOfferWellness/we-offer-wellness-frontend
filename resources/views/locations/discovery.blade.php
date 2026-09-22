@@ -94,7 +94,20 @@
 
       @if($newNearby->isNotEmpty())<section class="locations-discovery__section"><div class="locations-discovery__section-head"><div><h2>New near {{ $locationLabel }}</h2><p class="locations-discovery__copy">Recently published offerings from the live marketplace.</p></div></div><div class="locations-discovery__grid">@foreach($newNearby->take(8) as $product)@include('partials.product_card_v4_1', ['product' => $product, 'preferredLocation' => $locationLabel])@endforeach</div></section>@endif
 
-      @if($categories->isNotEmpty())<section class="locations-discovery__section"><div class="locations-discovery__section-head"><div><h2>Explore wellness near {{ $locationLabel }}</h2><p class="locations-discovery__copy">Modalities chosen from real local supply and wider wellness demand.</p></div></div><div class="locations-discovery__category-grid">@foreach($categories as $category)<a class="locations-discovery__category" href="{{ $category['url'] }}"><strong>{{ $category['name'] }}</strong><span>{{ $category['count'] }} local {{ $category['count'] === 1 ? 'offering' : 'offerings' }}</span></a>@endforeach</div></section>@endif
+      @if($categories->isNotEmpty())
+        @php
+          $discoveryModalityItems = $categories->map(fn (array $category): array => array_merge($category, [
+            'description' => $category['description'] ?? (($category['count'] ?? 0).' local '.(((int) ($category['count'] ?? 0)) === 1 ? 'offering' : 'offerings')),
+          ]));
+        @endphp
+        @include('partials.modality-board', [
+          'items' => $discoveryModalityItems,
+          'eyebrow' => 'Discover',
+          'heading' => 'Explore wellness near '.$locationLabel,
+          'intro' => 'Modalities chosen from real local supply and wider wellness demand.',
+          'browseHref' => url('/therapies'),
+        ])
+      @endif
 
       @if($priceBands->isNotEmpty())<section class="locations-discovery__section"><div class="locations-discovery__section-head"><div><h2>Explore by price</h2><p class="locations-discovery__copy">Useful price points with live local availability.</p></div></div><div class="locations-discovery__price-grid">@foreach($priceBands as $band)<a class="locations-discovery__price" href="{{ url('/search?where='.urlencode($locationLabel).'&price_max='.($band['max'] ?? 500)) }}"><strong>{{ $band['label'] }}</strong><span>{{ $band['count'] }} local options</span></a>@endforeach</div></section>@endif
 

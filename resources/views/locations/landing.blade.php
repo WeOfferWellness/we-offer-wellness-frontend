@@ -131,10 +131,13 @@
               ]);
           });
         @endphp
-        <section class="location-landing__section">
-          <div class="location-landing__head"><div><h2>Top wellness modalities in {{ $label }}</h2><p class="location-landing__copy">Modalities with genuine local marketplace supply.</p></div></div>
-          @include('partials.modality-board', ['items' => $modalityBoardItems])
-        </section>
+        @include('partials.modality-board', [
+          'items' => $modalityBoardItems,
+          'eyebrow' => 'Discover',
+          'heading' => 'Top wellness modalities in '.$label,
+          'intro' => 'Modalities with genuine local marketplace supply.',
+          'browseHref' => url('/therapies'),
+        ])
       @endif
 
       @if($places->isNotEmpty())

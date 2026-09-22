@@ -64,7 +64,7 @@
 </section>
 
 <style>
-    .wow-price-discovery { padding: 62px 0 68px; background: #fff; border-top: 1px solid var(--wow-line-soft, #e9eeeb); border-bottom: 1px solid var(--wow-line-soft, #e9eeeb); }
+    .wow-price-discovery { padding: 33px 0 33px; background: #fff; border-top: none; border-bottom: none; }
     .wow-price-discovery__header { margin-bottom: 27px; }
     .wow-price-discovery__eyebrow { margin: 0 0 9px; color: var(--wow-green, #4f9482); font: 700 11px/1 "Instrument Sans", sans-serif; letter-spacing: .18em; text-transform: uppercase; }
     .wow-price-discovery h2 { margin: 0; color: var(--wow-green-dark, #0b3028); font: 500 clamp(40px, 4vw, 54px)/1 "Playfair Display", serif; letter-spacing: -.04em; }

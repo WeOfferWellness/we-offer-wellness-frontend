@@ -1,57 +1,82 @@
 @once
   @push('styles')
     <style>
-      .wow-modality-board{margin:0 0 32px;padding:8px 0 18px}
-      .wow-modality-grid{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));grid-auto-rows:minmax(170px,1fr);gap:14px}
-      .wow-modality-card{position:relative;min-height:0;overflow:hidden;border:1px solid #dfe4ea;border-radius:18px;background:rgba(255,255,255,.98);box-shadow:0 14px 42px rgba(16,24,40,.055);text-decoration:none;transition:transform 160ms ease,border-color 160ms ease,box-shadow 160ms ease}
-      .wow-modality-card:not(.wow-modality-card--lead){grid-column:span 3;order:2}
-      .wow-modality-card--lead{grid-column:4/span 4;grid-row:1/span 2;order:1;border-color:rgba(47,111,96,.42);box-shadow:0 16px 42px rgba(47,111,96,.1)}
-      .wow-modality-card--side-left{grid-column:1/span 3}.wow-modality-card--side-right{grid-column:8/span 3}
-      .wow-modality-card--side-left.wow-modality-card--top,.wow-modality-card--side-right.wow-modality-card--top{grid-row:1}
-      .wow-modality-card--side-left.wow-modality-card--bottom,.wow-modality-card--side-right.wow-modality-card--bottom{grid-row:2}
-      .wow-modality-card:hover{transform:translateY(-4px);border-color:rgba(79,147,129,.42);box-shadow:0 18px 44px rgba(16,24,40,.1)}
-      .wow-modality-card__image{position:absolute;inset:0}.wow-modality-card__image::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(13,34,31,.04) 22%,rgba(13,34,31,.84) 100%)}
-      .wow-modality-card__image img{display:block;width:100%;height:100%;object-fit:cover}
-      .wow-modality-card__body{position:absolute;right:0;bottom:0;left:0;z-index:1;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end;padding:18px;color:#fff;background:linear-gradient(180deg,transparent 20%,rgba(13,34,31,.58) 100%)}
-      .wow-modality-card h3,.wow-modality-card p,.wow-modality-card .wow-card-link{color:#fff}.wow-modality-card h3{margin:0;font-family:var(--wow-serif,"Playfair Display",Georgia,serif);font-size:clamp(22px,2vw,30px);font-weight:500;line-height:.98;letter-spacing:-.055em}.wow-modality-card p{margin:10px 0 0;font-size:13px;line-height:1.45}.wow-card-link{display:inline-flex;margin-top:auto;padding-top:16px;color:#fff;font-size:13px;font-weight:800}
-      .wow-modality-card__badge{position:absolute;top:12px;left:12px;padding:6px 9px;border-radius:999px;background:#2f6f60;color:#fff;font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
-      @media(max-width:980px){.wow-modality-grid{grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:auto;gap:16px}.wow-modality-card,.wow-modality-card--lead{grid-column:auto!important;grid-row:auto!important;order:initial!important;min-height:350px}}
-      @media(max-width:700px){.wow-modality-grid{grid-template-columns:1fr}.wow-modality-card{min-height:260px}}
+      .wow-modality-discovery{position:relative;padding:64px 0 72px;background:#f8faf9;border-top:1px solid #e9eeeb;border-bottom:1px solid #e9eeeb}
+      .wow-modality-discovery__header{display:flex;align-items:flex-end;justify-content:space-between;gap:36px;margin-bottom:28px}
+      .wow-modality-discovery__heading{max-width:720px}
+      .wow-modality-discovery__eyebrow{margin:0 0 9px;color:#4f9482;font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase}
+      .wow-modality-discovery h2{margin:0;color:#0b3028;font-family:var(--wow-serif,"Playfair Display",Georgia,serif);font-size:clamp(42px,4.4vw,60px);font-weight:500;line-height:.98;letter-spacing:-.045em}
+      .wow-modality-discovery__intro{max-width:650px;margin:13px 0 0;color:#66736e;font-size:15px;line-height:1.55}
+      .wow-modality-mosaic{display:grid;grid-template-columns:1fr 1.3fr 1fr;grid-template-rows:180px 180px;gap:14px;min-height:374px}
+      .wow-modality-card{position:relative;display:block;overflow:hidden;min-width:0;background:#14231f;border-radius:4px;color:#fff;text-decoration:none;isolation:isolate}
+      .wow-modality-card:hover{color:#fff}
+      .wow-modality-card--yoga{grid-column:1;grid-row:1}.wow-modality-card--breathwork{grid-column:1;grid-row:2}.wow-modality-card--energy{grid-column:2;grid-row:1/span 2}.wow-modality-card--meditation{grid-column:3;grid-row:1}.wow-modality-card--sound{grid-column:3;grid-row:2}
+      .wow-modality-card__image{position:absolute;inset:0;z-index:-2;width:100%;height:100%;object-fit:cover;transform:scale(1.001);transition:transform .45s ease,filter .3s ease}
+      .wow-modality-card:hover .wow-modality-card__image{transform:scale(1.045)}
+      .wow-modality-card__overlay{position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(5,26,21,.06) 5%,rgba(5,26,21,.18) 45%,rgba(5,26,21,.92) 100%)}
+      .wow-modality-card--energy .wow-modality-card__overlay{background:linear-gradient(180deg,rgba(5,26,21,.02) 10%,rgba(5,26,21,.12) 45%,rgba(5,26,21,.9) 100%)}
+      .wow-modality-card__badge{position:absolute;top:14px;left:14px;z-index:2;display:inline-flex;align-items:center;min-height:27px;padding:0 10px;border-radius:999px;background:#4f9482;color:#fff;font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+      .wow-modality-card__content{position:absolute;left:18px;right:18px;bottom:17px}
+      .wow-modality-card h3{margin:0;color:#fff;font-family:var(--wow-serif,"Playfair Display",Georgia,serif);font-size:27px;font-weight:500;line-height:1;letter-spacing:-.025em}
+      .wow-modality-card--energy h3{font-size:clamp(32px,3vw,43px)}
+      .wow-modality-card__description{display:block;max-width:520px;margin:8px 0 0;color:rgba(255,255,255,.86);font-size:12px;line-height:1.45}
+      .wow-modality-card__link{display:inline-flex;align-items:center;gap:6px;margin-top:10px;color:#fff;font-size:12px;font-weight:600;line-height:1}
+      .wow-modality-card__link-arrow{display:inline-block;transition:transform .18s ease}.wow-modality-card:hover .wow-modality-card__link-arrow{transform:translateX(3px)}
+      @media(max-width:991.98px){.wow-modality-discovery{padding:52px 0}.wow-modality-discovery__header{display:block}.wow-modality-discovery__header-action{margin-top:19px}.wow-modality-mosaic{grid-template-columns:1fr 1fr;grid-template-rows:190px 190px 190px;min-height:auto}.wow-modality-card--energy{grid-column:1/span 2;grid-row:1}.wow-modality-card--yoga{grid-column:1;grid-row:2}.wow-modality-card--meditation{grid-column:2;grid-row:2}.wow-modality-card--breathwork{grid-column:1;grid-row:3}.wow-modality-card--sound{grid-column:2;grid-row:3}}
+      @media(max-width:575.98px){.wow-modality-discovery{padding:42px 0}.wow-modality-discovery__header{margin-bottom:22px}.wow-modality-discovery h2{font-size:39px}.wow-modality-discovery__intro{font-size:14px}.wow-modality-mosaic{grid-template-rows:210px 160px 160px;gap:9px}.wow-modality-card__content{left:13px;right:13px;bottom:13px}.wow-modality-card h3{font-size:22px}.wow-modality-card--energy h3{font-size:31px}.wow-modality-card__description{display:-webkit-box;overflow:hidden;font-size:11px;-webkit-box-orient:vertical;-webkit-line-clamp:2}.wow-modality-card__link{margin-top:8px;font-size:11px}.wow-modality-card__badge{top:11px;left:11px;min-height:23px;padding:0 8px;font-size:8px}}
+      @media(max-width:380px){.wow-modality-mosaic{grid-template-columns:1fr;grid-template-rows:205px repeat(4,150px)}.wow-modality-card--energy,.wow-modality-card--yoga,.wow-modality-card--meditation,.wow-modality-card--breathwork,.wow-modality-card--sound{grid-column:1}.wow-modality-card--energy{grid-row:1}.wow-modality-card--yoga{grid-row:2}.wow-modality-card--meditation{grid-row:3}.wow-modality-card--breathwork{grid-row:4}.wow-modality-card--sound{grid-row:5}}
     </style>
   @endpush
 @endonce
 
 @php
-  $modalityItems = collect($items ?? [])->filter(fn ($item) => is_array($item))->take(5)->values();
+  $modalityItems = collect($items ?? [])->filter(fn ($item) => is_array($item))->take((int) ($maxItems ?? 5))->values();
+  $sectionKicker = $eyebrow ?? $sectionKicker ?? 'Discover';
+  $sectionTitle = $heading ?? $sectionTitle ?? 'Shop wellness by modality';
+  $sectionIntro = $intro ?? $sectionDescription ?? 'Explore therapies, classes, workshops and experiences by the kind of support you are looking for.';
+  $browseLabel = $browseLabel ?? 'Browse all modalities';
+  $browseHref = $browseHref ?? $browseUrl ?? url('/therapies');
+  $cardLinkLabel = $cardLinkLabel ?? 'Browse modality';
+  $featuredLabel = $featuredLabel ?? 'A place to start';
 @endphp
 
 @if($modalityItems->isNotEmpty())
-  <div class="wow-modality-board">
-    <div class="wow-modality-grid">
-      @foreach($modalityItems as $index => $item)
-        @php
-          $cardClass = match ($index) {
-            0 => 'wow-modality-card wow-modality-card--lead',
-            1 => 'wow-modality-card wow-modality-card--side-left wow-modality-card--top',
-            2 => 'wow-modality-card wow-modality-card--side-left wow-modality-card--bottom',
-            3 => 'wow-modality-card wow-modality-card--side-right wow-modality-card--top',
-            default => 'wow-modality-card wow-modality-card--side-right wow-modality-card--bottom',
-          };
-          $name = (string) ($item['name'] ?? 'Wellness modality');
-          $image = (string) ($item['image_url'] ?? '');
-        @endphp
-        <a href="{{ $item['url'] ?? url('/'.($item['slug'] ?? 'therapies')) }}" class="{{ $cardClass }}" data-loader-init="1">
-          <div class="wow-modality-card__image">
-            @if($image)<img src="{{ $image }}" alt="{{ $name }}">@endif
+  <section class="wow-modality-discovery" aria-label="{{ $sectionTitle }}">
+    <div class="container-page">
+      <header class="wow-modality-discovery__header">
+        <div class="wow-modality-discovery__heading">
+          <p class="wow-modality-discovery__eyebrow">{{ $sectionKicker }}</p>
+          <h2>{{ $sectionTitle }}</h2>
+          <p class="wow-modality-discovery__intro">{{ $sectionIntro }}</p>
+        </div>
+        @if($browseHref)
+          <div class="wow-modality-discovery__header-action">
+            @include('partials.wow-button', ['href' => $browseHref, 'label' => $browseLabel, 'variant' => 'outline', 'size' => 'md', 'arrow' => true])
           </div>
-          @if($index === 0)<span class="wow-modality-card__badge">A place to start</span>@endif
-          <div class="wow-modality-card__body">
-            <h3>{{ $name }}</h3>
-            <p>{{ $item['description'] ?? 'Explore supportive wellness experiences for your next step.' }}</p>
-            <span class="wow-card-link btn-wow btn-wow--link btn-arrow">Browse modality</span>
-          </div>
-        </a>
-      @endforeach
+        @endif
+      </header>
+
+      <div class="wow-modality-mosaic">
+        @foreach($modalityItems as $index => $item)
+          @php
+            $position = ['energy', 'yoga', 'breathwork', 'meditation', 'sound'][$index] ?? 'sound';
+            $name = (string) ($item['name'] ?? 'Wellness modality');
+            $href = $item['url'] ?? url('/'.ltrim((string) ($item['slug'] ?? 'therapies'), '/'));
+            $image = trim((string) ($item['image_url'] ?? $item['image'] ?? ''));
+            $description = (string) ($item['description'] ?? $item['copy'] ?? 'Explore supportive wellness experiences for your next step.');
+          @endphp
+          <a href="{{ $href }}" class="wow-modality-card wow-modality-card--{{ $position }}" data-loader-init="1">
+            @if($image)<img src="{{ $image }}" alt="{{ $name }}" class="wow-modality-card__image" loading="lazy">@endif
+            <span class="wow-modality-card__overlay" aria-hidden="true"></span>
+            @if($index === 0)<span class="wow-modality-card__badge">{{ $featuredLabel }}</span>@endif
+            <span class="wow-modality-card__content">
+              <h3>{{ $name }}</h3>
+              <span class="wow-modality-card__description">{{ $description }}</span>
+              <span class="wow-modality-card__link">{{ $cardLinkLabel }} <span class="wow-modality-card__link-arrow" aria-hidden="true">→</span></span>
+            </span>
+          </a>
+        @endforeach
+      </div>
     </div>
-  </div>
+  </section>
 @endif
