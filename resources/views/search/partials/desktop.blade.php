@@ -38,7 +38,15 @@
         .wow-sr-v5-desktop .wow-sr-v5-all-results-title { margin: 22px 0 12px; color: #53627a; font-size: 12px; font-weight: 750; letter-spacing: .08em; text-transform: uppercase; }
 
         @media (max-width: 1220px) and (min-width: 1041px) {
-            .wow-sr-v5-desktop .wow-search-recommendations__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .wow-sr-v5-desktop .wow-search-recommendations__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        }
+
+        /* v4.10 smaller-desktop/tablet contract: keep cards at their defined
+           tablet footprint instead of forcing four narrow filter results. */
+        @media (min-width: 1041px) and (max-width: 1199.98px) {
+            .wow-sr-v5-layout { grid-template-columns: 250px minmax(0, 1fr); }
+            .wow-sr-v5-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+            .wow-sr-v5-grid .wow410-card { height: var(--wow410-card-h-tablet, 432px); grid-template-rows: 145px minmax(0, 1fr) auto; }
         }
 
         .wow-sr-v5-header {
