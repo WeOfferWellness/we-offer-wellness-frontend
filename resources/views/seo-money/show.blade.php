@@ -671,11 +671,6 @@
       </aside>
     </div>
 
-    @include('partials.guide_panel', [
-      'guidePanelModality' => data_get($page, 'modality', data_get($page, 'category_slug', request()->route('modality'))),
-      'guidePanelFormat' => data_get($page, 'format', null),
-    ])
-
     <section class="seo-money-section">
       <h2>{{ $locationSectionTitle }}</h2>
       <p>{{ $locationSectionIntro }}</p>
@@ -734,6 +729,11 @@
         </div>
       </section>
     @endif
+
+    @include('partials.guide_panel', [
+      'guidePanelModality' => data_get($page, 'modality', data_get($page, 'category_slug', request()->route('modality'))),
+      'guidePanelFormat' => data_get($page, 'format', null),
+    ])
   </div>
 </section>
 @endsection
