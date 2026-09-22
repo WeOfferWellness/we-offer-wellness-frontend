@@ -171,16 +171,6 @@
             persistAttribution();
             syncConsent();
             document.addEventListener('wow:cookie-preferences', syncConsent);
-            document.addEventListener('click', function(event){
-              try {
-                var card = event.target.closest('[data-product-id], .offering-card');
-                if (!card || event.target.closest('button')) return;
-                var id = card.getAttribute('data-product-id') || card.dataset?.productId;
-                if (!id || card.dataset.wowSelectItemSent === '1') return;
-                card.dataset.wowSelectItemSent = '1';
-                track('select_item', { catalogue_type: card.dataset.sourceVersion === 'store' ? 'product' : (card.dataset.catalogueType || 'offering'), items: [{ item_id: String(id), item_name: card.dataset.productTitle || card.querySelector('h2,h3')?.textContent?.trim() || 'Item', provider_id: card.dataset.providerId || undefined }] });
-              } catch (_) {}
-            }, true);
             document.addEventListener('inertia:success', function(ev){
               try {
                 persistAttribution();
