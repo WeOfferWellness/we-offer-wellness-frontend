@@ -1,5 +1,7 @@
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
+
 <section class="chats" id="practitioner-chats" aria-label="Practitioner chats">
-    <div class="container">
+    <div class="wrap">
         <div class="shell">
             <div class="intro">
                 <div>
@@ -23,6 +25,7 @@
 </section>
 
 <style>
+    #practitioner-chats .wrap { width: min(calc(100% - 48px), 1280px); margin-inline: auto; }
     .chats { padding: 68px 0; }
     .shell { display: grid; grid-template-columns: .9fr 1.1fr; min-height: 430px; overflow: hidden; border-radius: 4px; background: #0e1726; color: #fff; }
     .intro { display: flex; flex-direction: column; justify-content: space-between; padding: 42px; }
@@ -47,7 +50,7 @@
     .media p { margin: 5px 0 0; color: rgba(255,255,255,.7); font-size: 10px; line-height: 1.4; }
     .media-placeholder { background: linear-gradient(120deg, #1b2638, #26394c); }
     @media (max-width: 900px) { .shell { grid-template-columns: 1fr; } .media-grid { min-height: 480px; } }
-    @media (max-width: 575px) { .chats { padding: 42px 0; } .intro { padding: 28px 20px; } .media-grid { grid-template: 220px 160px 160px / 1fr; } .media:first-child { grid-row: auto; } }
+    @media (max-width: 575px) { .chats { padding: 42px 0; } .wrap { width: calc(100% - 30px); } .intro { padding: 28px 20px; } .media-grid { grid-template: 220px 160px 160px / 1fr; } .media:first-child { grid-row: auto; } }
 
     /* Keep this component independent from global button/card typography. */
     #practitioner-chats.chats,
