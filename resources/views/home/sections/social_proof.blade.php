@@ -1,5 +1,5 @@
 <section class="section" aria-labelledby="social-proof-title">
-    <div class="container-page">
+    <div class="container">
         <div class="kicker">Proof</div>
         <h2 id="social-proof-title">Trusted by the community</h2>
         <div class="row g-3 mt-1 align-items-stretch">

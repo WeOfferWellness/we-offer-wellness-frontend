@@ -1,5 +1,5 @@
 <section data-v-f43bb09d="" id="reset-guide" class="section" style="display:none">
-    <div class="container-page">
+    <div class="container">
         <div class="card p-6 md:p-10 flex flex-col md:flex-row items-center gap-8">
             <div class="flex-1 w-full">
                 <div class="kicker mb-3">Free guide</div>

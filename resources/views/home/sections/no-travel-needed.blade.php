@@ -1,5 +1,5 @@
 <section id="comfort-section" class="section" aria-labelledby="comfort-title">
-    <div class="container-page">
+    <div class="container">
         <div class="product-showcase-heading mb-6">
             <div class="product-showcase-heading__copy">
                 <div class="kicker">Online support when you need it</div>

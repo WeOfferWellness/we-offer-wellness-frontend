@@ -1,5 +1,5 @@
 <section class="wow-discovery-section wow-discovery-section--gift" aria-label="Gift cards">
-    <div class="container-page wow-container">
+    <div class="container wow-container">
         <section class="wow-gift-panel" aria-label="Gift cards">
             <div class="wow-gift-copy">
                 <p class="wow-kicker">A gift that feels personal</p>

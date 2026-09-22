@@ -1,6 +1,6 @@
 <div data-v-f43bb09d="" class="hidden lg:block fixed left-0 right-0 z-30 transition-all"
      style="top: 65px; display: none;">
-    <div data-v-f43bb09d="" class="container-page py-2">
+    <div data-v-f43bb09d="" class="container py-2">
         <x-ultra-search-bar prefix="home-sticky" bar-class="bar bar-compact" :show-seven-day-chip="true" />
     </div>
 </div>

@@ -1,5 +1,5 @@
 <section class="section" aria-labelledby="browse-outcome-title">
-    <div class="container-page">
+    <div class="container">
         <div class="kicker">Reset routes</div>
         <h2 id="browse-outcome-title">Browse by outcome</h2>
         <div class="row g-3 mt-1">

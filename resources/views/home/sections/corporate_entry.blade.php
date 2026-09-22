@@ -1,5 +1,5 @@
 <section class="section" aria-labelledby="corporate-entry-title">
-    <div class="container-page">
+    <div class="container">
         <div class="kicker">For teams</div>
         <h2 id="corporate-entry-title">Bring wellness to your team</h2>
         <p class="text-muted">Workshops and programmes for stress, sleep, energy and recovery.</p>

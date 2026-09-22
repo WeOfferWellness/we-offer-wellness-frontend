@@ -1,5 +1,5 @@
 <section class="section" aria-labelledby="outcome-promise-title">
-    <div class="container-page">
+    <div class="container">
         <div class="kicker">Feeling overwhelmed?</div>
         <h2 id="outcome-promise-title">You’re not alone.</h2>
         <ul class="list-unstyled grid sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-3">

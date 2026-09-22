@@ -1,5 +1,5 @@
 <section class="section" aria-labelledby="why-different-title">
-    <div class="container-page">
+    <div class="container">
         <div class="kicker">What makes us different</div>
         <h2 id="why-different-title">Why we’re different</h2>
         <div class="row g-3 mt-1">

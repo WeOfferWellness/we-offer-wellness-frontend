@@ -1,5 +1,5 @@
 <section class="section" aria-labelledby="stories-title">
-    <div class="container-page">
+    <div class="container">
         <div class="kicker">Before → After</div>
         <h2 id="stories-title">Real transformation stories</h2>
         <div class="row g-3 mt-1">

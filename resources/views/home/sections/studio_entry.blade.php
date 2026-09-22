@@ -1,5 +1,5 @@
 <section class="section" aria-labelledby="studio-entry-title">
-    <div class="container-page">
+    <div class="container">
         <h2 id="studio-entry-title" class="section-title">Are you a practitioner? Run your wellness business with AI.</h2>
         <p class="text-muted">Create therapies, manage bookings, message clients, run sessions, and grow — all in We Offer Wellness Studio.</p>
         <div class="row g-3 mt-1">

@@ -1,5 +1,5 @@
 <section class="section" aria-labelledby="limited-availability-title">
-    <div class="container-page">
+    <div class="container">
         <div class="kicker">This week</div>
         <h2 id="limited-availability-title">Limited availability</h2>
         <p class="text-muted">Popular 1:1 sessions and group therapies fill fast — check today’s slots.</p>

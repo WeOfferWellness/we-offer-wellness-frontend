@@ -1,5 +1,5 @@
 <section data-v-cad6ed7c="" data-v-f43bb09d="" class="section" aria-labelledby="schedule-title">
-    <div data-v-cad6ed7c="" class="container-page">
+    <div data-v-cad6ed7c="" class="container">
         <div data-v-cad6ed7c="" class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div data-v-cad6ed7c="">
                 <div data-v-cad6ed7c="" class="kicker">Classes</div>

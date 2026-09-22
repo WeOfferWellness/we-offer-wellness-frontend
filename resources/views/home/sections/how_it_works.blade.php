@@ -1,5 +1,5 @@
 <section class="section" aria-labelledby="how-it-works-title">
-    <div class="container-page">
+    <div class="container">
         <div class="kicker">Simple and clear</div>
         <h2 id="how-it-works-title">How it works</h2>
         <div class="row g-4 mt-1">

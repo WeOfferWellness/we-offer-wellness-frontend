@@ -1,5 +1,5 @@
 <section class="section" aria-labelledby="final-cta-title">
-    <div class="container-page text-center">
+    <div class="container text-center">
         <div class="kicker">Next step</div>
         <h2 id="final-cta-title">You deserve to feel better.</h2>
         <div class="d-inline-flex gap-2 mt-2">

@@ -111,11 +111,11 @@
         }
     }
 
-    .container-page > section {
+    .container > section {
         margin-bottom: 64px;
     }
 
-    .container-page > section:last-child {
+    .container > section:last-child {
         margin-bottom: 0;
     }
 
@@ -1035,13 +1035,13 @@
 
 @include('home.sections.gifts')
 
-<div class="container-page">
+<div class="container">
     @include('home.sections.trust-feel-safe')
 </div>
 
 @include('home.sections.mindfultimes_guides_interviews')
 
-<div class="container-page">
+<div class="container">
     @include('home.sections.practitioner_chats_converstions')
 
     @include('home.sections.our_approach')

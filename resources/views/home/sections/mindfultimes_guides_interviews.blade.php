@@ -3,7 +3,7 @@
     <header class="wow-section-heading">
       <div>
         <p class="wow-kicker">The Mindful Times</p>
-        <h2>Wellbeing stories for real life</h2>
+        <h2>Wellness ideas for everyday life</h2>
         <p>Thoughtful interviews, practical guides and honest stories to help you understand your wellbeing and choose your next step.</p>
       </div>
 

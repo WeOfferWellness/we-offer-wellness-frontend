@@ -97,7 +97,7 @@
       z-index: 10;
       pointer-events:none;
     }
-    .wow-hero-nav .container-page{
+    .wow-hero-nav .container{
       display:flex;
       align-items:center;
       justify-content:space-between;
@@ -234,7 +234,7 @@
         top: 10px;
         bottom: auto;
       }
-      .wow-hero-nav .container-page{
+      .wow-hero-nav .container{
         gap: 10px;
       }
       .wow-hero-btn{
@@ -281,7 +281,7 @@
   @if($heroHasMultipleSlides)
   {{-- Controls overlay --}}
   <div class="wow-hero-nav">
-    <div class="container-page">
+    <div class="container">
       <!-- Prev -->
       <button type="button" class="wow-hero-btn wow-hero-prev" aria-label="Previous slide">
         <i class="bi bi-chevron-left"></i>

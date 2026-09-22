@@ -33,7 +33,7 @@
 @endphp
 
 <section class="wow-popular-searches">
-    <div class="container-page">
+    <div class="container">
         <div class="wow-popular-searches__inner">
             <div class="wow-popular-searches__copy">
                 <div class="wow-kicker">Popular searches</div>

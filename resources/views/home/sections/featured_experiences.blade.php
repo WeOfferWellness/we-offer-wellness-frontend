@@ -1,5 +1,5 @@
 <section class="section" aria-labelledby="featured-experiences-title">
-    <div class="container-page">
+    <div class="container">
         <div class="kicker">Popular now</div>
         <h2 id="featured-experiences-title">Featured therapies</h2>
         <div class="row g-3 mt-1">
