@@ -535,68 +535,60 @@
           ])
         </div>
         <div class="landing-results-content">
-      @include('search.partials.mobile', [
-        'products' => $items,
-        'mobileResultsCount' => $items->count(),
-        'mobileFullNavigation' => true,
-        'mobileShowMap' => false,
-        'filterOnly' => true,
-        'searchMapData' => [],
-        'searchRecommendationsHtml' => '',
-        'searchAsyncBoot' => false,
-        'searchUrl' => url('/' . $slug . '/' . ($type ?? 'therapies') . '/'),
-      ])
-      @if(($type ?? '') === 'therapies')
-        @if(collect($featuredOfferings ?? [])->isNotEmpty())
-          <div class="wow410-grid" style="margin-bottom:32px;">
-            @foreach(collect($featuredOfferings)->take(8) as $product)
-              @include('partials.product_card_v4_1', ['product' => $product, 'preferredLocation' => null])
-            @endforeach
-          </div>
-        @endif
-      @endif
+          @include('search.partials.mobile', [
+            'products' => $items,
+            'mobileResultsCount' => $items->count(),
+            'mobileFullNavigation' => true,
+            'mobileShowMap' => false,
+            'filterOnly' => true,
+            'searchMapData' => [],
+            'searchRecommendationsHtml' => '',
+            'searchAsyncBoot' => false,
+            'searchUrl' => url('/' . $slug . '/' . ($type ?? 'therapies') . '/'),
+          ])
 
-      <div class="landing-wow__results-head">
-        <div>
-          <div class="landing-wow__kicker">Featured results</div>
-          <h2>{{ $landing['title'] ?? 'Listings' }}</h2>
-          <p>{{ $seo['description'] ?? ($landing['intro'] ?? '') }}</p>
-        </div>
-      </div>
+          @php
+            $featured = collect($featuredOfferings ?? [])->take(8)->values();
+            $primaryOfferings = ($type ?? '') === 'therapies' && $featured->isNotEmpty()
+              ? $featured
+              : collect($items);
+          @endphp
 
-      @if($items->count())
-        <div id="landing-products" class="wow410-grid">
-          @foreach($items as $product)
-            @include('partials.product_card_v4_1', [
-              'product' => $product,
-              'preferredLocation' => $filters['location'] ?? null,
-            ])
-          @endforeach
-        </div>
+          @if($primaryOfferings->isNotEmpty())
+            <div id="landing-products" class="wow410-grid">
+              @foreach($primaryOfferings as $product)
+                @include('partials.product_card_v4_1', [
+                  'product' => $product,
+                  'preferredLocation' => $filters['location'] ?? null,
+                ])
+              @endforeach
+            </div>
 
-        @php
-          $meta = $results['meta'] ?? [];
-          $current = (int)($meta['current_page'] ?? request()->query('page', 1));
-          $last = (int)($meta['last_page'] ?? ($meta['total_pages'] ?? 1));
-          $q = request()->query();
-        @endphp
+            @if(($type ?? '') !== 'therapies')
+              @php
+                $meta = $results['meta'] ?? [];
+                $current = (int)($meta['current_page'] ?? request()->query('page', 1));
+                $last = (int)($meta['last_page'] ?? ($meta['total_pages'] ?? 1));
+                $q = request()->query();
+              @endphp
 
-        @if($last > 1)
-          <div class="flex items-center justify-center gap-3 mt-5">
-            @if($current > 1)
-              <a class="btn btn-light" href="{{ request()->url() . '?' . http_build_query(array_merge($q, ['page' => $current - 1])) }}">← Prev</a>
+              @if($last > 1)
+                <div class="flex items-center justify-center gap-3 mt-5">
+                  @if($current > 1)
+                    <a class="btn btn-light" href="{{ request()->url() . '?' . http_build_query(array_merge($q, ['page' => $current - 1])) }}">← Prev</a>
+                  @endif
+                  <span class="text-muted">Page {{ $current }} of {{ $last }}</span>
+                  @if($current < $last)
+                    <a class="btn btn-light" href="{{ request()->url() . '?' . http_build_query(array_merge($q, ['page' => $current + 1])) }}">Next →</a>
+                  @endif
+                </div>
+              @endif
             @endif
-            <span class="text-muted">Page {{ $current }} of {{ $last }}</span>
-            @if($current < $last)
-              <a class="btn btn-light" href="{{ request()->url() . '?' . http_build_query(array_merge($q, ['page' => $current + 1])) }}">Next →</a>
-            @endif
-          </div>
-        @endif
-      @else
-        <div class="landing-wow__empty">
-          No results yet. Try changing format, location or resetting filters.
-        </div>
-      @endif
+          @else
+            <div class="landing-wow__empty">
+              No results yet. Try changing format, location or resetting filters.
+            </div>
+          @endif
         </div>
       </div>
     </div>
