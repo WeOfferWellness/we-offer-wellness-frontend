@@ -105,9 +105,20 @@
         $online->isNotEmpty() ? 'Online sessions' : null,
       ])),
     ])
+    @include('partials.offering-tabs', [
+      'id' => 'location-offering-tabs',
+      'eyebrow' => 'Local wellness discovery',
+      'title' => 'Explore wellness in '.$label,
+      'intro' => 'Live marketplace offerings, ordered for local relevance and useful quality signals.',
+      'localLabel' => 'Explore wellness in '.$label,
+      'newLabel' => 'New in '.$label,
+      'onlineLabel' => 'Also available online',
+      'localOfferings' => $nearby,
+      'newOfferings' => $new,
+      'onlineOfferings' => $online,
+      'preferredLocation' => $label,
+    ])
     <div class="location-landing__container">
-      <section class="location-landing__section" aria-labelledby="local-offerings-title"><div class="location-landing__head"><div><h2 id="local-offerings-title">{{ $isTown ? 'Wellness near '.$label : 'Explore wellness in '.$label }}</h2><p class="location-landing__copy">Live marketplace offerings, ordered for local relevance and useful quality signals.</p></div>@if($nearby->isNotEmpty())@include('partials.wow-button',['href'=>url('/search?where='.urlencode($label)),'label'=>'View all','variant'=>'outline','size'=>'sm','arrow'=>true])@endif</div>@if($nearby->isNotEmpty())<div class="location-landing__grid">@foreach($nearby->take(8) as $product)@include('partials.product_card_v4_1',['product'=>$product,'preferredLocation'=>$label])@endforeach</div>@else<div class="location-landing__empty">We don't have any wellness offerings listed in {{ $label }} yet. Try a nearby area or explore online options.</div>@endif</section>
-
       @if($categories->isNotEmpty())
         @php
           $categoryPath = trim((string) ($location['path'] ?? ''), '/');
@@ -135,13 +146,7 @@
         ])
       @endif
 
-      @if($new->isNotEmpty())<section class="location-landing__section"><div class="location-landing__head"><div><h2>New in {{ $label }}</h2><p class="location-landing__copy">Recently published offerings from the live marketplace.</p></div></div><div class="location-landing__grid">@foreach($new->take(8) as $product)@include('partials.product_card_v4_1',['product'=>$product,'preferredLocation'=>$label])@endforeach</div></section>@endif
-
       @if($prices->isNotEmpty())<section class="location-landing__section"><div class="location-landing__head"><div><h2>Wellness by price</h2><p class="location-landing__copy">Explore price points with actual {{ $label }} supply.</p></div></div><div class="location-landing__tiles">@foreach($prices as $price)<a class="location-landing__tile" href="{{ url('/search?where='.urlencode($label).'&price_max='.($price['max'] ?? 500)) }}"><strong>{{ $price['label'] }}</strong><span>{{ $price['count'] }} local options</span></a>@endforeach</div></section>@endif
-
-      @if($online->isNotEmpty())<section class="location-landing__section location-landing__section--results"><div class="location-landing__head"><div><h2>Also available online</h2><p class="location-landing__copy">Wellness experiences you can join from anywhere.</p></div>@include('partials.wow-button',['href'=>url('/online'),'label'=>'Browse online','variant'=>'outline','size'=>'sm','arrow'=>true])</div><div class="location-landing__grid">@foreach($online->take(4) as $product)@include('partials.product_card_v4_1',['product'=>$product,'preferredLocation'=>null])@endforeach</div></section>@endif
-
-      @if(!empty($directory['towns']))<section class="location-landing__section location-landing__directory"><div class="location-landing__head"><div><h2>Explore {{ $label }} towns</h2><p class="location-landing__copy">Browse towns with real public marketplace supply.</p></div></div><ul>@foreach($directory['towns'] as $town)<li><a href="{{ url($town['path'] ?? '/locations') }}">{{ $town['title'] ?? 'Town' }}</a></li>@endforeach</ul></section>@elseif(!empty($directory['counties']))<section class="location-landing__section location-landing__directory"><div class="location-landing__head"><div><h2>Explore UK counties</h2><p class="location-landing__copy">Browse regions with live wellness supply.</p></div></div><ul>@foreach($directory['counties'] as $county)<li><a href="{{ url($county['path'] ?? '/locations') }}">{{ $county['label'] ?? 'County' }}</a></li>@endforeach</ul></section>@endif
     </div>
   </main>
   @if($locationImage)
