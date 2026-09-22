@@ -26590,4 +26590,17 @@
                 transform: rotate(360deg);
             }
         }
+
+/* Global page surface: keep the body plain and remove the old guide-line
+   overlays. Component pseudo-elements remain available for local UI. */
+html,
+body {
+    background: #fefefe !important;
+}
+
+body::before,
+body::after {
+    content: none !important;
+    display: none !important;
+}
     

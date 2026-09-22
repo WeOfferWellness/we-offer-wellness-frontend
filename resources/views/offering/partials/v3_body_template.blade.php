@@ -3713,35 +3713,7 @@ SVG;
             </section>
 
             @if(!empty($guidePanel))
-                <section class="section" id="related-guides">
-                    <div class="section-heading section-heading--guides">
-                        <div class="guides-header-row">
-                            <div class="guides-header-copy">
-                            <p class="eyebrow">{{ $guidePanel['eyebrow'] ?? 'Explore guides' }}</p>
-                            <h2>{{ $guidePanel['title'] ?? 'Related guides' }}</h2>
-                            </div>
-                            @if(!empty($guidePanel['hub_url']))
-                                <a class="btn btn-primary" href="{{ $guidePanel['hub_url'] }}">{{ $guidePanel['hub_label'] ?? 'Browse guides' }}</a>
-                            @endif
-                        </div>
-                        @if(!empty($guidePanel['summary']))
-                            <p class="section-intro">{{ $guidePanel['summary'] }}</p>
-                        @endif
-                    </div>
-
-                    @if(!empty($guidePanel['links']))
-                        <div class="guide-card-grid">
-                            @foreach($guidePanel['links'] as $guideLink)
-                                <a class="guide-card" href="{{ $guideLink['url'] ?? '#' }}">
-                                    <strong>{{ $guideLink['title'] ?? $guideLink['label'] ?? 'Guide' }}</strong>
-                                    @if(!empty($guideLink['summary']))
-                                        <span>{{ $guideLink['summary'] }}</span>
-                                    @endif
-                                </a>
-                            @endforeach
-                        </div>
-                    @endif
-                </section>
+                @include('partials.guides-section', ['guideSection' => $guidePanel, 'id' => 'related-guides'])
             @else
                 <section class="section">
                     <div class="split">

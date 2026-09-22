@@ -56,10 +56,7 @@
             margin: 0;
             font-family: var(--font);
             color: var(--ink);
-            background:
-                radial-gradient(900px 700px at 16% 18%, rgba(74,136,120,.16), transparent 60%),
-                radial-gradient(900px 700px at 86% 18%, rgba(11,18,32,.08), transparent 60%),
-                linear-gradient(180deg, #F5F7FA, var(--bg));
+            background: #fefefe;
             display: flex;
             align-items: flex-start;
             justify-content: center;
@@ -69,13 +66,8 @@
             overflow-y: auto;
         }
         body.account-auth-body::before {
-            content:"";
-            position: fixed;
-            inset: 0;
-            pointer-events: none;
-            opacity: .08;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='.40'/%3E%3C/svg%3E");
-            mix-blend-mode: multiply;
+            content: none;
+            display: none;
         }
         .account-auth-window {
             width: min(var(--max), 100%);
