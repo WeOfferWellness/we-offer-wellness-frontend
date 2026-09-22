@@ -600,6 +600,14 @@
   'heroAsideText' => '',
 ])
 
+@include('partials.hero-meta', [
+  'items' => array_values(array_filter([
+    $products->isNotEmpty() ? ['label' => 'Local listings', 'strong' => true] : null,
+    $popularLocations->isNotEmpty() ? 'Nearby options' : null,
+    $hasOnlineSessions ? 'Online sessions' : null,
+  ])),
+])
+
 <section class="seo-money-page">
   <div class="container-page">
     <div class="seo-money-grid">
@@ -658,14 +666,6 @@
         </div>
       </aside>
     </div>
-
-    @include('partials.hero-meta', [
-      'items' => array_values(array_filter([
-        $products->isNotEmpty() ? ['label' => 'Local listings', 'strong' => true] : null,
-        $popularLocations->isNotEmpty() ? 'Nearby options' : null,
-        $hasOnlineSessions ? 'Online sessions' : null,
-      ])),
-    ])
 
     @include('partials.guide_panel', [
       'guidePanelModality' => data_get($page, 'modality', data_get($page, 'category_slug', request()->route('modality'))),
