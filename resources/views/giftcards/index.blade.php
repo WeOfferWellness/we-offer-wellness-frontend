@@ -7,7 +7,7 @@
   .giftcards-page{
     position:relative;
     overflow:hidden;
-    padding:56px 0 76px;
+    padding:0 0 76px;
     background:#fff;
   }
   .giftcards-page::before{
@@ -251,7 +251,7 @@
     .giftcards-proof{ border-left:0; border-top:1px solid #edf0f2; }
   }
   @media (max-width: 640px){
-    .giftcards-page{ padding:40px 0 60px; }
+    .giftcards-page{ padding:0 0 60px; }
     .giftcards-hero__copy,
     .giftcards-proof,
     .giftcard-card__body{ padding:20px; }
@@ -271,55 +271,34 @@
   'schemaUrl' => url('/giftcards'),
 ])
 
+@include('partials.landing-hero', [
+  'heroEyebrow' => 'Gift cards',
+  'heroTitle' => 'Give wellness, your way',
+  'heroIntro' => 'Choose a digital gift card with flexible denominations, instant email delivery and wellness experiences to suit the person you are celebrating.',
+  'heroActions' => [
+    ['label' => 'How gifting works', 'href' => '/help/gift-cards', 'style' => 'outline'],
+    ['label' => 'Browse gifting ideas', 'href' => '/search?type=gifts'],
+  ],
+  'heroAsideLabel' => 'A thoughtful way to give',
+  'heroAsideTitle' => 'More choice, less guesswork',
+  'heroAsideText' => 'Let them choose the experience, format and amount that feels right for them.',
+  'heroAsideItems' => [
+    ['label' => 'Instant delivery', 'meta' => 'Send by email right away.'],
+    ['label' => 'Flexible denominations', 'meta' => 'Choose from live gift card amounts.'],
+    ['label' => 'Use across WOW', 'meta' => 'Redeem on eligible wellness experiences.'],
+  ],
+])
+
+@include('partials.hero-meta', [
+  'items' => [
+    ['label' => 'Digital gift cards', 'strong' => true],
+    'Flexible denominations',
+    'Instant email delivery',
+  ],
+])
+
 <section class="giftcards-page">
   <div class="container-page giftcards-shell">
-    <div class="giftcards-hero">
-      <div class="giftcards-hero__copy">
-        <p class="giftcards-kicker">Gift cards</p>
-        <h1>Choose a gift card and pick the denomination that fits.</h1>
-        <p>These are live gift card products from the database, with their denomination variants ready to add to cart without going through an offering page.</p>
-        <div class="giftcards-actions">
-          <a href="/help/gift-cards" class="btn-wow btn-wow--outline btn-sm btn-arrow" data-loader-init="1">
-            <span class="btn-label">How gifting works</span>
-            <span class="btn-icon-wrap" aria-hidden="true">
-              <svg class="btn-icon-hover" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H5m14 0-4 4m4-4-4-4"></path></svg>
-              <svg class="btn-icon-default" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12l-4 4m4-4-4-4"></path></svg>
-            </span>
-          </a>
-          <a href="/search?type=gifts" class="btn-wow btn-wow--primary btn-sm btn-arrow" data-loader-init="1">
-            <span class="btn-label">Browse gifting ideas</span>
-            <span class="btn-icon-wrap" aria-hidden="true">
-              <svg class="btn-icon-hover" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H5m14 0-4 4m4-4-4-4"></path></svg>
-              <svg class="btn-icon-default" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12l-4 4m4-4-4-4"></path></svg>
-            </span>
-          </a>
-        </div>
-      </div>
-      <div class="giftcards-proof">
-        <div class="giftcards-proof__item">
-          <div class="giftcards-proof__icon">1</div>
-          <div>
-            <strong>Instant delivery</strong>
-            <span>Send by email right away, or buy it for yourself and book later.</span>
-          </div>
-        </div>
-        <div class="giftcards-proof__item">
-          <div class="giftcards-proof__icon">2</div>
-          <div>
-            <strong>DB-backed denominations</strong>
-            <span>Amounts are pulled from the live variant records, not hardcoded labels.</span>
-          </div>
-        </div>
-        <div class="giftcards-proof__item">
-          <div class="giftcards-proof__icon">3</div>
-          <div>
-            <strong>Use across WOW</strong>
-            <span>Gift cards can be redeemed on eligible therapies, classes, workshops and events.</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <div class="giftcards-section-title">
       <div>
         <p class="giftcards-kicker">Available gift cards</p>
@@ -359,7 +338,7 @@
                     <div class="giftcard-amount__actions">
                       <button
                         type="button"
-                        class="btn-wow btn-wow--outline btn-sm js-add-to-cart js-open-cart"
+                        class="btn-wow btn-wow--outline btn-wow--sm js-add-to-cart js-open-cart"
                         data-product-id="{{ $giftCard['id'] }}"
                         data-variant-id="{{ $denomination['variant_id'] }}"
                         data-variant-label="{{ $denomination['label'] }}"
@@ -372,7 +351,7 @@
                       </button>
                       <button
                         type="button"
-                        class="btn-wow btn-wow--primary btn-sm js-buy-now"
+                        class="btn-wow btn-wow--primary btn-wow--sm js-buy-now"
                         data-product-id="{{ $giftCard['id'] }}"
                         data-variant-id="{{ $denomination['variant_id'] }}"
                         data-variant-label="{{ $denomination['label'] }}"
