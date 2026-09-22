@@ -799,10 +799,13 @@
             '@id' => url('/') . '#organization',
           ],
         ], static fn ($value) => $value !== null && $value !== '');
-        if (array_key_exists('available', $variant)) {
-          $schemaEventOffer['availability'] = (bool) $variant['available']
-            ? 'https://schema.org/InStock'
-            : 'https://schema.org/OutOfStock';
+        $ticketAvailability = strtolower(trim((string) ($variant['ticket_availability'] ?? '')));
+        if (in_array($ticketAvailability, ['instock', 'in_stock', 'preorder', 'pre_order', 'soldout', 'sold_out'], true)) {
+          $schemaEventOffer['availability'] = match ($ticketAvailability) {
+            'instock', 'in_stock' => 'https://schema.org/InStock',
+            'preorder', 'pre_order' => 'https://schema.org/PreOrder',
+            default => 'https://schema.org/SoldOut',
+          };
         }
         if ($schemaEventValidFrom !== null) {
           $schemaEventOffer['validFrom'] = $schemaEventValidFrom;
