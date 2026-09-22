@@ -1,5 +1,5 @@
 {
-    "generated_at": "2026-09-19T10:11:47+00:00",
+    "generated_at": "2026-09-22T10:11:36+00:00",
     "stats": {
         "countries": 10,
         "counties": 63,
@@ -31,6 +31,7 @@
             "title": "Australia",
             "path": "/locations/australia",
             "online": false,
+            "image_path": "uploads/images/48608249-03d4-435f-9c59-e1473ad89d45.jpg",
             "counts": {
                 "products": 7,
                 "offerings": 3,
@@ -47,6 +48,7 @@
                     "county": "Queensland",
                     "district": "Queensland",
                     "region": "Queensland",
+                    "image_path": "uploads/images/48608249-03d4-435f-9c59-e1473ad89d45.jpg",
                     "counts": {
                         "products": 2,
                         "offerings": 0,
@@ -92,6 +94,7 @@
                     "county": "Shire Of Mundaring",
                     "district": "Shire Of Mundaring",
                     "region": "Shire Of Mundaring",
+                    "image_path": "uploads/images/e3e80f46-1c3d-4d19-9a58-638eb0c5f091.jpg",
                     "counts": {
                         "products": 0,
                         "offerings": 0,
@@ -137,6 +140,7 @@
                     "county": "Waverton New South Wales 2060",
                     "district": "Waverton New South Wales 2060",
                     "region": "Waverton New South Wales 2060",
+                    "image_path": null,
                     "counts": {
                         "products": 4,
                         "offerings": 2,
@@ -182,6 +186,7 @@
                     "county": "Willoughby New South Wales 2068",
                     "district": "Willoughby New South Wales 2068",
                     "region": "Willoughby New South Wales 2068",
+                    "image_path": null,
                     "counts": {
                         "products": 1,
                         "offerings": 1,
@@ -226,6 +231,7 @@
             "title": "Austria",
             "path": "/locations/austria",
             "online": false,
+            "image_path": null,
             "counts": {
                 "products": 4,
                 "offerings": 2,
@@ -242,6 +248,7 @@
                     "county": null,
                     "district": null,
                     "region": null,
+                    "image_path": null,
                     "counts": {
                         "products": 4,
                         "offerings": 2,
@@ -286,6 +293,7 @@
             "title": "Indonesia",
             "path": "/locations/indonesia",
             "online": false,
+            "image_path": "uploads/images/f7c8e373-d2a3-4824-b033-b6c5ecf663ab.jpg",
             "counts": {
                 "products": 2,
                 "offerings": 0,
@@ -302,6 +310,7 @@
                     "county": "Bali",
                     "district": "Bali",
                     "region": "Bali",
+                    "image_path": "uploads/images/f7c8e373-d2a3-4824-b033-b6c5ecf663ab.jpg",
                     "counts": {
                         "products": 2,
                         "offerings": 0,
@@ -346,6 +355,7 @@
             "title": "Ireland",
             "path": "/locations/ireland",
             "online": false,
+            "image_path": "uploads/images/b403c795-7629-4759-9125-4cfa56bf6e7b.jpg",
             "counts": {
                 "products": 10,
                 "offerings": 0,
@@ -362,6 +372,7 @@
                     "county": "Cavan",
                     "district": "Cavan",
                     "region": "Cavan",
+                    "image_path": "uploads/images/b403c795-7629-4759-9125-4cfa56bf6e7b.jpg",
                     "counts": {
                         "products": 5,
                         "offerings": 0,
@@ -407,6 +418,7 @@
                     "county": "County Cavan",
                     "district": "County Cavan",
                     "region": "County Cavan",
+                    "image_path": "uploads/images/a503da08-b076-49f8-bbfe-ad3823c56d77.jpg",
                     "counts": {
                         "products": 5,
                         "offerings": 0,
@@ -451,6 +463,7 @@
             "title": "New Zealand",
             "path": "/locations/new-zealand",
             "online": false,
+            "image_path": null,
             "counts": {
                 "products": 0,
                 "offerings": 0,
@@ -467,6 +480,7 @@
                     "county": "New Zealand",
                     "district": "New Zealand",
                     "region": "New Zealand",
+                    "image_path": null,
                     "counts": {
                         "products": 0,
                         "offerings": 0,
@@ -511,6 +525,7 @@
             "title": "Null",
             "path": "/locations/null",
             "online": false,
+            "image_path": null,
             "counts": {
                 "products": 0,
                 "offerings": 3,
@@ -527,6 +542,7 @@
                     "county": null,
                     "district": null,
                     "region": null,
+                    "image_path": null,
                     "counts": {
                         "products": 0,
                         "offerings": 3,
@@ -571,6 +587,7 @@
             "title": "Thailand",
             "path": "/locations/thailand",
             "online": false,
+            "image_path": "uploads/images/1926baa0-f55d-4cbf-8f87-e796d0c884fc.jpg",
             "counts": {
                 "products": 4,
                 "offerings": 0,
@@ -587,6 +604,7 @@
                     "county": "Ko Pha Ngan District",
                     "district": "Ko Pha Ngan District",
                     "region": "Ko Pha Ngan District",
+                    "image_path": "uploads/images/1926baa0-f55d-4cbf-8f87-e796d0c884fc.jpg",
                     "counts": {
                         "products": 4,
                         "offerings": 0,
@@ -631,6 +649,7 @@
             "title": "United Kingdom",
             "path": "/locations/united-kingdom",
             "online": false,
+            "image_path": "uploads/images/b8266862-ff5d-4947-9280-557a9d30e281.jpg",
             "counts": {
                 "products": 815,
                 "offerings": 34,
@@ -647,6 +666,7 @@
                     "county": "Atatatat",
                     "district": "Atatatat",
                     "region": "Atatatat",
+                    "image_path": "uploads/images/b8266862-ff5d-4947-9280-557a9d30e281.jpg",
                     "counts": {
                         "products": 0,
                         "offerings": 0,
@@ -692,6 +712,7 @@
                     "county": "Berkshire",
                     "district": "Berkshire",
                     "region": "Berkshire",
+                    "image_path": "uploads/images/fe54c906-8692-49d3-a72c-e66a91296f45.jpg",
                     "counts": {
                         "products": 14,
                         "offerings": 0,
@@ -791,6 +812,7 @@
                     "county": "Bristol",
                     "district": "Bristol City",
                     "region": "Bristol City",
+                    "image_path": "uploads/images/fb5984f6-e848-4608-b721-24012879bee3.jpg",
                     "counts": {
                         "products": 2,
                         "offerings": 0,
@@ -836,6 +858,7 @@
                     "county": "Buckinghamshire",
                     "district": "Buckinghamshire",
                     "region": "Buckinghamshire",
+                    "image_path": "uploads/images/ea3943dd-aa76-4ace-9464-3169b05ae267.jpg",
                     "counts": {
                         "products": 7,
                         "offerings": 0,
@@ -908,6 +931,7 @@
                     "county": "Cambridgeshire",
                     "district": "Cambridgeshire",
                     "region": "Cambridgeshire",
+                    "image_path": "uploads/images/593294ae-a288-4c95-8630-482aa7870672.jpg",
                     "counts": {
                         "products": 8,
                         "offerings": 0,
@@ -980,6 +1004,7 @@
                     "county": "Cardiff",
                     "district": "Cardiff",
                     "region": "Cardiff",
+                    "image_path": "uploads/images/64569a47-382e-4d14-b879-052daa645e74.jpg",
                     "counts": {
                         "products": 2,
                         "offerings": 0,
@@ -1025,6 +1050,7 @@
                     "county": null,
                     "district": null,
                     "region": null,
+                    "image_path": null,
                     "counts": {
                         "products": 0,
                         "offerings": 0,
@@ -1070,6 +1096,7 @@
                     "county": "Cheshire",
                     "district": "Halton",
                     "region": "Halton",
+                    "image_path": "uploads/images/b609803e-02b6-47c9-a1c0-06c86c57a4cf.jpg",
                     "counts": {
                         "products": 0,
                         "offerings": 0,
@@ -1115,6 +1142,7 @@
                     "county": "Cornwall",
                     "district": "Cornwall",
                     "region": "Cornwall",
+                    "image_path": "uploads/images/e6757821-23d5-4e5d-b871-d79ed07a06bf.jpg",
                     "counts": {
                         "products": 17,
                         "offerings": 0,
@@ -1295,6 +1323,7 @@
                     "county": "Derbyshire",
                     "district": "Derbyshire",
                     "region": "Derbyshire",
+                    "image_path": "uploads/images/aaa8dc6c-9df0-4945-a1bc-edbd5eaddca7.jpg",
                     "counts": {
                         "products": 2,
                         "offerings": 0,
@@ -1340,6 +1369,7 @@
                     "county": "Devon",
                     "district": "Devon",
                     "region": "Devon",
+                    "image_path": "uploads/images/8345c863-f41b-48f2-9eaf-57f64c96ff25.jpg",
                     "counts": {
                         "products": 40,
                         "offerings": 0,
@@ -1574,6 +1604,7 @@
                     "county": "Dorset",
                     "district": "Dorset",
                     "region": "Dorset",
+                    "image_path": "uploads/images/f073134b-9186-4b59-94e7-dec431e91e3c.jpg",
                     "counts": {
                         "products": 6,
                         "offerings": 0,
@@ -1646,6 +1677,7 @@
                     "county": null,
                     "district": null,
                     "region": null,
+                    "image_path": "uploads/images/b8266862-ff5d-4947-9280-557a9d30e281.jpg",
                     "counts": {
                         "products": 4,
                         "offerings": 2,
@@ -1691,6 +1723,7 @@
                     "county": "East Sussex",
                     "district": "Brighton And Hove",
                     "region": "Brighton And Hove",
+                    "image_path": "uploads/images/22867c7f-ce6c-415f-beca-5292a3f122cd.jpg",
                     "counts": {
                         "products": 26,
                         "offerings": 0,
@@ -2033,6 +2066,7 @@
                     "county": null,
                     "district": null,
                     "region": null,
+                    "image_path": "uploads/images/8f6e8306-a563-4ddf-a007-9224684dc962.jpg",
                     "counts": {
                         "products": 1,
                         "offerings": 0,
@@ -2078,6 +2112,7 @@
                     "county": "Essex",
                     "district": "Essex",
                     "region": "Essex",
+                    "image_path": "uploads/images/90ed5790-8ae7-4538-99ab-413e35021580.jpg",
                     "counts": {
                         "products": 8,
                         "offerings": 0,
@@ -2150,6 +2185,7 @@
                     "county": "Glasgow City",
                     "district": "Glasgow City",
                     "region": "Glasgow City",
+                    "image_path": "uploads/images/21394b15-b7d1-4cb3-adf3-7d561c68651d.jpg",
                     "counts": {
                         "products": 3,
                         "offerings": 0,
@@ -2195,6 +2231,7 @@
                     "county": "Gloucestershire",
                     "district": "Gloucestershire",
                     "region": "Gloucestershire",
+                    "image_path": "uploads/images/3e9f2bdc-89f4-4937-be0c-8bb206b79e23.jpg",
                     "counts": {
                         "products": 1,
                         "offerings": 0,
@@ -2240,6 +2277,7 @@
                     "county": "Hampshire",
                     "district": "Hampshire",
                     "region": "Hampshire",
+                    "image_path": "uploads/images/7183e3b3-dbc4-49d3-8fa0-09042d9f8e48.jpg",
                     "counts": {
                         "products": 19,
                         "offerings": 0,
@@ -2366,6 +2404,7 @@
                     "county": "Hertfordshire",
                     "district": "Hertfordshire",
                     "region": "Hertfordshire",
+                    "image_path": "uploads/images/cde8e159-b4db-43fb-abd9-2a687c73664c.jpg",
                     "counts": {
                         "products": 9,
                         "offerings": 0,
@@ -2438,6 +2477,7 @@
                     "county": null,
                     "district": null,
                     "region": null,
+                    "image_path": null,
                     "counts": {
                         "products": 0,
                         "offerings": 1,
@@ -2483,6 +2523,7 @@
                     "county": "Kent",
                     "district": "Kent",
                     "region": "Kent",
+                    "image_path": "uploads/images/8f6e8306-a563-4ddf-a007-9224684dc962.jpg",
                     "counts": {
                         "products": 312,
                         "offerings": 23,
@@ -3581,6 +3622,7 @@
                     "county": null,
                     "district": null,
                     "region": null,
+                    "image_path": null,
                     "counts": {
                         "products": 0,
                         "offerings": 0,
@@ -3626,6 +3668,7 @@
                     "county": null,
                     "district": null,
                     "region": null,
+                    "image_path": "uploads/images/fecf6cc8-a5a3-4d17-ba4e-361f5e957f9e.jpg",
                     "counts": {
                         "products": 157,
                         "offerings": 5,
@@ -3995,6 +4038,7 @@
                     "county": null,
                     "district": null,
                     "region": null,
+                    "image_path": "uploads/images/b8266862-ff5d-4947-9280-557a9d30e281.jpg",
                     "counts": {
                         "products": 4,
                         "offerings": 2,
@@ -4040,6 +4084,7 @@
                     "county": "Manchester",
                     "district": "Greater Manchester",
                     "region": "Greater Manchester",
+                    "image_path": "uploads/images/f1a87913-ecd7-4de2-9dcb-dfab94f6d970.jpg",
                     "counts": {
                         "products": 9,
                         "offerings": 0,
@@ -4193,6 +4238,7 @@
                     "county": "Meridian (Exc. Channel Islands)",
                     "district": "Meridian (Exc. Channel Islands)",
                     "region": "Meridian (Exc. Channel Islands)",
+                    "image_path": "uploads/images/8f6e8306-a563-4ddf-a007-9224684dc962.jpg",
                     "counts": {
                         "products": 5,
                         "offerings": 0,
@@ -4238,6 +4284,7 @@
                     "county": null,
                     "district": null,
                     "region": null,
+                    "image_path": "uploads/images/b8266862-ff5d-4947-9280-557a9d30e281.jpg",
                     "counts": {
                         "products": 6,
                         "offerings": 0,
@@ -4283,6 +4330,7 @@
                     "county": "Neath Port Talbot",
                     "district": "Neath Port Talbot",
                     "region": "Neath Port Talbot",
+                    "image_path": "uploads/images/05ab6ee6-bccf-4a6e-8c02-44095a039da3.jpg",
                     "counts": {
                         "products": 1,
                         "offerings": 0,
@@ -4328,6 +4376,7 @@
                     "county": "Norfolk",
                     "district": "Norfolk",
                     "region": "Norfolk",
+                    "image_path": "uploads/images/db7c5d36-33fd-412d-8206-dcab2a01ccec.jpg",
                     "counts": {
                         "products": 3,
                         "offerings": 0,
@@ -4400,6 +4449,7 @@
                     "county": null,
                     "district": null,
                     "region": null,
+                    "image_path": "uploads/images/8f6e8306-a563-4ddf-a007-9224684dc962.jpg",
                     "counts": {
                         "products": 3,
                         "offerings": 0,
@@ -4445,6 +4495,7 @@
                     "county": "Northumberland",
                     "district": "Northumberland",
                     "region": "Northumberland",
+                    "image_path": "uploads/images/bf6eff82-4ed9-4fea-904e-88c4a9759940.jpg",
                     "counts": {
                         "products": 2,
                         "offerings": 0,
@@ -4490,6 +4541,7 @@
                     "county": "Raartatatattatat",
                     "district": "Raartatatattatat",
                     "region": "Raartatatattatat",
+                    "image_path": "uploads/images/b8266862-ff5d-4947-9280-557a9d30e281.jpg",
                     "counts": {
                         "products": 0,
                         "offerings": 0,
@@ -4535,6 +4587,7 @@
                     "county": null,
                     "district": null,
                     "region": null,
+                    "image_path": null,
                     "counts": {
                         "products": 0,
                         "offerings": 0,
@@ -4580,6 +4633,7 @@
                     "county": "Romney Marsh",
                     "district": "Romney Marsh",
                     "region": "Romney Marsh",
+                    "image_path": null,
                     "counts": {
                         "products": 0,
                         "offerings": 0,
@@ -4625,6 +4679,7 @@
                     "county": "Shetland Islands",
                     "district": "Shetland Islands",
                     "region": "Shetland Islands",
+                    "image_path": "uploads/images/ecd9e976-4b58-4b9f-b6c2-24877b667397.jpg",
                     "counts": {
                         "products": 3,
                         "offerings": 0,
@@ -4670,6 +4725,7 @@
                     "county": "Shropshire",
                     "district": "Shropshire",
                     "region": "Shropshire",
+                    "image_path": "uploads/images/f45dbf9d-c9c3-4646-a445-069036e44590.jpg",
                     "counts": {
                         "products": 10,
                         "offerings": 0,
@@ -4742,6 +4798,7 @@
                     "county": "Sidcup",
                     "district": "Sidcup",
                     "region": "Sidcup",
+                    "image_path": "uploads/images/881414d0-b904-4e07-ac6c-08a20ca0e9b5.jpg",
                     "counts": {
                         "products": 5,
                         "offerings": 0,
@@ -4787,6 +4844,7 @@
                     "county": "Somerset",
                     "district": "Somerset",
                     "region": "Somerset",
+                    "image_path": "uploads/images/e576247b-197f-4a3b-8aae-99e785f7aa5b.jpg",
                     "counts": {
                         "products": 6,
                         "offerings": 0,
@@ -4859,6 +4917,7 @@
                     "county": "Surrey",
                     "district": "Surrey",
                     "region": "Surrey",
+                    "image_path": "uploads/images/7375b1fd-1f2e-45ca-841f-445d2b8a9326.jpg",
                     "counts": {
                         "products": 67,
                         "offerings": 0,
@@ -5228,6 +5287,7 @@
                     "county": null,
                     "district": null,
                     "region": null,
+                    "image_path": null,
                     "counts": {
                         "products": 0,
                         "offerings": 0,
@@ -5273,6 +5333,7 @@
                     "county": "Tyne And Wear",
                     "district": "Tyne And Wear",
                     "region": "Tyne And Wear",
+                    "image_path": "uploads/images/20451e4d-2976-4808-9715-1893f575cf43.jpg",
                     "counts": {
                         "products": 13,
                         "offerings": 0,
@@ -5426,6 +5487,7 @@
                     "county": null,
                     "district": null,
                     "region": null,
+                    "image_path": "uploads/images/b8266862-ff5d-4947-9280-557a9d30e281.jpg",
                     "counts": {
                         "products": 2,
                         "offerings": 1,
@@ -5471,6 +5533,7 @@
                     "county": null,
                     "district": null,
                     "region": null,
+                    "image_path": null,
                     "counts": {
                         "products": 0,
                         "offerings": 0,
@@ -5516,6 +5579,7 @@
                     "county": "West Sussex",
                     "district": "West Sussex",
                     "region": "West Sussex",
+                    "image_path": "uploads/images/3966af78-12fd-4097-a30b-43c3cd3ca3d0.jpg",
                     "counts": {
                         "products": 28,
                         "offerings": 0,
@@ -5723,6 +5787,7 @@
                     "county": "West Yorkshire",
                     "district": "West Yorkshire",
                     "region": "West Yorkshire",
+                    "image_path": "uploads/images/f6626603-af7d-4118-afa4-f7b76d361652.jpg",
                     "counts": {
                         "products": 4,
                         "offerings": 0,
@@ -5795,6 +5860,7 @@
                     "county": "Westmorland And Furness",
                     "district": "Westmorland And Furness",
                     "region": "Westmorland And Furness",
+                    "image_path": "uploads/images/90b92e28-8d02-4992-ac2a-b3354ea6db19.jpg",
                     "counts": {
                         "products": 1,
                         "offerings": 0,
@@ -5840,6 +5906,7 @@
                     "county": "Wiltshire",
                     "district": "Wiltshire",
                     "region": "Wiltshire",
+                    "image_path": "uploads/images/16fbd1de-bbfb-445d-ba1d-6a75848d23bf.jpg",
                     "counts": {
                         "products": 5,
                         "offerings": 0,
@@ -5884,6 +5951,7 @@
             "title": "United States",
             "path": "/locations/united-states",
             "online": false,
+            "image_path": "uploads/images/c375313c-c0cf-4364-9bf1-74dd4d2cf22e.jpg",
             "counts": {
                 "products": 16,
                 "offerings": 0,
@@ -5900,6 +5968,7 @@
                     "county": "New York",
                     "district": "New York",
                     "region": "New York",
+                    "image_path": "uploads/images/c375313c-c0cf-4364-9bf1-74dd4d2cf22e.jpg",
                     "counts": {
                         "products": 2,
                         "offerings": 0,
@@ -5945,6 +6014,7 @@
                     "county": "Niagara County",
                     "district": "Niagara County",
                     "region": "Niagara County",
+                    "image_path": "uploads/images/3a1375ec-38ab-4426-b08d-7e07689a594c.jpg",
                     "counts": {
                         "products": 6,
                         "offerings": 0,
@@ -5990,6 +6060,7 @@
                     "county": "South Central Connecticut Planning Region",
                     "district": "South Central Connecticut Planning Region",
                     "region": "South Central Connecticut Planning Region",
+                    "image_path": "uploads/images/aeb0e8f9-d37c-428f-819f-8b55cd0db71a.jpg",
                     "counts": {
                         "products": 5,
                         "offerings": 0,
@@ -6035,6 +6106,7 @@
                     "county": "Wake County",
                     "district": "Wake County",
                     "region": "Wake County",
+                    "image_path": "uploads/images/0e65651b-abb7-463c-83fe-0c21ec7e7712.jpg",
                     "counts": {
                         "products": 3,
                         "offerings": 0,
@@ -10907,6 +10979,7 @@
             "county": "Manchester",
             "district": "Greater Manchester",
             "region": "Greater Manchester",
+            "image_path": "uploads/images/f1a87913-ecd7-4de2-9dcb-dfab94f6d970.jpg",
             "counts": {
                 "products": 9,
                 "offerings": 0,

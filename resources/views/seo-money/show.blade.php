@@ -577,6 +577,10 @@
   $catalogSuggestions = collect($catalogSuggestions ?? []);
   $hasOnlineSessions = collect($page['highlights'] ?? [])->contains(fn ($item) => str_contains(strtolower((string) $item), 'online'))
     || collect($page['related_links'] ?? [])->contains(fn ($item) => str_contains(strtolower((string) ($item['label'] ?? '')), 'online'));
+  $heroImage = trim((string) ($savedLocation['image_path'] ?? ''));
+  if ($heroImage !== '' && !preg_match('#^(?:https?:)?//#i', $heroImage)) {
+    $heroImage = rtrim((string) config('services.location_media_url', 'https://studio.weofferwellness.co.uk'), '/') . '/storage/' . ltrim($heroImage, '/');
+  }
 @endphp
 
 @include('partials.breadcrumbs', [
@@ -589,7 +593,7 @@
   'heroEyebrow' => $page['kicker'] ?? 'Local wellness discovery',
   'heroTitle' => $page['h1'] ?? ($page['title'] ?? 'Wellness near you'),
   'heroIntro' => $page['intro'] ?? ($seo['description'] ?? ''),
-  'heroImage' => $savedLocation['image_path'] ?? '',
+  'heroImage' => $heroImage,
   'heroLocationLabel' => $savedLocation['label'] ?? '',
   'heroIsLocation' => true,
   'heroActions' => array_values(array_filter([

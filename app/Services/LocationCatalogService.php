@@ -194,9 +194,14 @@ class LocationCatalogService
                     'title' => $countryLabel,
                     'path' => '/locations/' . $countryKey,
                     'online' => false,
+                    'image_path' => trim((string) ($row->image_path ?? '')) ?: null,
                     'counts' => ['products' => 0, 'offerings' => 0, 'total' => 0],
                     'counties' => [],
                 ];
+            }
+
+            if (empty($countries[$countryKey]['image_path']) && !empty($node['image_path'])) {
+                $countries[$countryKey]['image_path'] = $node['image_path'];
             }
 
             if (!isset($countries[$countryKey]['counties'][$countyKey])) {
@@ -212,9 +217,14 @@ class LocationCatalogService
                     'county' => $countyLabel,
                     'district' => $districtLabel,
                     'region' => $districtLabel,
+                    'image_path' => trim((string) ($row->image_path ?? '')) ?: null,
                     'counts' => ['products' => 0, 'offerings' => 0, 'total' => 0],
                     'towns' => [],
                 ];
+            }
+
+            if (empty($countries[$countryKey]['counties'][$countyKey]['image_path']) && !empty($node['image_path'])) {
+                $countries[$countryKey]['counties'][$countyKey]['image_path'] = $node['image_path'];
             }
 
             $countries[$countryKey]['counts']['products'] += $counts['products'];
@@ -231,6 +241,12 @@ class LocationCatalogService
         foreach ($countries as &$country) {
             foreach ($country['counties'] as &$county) {
                 $county['towns'] = array_values($county['towns']);
+                if (empty($county['image_path'])) {
+                    $county['image_path'] = collect($county['towns'])
+                        ->pluck('image_path')
+                        ->filter()
+                        ->first();
+                }
                 usort($county['towns'], static function (array $left, array $right): int {
                     return strcasecmp((string) ($left['title'] ?? ''), (string) ($right['title'] ?? ''));
                 });
@@ -238,6 +254,12 @@ class LocationCatalogService
             unset($county);
 
             $country['counties'] = array_values($country['counties']);
+            if (empty($country['image_path'])) {
+                $country['image_path'] = collect($country['counties'])
+                    ->pluck('image_path')
+                    ->filter()
+                    ->first();
+            }
             usort($country['counties'], static function (array $left, array $right): int {
                 return strcasecmp((string) ($left['label'] ?? ''), (string) ($right['label'] ?? ''));
             });
