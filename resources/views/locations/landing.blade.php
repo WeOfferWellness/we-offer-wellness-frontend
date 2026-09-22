@@ -58,6 +58,9 @@
     .location-landing__search input{width:100%;height:46px;padding:0 12px;border:1px solid #ccd6dc;border-radius:4px;background:#fff;font:inherit}
     .location-landing__search button{align-self:end;height:46px;padding:0 22px;border:1px solid #4f9381;border-radius:4px;background:#4f9381;color:#fff;font-weight:800}
     .location-landing__section{padding-top:38px}
+    .location-landing__section--results{padding:26px;margin-top:24px;background:rgba(255,255,255,.98);border:1px solid #e2e8e5;border-radius:22px;box-shadow:0 18px 54px rgba(16,24,40,.07)}
+    .location-landing__section--results h2{font-size:clamp(30px,4vw,52px);line-height:.96}
+    .location-landing__section--results .location-landing__copy{margin:0;font-size:12.75px;line-height:1.6}
     .location-landing__head{display:flex;align-items:end;justify-content:space-between;gap:16px;margin-bottom:15px}
     .location-landing__copy{margin:8px 0 0;color:#667085;font-size:15px;line-height:1.5}
     .location-landing__grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
@@ -70,7 +73,7 @@
     @media(max-width:900px){.location-landing__grid{grid-template-columns:repeat(2,minmax(0,1fr))}.location-landing__tiles,.location-landing__directory ul{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media(min-width:1200px){.location-landing__grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:16px}}
     @media(min-width:768px) and (max-width:1199.98px){.location-landing__grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}}
-    @media(max-width:620px){.location-landing__container{width:min(100% - 24px,520px)}.location-landing__search-wrap{width:min(100% - 24px,520px);margin:-8px auto 0}.location-landing__search{grid-template-columns:1fr 1fr}.location-landing__search button{grid-column:1/-1}.location-landing__head{display:block}.location-landing__grid,.location-landing__tiles,.location-landing__directory ul{gap:16px}.location-landing__directory a{padding:13px 12px;font-size:14px}}
+    @media(max-width:620px){.location-landing__container{width:min(100% - 24px,520px)}.location-landing__search-wrap{width:min(100% - 24px,520px);margin:-8px auto 0}.location-landing__search{grid-template-columns:1fr 1fr}.location-landing__search button{grid-column:1/-1}.location-landing__head{display:block}.location-landing__section--results{padding:20px}.location-landing__grid,.location-landing__tiles,.location-landing__directory ul{gap:16px}.location-landing__directory a{padding:13px 12px;font-size:14px}}
   </style>
 @endpush
 
@@ -136,7 +139,7 @@
 
       @if($prices->isNotEmpty())<section class="location-landing__section"><div class="location-landing__head"><div><h2>Wellness by price</h2><p class="location-landing__copy">Explore price points with actual {{ $label }} supply.</p></div></div><div class="location-landing__tiles">@foreach($prices as $price)<a class="location-landing__tile" href="{{ url('/search?where='.urlencode($label).'&price_max='.($price['max'] ?? 500)) }}"><strong>{{ $price['label'] }}</strong><span>{{ $price['count'] }} local options</span></a>@endforeach</div></section>@endif
 
-      @if($online->isNotEmpty())<section class="location-landing__section"><div class="location-landing__head"><div><h2>Also available online</h2><p class="location-landing__copy">Wellness experiences you can join from anywhere.</p></div>@include('partials.wow-button',['href'=>url('/online'),'label'=>'Browse online','variant'=>'outline','size'=>'sm','arrow'=>true])</div><div class="location-landing__grid">@foreach($online->take(4) as $product)@include('partials.product_card_v4_1',['product'=>$product,'preferredLocation'=>null])@endforeach</div></section>@endif
+      @if($online->isNotEmpty())<section class="location-landing__section location-landing__section--results"><div class="location-landing__head"><div><h2>Also available online</h2><p class="location-landing__copy">Wellness experiences you can join from anywhere.</p></div>@include('partials.wow-button',['href'=>url('/online'),'label'=>'Browse online','variant'=>'outline','size'=>'sm','arrow'=>true])</div><div class="location-landing__grid">@foreach($online->take(4) as $product)@include('partials.product_card_v4_1',['product'=>$product,'preferredLocation'=>null])@endforeach</div></section>@endif
 
       @if(!empty($directory['towns']))<section class="location-landing__section location-landing__directory"><div class="location-landing__head"><div><h2>Explore {{ $label }} towns</h2><p class="location-landing__copy">Browse towns with real public marketplace supply.</p></div></div><ul>@foreach($directory['towns'] as $town)<li><a href="{{ url($town['path'] ?? '/locations') }}">{{ $town['title'] ?? 'Town' }}</a></li>@endforeach</ul></section>@elseif(!empty($directory['counties']))<section class="location-landing__section location-landing__directory"><div class="location-landing__head"><div><h2>Explore UK counties</h2><p class="location-landing__copy">Browse regions with live wellness supply.</p></div></div><ul>@foreach($directory['counties'] as $county)<li><a href="{{ url($county['path'] ?? '/locations') }}">{{ $county['label'] ?? 'County' }}</a></li>@endforeach</ul></section>@endif
     </div>
