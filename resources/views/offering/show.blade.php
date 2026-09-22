@@ -604,40 +604,6 @@
   $schemaServiceCatalogItem = $schemaService;
   unset($schemaServiceCatalogItem['@context']);
 
-  $schemaOfferCatalogName = trim((string) (
-    data_get($p, 'type.name')
-    ?: ucfirst((string) $type)
-  ));
-  if ($schemaOfferCatalogName === '') {
-    $schemaOfferCatalogName = 'Wellness Services';
-  }
-
-  $schemaOfferCatalog = array_filter([
-    '@type' => 'OfferCatalog',
-    'name' => $schemaOfferCatalogName,
-    'itemListElement' => [
-      [
-        '@type' => 'ListItem',
-        'position' => 1,
-        'item' => $schemaServiceCatalogItem,
-      ],
-    ],
-  ], static fn ($value) => $value !== null && $value !== '' && $value !== []);
-
-  $schemaLocalBusiness = array_filter([
-    '@context' => 'https://schema.org',
-    '@type' => 'LocalBusiness',
-    '@id' => url('/') . '#localbusiness',
-    'name' => 'We Offer Wellness',
-    'url' => url('/'),
-    'image' => $schemaImages[0] ?? null,
-    'description' => trim(strip_tags($summary ?: $body ?: $what ?: '')),
-    'telephone' => $schemaTelephone !== '' ? $schemaTelephone : null,
-    'priceRange' => $schemaPriceRange ?: null,
-    'address' => $schemaBusinessAddress ?: null,
-    'hasOfferCatalog' => $schemaOfferCatalog,
-  ], static fn ($value) => $value !== null && $value !== '' && $value !== []);
-
   $schemaProviderEntity = null;
   if ($schemaProviderId !== null && $schemaProviderName !== '') {
     $schemaProviderEntity = array_filter([
