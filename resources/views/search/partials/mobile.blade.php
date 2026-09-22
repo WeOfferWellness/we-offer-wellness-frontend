@@ -157,6 +157,24 @@
             .wow-sr-v5-mobile-grid, .wow-search-recommendations__grid { grid-template-columns: minmax(0, 1fr); }
             .wow-sr-v5-mobile-tool { padding: 0 9px; }
         }
+
+        /* v4.10 compact landscape contract: three cards per row on tablets
+           and landscape mobile widths, including the mobile search renderer
+           which remains active below the desktop search breakpoint. */
+        @media (min-width: 700px) and (max-width: 1040px) and (orientation: landscape) {
+            .wow-sr-v5-mobile-grid,
+            .wow-search-recommendations__grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 12px;
+            }
+
+            .wow-sr-v5-mobile-grid .wow410-card,
+            .wow-search-recommendation .wow410-card {
+                height: 420px;
+                grid-template-rows: 138px minmax(0, 1fr) auto;
+                border-radius: 12px;
+            }
+        }
     </style>
 @endonce
 
