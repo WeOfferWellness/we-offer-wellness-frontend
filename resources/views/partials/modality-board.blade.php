@@ -42,7 +42,7 @@
 
 @if($modalityItems->isNotEmpty())
   <section class="wow-modality-discovery" aria-label="{{ $sectionTitle }}">
-    <div class="container-page">
+    <div>
       <header class="wow-modality-discovery__header">
         <div class="wow-modality-discovery__heading">
           <p class="wow-modality-discovery__eyebrow">{{ $sectionKicker }}</p>
