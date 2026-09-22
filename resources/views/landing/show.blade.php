@@ -594,6 +594,62 @@
     </div>
   </section>
 
+  @if(($type ?? '') === 'therapies')
+    @php
+      $therapyFeatured = collect($featuredOfferings ?? [])->values();
+      $therapyPriceBands = collect([
+        ['key' => 'under_30', 'label' => 'Under £30', 'max' => 30],
+        ['key' => '30_59', 'label' => '£30–£59', 'max' => 59],
+        ['key' => '60_99', 'label' => '£60–£99', 'max' => 99, 'featured' => true],
+        ['key' => '100_plus', 'label' => '£100+', 'max' => 500],
+      ])->map(function (array $band) use ($therapyFeatured): array {
+        $count = $therapyFeatured->filter(function ($product) use ($band): bool {
+          $price = data_get($product, 'variants_min_price', data_get($product, 'price'));
+          if (!is_numeric($price)) return false;
+          $price = (float) $price;
+          return match ($band['key']) {
+            'under_30' => $price < 30,
+            '30_59' => $price >= 30 && $price < 60,
+            '60_99' => $price >= 60 && $price < 100,
+            default => $price >= 100,
+          };
+        })->count();
+        return $band + ['count' => $count];
+      })->all();
+    @endphp
+
+    @include('partials.popular-price', [
+      'items' => $therapyPriceBands,
+      'heading' => 'Wellness by price',
+      'intro' => 'Explore price points across live therapy offerings ready to explore and book.',
+      'id' => 'therapies-price-discovery',
+    ])
+
+    @include('partials.faq-section', [
+      'id' => 'therapies-faqs',
+      'eyebrow' => 'Helpful to know',
+      'heading' => 'Frequently asked questions',
+      'intro' => 'Useful answers for choosing and booking a therapy on We Offer Wellness.',
+      'faqs' => [
+        ['q' => 'What therapies can I find on We Offer Wellness?', 'a' => 'Browse live offerings across modalities including massage, Reiki, breathwork, sound healing, reflexology and more.'],
+        ['q' => 'Can I find therapy sessions online?', 'a' => 'Yes. Browse online wellness to find therapies and sessions that can be booked remotely.'],
+        ['q' => 'How do I choose the right therapy?', 'a' => 'Compare the practitioner, format, location, price, description and availability shown on each offering before booking.'],
+        ['q' => 'Are the offerings available to book now?', 'a' => 'Featured offerings are live listings from trusted practitioners, ready to explore and book.'],
+      ],
+    ])
+
+    @include('partials.related-pages', [
+      'id' => 'therapies-related-pages',
+      'heading' => 'Keep exploring',
+      'intro' => 'Continue discovering wellness experiences across the marketplace.',
+      'items' => [
+        ['href' => '/classes', 'type' => 'Classes', 'title' => 'Wellness classes', 'copy' => 'Browse classes for movement, calm and connection.'],
+        ['href' => '/events', 'type' => 'Events', 'title' => 'Wellness events', 'copy' => 'Find workshops, gatherings and experiences.'],
+        ['href' => '/online', 'type' => 'Online', 'title' => 'Online wellness', 'copy' => 'Explore sessions you can join from home.'],
+      ],
+    ])
+  @endif
+
   <div class="container-page">
     @include('partials.guide_panel', [
       'guidePanelModality' => request()->route('modality'),

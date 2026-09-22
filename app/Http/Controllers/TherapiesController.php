@@ -18,57 +18,6 @@ use Illuminate\Support\Str;
 
 class TherapiesController extends Controller
 {
-    public function index(Request $request)
-    {
-        $therapies = $this->therapiesIndex();
-        $offeringCount = Product::query()
-            ->whereHas('status', function ($qs) {
-                $qs->whereIn('status', ['live', 'approved']);
-            })
-            ->where(function ($q) {
-                $q->whereRaw("LOWER(COALESCE(product_type,'')) like '%therap%'");
-            })
-            ->count();
-        $featuredOfferings = Product::query()
-            ->with(['media', 'category', 'options.values', 'vendor.tiers', 'vendor.user.settings'])
-            ->withCount('reviews')
-            ->withAvg('reviews', 'rating')
-            ->withMin('variants', 'price')
-            ->whereHas('status', function ($qs) {
-                $qs->whereIn('status', ['live', 'approved']);
-            })
-            ->where(function ($q) {
-                $q->whereRaw("LOWER(COALESCE(product_type,'')) like '%therap%'");
-            })
-            ->latest('updated_at')
-            ->limit(240)
-            ->get()
-            ->reject(fn ($product) => EventListing::isPast($product))
-            ->map(function (Product $product) {
-                $nextAvailableAt = $this->nextAvailableAt($product);
-                $product->setAttribute('next_available_at', $nextAvailableAt?->toIso8601String());
-                $product->setAttribute('next_available_timestamp', $nextAvailableAt?->timestamp);
-                $product->setAttribute('has_availability_schedule', ProductRanking::availabilityPriority($product) > 0);
-
-                return $product;
-            })
-            ->filter(fn (Product $product) => filled($product->next_available_at ?? null) || (bool) ($product->has_availability_schedule ?? false))
-            ->values();
-
-        $featuredOfferings = ProductRanking::sortCollection($featuredOfferings)->take(8)->values();
-
-        return view('therapies.index', [
-            'seo' => [
-                'title' => 'Therapies | We Offer Wellness™',
-                'description' => 'Explore holistic therapies and modalities, from sound healing and breathwork to massage and Reiki.',
-                'robots' => 'index,follow',
-            ],
-            'therapies' => $therapies,
-            'featuredOfferings' => $featuredOfferings,
-            'offeringCount' => $offeringCount,
-        ]);
-    }
-
     public function show(Request $request, string $slug)
     {
         $therapy = $this->findTherapyBySlug($slug);

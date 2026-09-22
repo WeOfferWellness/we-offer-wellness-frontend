@@ -55,7 +55,7 @@ class TypeController extends Controller
                 'intro' => 'Choose a therapy to see live offerings and refine by format, location or price.',
                 'points' => [],
                 'primary_cta' => ['label' => 'Search therapies', 'href' => '/search?type=therapies'],
-                'secondary_cta' => ['label' => 'Browse online', 'href' => '/search?mode=online&type=therapies'],
+                'secondary_cta' => ['label' => 'Browse online', 'href' => '/online'],
             ],
             'workshops' => [
                 'kicker' => 'Learn & practice', 'title' => 'Workshops',
