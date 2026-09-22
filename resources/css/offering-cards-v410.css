@@ -39,7 +39,7 @@
   height: var(--wow410-card-h-desktop);
   overflow: hidden;
   border: 1px solid rgba(16, 24, 40, .1);
-  border-radius: 13px;
+  border-radius: 4px;
   background: #fff;
   box-shadow: 0 4px 16px rgba(16, 24, 40, .05);
   color: var(--wow410-ink);
@@ -259,7 +259,7 @@
   #home-latest-catalogue-cards,
   #home-gifts-cards { gap: var(--wow410-card-gap) !important; }
   .wow410-grid, .wow410-filter-layout .wow410-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--wow410-card-gap); }
-  .wow410-card { height: var(--wow410-card-h-mobile); grid-template-rows: 126px minmax(0, 1fr) auto; border-radius: 11px; }
+  .wow410-card { height: var(--wow410-card-h-mobile); grid-template-rows: 126px minmax(0, 1fr) auto; border-radius: 4px; }
   .wow410-card__type, .wow410-card__signal { top: 7px; left: 7px; min-height: 21px; padding-inline: 7px; font-size: 8.5px; }
   .wow410-card__signal { left: auto; right: 7px; }
   .wow410-card__rosette { top: 6px; right: 6px; width: 34px; height: 34px; }
@@ -293,7 +293,7 @@
   #home-latest-catalogue-cards,
   #home-gifts-cards { gap: var(--wow410-card-gap) !important; }
   .wow410-grid, .wow410-filter-layout .wow410-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--wow410-card-gap); }
-  .wow410-card { height: var(--wow410-card-h-tablet); grid-template-rows: 145px minmax(0, 1fr) auto; border-radius: 12px; }
+  .wow410-card { height: var(--wow410-card-h-tablet); grid-template-rows: 145px minmax(0, 1fr) auto; border-radius: 4px; }
   #home-latest-catalogue-cards > .wow410-card,
   #home-gifts-cards > .wow410-card,
   .comfort-price-rail > .wow410-card { flex: 0 0 calc((100% - 32px) / 3); min-width: 0; max-width: none; }
