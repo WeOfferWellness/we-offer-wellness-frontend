@@ -1037,7 +1037,7 @@
       data-product-id="{{ $product->id }}"
       data-source-version="legacy"
       data-url="{{ $url }}"
-      data-wow-analytics-item="{{ e(json_encode([
+      data-wow-analytics-item="{!! e(json_encode([
         'id' => $product->id,
         'title' => $titleFormatted,
         'price' => is_numeric($priceMin) ? (float) $priceMin : 0,
@@ -1046,7 +1046,7 @@
         'catalogue_type' => strtolower($typeLabel),
         'modality' => $categoryLabel ?? $typeLabel,
         'provider_id' => $product->vendor_id ?? null,
-      ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)) }}"
+      ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)) !!}"
     >
       <div class="wow-row-card">
         <div class="wow-row-media">

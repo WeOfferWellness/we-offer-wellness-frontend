@@ -39,7 +39,7 @@
 <div
     hidden
     data-wow-analytics-page="product"
-    data-wow-analytics-item="{{ e(json_encode([
+    data-wow-analytics-item="{!! e(json_encode([
         'id' => 'store-' . data_get($product, 'id', 0),
         'product_id' => data_get($product, 'id', 0),
         'title' => $title,
@@ -49,7 +49,7 @@
         'catalogue_type' => 'physical_product',
         'modality' => $categoryName,
         'variant_id' => $variantId,
-    ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)) }}"
+    ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)) !!}"
 ></div>
 
 <style>

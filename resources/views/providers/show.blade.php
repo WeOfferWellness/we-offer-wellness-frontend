@@ -526,12 +526,12 @@
 <div
     hidden
     data-wow-analytics-practitioner
-    data-wow-analytics-item="{{ e(json_encode([
+    data-wow-analytics-item="{!! e(json_encode([
         'practitioner_id' => (string) ($user->id ?? ''),
         'profile_type' => $profileType,
         'category_count' => (int) $visibleProducts->count(),
         'location' => $productLocationLabels->first() ?? null,
-    ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)) }}"
+    ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)) !!}"
 ></div>
 
 @push('styles')

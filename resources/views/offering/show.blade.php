@@ -1244,7 +1244,7 @@
 <div
   hidden
   data-wow-analytics-page="offering"
-  data-wow-analytics-item="{{ e(json_encode([
+  data-wow-analytics-item="{!! e(json_encode([
     'id' => data_get($p, 'id', data_get($p, 'offering_id', '')),
     'offering_id' => data_get($p, 'offering_id', data_get($p, 'id', '')),
     'title' => $title,
@@ -1254,7 +1254,7 @@
     'catalogue_type' => $isEventOffering ? 'event' : 'offering',
     'modality' => data_get($p, 'category.name', data_get($p, 'category.slug', '')),
     'provider_id' => data_get($p, 'vendor_id', data_get($p, 'provider_id', '')),
-  ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)) }}"
+  ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)) !!}"
 ></div>
 
 @push('head')
