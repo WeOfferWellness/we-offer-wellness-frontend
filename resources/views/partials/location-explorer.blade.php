@@ -49,13 +49,18 @@
                     $path = (string) ($item['path'] ?? '/locations');
                     $image = $normaliseImage($item['image_url'] ?? $item['image_path'] ?? null);
                     $isFeatured = $index === 0 && $featured !== null;
+                    $isWide = !$isFeatured && (
+                        filter_var($item['wide'] ?? false, FILTER_VALIDATE_BOOLEAN)
+                        || (string) ($item['layout'] ?? '') === 'wide'
+                        || Str::lower($title) === 'chislehurst'
+                    );
                     $description = trim((string) ($item['description'] ?? ''));
                     if ($description === '' && isset($item['supply_count'])) {
                         $count = (int) $item['supply_count'];
                         $description = $count.' local '.($count === 1 ? 'offering' : 'offerings');
                     }
                 @endphp
-                <article class="wow-location-tile{{ $isFeatured ? ' wow-location-tile--featured' : '' }}">
+                <article class="wow-location-tile{{ $isFeatured ? ' wow-location-tile--featured' : ($isWide ? ' wow-location-tile--wide' : '') }}">
                     @if($image !== '')
                         <img src="{{ $image }}" alt="{{ $title }}" class="wow-location-tile__image" loading="lazy">
                     @endif
@@ -88,6 +93,7 @@
     .wow-location-explorer__grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-rows: 170px; gap: 14px; }
     .wow-location-tile { position: relative; display: block; min-width: 0; overflow: hidden; border-radius: 4px; background: #17201d; color: #fff; isolation: isolate; }
     .wow-location-tile--featured { grid-column: span 2; grid-row: span 2; }
+    .wow-location-tile--wide { grid-column: span 2; }
     .wow-location-tile__image { position: absolute; inset: 0; z-index: -2; width: 100%; height: 100%; object-fit: cover; transition: transform .45s ease; }
     .wow-location-tile:hover .wow-location-tile__image { transform: scale(1.045); }
     .wow-location-tile__overlay { position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgba(8,28,23,.04) 10%, rgba(8,28,23,.15) 42%, rgba(6,28,23,.86) 100%); }
@@ -108,7 +114,8 @@
         .wow-location-explorer h2 { font-size: 38px; }
         .wow-location-explorer__intro { font-size: 14px; }
         .wow-location-explorer__grid { grid-template-columns: 1fr; grid-auto-rows: 160px; gap: 10px; }
-        .wow-location-tile--featured { grid-column: span 1; grid-row: span 1; min-height: 220px; }
+        .wow-location-tile--featured, .wow-location-tile--wide { grid-column: span 1; grid-row: span 1; }
+        .wow-location-tile--featured { min-height: 220px; }
         .wow-location-tile__content { right: 16px; bottom: 15px; left: 16px; }
         .wow-location-tile h3, .wow-location-tile--featured h3 { font-size: 27px; }
         .wow-location-tile__content p { display: none; }
