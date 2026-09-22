@@ -36,6 +36,8 @@
           ?? ''
         ));
         $price = data_get($product, 'variants_min_price', data_get($product, 'price', null));
+        $hasFutureAvailability = filled(data_get($product, 'next_available_at'))
+          || data_get($product, 'availability_state') === 'available';
 
         $schemaItem = array_filter([
           '@type' => 'Service',
@@ -49,13 +51,13 @@
             '@type' => 'Organization',
             'name' => $providerName,
           ] : null,
-          'offers' => is_numeric($price) && (float) $price > 0 ? [
+          'offers' => is_numeric($price) && (float) $price > 0 ? array_filter([
             '@type' => 'Offer',
             'url' => $url,
             'price' => number_format((float) $price, 2, '.', ''),
             'priceCurrency' => 'GBP',
-            'availability' => 'https://schema.org/InStock',
-          ] : null,
+            'availability' => $hasFutureAvailability ? 'https://schema.org/InStock' : null,
+          ], static fn ($value) => $value !== null && $value !== ''),
         ], static fn ($value) => $value !== null && $value !== '');
 
         return [

@@ -6,10 +6,11 @@
   @if(!empty($seo['robots']))<meta name="robots" content="{{ $seo['robots'] }}">@endif
   @php
     $pageCanonical = $seo['canonical'] ?? url()->current();
-    $itemListLd = [
-      '@context' => 'https://schema.org',
-      '@type' => 'ItemList',
-      'itemListElement' => collect($products ?? [])
+    $slug = $slug ?? request()->route('slug');
+    $landingTitle = trim((string) ($landing['title'] ?? ''));
+    $landingCategory = trim((string) \Illuminate\Support\Str::headline((string) $slug));
+    $landingSectionLabel = trim((string) \Illuminate\Support\Str::headline((string) ($type ?? 'therapies')));
+    $landingItems = collect($products ?? [])
         ->values()
         ->take(24)
         ->map(function ($product, $index) {
@@ -22,12 +23,25 @@
         })
         ->filter(fn (array $item) => !empty($item['url']))
         ->values()
-        ->all(),
+        ->all();
+    $itemListLd = [
+      '@context' => 'https://schema.org',
+      '@graph' => [
+        [
+          '@type' => 'CollectionPage',
+          '@id' => $pageCanonical . '#webpage',
+          'url' => $pageCanonical,
+          'name' => $landingTitle !== '' ? $landingTitle : $landingSectionLabel,
+          'mainEntity' => ['@id' => $pageCanonical . '#itemlist'],
+          'isPartOf' => ['@id' => url('/') . '#website'],
+        ],
+        [
+          '@type' => 'ItemList',
+          '@id' => $pageCanonical . '#itemlist',
+          'itemListElement' => $landingItems,
+        ],
+      ],
     ];
-    $slug = $slug ?? request()->route('slug');
-  $landingTitle = trim((string) ($landing['title'] ?? ''));
-  $landingCategory = trim((string) \Illuminate\Support\Str::headline((string) $slug));
-  $landingSectionLabel = trim((string) \Illuminate\Support\Str::headline((string) ($type ?? 'therapies')));
   $landingCrumbs = [
       ['label' => 'Home', 'url' => url('/')],
       ['label' => $landingSectionLabel !== '' ? $landingSectionLabel : 'Therapies', 'url' => url('/' . ($type ?? 'therapies'))],
