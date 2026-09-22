@@ -28,7 +28,7 @@ class TypeController extends Controller
 
     public function events(Request $request)
     {
-        return app(EventsController::class)->index($request);
+        return $this->renderTypeLanding($request, 'events');
     }
 
     public function workshops(Request $request)
@@ -55,6 +55,14 @@ class TypeController extends Controller
                 'intro' => 'Choose a therapy to see live offerings and refine by format, location or price.',
                 'points' => [],
                 'primary_cta' => ['label' => 'Search therapies', 'href' => '/search?type=therapies'],
+                'secondary_cta' => ['label' => 'Browse online', 'href' => '/online'],
+            ],
+            'events' => [
+                'kicker' => 'Discover & connect', 'title' => 'Events',
+                'description' => 'Discover wellbeing events, gatherings and experiences from trusted hosts.',
+                'intro' => 'Find upcoming events that fit your interests, format and location.',
+                'points' => ['Upcoming experiences', 'Online and in-person options', 'Clear dates, formats and booking details'],
+                'primary_cta' => ['label' => 'Browse events', 'href' => '#landing-products'],
                 'secondary_cta' => ['label' => 'Browse online', 'href' => '/online'],
             ],
             'workshops' => [
@@ -130,7 +138,14 @@ class TypeController extends Controller
 
     private function applyTypeFilter($query, string $type): void
     {
-        $term = match (strtolower($type)) { 'classes' => 'class', 'workshops' => 'workshop', 'retreats' => 'retreat', default => strtolower($type) };
+        $term = match (strtolower($type)) {
+            'classes' => 'class',
+            'events' => 'event',
+            'workshops' => 'workshop',
+            'retreats' => 'retreat',
+            default => strtolower($type),
+        };
+        $query->whereHas('status', fn ($status) => $status->whereIn('status', ['live', 'approved']));
         $query->whereRaw('LOWER(COALESCE(product_type,\'\')) like ?', ['%'.$term.'%']);
     }
 
