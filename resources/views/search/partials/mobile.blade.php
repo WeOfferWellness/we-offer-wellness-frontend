@@ -195,6 +195,17 @@
                 gap: 12px;
             }
         }
+
+        /* Width takes priority for compact tablets and large phone
+           viewports: a 600–699px viewport is always three-up, regardless of
+           the orientation value reported by the browser. */
+        @media (min-width: 600px) and (max-width: 699px) {
+            .wow-sr-v5-mobile .wow-sr-v5-mobile-grid,
+            .wow-sr-v5-mobile .wow-search-recommendations__grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+                gap: 12px;
+            }
+        }
     </style>
 @endonce
 
