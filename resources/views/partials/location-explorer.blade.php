@@ -33,16 +33,15 @@
 
 @if($tiles->isNotEmpty())
 <section class="wow-location-explorer" aria-labelledby="{{ $id ?? 'wow-location-explorer-heading' }}">
-    <div class="container-page">
-        <div class="wow-location-explorer__header">
+    <div class="wow-location-explorer__header">
             <div>
                 <p class="wow-location-explorer__eyebrow">{{ $eyebrow }}</p>
                 <h2 id="{{ $id ?? 'wow-location-explorer-heading' }}">{{ $heading }}</h2>
                 <p class="wow-location-explorer__intro">{{ $intro }}</p>
             </div>
-        </div>
+    </div>
 
-        <div class="wow-location-explorer__grid">
+    <div class="wow-location-explorer__grid">
             @foreach($tiles as $index => $item)
                 @php
                     $title = trim((string) ($item['title'] ?? $item['label'] ?? 'Location'));
@@ -81,7 +80,6 @@
                     </div>
                 </article>
             @endforeach
-        </div>
     </div>
 </section>
 
