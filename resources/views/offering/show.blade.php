@@ -46,16 +46,25 @@
   $durationText = '';
   $bookingVariantLabel = trim((string)($p['booking_variant_label'] ?? ''));
   $variantDurationMins = 0;
-  $isEventOffering = in_array(strtolower((string) ($type ?? '')), ['event', 'events', 'workshop', 'workshops', 'retreat', 'retreats'], true)
-    || str_contains(strtolower((string) ($product['type'] ?? '')), 'event')
-    || str_contains(strtolower((string) ($product['type'] ?? '')), 'workshop')
-    || str_contains(strtolower((string) ($product['type'] ?? '')), 'retreat')
-    || !empty($p['start_date'])
-    || !empty($p['end_date']);
+  $eventType = strtolower(trim((string) ($p['type'] ?? $type ?? '')));
+  $isPublicEventType = in_array($eventType, ['event', 'events', 'workshop', 'workshops', 'retreat', 'retreats'], true)
+    || str_contains($eventType, 'event')
+    || str_contains($eventType, 'workshop')
+    || str_contains($eventType, 'retreat');
   $eventStartDate = trim((string) ($p['start_date'] ?? ''));
   $eventStartTime = trim((string) ($p['start_time'] ?? ''));
   $eventEndDate = trim((string) ($p['end_date'] ?? ''));
   $eventEndTime = trim((string) ($p['end_time'] ?? ''));
+  $hasValidEventStart = false;
+  if ($eventStartDate !== '') {
+    try {
+      \Carbon\Carbon::parse($eventStartDate . ($eventStartTime !== '' ? ' ' . $eventStartTime : ''));
+      $hasValidEventStart = true;
+    } catch (Throwable $e) {
+      $hasValidEventStart = false;
+    }
+  }
+  $isEventOffering = $isPublicEventType && $hasValidEventStart;
   $isV3Offering = strtolower(trim((string) ($p['source_version'] ?? ''))) === 'v3';
   $isGiftCardOffering = str_contains(strtolower((string) ($type ?? '')), 'gift')
     || str_contains(strtolower($title), 'gift card')
@@ -136,6 +145,17 @@
   }
   $bookingMeta = $p['booking'] ?? [];
   $slotsByDay = is_array($bookingMeta['slotsByDay'] ?? null) ? $bookingMeta['slotsByDay'] : [];
+  $hasFutureBookableSlot = false;
+  foreach ($slotsByDay as $slots) {
+    if (is_array($slots['slots'] ?? null) && $slots['slots'] !== []) {
+      $hasFutureBookableSlot = true;
+      break;
+    }
+  }
+  $hasFutureBookableSlot = $hasFutureBookableSlot || (($p['availability_state'] ?? '') === 'available');
+  $availabilityConfigured = $hasFutureBookableSlot
+    || (($p['availability_state'] ?? '') === 'unavailable')
+    || ! empty($bookingMeta['weeklyWindows']);
   $availableDays = [];
   foreach ($slotsByDay as $dayKey => $slots) {
     if (!is_array($slots) || empty($slots)) {
@@ -162,20 +182,17 @@
     $names = array_values(array_map(fn($i) => $map[$i] ?? null, array_keys($availableDays)));
     $names = array_values(array_filter($names));
     if (count($names) === 7) {
-      $availabilityPattern = 'This therapy is available 7 days a week (subject to practitioner availability).';
+      $availabilityPattern = 'Published availability is shown in the booking calendar.';
     } elseif (count($names) === 1) {
-      $availabilityPattern = 'This therapy is usually available on ' . $names[0] . ' (subject to practitioner availability).';
+      $availabilityPattern = 'Published availability is shown in the booking calendar.';
     } elseif (count($names) === 2) {
-      $availabilityPattern = 'This therapy is usually available on ' . $names[0] . ' and ' . $names[1] . ' (subject to practitioner availability).';
+      $availabilityPattern = 'Published availability is shown in the booking calendar.';
     } else {
       $last = array_pop($names);
-      $availabilityPattern = 'This therapy is usually available on ' . implode(', ', $names) . ', and ' . $last . ' (subject to practitioner availability).';
+      $availabilityPattern = 'Published availability is shown in the booking calendar.';
     }
   }
-  $availabilityLeadTime = $p['booking']['lead_time_text'] ?? '';
-  if ($availabilityLeadTime === '') {
-    $availabilityLeadTime = 'We recommend booking at least 2–4 weeks in advance to ensure your preferred slots are available.';
-  }
+  $availabilityLeadTime = trim((string) ($p['booking']['lead_time_text'] ?? ''));
   $availabilityDuration = $p['booking']['duration_text'] ?? '';
   if ($variantDurationMins > 0) {
     $durationText = $variantDurationMins . ' min';
@@ -192,9 +209,6 @@
     if (is_numeric($durationMins) && (int) $durationMins > 0) {
       $durationText = (int) $durationMins . ' min';
       $availabilityDuration = 'Please allow up to ' . (int) $durationMins . ' minutes for the full therapy (plus a few minutes to settle in).';
-    } else {
-      $availabilityDuration = 'Please allow up to 60 minutes for the full therapy (plus a few minutes to settle in).';
-      $durationText = '60 min';
     }
   }
   $reviewPreviewWords = 55;
@@ -281,24 +295,26 @@
     data_get($p, 'vendor_name')
     ?: data_get($p, 'vendor.vendor_name')
     ?: data_get($p, 'vendor.user.name')
+    ?: data_get($p, 'practitioner.name')
     ?: data_get($p, 'practitioner_name')
     ?: ''
   ));
   $schemaProviderType = data_get($p, 'vendor_name') || data_get($p, 'vendor.vendor_name')
     ? 'Organization'
     : 'Person';
-  if ($schemaProviderName === '') {
-    $schemaProviderName = 'We Offer Wellness';
-    $schemaProviderType = 'Organization';
-  }
   $schemaProviderUrl = trim((string) (
     data_get($p, 'vendor.profile_url')
     ?: data_get($p, 'vendor.user.practitioner_profile_url')
     ?: data_get($p, 'vendor.user.profile_url')
+    ?: data_get($p, 'practitioner.profile_url')
     ?: data_get($p, 'practitioner_profile_url')
     ?: ''
   ));
-  $schemaBuildOffers = static function (array $variants, ?float $fallbackPrice, string $fallbackName, bool $includeValidFrom = false) use ($schemaPriceCurrency, $schemaUrl, $schemaMoneyValue, $schemaProviderName, $schemaProviderType, $schemaProviderUrl): array {
+  $schemaProviderId = $schemaProviderUrl !== ''
+    ? rtrim($schemaProviderUrl, '/') . '#' . ($schemaProviderType === 'Person' ? 'person' : 'organization')
+    : null;
+  $schemaServiceHasFutureAvailability = ! $isEventOffering && ! $isGiftCardOffering && $hasFutureBookableSlot;
+  $schemaBuildOffers = static function (array $variants, ?float $fallbackPrice, string $fallbackName, bool $includeValidFrom = false) use ($schemaPriceCurrency, $schemaUrl, $schemaMoneyValue, $schemaServiceHasFutureAvailability): array {
     $offers = [];
 
     foreach ($variants as $variant) {
@@ -330,16 +346,15 @@
         'url' => $variantUrl,
         'price' => $variantPrice,
         'priceCurrency' => $schemaPriceCurrency,
-        'availability' => ! array_key_exists('available', $variant) || (bool) $variant['available']
-          ? 'https://schema.org/InStock'
-          : 'https://schema.org/OutOfStock',
         'seller' => [
           '@id' => url('/') . '#organization',
         ],
       ];
 
-      if ($includeValidFrom) {
-        $offer['validFrom'] = now()->toAtomString();
+      if ($schemaServiceHasFutureAvailability && (! array_key_exists('available', $variant) || (bool) $variant['available'])) {
+        $offer['availability'] = 'https://schema.org/InStock';
+      } elseif (array_key_exists('available', $variant) && ! (bool) $variant['available']) {
+        $offer['availability'] = 'https://schema.org/OutOfStock';
       }
 
       $offers[] = array_filter($offer, static fn ($value) => $value !== null && $value !== '' && $value !== []);
@@ -353,14 +368,13 @@
         'url' => $schemaUrl,
         'price' => $fallbackPrice,
         'priceCurrency' => $schemaPriceCurrency,
-        'availability' => 'https://schema.org/InStock',
         'seller' => [
           '@id' => url('/') . '#organization',
         ],
       ];
 
-      if ($includeValidFrom) {
-        $offer['validFrom'] = now()->toAtomString();
+      if ($schemaServiceHasFutureAvailability) {
+        $offer['availability'] = 'https://schema.org/InStock';
       }
 
       $offers[] = array_filter($offer, static fn ($value) => $value !== null && $value !== '' && $value !== []);
@@ -487,14 +501,14 @@
       continue;
     }
 
-    $reviewRating = (int) ($review['rating'] ?? $review['ratingValue'] ?? 0);
-    if ($reviewRating <= 0) {
-      $reviewRating = 5;
-    }
+    $reviewRatingRaw = $review['rating'] ?? $review['ratingValue'] ?? null;
+    $reviewRating = is_numeric($reviewRatingRaw) && (float) $reviewRatingRaw >= 1 && (float) $reviewRatingRaw <= 5
+      ? (float) $reviewRatingRaw
+      : null;
 
     $authorName = trim((string) ($review['author'] ?? data_get($review, 'user.name', 'Verified customer')));
     $datePublished = trim((string) ($review['date'] ?? $review['created_at'] ?? ''));
-    $schemaReviewKey = strtolower($authorName . '|' . $reviewRating . '|' . $reviewText);
+    $schemaReviewKey = strtolower($authorName . '|' . ($reviewRating ?? '') . '|' . $reviewText);
     if (isset($schemaReviewKeys[$schemaReviewKey])) {
       continue;
     }
@@ -502,17 +516,19 @@
     $schemaReview = [
       '@type' => 'Review',
       'reviewBody' => $reviewText,
-      'reviewRating' => [
-        '@type' => 'Rating',
-        'ratingValue' => $reviewRating,
-        'bestRating' => 5,
-        'worstRating' => 1,
-      ],
       'author' => [
         '@type' => 'Person',
         'name' => $authorName !== '' ? $authorName : 'Verified customer',
       ],
     ];
+    if ($reviewRating !== null) {
+      $schemaReview['reviewRating'] = [
+        '@type' => 'Rating',
+        'ratingValue' => $reviewRating,
+        'bestRating' => 5,
+        'worstRating' => 1,
+      ];
+    }
     if ($datePublished !== '') {
       $schemaReview['datePublished'] = $datePublished;
     }
@@ -528,15 +544,13 @@
   $schemaVendorReviewCount = (int) ($schemaVendorReviewSummary['count'] ?? 0);
   $schemaVendorReviewRating = isset($schemaVendorReviewSummary['rating']) ? round((float) $schemaVendorReviewSummary['rating'], 1) : null;
   $schemaReviewCount = max($schemaReviewCount, $schemaVendorReviewCount);
-  if ($schemaReviewCount > 0) {
+  $schemaRatingFallback = is_numeric($p['rating'] ?? null) && (float) $p['rating'] > 0
+    ? (float) $p['rating']
+    : ($schemaVendorReviewRating !== null && $schemaVendorReviewRating > 0 ? $schemaVendorReviewRating : null);
+  if ($schemaReviewCount > 0 && ($schemaRatingValues !== [] || $schemaRatingFallback !== null)) {
     $ratingValue = $schemaRatingValues !== []
       ? (array_sum($schemaRatingValues) / max(1, count($schemaRatingValues)))
-      : (is_numeric($p['rating'] ?? null) && (float) $p['rating'] > 0
-        ? (float) $p['rating']
-        : ($schemaVendorReviewRating !== null && (float) $schemaVendorReviewRating > 0 ? (float) $schemaVendorReviewRating : 5.0));
-    if (!is_numeric($ratingValue) || (float) $ratingValue <= 0) {
-      $ratingValue = 5.0;
-    }
+      : $schemaRatingFallback;
     $schemaAggregate = [
       '@type' => 'AggregateRating',
       'ratingValue' => number_format((float) $ratingValue, 1, '.', ''),
@@ -580,10 +594,8 @@
     'url' => $schemaUrl,
     'mainEntityOfPage' => $schemaUrl,
     'serviceType' => trim((string) (data_get($p, 'category.name') ?: $type)) ?: null,
-    'provider' => [
-      '@id' => url('/') . '#localbusiness',
-    ],
-    'hoursAvailable' => $schemaHoursAvailable ?: null,
+    'provider' => $schemaProviderId !== null ? ['@id' => $schemaProviderId] : null,
+    'hoursAvailable' => $availabilityConfigured && $schemaHoursAvailable !== [] ? $schemaHoursAvailable : null,
     'offers' => $schemaOffers,
     'aggregateRating' => $schemaAggregate,
     'sku' => isset($p['id']) ? (string) $p['id'] : null,
@@ -626,6 +638,47 @@
     'hasOfferCatalog' => $schemaOfferCatalog,
   ], static fn ($value) => $value !== null && $value !== '' && $value !== []);
 
+  $schemaProviderEntity = null;
+  if ($schemaProviderId !== null && $schemaProviderName !== '') {
+    $schemaProviderEntity = array_filter([
+      '@type' => $schemaProviderType,
+      '@id' => $schemaProviderId,
+      'name' => $schemaProviderName,
+      'url' => $schemaProviderUrl !== '' ? $schemaProviderUrl : null,
+    ], static fn ($value) => $value !== null && $value !== '' && $value !== []);
+  }
+  $schemaServiceGraphItem = $schemaService;
+  unset($schemaServiceGraphItem['@context']);
+  $schemaServiceGraph = [
+    '@context' => 'https://schema.org',
+    '@graph' => array_values(array_filter([
+      [
+        '@type' => 'Organization',
+        '@id' => url('/') . '#organization',
+        'name' => 'We Offer Wellness®',
+        'url' => url('/'),
+      ],
+      [
+        '@type' => 'WebSite',
+        '@id' => url('/') . '#website',
+        'name' => 'We Offer Wellness®',
+        'url' => url('/'),
+        'publisher' => ['@id' => url('/') . '#organization'],
+      ],
+      [
+        '@type' => 'WebPage',
+        '@id' => $schemaUrl . '#webpage',
+        'url' => $schemaUrl,
+        'name' => $title . ' | We Offer Wellness®',
+        'isPartOf' => ['@id' => url('/') . '#website'],
+        'mainEntity' => ['@id' => $schemaUrl . '#service'],
+        'publisher' => ['@id' => url('/') . '#organization'],
+      ],
+      $schemaProviderEntity,
+      $schemaServiceGraphItem,
+    ], static fn ($value) => $value !== null && $value !== '' && $value !== [])),
+  ];
+
   $schemaEventGraph = null;
   if ($isEventOffering) {
     $schemaEventTimezone = trim((string) data_get($p, 'event.timezone', 'Europe/London'));
@@ -656,8 +709,9 @@
     $schemaEventPractitioner = is_array($p['practitioner'] ?? null) ? $p['practitioner'] : [];
     $schemaEventPractitionerName = trim((string) ($schemaEventPractitioner['name'] ?? ''));
     $schemaEventPractitionerUrl = trim((string) ($schemaEventPractitioner['profile_url'] ?? ''));
-    $schemaEventOrganizerUrl = url('/');
-    $schemaEventOrganizerName = 'We Offer Wellness®';
+    $schemaEventOrganizer = $schemaProviderId !== null && $schemaProviderName !== ''
+      ? ['@id' => $schemaProviderId]
+      : ['@id' => url('/') . '#organization'];
 
     $schemaEventLocations = is_array($p['locations'] ?? null) ? array_values(array_filter($p['locations'])) : [];
     $schemaEventHasOnline = collect($schemaEventLocations)->contains(fn ($location) => str_contains(strtolower((string) $location), 'online'));
@@ -671,9 +725,6 @@
     $schemaEventVenueLocations = array_values(array_filter(is_array($p['venue_locations'] ?? null) ? $p['venue_locations'] : []));
     $schemaEventVenue = is_array($schemaEventVenueLocations[0] ?? null) ? $schemaEventVenueLocations[0] : [];
     $schemaEventVenueName = trim((string) data_get($schemaEventVenue, 'label', ''));
-    if ($schemaEventVenueName === '') {
-      $schemaEventVenueName = trim((string) ($p['location'] ?? ($schemaEventLocations[0] ?? '')));
-    }
     $schemaEventStreetAddress = trim((string) data_get($schemaEventVenue, 'address_line_1', ''));
     $schemaEventAddressLine2 = trim((string) data_get($schemaEventVenue, 'address_line_2', ''));
     $schemaEventCity = trim((string) data_get($schemaEventVenue, 'city', ''));
@@ -705,7 +756,7 @@
       $schemaEventPlace = array_filter([
         '@type' => 'Place',
         '@id' => $schemaUrl . '#place',
-        'name' => $schemaEventVenueName !== '' ? $schemaEventVenueName : $title,
+        'name' => $schemaEventVenueName !== '' ? $schemaEventVenueName : null,
         'url' => $schemaEventMapsUrl !== '' ? $schemaEventMapsUrl : null,
         'address' => array_filter([
           '@type' => 'PostalAddress',
@@ -734,6 +785,21 @@
     }
 
     $schemaEventOffers = [];
+    $schemaEventValidFrom = null;
+    $schemaEventValidFromRaw = trim((string) (
+      data_get($p, 'event.valid_from')
+      ?: data_get($p, 'event.validFrom')
+      ?: data_get($p, 'event.on_sale_at')
+      ?: data_get($p, 'event.sale_start_at')
+      ?: ''
+    ));
+    if ($schemaEventValidFromRaw !== '') {
+      try {
+        $schemaEventValidFrom = \Carbon\Carbon::parse($schemaEventValidFromRaw)->toAtomString();
+      } catch (\Throwable $e) {
+        $schemaEventValidFrom = null;
+      }
+    }
     if ($showBookingUi) {
       foreach ((array) ($p['variants'] ?? []) as $variant) {
         if (! is_array($variant)) {
@@ -747,7 +813,7 @@
         }
 
         $variantPrice = $schemaMoneyValue($variant['price'] ?? null);
-        if ($variantPrice === null || $variantPrice <= 0) {
+        if ($variantPrice === null || $variantPrice < 0) {
           continue;
         }
 
@@ -756,37 +822,44 @@
           $variantUrl .= (str_contains($schemaUrl, '?') ? '&' : '?') . 'variant=' . rawurlencode($variantId);
         }
 
-        $schemaEventOffers[] = array_filter([
+        $schemaEventOffer = array_filter([
           '@type' => 'Offer',
           '@id' => $schemaUrl . '#offer-' . ($variantId !== '' ? \Illuminate\Support\Str::slug($variantId) : \Illuminate\Support\Str::slug($variantLabel)),
           'name' => $variantLabel,
           'url' => $variantUrl,
           'price' => $variantPrice,
           'priceCurrency' => $schemaPriceCurrency,
-          'availability' => ! array_key_exists('available', $variant) || (bool) $variant['available']
-            ? 'https://schema.org/InStock'
-            : 'https://schema.org/OutOfStock',
-          'validFrom' => now()->toAtomString(),
           'seller' => [
             '@id' => url('/') . '#organization',
           ],
         ], static fn ($value) => $value !== null && $value !== '');
+        if (array_key_exists('available', $variant)) {
+          $schemaEventOffer['availability'] = (bool) $variant['available']
+            ? 'https://schema.org/InStock'
+            : 'https://schema.org/OutOfStock';
+        }
+        if ($schemaEventValidFrom !== null) {
+          $schemaEventOffer['validFrom'] = $schemaEventValidFrom;
+        }
+        $schemaEventOffers[] = $schemaEventOffer;
       }
 
-      if ($schemaEventOffers === [] && $schemaFallbackPrice !== null && $schemaFallbackPrice > 0) {
-        $schemaEventOffers[] = [
+      if ($schemaEventOffers === [] && $schemaFallbackPrice !== null && $schemaFallbackPrice >= 0) {
+        $schemaEventOffer = [
           '@type' => 'Offer',
           '@id' => $schemaUrl . '#offer-default',
           'name' => $title . ' ticket',
           'url' => $schemaUrl,
           'price' => $schemaFallbackPrice,
           'priceCurrency' => $schemaPriceCurrency,
-          'availability' => 'https://schema.org/InStock',
-          'validFrom' => now()->toAtomString(),
           'seller' => [
             '@id' => url('/') . '#organization',
           ],
         ];
+        if ($schemaEventValidFrom !== null) {
+          $schemaEventOffer['validFrom'] = $schemaEventValidFrom;
+        }
+        $schemaEventOffers[] = $schemaEventOffer;
       }
     }
 
@@ -803,14 +876,14 @@
         continue;
       }
 
-      $reviewRating = (int) ($review['rating'] ?? $review['ratingValue'] ?? 0);
-      if ($reviewRating <= 0) {
-        $reviewRating = 5;
-      }
+      $reviewRatingRaw = $review['rating'] ?? $review['ratingValue'] ?? null;
+      $reviewRating = is_numeric($reviewRatingRaw) && (float) $reviewRatingRaw >= 1 && (float) $reviewRatingRaw <= 5
+        ? (float) $reviewRatingRaw
+        : null;
 
       $authorName = trim((string) ($review['author'] ?? data_get($review, 'user.name', 'Verified customer')));
       $datePublished = trim((string) ($review['date'] ?? $review['created_at'] ?? ''));
-      $schemaEventReviewKey = strtolower($authorName . '|' . $reviewRating . '|' . $reviewText);
+      $schemaEventReviewKey = strtolower($authorName . '|' . ($reviewRating ?? '') . '|' . $reviewText);
       if (isset($schemaEventReviewKeys[$schemaEventReviewKey])) {
         continue;
       }
@@ -818,17 +891,19 @@
       $schemaEventReview = [
         '@type' => 'Review',
         'reviewBody' => $reviewText,
-        'reviewRating' => [
-          '@type' => 'Rating',
-          'ratingValue' => $reviewRating,
-          'bestRating' => 5,
-          'worstRating' => 1,
-        ],
         'author' => [
           '@type' => 'Person',
           'name' => $authorName !== '' ? $authorName : 'Verified customer',
         ],
       ];
+      if ($reviewRating !== null) {
+        $schemaEventReview['reviewRating'] = [
+          '@type' => 'Rating',
+          'ratingValue' => $reviewRating,
+          'bestRating' => 5,
+          'worstRating' => 1,
+        ];
+      }
       if ($datePublished !== '') {
         $schemaEventReview['datePublished'] = $datePublished;
       }
@@ -839,13 +914,13 @@
 
     $schemaEventAggregate = null;
     $schemaEventReviewCount = max((int) ($p['review_count'] ?? 0), count($schemaEventReviews));
-    if ($schemaEventReviewCount > 0) {
+    $schemaEventRatingFallback = is_numeric($p['rating'] ?? null) && (float) $p['rating'] > 0
+      ? (float) $p['rating']
+      : null;
+    if ($schemaEventReviewCount > 0 && ($schemaEventRatingValues !== [] || $schemaEventRatingFallback !== null)) {
       $ratingValue = $schemaEventRatingValues !== []
         ? (array_sum($schemaEventRatingValues) / max(1, count($schemaEventRatingValues)))
-        : (is_numeric($p['rating'] ?? null) && (float) $p['rating'] > 0 ? (float) $p['rating'] : 5.0);
-      if (!is_numeric($ratingValue) || (float) $ratingValue <= 0) {
-        $ratingValue = 5.0;
-      }
+        : $schemaEventRatingFallback;
       $schemaEventAggregate = [
         '@type' => 'AggregateRating',
         'ratingValue' => number_format((float) $ratingValue, 1, '.', ''),
@@ -964,7 +1039,7 @@
       $schemaEventScheduleDays = [];
     }
     $schemaEventSpaceMap = [];
-    $schemaEventVenueName = trim((string) ($schemaEventVenueName !== '' ? $schemaEventVenueName : ($schemaEventLocations[0] ?? $title)));
+    $schemaEventVenueName = trim((string) $schemaEventVenueName);
     $schemaEventPostalAddress = null;
     if ($schemaEventStreetAddress !== '' || $schemaEventAddressLine2 !== '' || $schemaEventCity !== '' || $schemaEventCounty !== '' || $schemaEventPostcode !== '') {
       $schemaEventPostalAddress = array_filter([
@@ -979,7 +1054,7 @@
     $schemaEventVenuePlace = $schemaEventPlace ?? [
       '@type' => 'Place',
       '@id' => $schemaUrl . '#venue',
-      'name' => $schemaEventVenueName !== '' ? $schemaEventVenueName : $title,
+      'name' => $schemaEventVenueName !== '' ? $schemaEventVenueName : null,
       'address' => $schemaEventPostalAddress,
       'image' => $schemaImages[0] ?? null,
     ];
@@ -1078,9 +1153,7 @@
           'location' => $spaceName !== '' && isset($schemaEventSpaceMap[$spaceKey])
             ? ['@id' => $schemaEventSpaceMap[$spaceKey]]
             : ['@id' => $schemaEventVenuePlaceId],
-          'organizer' => [
-            '@id' => url('/') . '#organization',
-          ],
+          'organizer' => $schemaEventOrganizer,
           'performer' => $sessionPerformer,
           'url' => $schemaUrl,
           'image' => $schemaImages ?: null,
@@ -1182,28 +1255,21 @@
         'eventAttendanceMode' => $schemaEventAttendanceMode,
         'location' => $schemaEventLocation,
         'sameAs' => $schemaEventLinks ?: null,
-        'organizer' => [
-          '@id' => url('/') . '#organization',
-        ],
+        'organizer' => $schemaEventOrganizer,
         'performer' => $schemaEventPerformers ?: null,
         'video' => $schemaEventVideo ? ['@id' => $schemaUrl . '#video'] : null,
         'subEvent' => $schemaEventSubEvents ?: null,
         'aggregateRating' => $schemaEventAggregate,
-        'keywords' => array_values(array_filter([
+        'keywords' => array_values(array_filter(array_merge([
           trim((string) ($p['title'] ?? '')),
           trim((string) data_get($p, 'category.name', '')),
           trim((string) ($p['type'] ?? 'event')),
           trim((string) (data_get($p, 'category.name') ?: '')),
           $schemaEventVenueName !== '' ? $schemaEventVenueName : null,
           $schemaEventHasOnline ? 'online' : 'in-person',
-          'sound baths',
-          'gong baths',
-          'breathwork',
-          'kirtan',
-          'yoga',
-        ])),
+        ], (array) ($p['tags'] ?? [])))),
         'offers' => $schemaEventOffers ?: null,
-        'isAccessibleForFree' => false,
+        'isAccessibleForFree' => collect($schemaEventOffers)->contains(fn ($offer): bool => isset($offer['price']) && (float) $offer['price'] === 0.0),
         'maximumAttendeeCapacity' => is_numeric(data_get($p, 'capacity')) ? (int) data_get($p, 'capacity') : null,
       ],
     ];
@@ -1214,7 +1280,7 @@
   }
   $schemaJsonLd = $isEventOffering
     ? $schemaEventGraph
-    : $schemaLocalBusiness;
+    : ($isGiftCardOffering ? $schemaProduct : $schemaServiceGraph);
   $schemaFormatSlug = strtolower(trim((string) ($p['format'] ?? ($isEventOffering ? 'events' : 'therapies'))));
   if (! in_array($schemaFormatSlug, ['therapies', 'classes', 'events', 'workshops', 'retreats', 'gifts'], true)) {
     $schemaFormatSlug = $isEventOffering ? 'events' : 'therapies';

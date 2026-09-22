@@ -15,6 +15,7 @@
     $variantId = (string) data_get($variant, 'id', '');
     $variantLabel = (string) data_get($variant, 'title', 'Paperback');
     $inStock = (bool) data_get($product, 'in_stock', true);
+    $stockKnown = array_key_exists('in_stock', $product);
     $stock = (int) data_get($product, 'inventory_quantity', 0);
     $reviews = (array) data_get($product, 'reviews', []);
     $reviewCount = (int) data_get($product, 'review_count', count($reviews));
@@ -34,7 +35,39 @@
         'qty' => 1,
         'price-includes-marketplace-markup' => '1',
     ];
+    $productSchema = array_filter([
+        '@context' => 'https://schema.org',
+        '@type' => 'Product',
+        '@id' => $productUrl . '#product',
+        'name' => $title,
+        'url' => $productUrl,
+        'image' => $image !== '' ? [$image] : null,
+        'description' => trim(strip_tags((string) data_get($product, 'description', data_get($product, 'summary', '')))) ?: null,
+        'sku' => trim((string) data_get($product, 'sku', '')) ?: null,
+        'brand' => trim((string) data_get($product, 'brand', '')) !== '' ? [
+            '@type' => 'Brand',
+            'name' => trim((string) data_get($product, 'brand')),
+        ] : null,
+        'offers' => array_filter([
+            '@type' => 'Offer',
+            'url' => $productUrl,
+            'price' => number_format($price, 2, '.', ''),
+            'priceCurrency' => strtoupper((string) data_get($product, 'currency', 'GBP')),
+            'availability' => $stockKnown ? ($inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock') : null,
+        ], static fn ($value) => $value !== null && $value !== ''),
+        'aggregateRating' => is_numeric($rating) && (float) $rating >= 1 && (float) $rating <= 5 && $reviewCount > 0 ? [
+            '@type' => 'AggregateRating',
+            'ratingValue' => number_format((float) $rating, 1, '.', ''),
+            'reviewCount' => $reviewCount,
+            'bestRating' => 5,
+            'worstRating' => 1,
+        ] : null,
+    ], static fn ($value) => $value !== null && $value !== '' && $value !== []);
 @endphp
+
+@push('head')
+    <script type="application/ld+json">{!! json_encode($productSchema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) !!}</script>
+@endpush
 
 <div
     hidden
