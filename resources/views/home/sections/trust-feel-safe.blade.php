@@ -1,5 +1,7 @@
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
+
 <section class="safe" id="trust-reviews" aria-label="Safety and review proof">
-    <div class="container">
+    <div class="wrap">
         <div class="safe-grid">
             <article class="hero-card">
                 <p class="eyebrow">Feel safe to try</p>
@@ -49,12 +51,14 @@
 </section>
 
 <style>
-    .safe { padding: 33px 0; background: none; border-block: none; }
+    #trust-reviews, #trust-reviews * { box-sizing: border-box; font-family: "Instrument Sans", sans-serif; }
+    #trust-reviews .wrap { width: min(calc(100% - 48px), 1280px); margin-inline: auto; }
+    .safe { padding: 68px 0; background: #f8faf9; border-block: 1px solid #e9eeeb; }
     .safe-grid { display: grid; grid-template-columns: 1.05fr .95fr; gap: 22px; }
     .hero-card { position: relative; min-height: 410px; padding: 38px; border: 1px solid var(--wow-line, #dce4e0); border-radius: 4px; background: linear-gradient(145deg, rgba(79,148,130,.12), rgba(255,255,255,.82) 48%, #fff); overflow: hidden; }
     .hero-card::after { content: ""; position: absolute; width: 300px; height: 300px; right: -120px; bottom: -120px; border: 1px solid rgba(79,148,130,.15); border-radius: 50%; box-shadow: 0 0 0 55px rgba(79,148,130,.035), 0 0 0 110px rgba(79,148,130,.02); }
     .eyebrow { margin: 0 0 12px; color: var(--wow-green, #4f9482); font-size: 11px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; }
-    .safe h2 { max-width: 560px; margin: 0; color: var(--wow-green-dark, #0b3028); font: 500 clamp(46px, 5vw, 72px)/.95 "Playfair Display", serif; letter-spacing: -.05em; }
+    #trust-reviews .hero-card h2 { max-width: 560px; margin: 0; color: #0b3028; font-family: "Playfair Display", Georgia, "Times New Roman", serif; font-size: clamp(46px, 5vw, 72px); font-weight: 500; line-height: .95; letter-spacing: -.05em; }
     .copy { max-width: 620px; margin: 18px 0 0; color: var(--wow-muted, #68736f); font-size: 15px; line-height: 1.65; }
     .proof-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
     .proof { display: inline-flex; align-items: center; gap: 7px; padding: 9px 11px; border: 1px solid #cfe1da; border-radius: 999px; background: #fff; font-size: 11px; font-weight: 600; }
@@ -71,5 +75,5 @@
     .check h3 { margin: 0 0 4px; font-size: 13px; }
     .check p { margin: 0; color: var(--wow-muted, #68736f); font-size: 11px; line-height: 1.5; }
     @media (max-width: 900px) { .safe-grid { grid-template-columns: 1fr; } .hero-card { min-height: auto; } }
-    @media (max-width: 575px) { .safe { padding: 33px 0; } .hero-card { padding: 26px 20px; } .stats { grid-template-columns: 1fr 1fr; } .stats .stat:last-child { grid-column: 1 / -1; } }
+    @media (max-width: 575px) { .wrap { width: calc(100% - 30px); } .safe { padding: 42px 0; } .hero-card { padding: 26px 20px; } .stats { grid-template-columns: 1fr 1fr; } .stats .stat:last-child { grid-column: 1 / -1; } }
 </style>
