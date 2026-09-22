@@ -259,7 +259,7 @@
       line-height:1.4;
     }
     .landing-wow__results{
-      padding:26px;
+      padding:0;
       margin-top:0;
       background:transparent;
       border:0;
@@ -497,7 +497,7 @@
   ])
 
   <section class="landing-wow__results">
-    <div class="container-page">
+    <div class="container">
       <style>
         .landing-results-layout{display:grid;grid-template-columns:250px minmax(0,1fr);gap:25px;align-items:start}
         .landing-results-filters .wow-sr-v5-desktop{padding:0}
