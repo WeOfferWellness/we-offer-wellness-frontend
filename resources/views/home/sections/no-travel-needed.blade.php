@@ -96,14 +96,14 @@
         }
     }
 
-    @media (min-width: 768px) and (max-width: 1199.98px) {
+    @media (min-width: 992px) and (max-width: 1199.98px) {
         .comfort-price-rail {
             display: flex !important;
             flex-wrap: nowrap;
             gap: 16px !important;
             overflow-x: auto;
             overflow-y: visible;
-            grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+            grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
             scrollbar-width: none;
             scroll-snap-type: x mandatory;
             -webkit-overflow-scrolling: touch;
@@ -114,6 +114,29 @@
         }
 
         .comfort-price-rail > article {
+            flex: 0 0 calc((100% - 48px) / 4);
+            min-width: calc((100% - 48px) / 4);
+            scroll-snap-align: start;
+        }
+    }
+
+    @media (min-width: 768px) and (max-width: 991.98px) {
+        .comfort-price-rail {
+            display: flex !important;
+            grid-template-columns: none !important;
+            flex-wrap: nowrap;
+            gap: 16px !important;
+            overflow-x: auto;
+            overflow-y: visible;
+            scroll-snap-type: x mandatory;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .comfort-price-rail::-webkit-scrollbar { display: none; }
+
+        .comfort-price-rail > article,
+        .comfort-price-rail > .product-v4-1-ghost-card-scope {
             flex: 0 0 calc((100% - 32px) / 3);
             min-width: calc((100% - 32px) / 3);
             scroll-snap-align: start;
@@ -146,6 +169,14 @@
         .comfort-price-rail > .product-v4-1-ghost-card-scope {
             flex: 0 0 calc((100% - 16px) / 2);
             min-width: calc((100% - 16px) / 2);
+        }
+    }
+
+    @media (min-width: 600px) and (max-width: 767.98px) and (orientation: landscape) {
+        .comfort-price-rail > article,
+        .comfort-price-rail > .product-v4-1-ghost-card-scope {
+            flex-basis: calc((100% - 32px) / 3);
+            min-width: calc((100% - 32px) / 3);
         }
     }
 </style>

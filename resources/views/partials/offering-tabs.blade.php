@@ -86,8 +86,10 @@
     .wow-offering-rail .wow410-card { width: 100%; min-width: 0; scroll-snap-align: start; }
     .wow-offering-tabs__empty { grid-column: 1 / -1; margin: 0; color: var(--wow-muted, #68736f); }
     @media (min-width: 1200px) { .wow-offering-rail { grid-auto-columns: calc((100% - 64px) / 5); } }
-    @media (min-width: 768px) and (max-width: 1199.98px) { .wow-offering-rail { grid-auto-columns: calc((100% - 32px) / 3); } }
+    @media (min-width: 992px) and (max-width: 1199.98px) { .wow-offering-rail { grid-auto-columns: calc((100% - 48px) / 4); } }
+    @media (min-width: 768px) and (max-width: 991.98px) { .wow-offering-rail { grid-auto-columns: calc((100% - 32px) / 3); } }
     @media (max-width: 767.98px) { .wow-offering-rail { grid-auto-columns: calc((100% - 10px) / 2); } }
+    @media (min-width: 600px) and (max-width: 767.98px) and (orientation: landscape) { .wow-offering-rail { grid-auto-columns: calc((100% - 32px) / 3); } }
     @media (max-width: 991.98px) { .wow-offering-tabs { padding: 48px 0 54px; } }
     @media (max-width: 575.98px) { .wow-offering-tabs { padding: 38px 0 44px; } .wow-offering-tabs__header { display: block; margin-bottom: 21px; } .wow-offering-tabs__title { font-size: 38px; } .wow-offering-tabs__intro { font-size: 14px; } .wow-tabbar { margin-bottom: 20px; } .wow-tabbar__scroll { gap: 22px; } .wow-tab { padding-bottom: 13px; font-size: 13px; } .wow-tabbar__controls { display: none; } }
 </style>

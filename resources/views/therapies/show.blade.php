@@ -310,11 +310,6 @@
       </div>
       <div class="therapy-results-content">
 
-    @include('partials.guide_panel', [
-      'guidePanelModality' => $slug,
-      'guidePanelFormat' => 'therapies',
-    ])
-
     @include('search.partials.mobile', [
       'products' => $items,
       'mobileResultsCount' => $items->count(),
@@ -328,7 +323,7 @@
     ])
     {{-- Results --}}
     @if($items->count())
-      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="wow410-grid">
         @foreach($items as $product)
           @include('partials.product_card_v4_1', [
             'product' => $product,
@@ -365,6 +360,13 @@
     </div>
   </div>
 </section>
+
+<div class="container-page">
+  @include('partials.guide_panel', [
+    'guidePanelModality' => $slug,
+    'guidePanelFormat' => 'therapies',
+  ])
+</div>
 @endsection
 
 @push('scripts')
