@@ -216,7 +216,7 @@ function installAnalyticsRuntime() {
   let lastLocation = win.location.href
 
   const scan = () => {
-    document.querySelectorAll('[data-wow-analytics-page="offering"] [data-wow-analytics-item], [data-wow-analytics-page="product"] [data-wow-analytics-item]')
+    document.querySelectorAll('[data-wow-analytics-page="offering"] [data-wow-analytics-item], [data-wow-analytics-page="product"] [data-wow-analytics-item], [data-wow-analytics-page="offering"][data-wow-analytics-item], [data-wow-analytics-page="product"][data-wow-analytics-item]')
       .forEach(trackViewItem)
     trackVisibleItemLists(document)
     document.querySelectorAll('[data-wow-analytics-practitioner]').forEach((element) => {
