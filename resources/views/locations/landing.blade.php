@@ -82,6 +82,7 @@
         'heroTitle' => 'Wellness in '.$label,
         'heroIntro' => 'Discover therapies, classes, events and wellness experiences from practitioners across '.$label.'.',
         'heroImage' => $locationImage,
+        'heroLocationLabel' => $label,
         'heroAsideTitle' => null,
         'heroAsideText' => '',
         'heroActions' => [['label' => 'Search all', 'href' => url('/search?where='.urlencode($label))]],
