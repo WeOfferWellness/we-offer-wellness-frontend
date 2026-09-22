@@ -282,11 +282,6 @@
   'heroAsideLabel' => 'A thoughtful way to give',
   'heroAsideTitle' => 'More choice, less guesswork',
   'heroAsideText' => 'Let them choose the experience, format and amount that feels right for them.',
-  'heroAsideItems' => [
-    ['label' => 'Instant delivery', 'meta' => 'Send by email right away.'],
-    ['label' => 'Flexible denominations', 'meta' => 'Choose from live gift card amounts.'],
-    ['label' => 'Use across WOW', 'meta' => 'Redeem on eligible wellness experiences.'],
-  ],
 ])
 
 @include('partials.hero-meta', [
