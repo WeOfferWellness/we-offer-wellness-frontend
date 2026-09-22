@@ -102,6 +102,18 @@ function recordSearch({ searchTerm = '', locationQuery = '', source = 'site-sear
     analytics_context: analyticsContext(),
   };
 
+  if (typeof window.WOWAnalytics?.track === 'function') {
+    const safeLocation = cleanLocationQuery && !/\d/.test(cleanLocationQuery)
+      ? cleanLocationQuery.slice(0, 80)
+      : undefined;
+    window.WOWAnalytics.track('search', {
+      search_term: cleanSearchTerm || undefined,
+      location_context: safeLocation,
+      online_or_in_person: analyticsContext().online_flag || undefined,
+      source,
+    });
+  }
+
   window.sessionStorage?.setItem(pendingSearchKey, JSON.stringify(payload));
 
   // Beacon delivery survives the search handler's immediate page navigation.

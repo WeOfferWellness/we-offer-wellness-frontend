@@ -43,6 +43,7 @@ const submit = async () => {
         const xsrf = decodeURIComponent(getCookie('XSRF-TOKEN'));
 
         // 3) Build a cross-origin POST form directly to AtEase /login
+        window.sessionStorage?.setItem('wow_auth_intent', 'login');
         const f = document.createElement('form');
         f.method = 'POST';
         f.action = 'https://atease.weofferwellness.co.uk/login';

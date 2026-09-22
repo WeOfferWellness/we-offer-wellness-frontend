@@ -8,13 +8,22 @@ const product = computed(() => props.product || {})
 const price = computed(() => Number(product.value.price || 0))
 const money = computed(() => new Intl.NumberFormat('en-GB', { style: 'currency', currency: product.value.currency || 'GBP' }).format(price.value))
 const href = computed(() => product.value.url || `/products/${product.value.slug}`)
+const analyticsItem = computed(() => JSON.stringify({
+  id: `store-${product.value.id || ''}`,
+  product_id: product.value.id || '',
+  title: product.value.title || 'Product',
+  price: price.value,
+  currency: product.value.currency || 'GBP',
+  source_version: 'store',
+  catalogue_type: 'physical_product',
+}))
 function addToCart() {
   cart.add({ id: `store-${product.value.id}`, product_id: product.value.id, source_version: 'store', title: product.value.title, price: price.value, image: product.value.image, url: href.value, meta: { type: 'physical', product_kind: 'physical_product', store_product_id: product.value.id, source_version: 'store' } })
 }
 </script>
 
 <template>
-  <article class="wow49-store-card" :class="{ 'wow49-store-card--fluid': fluid }" :aria-label="`Product card ${product.title}`" :data-product-id="product.id" data-source-version="store" :data-ranking-request-id="product.ranking_request_id || null">
+  <article class="wow49-store-card" :class="{ 'wow49-store-card--fluid': fluid }" :aria-label="`Product card ${product.title}`" :data-product-id="product.id" data-source-version="store" :data-wow-analytics-item="analyticsItem" :data-ranking-request-id="product.ranking_request_id || null">
     <a :href="href" class="wow49-store-card__link" :aria-label="`Open ${product.title}`"></a>
     <div class="wow49-store-card__media"><img v-if="product.image" :src="product.image" :alt="product.title" loading="lazy"><span>Ships to you</span><div><b>Physical product</b><b class="is-type">Store</b></div></div>
     <div class="wow49-store-card__body"><h3>{{ product.title }}</h3><p>{{ product.brand || 'We Offer Wellness' }}</p><p class="wow49-store-card__summary">{{ product.summary || 'Physical product delivered directly to you.' }}</p><span class="wow49-store-card__availability">Secure checkout</span></div>

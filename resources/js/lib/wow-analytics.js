@@ -195,6 +195,16 @@ function trackVisibleItemLists(root = document) {
       items: items.map((item, index) => ({ ...item, index: index + 1 })),
     })
   })
+
+  const implicitCards = Array.from(root.querySelectorAll?.('[data-wow-analytics-item]') || [])
+    .filter((element) => !element.closest('[data-wow-analytics-page="offering"], [data-wow-analytics-page="product"], [data-wow-analytics-practitioner]'))
+  if (implicitCards.length && !root.body?.dataset?.wowAnalyticsImplicitListViewed) {
+    root.body.dataset.wowAnalyticsImplicitListViewed = '1'
+    trackCommerce('view_item_list', {
+      item_list_name: root.body.dataset.wowAnalyticsListName || 'Marketplace results',
+      items: implicitCards.map(readAnalyticsItem).filter(Boolean).slice(0, 24),
+    })
+  }
 }
 
 function installAnalyticsRuntime() {
@@ -208,6 +218,13 @@ function installAnalyticsRuntime() {
     document.querySelectorAll('[data-wow-analytics-page="offering"] [data-wow-analytics-item], [data-wow-analytics-page="product"] [data-wow-analytics-item]')
       .forEach(trackViewItem)
     trackVisibleItemLists(document)
+    document.querySelectorAll('[data-wow-analytics-practitioner]').forEach((element) => {
+      if (element.dataset.wowAnalyticsPractitionerViewed === '1') return
+      const payload = readAnalyticsItem(element)
+      if (!payload) return
+      element.dataset.wowAnalyticsPractitionerViewed = '1'
+      track('practitioner_view', payload)
+    })
   }
 
   document.addEventListener('click', (event) => {
@@ -232,6 +249,39 @@ function installAnalyticsRuntime() {
     track('newsletter_signup', { source })
   })
 
+  document.addEventListener('wow:lead-created', (event) => {
+    track('generate_lead', cleanObject(event.detail || {}))
+  })
+
+  document.addEventListener('wow:availability-check', (event) => {
+    track('availability_check', cleanObject(event.detail || {}))
+  })
+
+  document.addEventListener('change', (event) => {
+    const input = event.target?.closest?.('[data-filter-input], [data-wow-filter-component] select, [data-wow-filter-component] input')
+    if (!input) return
+    const name = input.getAttribute('name') || input.getAttribute('data-filter-input') || input.getAttribute('data-param')
+    const value = input.value || input.getAttribute('data-value') || ''
+    if (!name || !value || /\d/.test(String(value))) return
+    track('filter_applied', {
+      filter_name: name,
+      filter_value: String(value).slice(0, 80),
+      page_path: window.location.pathname,
+    })
+  }, { passive: true })
+
+  document.addEventListener('click', (event) => {
+    const availability = event.target?.closest?.('[data-availability-mode], [data-availability], .availability-card')
+    if (!availability || availability.dataset.wowAvailabilityTracked === '1') return
+    availability.dataset.wowAvailabilityTracked = '1'
+    const itemElement = document.querySelector('[data-wow-analytics-page="offering"] [data-wow-analytics-item]')
+    const item = readAnalyticsItem(itemElement)
+    track('availability_check', cleanObject({
+      offering_id: item?.offering_id,
+      booking_mode: availability.getAttribute('data-availability-mode') || undefined,
+    }))
+  }, { passive: true })
+
   document.addEventListener('inertia:success', () => {
     if (win.location.href !== lastLocation) {
       const previousLocation = lastLocation
@@ -241,6 +291,7 @@ function installAnalyticsRuntime() {
         page_referrer: previousLocation,
       })
     }
+    delete document.body.dataset.wowAnalyticsImplicitListViewed
     scan()
   })
 

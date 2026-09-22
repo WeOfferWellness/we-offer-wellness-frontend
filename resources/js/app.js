@@ -83,6 +83,15 @@ if (isInertiaPage) {
                     import.meta.glob('./Pages/**/*.vue'),
                 ),
             setup({ el, App, props, plugin }) {
+                try {
+                    const authUser = props?.initialPage?.props?.auth?.user || props?.auth?.user;
+                    const authIntent = window.sessionStorage?.getItem('wow_auth_intent');
+                    if (authUser && (authIntent === 'login' || authIntent === 'sign_up')) {
+                        window.WOWAnalytics?.track?.(authIntent, { method: 'site-auth' });
+                        window.sessionStorage?.removeItem('wow_auth_intent');
+                    }
+                } catch (_) {}
+
                 const vue = createApp({ render: () => h(App, props) })
                     .use(plugin)
                     .use(ui)

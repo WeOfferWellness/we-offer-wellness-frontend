@@ -296,6 +296,16 @@ const trackingSource = computed(() => {
   return text(product.value.source_version).toLowerCase() === 'v1-v2' ? 'legacy' : 'v3'
 })
 const rankingRequestId = computed(() => text(product.value.ranking_request_id) || null)
+const analyticsItem = computed(() => ({
+  id: trackingId.value || '',
+  title: title.value,
+  price: Number(product.value.variants_min_price ?? product.value.price_min ?? product.value.price ?? 0) || 0,
+  currency: product.value.currency || 'GBP',
+  source_version: trackingSource.value,
+  catalogue_type: type.value,
+  modality: category.value,
+  provider_id: product.value.vendor_id || product.value.provider_id || '',
+}))
 
 </script>
 
@@ -308,6 +318,7 @@ const rankingRequestId = computed(() => text(product.value.ranking_request_id) |
     :aria-label="`Gift card ${title}`"
     :data-product-id="trackingId"
     :data-source-version="trackingSource"
+    :data-wow-analytics-item="JSON.stringify(analyticsItem)"
     :data-ranking-request-id="rankingRequestId"
   >
     <a href="/giftcards" class="wow49-card__link" :aria-label="`Buy ${title}`"></a>
@@ -329,6 +340,7 @@ const rankingRequestId = computed(() => text(product.value.ranking_request_id) |
     :aria-label="`${typeLabel(type)} card ${title}`"
     :data-product-id="trackingId"
     :data-source-version="trackingSource"
+    :data-wow-analytics-item="JSON.stringify(analyticsItem)"
     :data-ranking-request-id="rankingRequestId"
   >
     <a :href="url" class="wow49-card__link" :aria-label="`${isPastEvent ? 'View' : 'View and book'} ${title}`"></a>
@@ -351,6 +363,7 @@ const rankingRequestId = computed(() => text(product.value.ranking_request_id) |
     :aria-label="`Offering card ${title}`"
     :data-product-id="trackingId"
     :data-source-version="trackingSource"
+    :data-wow-analytics-item="JSON.stringify(analyticsItem)"
     :data-ranking-request-id="rankingRequestId"
   >
     <a :href="url" class="wow49-card__link" :aria-label="`View and book ${title}`"></a>
