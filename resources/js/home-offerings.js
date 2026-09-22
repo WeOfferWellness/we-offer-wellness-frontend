@@ -433,9 +433,8 @@ function initComfortPriceRails() {
     const ghostTemplate = section?.querySelector('[data-comfort-ghost]');
     const initialCards = Array.from(list.querySelectorAll(':scope > article'));
     const initialHtml = initialCards.map((card) => card.outerHTML).join('');
-    if (!initialHtml) return;
 
-    let page = 1;
+    let page = initialHtml ? 1 : 0;
     let hasMore = true;
     let loading = false;
 
@@ -476,7 +475,9 @@ function initComfortPriceRails() {
         } else {
           // Once this bracket is exhausted, put its first cards back at the end
           // and continue from page one so the rail loops without a hard stop.
-          list.insertAdjacentHTML('beforeend', initialHtml);
+          if (initialHtml) {
+            list.insertAdjacentHTML('beforeend', initialHtml);
+          }
           page = 0;
           hasMore = true;
         }

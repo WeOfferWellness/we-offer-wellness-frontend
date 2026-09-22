@@ -4,6 +4,8 @@
     $title = (string) ($title ?? 'Wellness experiences');
     $intro = (string) ($intro ?? 'Browse live offerings from trusted practitioners.');
     $preferredLocation = $preferredLocation ?? null;
+    $infinite = (bool) ($infinite ?? false);
+    $tabPriceRanges = $tabPriceRanges ?? [];
     $tabs = [
         ['key' => 'local', 'label' => (string) ($localLabel ?? 'Explore wellness'), 'items' => collect($localOfferings ?? [])],
         ['key' => 'new', 'label' => (string) ($newLabel ?? 'New offerings'), 'items' => collect($newOfferings ?? [])],
@@ -45,7 +47,8 @@
         @foreach($tabs as $index => $tab)
             <div class="wow-tabpanel{{ $index === 0 ? ' is-active' : '' }}" id="{{ $tabId }}-panel-{{ $tab['key'] }}" role="tabpanel"
                 aria-labelledby="{{ $tabId }}-tab-{{ $tab['key'] }}" data-panel="{{ $tab['key'] }}">
-                <div class="wow-offering-rail">
+                @php($priceRange = $tabPriceRanges[$tab['key']] ?? [])
+                <div class="wow-offering-rail" @if($infinite) data-comfort-rail data-price-min="{{ $priceRange['min'] ?? 0 }}" data-price-max="{{ $priceRange['max'] ?? 999999 }}" @endif>
                     @forelse($tab['items']->take(12) as $product)
                         @include('partials.product_card_v4_1', [
                             'product' => $product,
@@ -55,6 +58,15 @@
                         <p class="wow-offering-tabs__empty">No offerings are available in this collection yet.</p>
                     @endforelse
                 </div>
+                @if($infinite)
+                    <template data-comfort-ghost>
+                        @include('partials.product_card_v4_1_ghost')
+                        @include('partials.product_card_v4_1_ghost')
+                        @include('partials.product_card_v4_1_ghost')
+                        @include('partials.product_card_v4_1_ghost')
+                        @include('partials.product_card_v4_1_ghost')
+                    </template>
+                @endif
             </div>
         @endforeach
     </div>

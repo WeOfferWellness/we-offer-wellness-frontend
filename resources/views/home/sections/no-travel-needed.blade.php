@@ -10,4 +10,10 @@
     'newOfferings' => $onlineUnder100 ?? collect(),
     'onlineOfferings' => $online100Plus ?? collect(),
     'preferredLocation' => null,
+    'infinite' => true,
+    'tabPriceRanges' => [
+        'local' => ['min' => 0, 'max' => 50],
+        'new' => ['min' => 50, 'max' => 99],
+        'online' => ['min' => 100, 'max' => 999999],
+    ],
 ])
