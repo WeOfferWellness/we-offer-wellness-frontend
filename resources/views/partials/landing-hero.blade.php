@@ -191,6 +191,12 @@
   $heroChips = $heroChips ?? [];
   $heroAsideItems = $heroAsideItems ?? [];
   $heroImage = trim((string) ($heroImage ?? ''));
+  if ($heroImage !== '') {
+    $heroMediaBase = rtrim((string) config('services.location_media_url', 'https://studio.weofferwellness.co.uk'), '/');
+    if (!\Illuminate\Support\Str::startsWith(\Illuminate\Support\Str::lower($heroImage), ['http://', 'https://', '//'])) {
+      $heroImage = $heroMediaBase.'/storage/'.ltrim($heroImage, '/');
+    }
+  }
   $heroLocationLabel = trim((string) ($heroLocationLabel ?? $heroTitle));
   $heroHasLocation = $heroImage !== '';
   $heroHasAside = $heroAsideTitle || $heroAsideText || !empty($heroAsideItems);

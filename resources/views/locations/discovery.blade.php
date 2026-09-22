@@ -62,6 +62,8 @@
         'heroEyebrow' => 'Local wellness discovery',
         'heroTitle' => 'Find wellness near you',
         'heroIntro' => 'Discover therapies, classes, events and wellness experiences available near you.',
+        'heroImage' => data_get($locationSearch ?? [], 'image_path', ''),
+        'heroLocationLabel' => $locationLabel !== 'you' ? $locationLabel : '',
         'heroAsideTitle' => null,
         'heroAsideText' => '',
       ])
