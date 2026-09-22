@@ -185,6 +185,16 @@
                 gap: 14px;
             }
         }
+
+        /* Landscape phones have enough width for three compact cards while
+           portrait phones retain the standard two-column mobile grid. */
+        @media (min-width: 480px) and (max-width: 699px) and (orientation: landscape) {
+            .wow-sr-v5-mobile .wow-sr-v5-mobile-grid,
+            .wow-sr-v5-mobile .wow-search-recommendations__grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+                gap: 12px;
+            }
+        }
     </style>
 @endonce
 
