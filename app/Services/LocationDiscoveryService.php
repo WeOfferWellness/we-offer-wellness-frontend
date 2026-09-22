@@ -17,6 +17,7 @@ class LocationDiscoveryService
     public function __construct(
         private BackendOfferingsClient $offerings,
         private BehaviourDemandClient $demand,
+        private BackendDiscoveryClient $discovery,
     ) {}
 
     public function build(array $context, array $locationCatalog, string $scope = 'root'): array
@@ -29,6 +30,7 @@ class LocationDiscoveryService
         $terms = $this->contextTerms($context, $scope);
         $what = $this->normalise((string) ($context['what'] ?? ''));
         $label = trim((string) ($context['place'] ?? $context['label'] ?? '')) ?: 'you';
+        $behaviourBoard = $this->discovery->modalityBoard(5, $label !== 'you' ? $label : null);
         $nearby = $catalogue
             ->filter(fn (array $item): bool => $this->isPublicItem($item))
             ->filter(fn (array $item): bool => $terms === [] || $this->matchesTerms($item, $terms, $scope))
@@ -48,7 +50,7 @@ class LocationDiscoveryService
             'nearby_count' => $nearby->count(),
             'new_nearby' => $newNearby->take(8)->values(),
             'online' => $online->take(8)->values(),
-            'categories' => $this->categories($nearby, $insights),
+            'categories' => $this->categories($nearby, $insights, $behaviourBoard),
             'popular_places' => $this->popularPlaces($locationCatalog, $insights, $context, $scope, $catalogue),
             'supply_paths' => $this->supplyPaths($locationCatalog, $catalogue),
             'price_bands' => $this->priceBands($nearby, $insights),
@@ -56,8 +58,15 @@ class LocationDiscoveryService
         ];
     }
 
-    private function categories(Collection $items, array $insights): Collection
+    private function categories(Collection $items, array $insights, array $behaviourBoard = []): Collection
     {
+        $behaviourItems = collect($behaviourBoard)->filter(fn ($item) => is_array($item))->values();
+        $behaviourRanks = $behaviourItems->values()->mapWithKeys(fn (array $item, int $index): array => [
+            Str::slug((string) ($item['slug'] ?? $item['name'] ?? '')) => $index,
+        ]);
+        $behaviourImages = $behaviourItems->mapWithKeys(fn (array $item): array => [
+            Str::slug((string) ($item['slug'] ?? $item['name'] ?? '')) => $item['image_url'] ?? null,
+        ]);
         $categories = $items
             ->map(function (array $item) use ($insights): ?array {
                 $name = trim((string) data_get($item, 'category.name', data_get($item, 'category_name', data_get($item, 'category', ''))));
@@ -81,8 +90,24 @@ class LocationDiscoveryService
                 $first['count'] = $group->count();
                 return $first;
             })
-            ->sortByDesc(fn (array $item): float => $item['count'] * 100 + $item['demand_score'])
             ->take(8)
+            ->values();
+
+        $categories = $categories
+            ->map(function (array $category) use ($behaviourRanks, $behaviourImages): array {
+                $slug = (string) $category['slug'];
+                $category['behaviour_rank'] = $behaviourRanks->get($slug, 999);
+                $category['image_url'] = $behaviourImages->get($slug);
+                return $category;
+            })
+            ->sort(function (array $left, array $right): int {
+                $rank = ((int) $left['behaviour_rank']) <=> ((int) $right['behaviour_rank']);
+                if ($rank !== 0) {
+                    return $rank;
+                }
+
+                return ((int) $right['count'] * 100 + (float) $right['demand_score']) <=> ((int) $left['count'] * 100 + (float) $left['demand_score']);
+            })
             ->values();
 
         $images = ProductCategory::query()
@@ -102,7 +127,7 @@ class LocationDiscoveryService
             });
 
         return $categories->map(function (array $category) use ($images): array {
-            $category['image_url'] = $images->get($category['slug']);
+            $category['image_url'] = $category['image_url'] ?: $images->get($category['slug']);
             $category['description'] = (int) ($category['count'] ?? 0) . ' local ' . ((int) ($category['count'] ?? 0) === 1 ? 'offering' : 'offerings');
             return $category;
         });
