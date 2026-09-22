@@ -1482,7 +1482,7 @@ onBeforeUnmount(() => {
                 </button>
               </template>
             </div>
-            <div v-if="!whatLoaded" class="wow-panel-empty">Loading categories...</div>
+            <div v-if="!whatLoaded" class="wow-panel-empty">Loading modalities...</div>
             <div v-else-if="whatSuggestions.length === 0" class="wow-panel-empty">No matches found.</div>
           </div>
         </div>

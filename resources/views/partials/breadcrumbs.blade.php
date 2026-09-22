@@ -14,9 +14,6 @@
   $schemaId = trim((string) ($schemaId ?? ($schemaUrl . '#breadcrumb')));
   $renderVisual = $renderVisual ?? true;
   $currentIcon = trim((string) ($currentIcon ?? ''));
-  $isLocationTrail = $currentIcon === 'location' || $breadcrumbItems->contains(function (array $crumb): bool {
-    return strtolower($crumb['label']) === 'locations' || str_contains(strtolower($crumb['url']), '/locations');
-  });
 
   $schemaJsonLd = null;
   $schemaList = [];
@@ -169,12 +166,12 @@
                 <span>{{ $crumb['label'] }}</span>
               </a>
             @else
-              @if($isLocationTrail)
+              @if($currentIcon === 'location')
                 <svg class="wow-breadcrumbs__location-icon" viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M12 21s6-5.1 6-11a6 6 0 1 0-12 0c0 5.9 6 11 6 11Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
                   <circle cx="12" cy="10" r="2" fill="none" stroke="currentColor" stroke-width="1.7" />
                 </svg>
-              @else
+              @elseif($currentIcon === 'offering')
                 <svg class="wow-breadcrumbs__offering-icon" viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M7 3h10a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" fill="none" stroke="currentColor" stroke-width="1.7" />
                   <path d="M9 8h6M9 12h6M9 16h4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />

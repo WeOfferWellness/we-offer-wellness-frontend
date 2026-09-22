@@ -38,7 +38,7 @@
             <div class="wow-popular-searches__copy">
                 <div class="wow-kicker">Popular searches</div>
                 <h2>Fast entry points to the most useful landing pages</h2>
-                <p>These are the direct paths people use when they want to browse by therapy, location or high-intent search. The category links below are pulled from live inventory, so they stay aligned with what is actually available.</p>
+                <p>These are the direct paths people use when they want to browse by therapy, location or high-intent search. The modality links below are pulled from live inventory, so they stay aligned with what is actually available.</p>
             </div>
 
             <div class="wow-popular-searches__stack">
@@ -52,7 +52,7 @@
                 </div>
 
                 <div class="wow-popular-searches__subhead">
-                    <h3>All live category pages</h3>
+                    <h3>All live modality pages</h3>
                     <a href="/therapies">Browse therapies</a>
                 </div>
 
@@ -64,7 +64,7 @@
                         </a>
                     @empty
                         <div class="wow-popular-searches__empty">
-                            Category pages will appear here once live inventory is available.
+                            Modality pages will appear here once live inventory is available.
                         </div>
                     @endforelse
                 </div>

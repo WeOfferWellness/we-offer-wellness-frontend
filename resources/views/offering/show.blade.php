@@ -1315,6 +1315,7 @@
     ['label' => $title],
   ],
   'schemaUrl' => $schemaUrl,
+  'currentIcon' => 'offering',
   'chips' => array_filter([
     $mode !== '' ? $mode : null,
     $breadcrumbPrice !== null ? 'From £' . number_format((float) $breadcrumbPrice, 2) : null,

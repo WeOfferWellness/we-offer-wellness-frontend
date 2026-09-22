@@ -264,14 +264,14 @@
       --gold-text:#6f4b10;
       --blue-soft:#e8f0ff;
       --blue-text:#254a85;
-      padding:64px 0 84px;
+      padding:0 0 84px;
       background:
         radial-gradient(circle at top left, rgba(79,147,129,.08), transparent 30%),
         radial-gradient(circle at top right, rgba(255,181,73,.08), transparent 24%),
         #fff;
     }
     .seo-money-grid{
-      display:grid;
+      display:none;
       grid-template-columns:minmax(0,1fr) minmax(320px,.86fr);
       gap:24px;
       align-items:stretch;
@@ -575,12 +575,29 @@
   $products = collect($products ?? []);
   $savedLocation = collect($savedLocation ?? []);
   $catalogSuggestions = collect($catalogSuggestions ?? []);
+  $hasOnlineSessions = collect($page['highlights'] ?? [])->contains(fn ($item) => str_contains(strtolower((string) $item), 'online'))
+    || collect($page['related_links'] ?? [])->contains(fn ($item) => str_contains(strtolower((string) ($item['label'] ?? '')), 'online'));
 @endphp
 
 @include('partials.breadcrumbs', [
   'crumbs' => $pageCrumbs ?? [],
   'schemaUrl' => $pageCanonical ?? url()->current(),
   'currentIcon' => !empty($savedLocation['label']) ? 'location' : '',
+])
+
+@include('partials.landing-hero', [
+  'heroEyebrow' => $page['kicker'] ?? 'Local wellness discovery',
+  'heroTitle' => $page['h1'] ?? ($page['title'] ?? 'Wellness near you'),
+  'heroIntro' => $page['intro'] ?? ($seo['description'] ?? ''),
+  'heroImage' => $savedLocation['image_path'] ?? '',
+  'heroLocationLabel' => $savedLocation['label'] ?? '',
+  'heroIsLocation' => true,
+  'heroActions' => array_values(array_filter([
+    !empty($primaryCta['label']) ? ['label' => $primaryCta['label'], 'href' => '#results'] : null,
+    !empty($secondaryCta['label']) ? ['label' => $secondaryCta['label'], 'href' => '#faq', 'style' => 'outline'] : null,
+  ])),
+  'heroAsideTitle' => null,
+  'heroAsideText' => '',
 ])
 
 <section class="seo-money-page">
@@ -644,8 +661,9 @@
 
     @include('partials.hero-meta', [
       'items' => array_values(array_filter([
-        !empty($page['kicker']) ? ['label' => $page['kicker'], 'strong' => true] : null,
-        $products->isNotEmpty() ? $products->count() . ' live listings' : 'Online & nearby options',
+        $products->isNotEmpty() ? ['label' => 'Local listings', 'strong' => true] : null,
+        $popularLocations->isNotEmpty() ? 'Nearby options' : null,
+        $hasOnlineSessions ? 'Online sessions' : null,
       ])),
     ])
 
