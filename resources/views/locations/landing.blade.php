@@ -27,6 +27,13 @@
       $locationImage = $locationMediaBase.'/storage/'.ltrim($locationImage, '/');
     }
   }
+
+  $locationExplorerFeatured = !$isTown ? [
+    'title' => $label,
+    'path' => $location['path'] ?? request()->path(),
+    'image_path' => $locationImage,
+    'description' => 'Explore therapies, classes, events and wellness experiences.',
+  ] : null;
 @endphp
 
 @push('head')
@@ -114,7 +121,16 @@
         </section>
       @endif
 
-      @if($places->isNotEmpty())<section class="location-landing__section"><div class="location-landing__head"><div><h2>Popular places{{ $isCounty ? ' in '.$label : '' }}</h2><p class="location-landing__copy">Towns with useful live marketplace supply and local interest.</p></div></div><div class="location-landing__tiles">@foreach($places as $place)<a class="location-landing__tile" href="{{ url($place['path'] ?? '/locations') }}"><strong>{{ $place['title'] ?? 'Location' }}</strong><span>{{ number_format((int) ($place['supply_count'] ?? 0)) }} wellness offerings</span></a>@endforeach</div></section>@endif
+      @if($places->isNotEmpty())
+        @include('partials.location-explorer', [
+          'eyebrow' => 'Explore nearby',
+          'heading' => $isTown ? 'Explore nearby locations' : 'Explore '.$label.' towns',
+          'intro' => 'Discover wellness experiences, therapies and practitioners across '.$label.' and nearby areas.',
+          'featured' => $locationExplorerFeatured,
+          'items' => $places->all(),
+          'id' => 'location-explorer-heading',
+        ])
+      @endif
 
       @if($new->isNotEmpty())<section class="location-landing__section"><div class="location-landing__head"><div><h2>New in {{ $label }}</h2><p class="location-landing__copy">Recently published offerings from the live marketplace.</p></div></div><div class="location-landing__grid">@foreach($new->take(8) as $product)@include('partials.product_card_v4_1',['product'=>$product,'preferredLocation'=>$label])@endforeach</div></section>@endif
 

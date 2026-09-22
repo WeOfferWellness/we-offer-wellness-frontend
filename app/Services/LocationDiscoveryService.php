@@ -136,6 +136,8 @@ class LocationDiscoveryService
     private function popularPlaces(array $catalog, array $insights, array $context, string $scope, Collection $catalogue): Collection
     {
         $demand = collect($insights['locations'] ?? []);
+        $originLat = is_numeric($context['lat'] ?? null) ? (float) $context['lat'] : null;
+        $originLng = is_numeric($context['lng'] ?? null) ? (float) $context['lng'] : null;
         return collect($catalog['flat'] ?? [])
             ->filter(function (array $item) use ($context, $scope, $catalogue): bool {
                 if (($item['online'] ?? false)) return false;
@@ -146,15 +148,18 @@ class LocationDiscoveryService
                 if ($scope === 'country' && $country !== '') return $this->normalise((string) ($item['country_slug'] ?? $item['country'] ?? '')) === $country && $catalogue->contains(fn (array $offering): bool => $this->matchesTerms($offering, [(string) ($item['title'] ?? '')], 'town'));
                 return $catalogue->contains(fn (array $offering): bool => $this->matchesTerms($offering, [(string) ($item['title'] ?? '')], 'town'));
             })
-            ->map(function (array $item) use ($demand, $catalogue): array {
+            ->map(function (array $item) use ($demand, $catalogue, $originLat, $originLng): array {
                 $name = trim((string) ($item['title'] ?? $item['label'] ?? ''));
                 $key = $this->normalise($name);
                 $signal = $demand->first(fn (array $row): bool => str_contains($this->normalise((string) ($row['key'] ?? '')), $key) || str_contains($key, $this->normalise((string) ($row['key'] ?? ''))));
                 $item['demand_score'] = (float) ($signal['visitors'] ?? 0) * 10 + (float) ($signal['searches'] ?? 0);
                 $item['supply_count'] = $catalogue->filter(fn (array $offering): bool => $this->matchesTerms($offering, [$name], 'town'))->count();
+                $distance = $this->distanceMiles($originLat, $originLng, $item['lat'] ?? null, $item['lng'] ?? null);
+                $item['distance_miles'] = $distance;
+                $item['proximity_score'] = $distance === null ? 0 : max(0, 100 - $distance);
                 return $item;
             })
-            ->sortByDesc(fn (array $item): float => $this->placeScore($item))
+            ->sortByDesc(fn (array $item): float => $this->placeScore($item) + ((float) ($item['proximity_score'] ?? 0) * 2))
             ->take(8)
             ->values();
     }
@@ -219,6 +224,23 @@ class LocationDiscoveryService
     private function placeScore(array $item): float
     {
         return (float) data_get($item, 'demand_score', 0) + ((int) data_get($item, 'supply_count', 0) * 2);
+    }
+
+    private function distanceMiles(?float $originLat, ?float $originLng, mixed $targetLat, mixed $targetLng): ?float
+    {
+        if ($originLat === null || $originLng === null || ! is_numeric($targetLat) || ! is_numeric($targetLng)) {
+            return null;
+        }
+
+        $earthRadiusMiles = 3958.7613;
+        $latitudeDelta = deg2rad((float) $targetLat - $originLat);
+        $longitudeDelta = deg2rad((float) $targetLng - $originLng);
+        $originLatitude = deg2rad($originLat);
+        $targetLatitude = deg2rad((float) $targetLat);
+        $a = sin($latitudeDelta / 2) ** 2
+            + cos($originLatitude) * cos($targetLatitude) * sin($longitudeDelta / 2) ** 2;
+
+        return round($earthRadiusMiles * 2 * asin(min(1, sqrt($a))), 1);
     }
 
     private function contextTerms(array $context, string $scope): array
