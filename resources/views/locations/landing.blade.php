@@ -72,7 +72,7 @@
     if ($isCounty) $crumbs[] = ['label' => $label];
     elseif ($isTown) $crumbs[] = ['label' => $label];
   @endphp
-  @include('partials.breadcrumbs', ['crumbs' => $crumbs, 'schemaUrl' => $seo['canonical'] ?? url()->current()])
+  @include('partials.breadcrumbs', ['crumbs' => $crumbs, 'schemaUrl' => $seo['canonical'] ?? url()->current(), 'currentIcon' => 'location'])
 
   <main class="location-landing">
     @include('partials.landing-hero', [

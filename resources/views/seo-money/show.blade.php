@@ -580,6 +580,7 @@
 @include('partials.breadcrumbs', [
   'crumbs' => $pageCrumbs ?? [],
   'schemaUrl' => $pageCanonical ?? url()->current(),
+  'currentIcon' => !empty($savedLocation['label']) ? 'location' : '',
   'chips' => array_filter([
     $page['kicker'] ?? null,
     $products->isNotEmpty() ? ($products->count() . ' live listings') : 'Online & nearby options',

@@ -19,6 +19,7 @@
     ['label' => $locationTitle],
   ],
   'schemaUrl' => $seo['canonical'] ?? url('/locations/' . ($location['slug'] ?? request()->route('slug'))),
+  'currentIcon' => 'location',
 ])
 
 @include('partials.landing-hero', [

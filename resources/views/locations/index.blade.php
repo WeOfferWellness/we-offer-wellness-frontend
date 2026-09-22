@@ -937,6 +937,7 @@
 @include('partials.breadcrumbs', [
   'crumbs' => $locationCrumbs,
   'schemaUrl' => $seo['canonical'] ?? url()->full(),
+  'currentIcon' => 'location',
 ])
 
 <main class="wow-locations-page">

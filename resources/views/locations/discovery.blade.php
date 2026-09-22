@@ -55,7 +55,7 @@
 @endpush
 
 @section('content')
-  @include('partials.breadcrumbs', ['crumbs' => [['label' => 'Home', 'url' => url('/')], ['label' => 'Locations']], 'schemaUrl' => url('/locations')])
+  @include('partials.breadcrumbs', ['crumbs' => [['label' => 'Home', 'url' => url('/')], ['label' => 'Locations']], 'schemaUrl' => url('/locations'), 'currentIcon' => 'location'])
   <main class="locations-discovery">
     @include('partials.landing-hero', [
       'heroEyebrow' => 'Local wellness discovery',
