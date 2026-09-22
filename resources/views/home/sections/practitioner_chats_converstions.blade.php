@@ -58,7 +58,7 @@
     #practitioner-chats .shell { background: #0e1726; color: #fff; }
     #practitioner-chats .intro { padding: 42px; }
     #practitioner-chats .eyebrow { margin: 0 0 12px; color: #8fbfaf; font-size: 11px; font-weight: 700; letter-spacing: .18em; line-height: 1.2; text-transform: uppercase; }
-    #practitioner-chats h2 { margin: 0; color: #fff; font-family: "Playfair Display", serif; font-size: clamp(46px, 5vw, 70px); font-weight: 500; line-height: .95; letter-spacing: -.05em; }
+    #practitioner-chats .intro h2 { margin: 0; color: #fff !important; font-family: "Playfair Display", Georgia, "Times New Roman", serif !important; font-size: clamp(46px, 5vw, 70px) !important; font-weight: 500 !important; line-height: .95 !important; letter-spacing: -.05em !important; }
     #practitioner-chats .copy { max-width: 520px; margin: 18px 0 0; color: rgba(255,255,255,.7); font-size: 14px; line-height: 1.65; }
     #practitioner-chats .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
     #practitioner-chats .btn { display: inline-flex; align-items: center; gap: 7px; height: 42px; padding: 0 16px; border: 0; border-radius: 999px; font-family: "Instrument Sans", sans-serif; font-size: 13px; font-weight: 600; line-height: 1; text-decoration: none; }
