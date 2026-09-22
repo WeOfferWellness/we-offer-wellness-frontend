@@ -1,7 +1,7 @@
 @include('partials.product_showcase_section', [
         'section' => [
         'id' => 'home-latest-catalogue',
-        'section_class' => 'section home-latest-section',
+        'section_class' => 'home-latest-section',
         'container_class' => 'container',
         'kicker' => 'New this week',
         'title' => 'Find what’s new',
