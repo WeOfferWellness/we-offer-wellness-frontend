@@ -13,7 +13,7 @@
                 </div>
 
                 <div class="wow-gift-actions">
-                    <a href="/giftcards" class="btn-wow btn-wow--cta btn-arrow" data-loader-init="1">
+                    <a href="/giftcards" class="btn-wow btn-wow--primary btn-arrow" data-loader-init="1">
                         <span class="btn-label">Send a gift card</span>
                         <span class="btn-icon-wrap" aria-hidden="true">
                             <svg class="btn-icon-hover" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">

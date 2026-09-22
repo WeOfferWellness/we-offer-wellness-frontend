@@ -426,7 +426,7 @@
 
         <footer class="wow-route-card__footer">
           <small>Best for remote support, busy schedules and quiet evenings at home.</small>
-          <a href="{{ url('/online') }}" class="btn-wow btn-wow--cta">Browse online</a>
+          <a href="{{ url('/online') }}" class="btn-wow btn-wow--primary">Browse online</a>
         </footer>
       </article>
 
@@ -452,7 +452,7 @@
 
         <footer class="wow-route-card__footer">
           <small>Best for local sessions, in-person events and practitioners close by.</small>
-          <a href="{{ url('/locations') }}" class="btn-wow btn-wow--ghost">View nearby</a>
+          <a href="{{ url('/locations') }}" class="btn-wow btn-wow--soft">View nearby</a>
         </footer>
       </article>
     </section>
@@ -498,7 +498,7 @@
         <p>Always check suitability, practitioner details and any contraindications before booking. If you are unsure whether a therapy is right for you, speak to the practitioner first.</p>
       </div>
 
-      <a href="{{ url('/safety-and-contraindications') }}" class="btn-wow btn-wow--ghost">Read safety guidance</a>
+      <a href="{{ url('/safety-and-contraindications') }}" class="btn-wow btn-wow--soft">Read safety guidance</a>
     </section>
   </div>
 </main>

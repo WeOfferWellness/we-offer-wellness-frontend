@@ -100,16 +100,14 @@
 <link rel="manifest" href="/manifest.json?v=5">
 <meta name="theme-color" content="#90b9a9">
 
-<!-- Built assets via Vite (JS only here; keep inline <style> below intact) -->
+<!-- Built assets via Vite; load the legacy stylesheet before the shared button design system. -->
 @php $manifest = public_path('build/manifest.json'); @endphp
 @if (file_exists($manifest))
-  @vite('resources/js/app.js')
+  @vite('resources/css/head-inline.css')
 @endif
 
-
-<!-- The legacy global rules are built into a cacheable stylesheet below. -->
 @if (file_exists($manifest))
-  @vite('resources/css/head-inline.css')
+  @vite('resources/js/app.js')
 @endif
 @if (false)
 
@@ -25757,7 +25755,7 @@ Base Button
 .btn-wow[disabled],
 .btn-wow.is-disabled,
 .btn-wow.is-loading,
-.btn-wow--cta.is-loading,
+.btn-wow--primary.is-loading,
 .cta-btn.is-loading,
 .cta-btn[disabled] {
     pointer-events: none;
@@ -25773,7 +25771,7 @@ Base Button
 /* ======================
 CTA (modern + legacy) — NO base box-shadow
 ====================== */
-.btn-wow--cta,
+.btn-wow--primary,
 .cta-btn {
     background: var(--cta-bg);
     box-shadow: none; /* remove inset halo for CTA */
@@ -25781,13 +25779,13 @@ CTA (modern + legacy) — NO base box-shadow
     --pr: 12px;
 }
 
-.btn-wow--cta:hover,
+.btn-wow--primary:hover,
 .cta-btn:hover {
     background: var(--cta-hover)
 }
 
 /* Keep accessible focus ring for CTA, but without inset halo */
-.btn-wow--cta:focus-visible,
+.btn-wow--primary:focus-visible,
 .cta-btn:focus-visible {
     box-shadow: 0 0 0 4px #ffffff,
     0 0 0 6px #9ec2ff55;
@@ -25833,14 +25831,14 @@ Icon wrapper + swap
 }
 
 .btn-wow:hover .btn-icon-default,
-.btn-wow--cta:hover .btn-icon-default,
+.btn-wow--primary:hover .btn-icon-default,
 .cta-btn:hover .btn-icon-default {
     opacity: 0;
     transform: translate(-50%, -50%) scale(var(--icon-scale)) translateX(6px)
 }
 
 .btn-wow:hover .btn-icon-hover,
-.btn-wow--cta:hover .btn-icon-hover,
+.btn-wow--primary:hover .btn-icon-hover,
 .cta-btn:hover .btn-icon-hover {
     opacity: 1;
     transform: translate(-50%, -50%) scale(var(--icon-scale)) translateX(0)
@@ -25849,7 +25847,7 @@ Icon wrapper + swap
 /* ======================
 Variants
 ====================== */
-.btn-wow--secondary {
+.btn-wow--soft {
     background: var(--btn2-bg);
     --btn-ink: var(--btn2-ink);
     color: var(--btn2-ink);
@@ -25857,7 +25855,7 @@ Variants
     box-shadow: none;
 }
 
-.btn-wow--secondary:hover {
+.btn-wow--soft:hover {
     background: var(--btn2-hover)
 }
 
@@ -25894,7 +25892,7 @@ Variants
     stroke: currentColor !important;
 }
 
-.btn-wow--ghost {
+.btn-wow--soft {
     background: transparent;
     --btn-ink: var(--btn-ghost-ink);
     color: var(--btn-ghost-ink);
@@ -25902,7 +25900,7 @@ Variants
     box-shadow: none;
 }
 
-.btn-wow--ghost:hover {
+.btn-wow--soft:hover {
     background: var(--btn-ghost-hover)
 }
 
@@ -25998,13 +25996,13 @@ Sizes (set per-instance vars)
 Loading state
 ====================== */
 .btn-wow.is-loading,
-.btn-wow--cta.is-loading,
+.btn-wow--primary.is-loading,
 .cta-btn.is-loading {
     opacity: .9;
 }
 
 .btn-wow.is-loading .btn-label,
-.btn-wow--cta.is-loading .btn-label,
+.btn-wow--primary.is-loading .btn-label,
 .cta-btn.is-loading .btn-label {
     opacity: 0
 }
@@ -26020,7 +26018,7 @@ Loading state
 }
 
 .btn-wow.is-loading .btn-spinner,
-.btn-wow--cta.is-loading .btn-spinner,
+.btn-wow--primary.is-loading .btn-spinner,
 .cta-btn.is-loading .btn-spinner {
     opacity: 1
 }

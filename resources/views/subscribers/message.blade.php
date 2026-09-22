@@ -15,7 +15,7 @@
         <p class="lead-cart">{{ $body ?? 'Your preferences are saved.' }}</p>
         @if(!empty($cta) && !empty($ctaUrl))
           <div class="mt-4">
-            <a class="btn-wow btn-wow--cta" href="{{ $ctaUrl }}">{{ $cta }}</a>
+            <a class="btn-wow btn-wow--primary" href="{{ $ctaUrl }}">{{ $cta }}</a>
           </div>
         @endif
       </div>

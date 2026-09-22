@@ -93,7 +93,7 @@
       <input id="profile-email" type="email" name="email" value="{{ old('email', $profileUser->email) }}" required>
       @error('email')<p class="field-error">{{ $message }}</p>@enderror
 
-      <button type="submit" class="btn-wow btn-wow--cta">Save changes</button>
+      <button type="submit" class="btn-wow btn-wow--primary">Save changes</button>
     </form>
   </div>
 </div>

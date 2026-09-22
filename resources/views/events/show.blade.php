@@ -1129,7 +1129,7 @@
 
         <div class="wow-side-card">
           <h3>Navigation</h3>
-          <a class="wow-btn" href="{{ route('events.index') }}">Back to events</a>
+          <a class="btn-wow btn-wow--outline btn-arrow" href="{{ route('events.index') }}">Back to events</a>
         </div>
       </aside>
     </div>

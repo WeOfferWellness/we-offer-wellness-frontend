@@ -8,8 +8,8 @@
     <h1>Cookie preferences & policy</h1>
     <p>We use cookies and similar storage to keep your account secure, understand performance and share relevant rituals. You decide what’s on.</p>
     <div class="cookie-hero__actions">
-      <button type="button" class="btn-wow btn-wow--cta" data-cookie-preferences-trigger>Adjust cookie preferences</button>
-      <a href="/privacy" class="btn-wow btn-wow--ghost">Read privacy policy</a>
+      <button type="button" class="btn-wow btn-wow--primary" data-cookie-preferences-trigger>Adjust cookie preferences</button>
+      <a href="/privacy" class="btn-wow btn-wow--soft">Read privacy policy</a>
     </div>
   </div>
 </section>

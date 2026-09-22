@@ -490,7 +490,7 @@
                                 </div>
                                 <form method="POST" action="{{ route('logout') }}" class="accountdd-logout">
                                     @csrf
-                                    <button type="submit" class="btn btn--primary accountdd-logout__btn">Log out</button>
+                                    <button type="submit" class="btn-wow btn-wow--primary btn-wow--sm accountdd-logout__btn"><span class="btn-label">Log out</span></button>
                                 </form>
                             </div>
                         </div>
@@ -504,8 +504,8 @@
                             <p class="account-email">Sign in to manage bookings faster.</p>
                             <div class="account-actions">
                                 <div class="cartdd-foot accountdd-foot">
-                                    <a class="btn visit-cart-btn" href="{{ route('login', ['redirect' => '/account']) }}">Log in</a>
-                                    <a class="btn btn--primary checkout-btn" href="{{ route('register', ['redirect' => '/account']) }}">Sign up</a>
+                                    <a class="btn-wow btn-wow--outline btn-wow--sm visit-cart-btn" href="{{ route('login', ['redirect' => '/account']) }}"><span class="btn-label">Log in</span></a>
+                                    <a class="btn-wow btn-wow--primary btn-wow--sm checkout-btn" href="{{ route('register', ['redirect' => '/account']) }}"><span class="btn-label">Sign up</span></a>
                                 </div>
                                 <a class="account-link" href="{{ route('password.request') }}">Forgot password?</a>
                             </div>
@@ -533,8 +533,8 @@
                       <div class="cartdd-upsell" id="cartdd-upsell"></div>
                     </div>
                     <div class="cartdd-foot">
-                      <a href="/cart" class="btn visit-cart-btn">Visit cart</a>
-                      <a href="/checkout" class="btn btn--primary checkout-btn">Checkout</a>
+                      <a href="/cart" class="btn-wow btn-wow--outline btn-wow--sm visit-cart-btn"><span class="btn-label">Visit cart</span></a>
+                      <a href="/checkout" class="btn-wow btn-wow--primary btn-wow--sm checkout-btn"><span class="btn-label">Checkout</span></a>
                     </div>
                 </div>
                 </div>
@@ -1406,7 +1406,7 @@
                         </ul>
                         <form method="POST" action="{{ route('logout') }}" class="mobile-account-logout">
                             @csrf
-                            <button type="submit" class="btn btn--primary">Log out</button>
+                            <button type="submit" class="btn-wow btn-wow--primary btn-wow--sm"><span class="btn-label">Log out</span></button>
                         </form>
                     @else
                         <div class="mobile-account-card mobile-account-card--guest">
@@ -1414,8 +1414,8 @@
                             <p class="mobile-account-guest-text">Save favourites, manage bookings, and checkout faster.</p>
                         </div>
                         <div class="mobile-account-buttons">
-                            <a class="btn" href="{{ route('login', ['redirect' => '/account']) }}">Log in</a>
-                            <a class="btn btn--primary" href="{{ route('register', ['redirect' => '/account']) }}">Create account</a>
+                            <a class="btn-wow btn-wow--outline btn-wow--sm" href="{{ route('login', ['redirect' => '/account']) }}"><span class="btn-label">Log in</span></a>
+                            <a class="btn-wow btn-wow--primary btn-wow--sm" href="{{ route('register', ['redirect' => '/account']) }}"><span class="btn-label">Create account</span></a>
                         </div>
                     @endauth
                 </div>
@@ -1493,7 +1493,7 @@
                         <p class="practitioner-form__hint">Just provide the general location like county or town/city. We will not share this with anyone.</p>
                     </div>
                     <div id="wowPractitionerMessage" class="practitioner-form__message" role="alert" aria-live="polite" hidden></div>
-                    <button type="submit" class="btn-wow btn-wow--cta btn-arrow practitioner-form__submit" data-loader-init="1">
+                    <button type="submit" class="btn-wow btn-wow--primary btn-arrow practitioner-form__submit" data-loader-init="1">
                         <span class="btn-label">Send details</span>
                         <span class="btn-spinner" aria-hidden="true"><span class="spin"></span></span>
                     </button>

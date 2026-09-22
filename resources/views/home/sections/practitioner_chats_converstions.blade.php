@@ -5,8 +5,8 @@
         <p>Read Mindful Times interviews and watch We Offer Wellness® videos with practitioners discussing how they hold space, approach safety and support real people.</p>
 
         <div class="wow-chat-actions">
-            <a href="https://times.weofferwellness.co.uk/category/interviews" class="wow-btn wow-btn-primary" target="_blank" rel="noopener">Read interviews</a>
-            <a href="https://www.youtube.com/@WeOfferWellness/videos" class="wow-btn wow-btn-outline" target="_blank" rel="noopener">Watch videos</a>
+            <a href="https://times.weofferwellness.co.uk/category/interviews" class="btn-wow btn-wow--primary btn-arrow" target="_blank" rel="noopener">Read interviews</a>
+            <a href="https://www.youtube.com/@WeOfferWellness/videos" class="btn-wow btn-wow--outline btn-arrow" target="_blank" rel="noopener">Watch videos</a>
         </div>
     </div>
 

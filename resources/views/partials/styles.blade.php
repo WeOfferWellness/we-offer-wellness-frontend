@@ -25485,7 +25485,7 @@
     .btn-wow[disabled],
     .btn-wow.is-disabled,
     .btn-wow.is-loading,
-    .btn-wow--cta.is-loading,
+    .btn-wow--primary.is-loading,
     .cta-btn.is-loading,
     .cta-btn[disabled] {
         pointer-events: none;
@@ -25501,7 +25501,7 @@
     /* ======================
    CTA (modern + legacy) — NO base box-shadow
    ====================== */
-    .btn-wow--cta,
+    .btn-wow--primary,
     .cta-btn {
         background: var(--cta-bg);
         box-shadow: none; /* remove inset halo for CTA */
@@ -25509,13 +25509,13 @@
         --pr: 12px;
     }
 
-    .btn-wow--cta:hover,
+    .btn-wow--primary:hover,
     .cta-btn:hover {
         background: var(--cta-hover)
     }
 
     /* Keep accessible focus ring for CTA, but without inset halo */
-    .btn-wow--cta:focus-visible,
+    .btn-wow--primary:focus-visible,
     .cta-btn:focus-visible {
         box-shadow: 0 0 0 4px #ffffff,
         0 0 0 6px #9ec2ff55;
@@ -25561,14 +25561,14 @@
     }
 
     .btn-wow:hover .btn-icon-default,
-    .btn-wow--cta:hover .btn-icon-default,
+    .btn-wow--primary:hover .btn-icon-default,
     .cta-btn:hover .btn-icon-default {
         opacity: 0;
         transform: translate(-50%, -50%) scale(var(--icon-scale)) translateX(6px)
     }
 
     .btn-wow:hover .btn-icon-hover,
-    .btn-wow--cta:hover .btn-icon-hover,
+    .btn-wow--primary:hover .btn-icon-hover,
     .cta-btn:hover .btn-icon-hover {
         opacity: 1;
         transform: translate(-50%, -50%) scale(var(--icon-scale)) translateX(0)
@@ -25577,7 +25577,7 @@
     /* ======================
    Variants
    ====================== */
-    .btn-wow--secondary {
+    .btn-wow--soft {
         background: var(--btn2-bg);
         --btn-ink: var(--btn2-ink);
         color: var(--btn2-ink);
@@ -25585,7 +25585,7 @@
         box-shadow: none;
     }
 
-    .btn-wow--secondary:hover {
+    .btn-wow--soft:hover {
         background: var(--btn2-hover)
     }
 
@@ -25622,7 +25622,7 @@
         stroke: currentColor !important;
     }
 
-    .btn-wow--ghost {
+    .btn-wow--soft {
         background: transparent;
         --btn-ink: var(--btn-ghost-ink);
         color: var(--btn-ghost-ink);
@@ -25630,7 +25630,7 @@
         box-shadow: none;
     }
 
-    .btn-wow--ghost:hover {
+    .btn-wow--soft:hover {
         background: var(--btn-ghost-hover)
     }
 
@@ -25726,13 +25726,13 @@
    Loading state
    ====================== */
     .btn-wow.is-loading,
-    .btn-wow--cta.is-loading,
+    .btn-wow--primary.is-loading,
     .cta-btn.is-loading {
         opacity: .9;
     }
 
     .btn-wow.is-loading .btn-label,
-    .btn-wow--cta.is-loading .btn-label,
+    .btn-wow--primary.is-loading .btn-label,
     .cta-btn.is-loading .btn-label {
         opacity: 0
     }
@@ -25748,7 +25748,7 @@
     }
 
     .btn-wow.is-loading .btn-spinner,
-    .btn-wow--cta.is-loading .btn-spinner,
+    .btn-wow--primary.is-loading .btn-spinner,
     .cta-btn.is-loading .btn-spinner {
         opacity: 1
     }

@@ -1150,7 +1150,7 @@
             --wow-green-dark: #24594d;
         }
 
-        .wow-gift-actions .btn-wow--cta,
+        .wow-gift-actions .btn-wow--primary,
         .wow-chat-actions .wow-btn-primary,
         .wow-approach-actions .wow-btn-primary {
             background: #2f6f60;
@@ -1158,7 +1158,7 @@
             color: #fff;
         }
 
-        .wow-gift-actions .btn-wow--cta:hover,
+        .wow-gift-actions .btn-wow--primary:hover,
         .wow-chat-actions .wow-btn-primary:hover,
         .wow-approach-actions .wow-btn-primary:hover {
             background: #214f44;

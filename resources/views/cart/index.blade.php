@@ -58,7 +58,7 @@
               <div id="promo-msg" class="promo-msg"></div>
             </div>
 
-            <button class="btn-wow btn-wow--cta w-100" id="checkoutBtn" disabled>Continue to checkout</button>
+            <button class="btn-wow btn-wow--primary w-100" id="checkoutBtn" disabled>Continue to checkout</button>
             <div class="trust-hints">
               <div class="hint"><span class="dot"></span>Secure checkout</div>
               <div class="hint"><span class="dot"></span>Free reschedule window</div>
@@ -87,7 +87,7 @@
                   <p>Add a therapy and you’re good to go.</p>
                 </div>
                 <div class="empty-actions">
-                  <a class="btn-wow btn-wow--cta" href="/search">Browse therapies</a>
+                  <a class="btn-wow btn-wow--primary" href="/search">Browse therapies</a>
                 </div>
               </div>
             </div>
@@ -108,7 +108,7 @@
 
 <div id="guestCheckoutModal" class="guest-modal" aria-hidden="true">
   <div class="guest-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="guestModalTitle">
-    <button type="button" class="btn-wow btn-wow--ghost is-square btn-sm guest-modal__close" aria-label="Close" data-guest-close>×</button>
+    <button type="button" class="btn-wow btn-wow--soft is-square btn-sm guest-modal__close" aria-label="Close" data-guest-close>×</button>
     <h2 id="guestModalTitle">Almost there</h2>
     <p>Please tell us who this order is for and where to send the confirmation. You can create an account later with the same email.</p>
     <form id="guestCheckoutForm">
@@ -119,7 +119,7 @@
       <label for="guestEmail">Email address <span aria-hidden="true">*</span></label>
       <input id="guestEmail" type="email" required placeholder="you@example.com" autocomplete="email">
       <div id="guestError" class="guest-modal__error" role="alert"></div>
-      <button type="submit" class="btn-wow btn-wow--cta" id="guestSubmitBtn">Continue as guest</button>
+      <button type="submit" class="btn-wow btn-wow--primary" id="guestSubmitBtn">Continue as guest</button>
       <div class="guest-modal__links">
         <a href="{{ route('login', ['redirect' => '/cart']) }}" class="link-wow">Log in instead</a>
         <a href="{{ route('register', ['redirect' => '/cart']) }}" class="link-wow">Create an account</a>
@@ -366,7 +366,7 @@
       return '<div class="upsell-item" data-upsell="'+it.id+'">'
         + (img?('<img src="'+img+'" alt="">'):'<div style="width:52px;height:52px;border-radius:14px;background:#f3f5f7;border:1px solid #eceff3"></div>')
         + '<div><p class="upsell-title">'+title+'</p><div class="upsell-price">'+money(p)+'</div></div>'
-        + '<button class="btn-wow btn-wow--ghost btn-sm upsell-add" type="button" data-add="'+it.id+'">Add</button>'
+        + '<button class="btn-wow btn-wow--soft btn-sm upsell-add" type="button" data-add="'+it.id+'">Add</button>'
       + '</div>';
     }).join('');
   }
@@ -418,14 +418,14 @@
             + '<span class="pill"><span class="dot"></span>Unit: '+money(it.unit)+'</span>'
             + '<span class="pill">Line: '+money(line)+'</span>'
           + '</div>'
-          + '<button class="btn-wow btn-wow--ghost btn-sm cart-remove" type="button" data-remove="'+escapeHtml(String(it.id))+'" aria-label="Remove">Remove</button>'
+          + '<button class="btn-wow btn-wow--soft btn-sm cart-remove" type="button" data-remove="'+escapeHtml(String(it.id))+'" aria-label="Remove">Remove</button>'
         + '</div>'
       + '</div>'
       + '<div class="cart-qty">'
         + '<div class="qty">'
-          + '<button type="button" class="btn-wow btn-wow--ghost is-square btn-sm js-qdec" aria-label="Decrease">−</button>'
+          + '<button type="button" class="btn-wow btn-wow--soft is-square btn-sm js-qdec" aria-label="Decrease">−</button>'
           + '<input type="number" class="qty-input" min="1" value="'+Number(it.qty||1)+'">'
-          + '<button type="button" class="btn-wow btn-wow--ghost is-square btn-sm js-qinc" aria-label="Increase">+</button>'
+          + '<button type="button" class="btn-wow btn-wow--soft is-square btn-sm js-qinc" aria-label="Increase">+</button>'
         + '</div>'
       + '</div>'
       + '<div class="cart-amt">'+money(line)+'</div>'

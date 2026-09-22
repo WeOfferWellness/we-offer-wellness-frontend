@@ -91,9 +91,9 @@
     }
     .wow-consistent-hero .btn-wow:hover { border-color: #9eb0aa; color: var(--wow-green-dark); background: #f3f7f5; }
     .wow-consistent-hero .btn-wow--primary,
-    .wow-consistent-hero .btn-wow--cta { border-color: #4f9482; color: #fff; background: #4f9482; }
+    .wow-consistent-hero .btn-wow--primary { border-color: #4f9482; color: #fff; background: #4f9482; }
     .wow-consistent-hero .btn-wow--primary:hover,
-    .wow-consistent-hero .btn-wow--cta:hover { border-color: #3f806f; color: #fff; background: #3f806f; }
+    .wow-consistent-hero .btn-wow--primary:hover { border-color: #3f806f; color: #fff; background: #3f806f; }
     .wow-consistent-hero .btn-arrow { padding-right: 12px; }
     .wow-consistent-hero .btn-arrow::after {
       content: "→";
@@ -111,7 +111,7 @@
       transition: transform .18s ease;
     }
     .wow-consistent-hero .btn-wow--primary.btn-arrow::after,
-    .wow-consistent-hero .btn-wow--cta.btn-arrow::after { color: #fff; background: rgba(255, 255, 255, .15); }
+    .wow-consistent-hero .btn-wow--primary.btn-arrow::after { color: #fff; background: rgba(255, 255, 255, .15); }
     .wow-consistent-hero .btn-arrow:hover::after { transform: translateX(2px); }
     .wow-consistent-hero__aside {
       display: flex;
@@ -216,7 +216,12 @@
       @if(!empty($heroActions))
         <div class="wow-consistent-hero__actions">
           @foreach($heroActions as $action)
-            <a href="{{ $action['href'] ?? '#' }}" class="btn-wow {{ ($action['style'] ?? 'primary') === 'outline' ? 'btn-wow--outline' : 'btn-wow--primary' }} btn-arrow"><span class="btn-label">{{ $action['label'] ?? 'Explore' }}</span></a>
+            @include('partials.wow-button', [
+              'href' => $action['href'] ?? '#',
+              'label' => $action['label'] ?? 'Explore',
+              'variant' => ($action['style'] ?? 'primary') === 'outline' ? 'outline' : 'primary',
+              'arrow' => true,
+            ])
           @endforeach
         </div>
       @endif

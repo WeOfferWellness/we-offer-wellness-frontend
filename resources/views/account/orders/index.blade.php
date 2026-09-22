@@ -41,7 +41,7 @@
     @else
       <div class="account-empty">
         <p>You haven’t made any bookings yet. Browse therapies, workshops, or online sessions to get started.</p>
-        <a class="btn-wow btn-wow--cta" href="/needs">Start exploring</a>
+        <a class="btn-wow btn-wow--primary" href="/needs">Start exploring</a>
       </div>
     @endif
   </div>

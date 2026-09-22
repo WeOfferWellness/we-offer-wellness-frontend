@@ -56,7 +56,7 @@
       @empty
         <div class="account-empty">
           <p>You haven’t booked anything yet. When you checkout, your orders will appear here.</p>
-          <a class="btn-wow btn-wow--cta" href="/therapies">Browse therapies</a>
+          <a class="btn-wow btn-wow--primary" href="/therapies">Browse therapies</a>
         </div>
       @endforelse
     </div>
@@ -80,14 +80,14 @@
             <p class="shortcut-title">Rebook a favourite</p>
             <p class="shortcut-subtitle">Head back to the marketplace and explore what’s popular now.</p>
           </div>
-          <a class="btn-wow btn-wow--ghost btn-sm" href="/needs">Find therapies</a>
+          <a class="btn-wow btn-wow--soft btn-sm" href="/needs">Find therapies</a>
         </li>
         <li>
           <div>
             <p class="shortcut-title">Need concierge help?</p>
             <p class="shortcut-subtitle">Chat with us if you need to adjust times or attendees.</p>
           </div>
-          <a class="btn-wow btn-wow--ghost btn-sm" href="/contact">Contact support</a>
+          <a class="btn-wow btn-wow--soft btn-sm" href="/contact">Contact support</a>
         </li>
       </ul>
     </div>

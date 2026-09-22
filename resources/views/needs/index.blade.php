@@ -291,7 +291,7 @@
           </div>
           <footer class="wow-need-card__footer">
             <small>Browse therapies and experiences for {{ $need['name'] }}.</small>
-            <a href="{{ route('needs.show', ['slug' => $need['slug']]) }}" class="btn-wow btn-wow--cta">View {{ $need['name'] }}</a>
+            <a href="{{ route('needs.show', ['slug' => $need['slug']]) }}" class="btn-wow btn-wow--primary">View {{ $need['name'] }}</a>
           </footer>
         </article>
       @endforeach
@@ -338,7 +338,7 @@
         <p>Always check suitability, practitioner details and any contraindications before booking. If you are unsure whether a therapy is right for you, speak to the practitioner first.</p>
       </div>
 
-      <a href="{{ url('/safety-and-contraindications') }}" class="btn-wow btn-wow--ghost">Read safety guidance</a>
+      <a href="{{ url('/safety-and-contraindications') }}" class="btn-wow btn-wow--soft">Read safety guidance</a>
     </section>
   </div>
 </main>

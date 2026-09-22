@@ -242,7 +242,7 @@
         <h1>Find the right path by modality, type, location or pain point.</h1>
         <p>This is the new hub for browsing live offerings. Use it to move through the collection the way real people shop: by what it is, where it is, and how they feel.</p>
         <div class="offerings-actions">
-          <a href="/search" class="btn-wow btn-wow--cta btn-sm btn-arrow" data-loader-init="1">
+          <a href="/search" class="btn-wow btn-wow--primary btn-sm btn-arrow" data-loader-init="1">
             <span class="btn-label">Search everything</span>
             <span class="btn-icon-wrap" aria-hidden="true">
               <svg class="btn-icon-hover" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H5m14 0-4 4m4-4-4-4"></path></svg>

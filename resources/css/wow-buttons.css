@@ -1,370 +1,96 @@
-/* We Offer Wellness — Buttons & Links Style Deck (extracted) */
-/* This file defines .btn-wow* and .link-wow* classes used across the app */
-
-/* ========= Design Tokens ========= */
-:root{
-  /* Ink */
-  --ink:#0b1323;
-  --muted:#475569;
-
-  /* General black button */
-  --btn-bg:#000000;
-  --btn-hover:#111111;
-  --btn-ink:#ffffff;
-  --btn-ring:#d3d8e6;
-
-  /* CTA */
-  --cta-bg:#2f6f60;
-  --cta-hover:#214f44;
-  --cta-ring:#cfe6df;
-
-  /* Secondary / Neutral */
-  --btn2-bg:#f1f5f9;
-  --btn2-ink:#0b1323;
-  --btn2-border:#e2e8f0;
-  --btn2-hover:#e5eaf1;
-
-  /* Outline / Ghost */
-  --btn-outline-ink:#0f1e2e;
-  --btn-outline-border:#cdd7e3;
-  --btn-ghost-ink:#0f1e2e;
-  --btn-ghost-hover:#0f1e2e0d;
-
-  /* Semantic */
-  --success:#16a34a;
-  --danger:#ef4444;
-  --warning:#f59e0b;
-
-  /* Size tokens */
-  --btn-h-xs:30px;
-  --btn-h-sm:36px;
-  --btn-h-md:42px;
-  --btn-h-lg:50px;
-  --btn-h-xl:58px;
-
-  --btn-px-xs:12px;
-  --btn-px-sm:14px;
-  --btn-px-md:18px;
-  --btn-px-lg:22px;
-  --btn-px-xl:26px;
-
-  --btn-fz-xs:13px;
-  --btn-fz-sm:14px;
-  --btn-fz-md:15px;
-  --btn-fz-lg:17px;
-  --btn-fz-xl:18px;
-
-  --btn-rd:999px; /* default pill */
-  --btn-fw:400;
-
-  /* Icons */
-  --arrow-size:188px;
-  --icon-scale:0.12766; /* 188 → ~24px */
-
-  /* Links */
-  --link:#0f1e2e;
-  --link-hover:#333;
-  --link-underline:#d1d9e6;
+/* We Offer Wellness button system. Keep all storefront buttons on these variants. */
+:root {
+  --wow-green: #4f9482;
+  --wow-green-hover: #3f806f;
+  --wow-green-dark: #0b3028;
+  --wow-text: #17201d;
+  --wow-muted: #66736e;
+  --wow-line: #cfd9d5;
+  --wow-line-hover: #9eafa9;
+  --wow-soft: #f2f7f5;
+  --wow-soft-hover: #e7f0ed;
+  --wow-white: #fff;
+  --btn-h-sm: 34px;
+  --btn-h-md: 42px;
+  --btn-h-lg: 48px;
+  --btn-fz-sm: 12px;
+  --btn-fz-md: 14px;
+  --btn-fz-lg: 15px;
+  --btn-rd-pill: 999px;
+  --btn-rd-card: 4px;
+  --btn-fw: 500;
 }
 
-/* ======================
-   Base Button
-   ====================== */
 .btn-wow,
-.cta-btn{ /* legacy still supported */
-  /* Per-instance sizing variables (defaults = MD) */
-  --h:  var(--btn-h-md);
-  --px: var(--btn-px-md);
-  --pl: var(--px);
-  --pr: var(--px);
-  --fz: var(--btn-fz-md);
-
-  position:relative;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  gap:3px;
-
-  height:var(--h);
-  padding:0 var(--pr) 0 var(--pl);
-  border:0;
-  outline:0;
-  cursor:pointer;
-
-  color:var(--btn-ink);
-  background:var(--btn-bg);
-  border-radius:var(--btn-rd);
-  font-weight:var(--btn-fw);
-  font-size:var(--fz);
-  line-height:1;
-
-  transition:background-color .18s ease, transform .18s ease, box-shadow .18s ease, opacity .18s ease;
-  box-shadow:0 0 0 3px var(--btn-ring) inset; /* neutral inset halo (default buttons only) */
-  user-select:none;
-  -webkit-tap-highlight-color:transparent;
-  text-decoration:none; /* works for <a> too */
-  white-space: nowrap; /* keep labels like "Visit Mindful Times" on one line */
+.cta-btn {
+  --btn-height: var(--btn-h-md);
+  --btn-font-size: var(--btn-fz-md);
+  --btn-radius: var(--btn-rd-pill);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: var(--btn-height);
+  padding: 0 18px;
+  border: 1px solid transparent;
+  border-radius: var(--btn-radius);
+  background: transparent;
+  color: var(--wow-text);
+  font-family: "Instrument Sans", sans-serif;
+  font-size: var(--btn-font-size);
+  font-weight: var(--btn-fw);
+  line-height: 1;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color .18s ease, border-color .18s ease, color .18s ease, transform .18s ease, opacity .18s ease;
+  -webkit-tap-highlight-color: transparent;
 }
+.btn-wow:hover, .cta-btn:hover { text-decoration: none; }
+.btn-wow:active, .cta-btn:active { transform: translateY(1px); }
+.btn-wow:focus-visible, .cta-btn:focus-visible { outline: 2px solid var(--wow-green); outline-offset: 3px; }
+.btn-wow:disabled, .btn-wow[aria-disabled="true"], .cta-btn:disabled, .cta-btn[aria-disabled="true"] { opacity: .45; cursor: not-allowed; pointer-events: none; }
 
-.btn-wow:active,
-.cta-btn:active{ transform:translateY(1px) }
+.btn-wow--sm { --btn-height: var(--btn-h-sm); --btn-font-size: var(--btn-fz-sm); padding-inline: 14px; }
+.btn-wow--md { --btn-height: var(--btn-h-md); --btn-font-size: var(--btn-fz-md); }
+.btn-wow--lg { --btn-height: var(--btn-h-lg); --btn-font-size: var(--btn-fz-lg); padding-inline: 22px; }
+.btn-wow--block { display: flex; width: 100%; }
 
-/* Hover (general black) */
-.btn-wow:hover{ background:var(--btn-hover) }
+.btn-wow--primary, .btn-wow--cta, .cta-btn { background: var(--wow-green); border-color: var(--wow-green); color: var(--wow-white); }
+.btn-wow--primary:hover, .btn-wow--cta:hover, .cta-btn:hover { background: var(--wow-green-hover); border-color: var(--wow-green-hover); color: #fff; }
+.btn-wow--outline { background: #fff; border-color: var(--wow-line); color: var(--wow-text); }
+.btn-wow--outline:hover { background: var(--wow-soft); border-color: var(--wow-line-hover); color: var(--wow-green-dark); }
+.btn-wow--soft, .btn-wow--ghost, .btn-wow--secondary { background: var(--wow-soft); border-color: var(--wow-soft); color: var(--wow-green-dark); }
+.btn-wow--soft:hover, .btn-wow--ghost:hover, .btn-wow--secondary:hover { background: var(--wow-soft-hover); border-color: var(--wow-soft-hover); color: var(--wow-green-dark); }
 
-/* Focus visible (default) */
-.btn-wow:focus-visible,
-.cta-btn:focus-visible{
-  box-shadow:
-    0 0 0 3px var(--btn-ring) inset,
-    0 0 0 4px #ffffff,
-    0 0 0 6px #9ec2ff55;
-}
+.btn-wow--text { height: auto; padding: 0; border: 0; border-radius: 0; color: var(--wow-green-dark); font-weight: 600; }
+.btn-wow--text:hover { color: var(--wow-green); }
+.btn-wow--card { --btn-height: 40px; --btn-font-size: 11px; --btn-radius: var(--btn-rd-card); min-width: 108px; padding-inline: 14px; letter-spacing: .02em; text-transform: uppercase; }
+.btn-wow--icon { width: var(--btn-height); padding: 0; }
+.btn-wow--icon svg { width: 17px; height: 17px; }
 
-/* Disabled + Loading interactivity */
-.btn-wow[disabled],
-.btn-wow.is-disabled,
-.btn-wow.is-loading,
-.btn-wow--cta.is-loading,
-.cta-btn.is-loading,
-.cta-btn[disabled]{ pointer-events:none; }
+.btn-arrow { padding-right: 12px; }
+.btn-arrow::after { content: "→"; display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; margin-left: 3px; border-radius: 50%; background: var(--wow-soft); color: var(--wow-green); font-size: 14px; line-height: 1; transition: transform .18s ease, background-color .18s ease; }
+.btn-arrow:hover::after { transform: translateX(2px); }
+.btn-wow--primary.btn-arrow::after, .btn-wow--cta.btn-arrow::after, .cta-btn.btn-arrow::after { background: rgba(255,255,255,.15); color: #fff; }
+.btn-wow--soft.btn-arrow::after, .btn-wow--ghost.btn-arrow::after { background: #fff; }
+.btn-wow--text.btn-arrow::after { width: auto; height: auto; margin-left: 1px; background: transparent; border-radius: 0; color: currentColor; }
 
-.btn-wow[disabled],
-.btn-wow.is-disabled,
-.cta-btn[disabled]{ opacity:.55; filter:grayscale(.2); }
-
-/* ======================
-   CTA (modern + legacy) — NO base box-shadow
-   ====================== */
-.btn-wow--cta,
-.cta-btn{
-  background:var(--cta-bg);
-  box-shadow:none;           /* remove inset halo for CTA */
-  --pl: 15px;
-  --pr: 12px;
-}
-.btn-wow--cta:hover,
-.cta-btn:hover{ background:var(--cta-hover) }
-
-/* Keep accessible focus ring for CTA, but without inset halo */
-.btn-wow--cta:focus-visible,
-.cta-btn:focus-visible{
-  box-shadow:
-    0 0 0 4px #ffffff,
-    0 0 0 6px #9ec2ff55;
-}
-
-/* Arrow helper = just tweaks padding via vars */
-.btn-arrow{ --pl: 18px; --pr: 12px; }
-
-/* ======================
-   Icon wrapper + swap
-   ====================== */
-.btn-icon-wrap{
-  position:relative; width:24px; height:24px; overflow:visible; flex:0 0 24px;
-}
-.btn-icon-default,.btn-icon-hover{
-  position:absolute; top:50%; left:50%;
-  width:var(--arrow-size); height:var(--arrow-size);
-  transform-origin:center; transform-box:fill-box;
-  transition:opacity .18s ease, transform .18s ease;
-  color:currentColor;
-}
-.btn-icon-default{ opacity:1; transform:translate(-50%,-50%) scale(var(--icon-scale)) }
-.btn-icon-hover{ opacity:0; transform:translate(-50%,-50%) scale(var(--icon-scale)) translateX(-2px) }
-
-.btn-wow:hover .btn-icon-default,
-.btn-wow--cta:hover .btn-icon-default,
-.cta-btn:hover .btn-icon-default{
-  opacity:0; transform:translate(-50%,-50%) scale(var(--icon-scale)) translateX(6px)
-}
-.btn-wow:hover .btn-icon-hover,
-.btn-wow--cta:hover .btn-icon-hover,
-.cta-btn:hover .btn-icon-hover{
-  opacity:1; transform:translate(-50%,-50%) scale(var(--icon-scale)) translateX(0)
-}
-
-/* ======================
-   Variants
-   ====================== */
-.btn-wow--secondary{
-  background:var(--btn2-bg);
-  --btn-ink: var(--btn2-ink);
-  color:var(--btn2-ink);
-  border:1px solid var(--btn2-border);
-  box-shadow:none;
-}
-.btn-wow--secondary:hover{ background:var(--btn2-hover) }
-
-/* Outline — force dark text & icons, no inset halo ever */
-.btn-wow--outline{
-  background:#ffffff; /* make outline buttons white */
-  border:1px solid var(--btn-outline-border);
-  box-shadow:none;
-  --btn-ink: var(--btn-outline-ink);
-  color:var(--btn-outline-ink);
-  transition: none; /* no hover/press animation */
-}
-.btn-wow--outline:hover{ background:#ffffff; color: var(--btn-outline-ink); transform:none; box-shadow:none; }
-.btn-wow--outline:active{ transform:none; box-shadow:none; }
-
-/* Remove inset ring for outline focus like CTA */
-.btn-wow--outline:focus-visible{ box-shadow:none; }
-
-/* Make outline arrows follow text color (override white stroke in markup) */
-.btn-wow--outline .btn-icon-default path,
-.btn-wow--outline .btn-icon-hover path{ stroke:currentColor !important; }
-
-.btn-wow--ghost{
-  background:transparent;
-  --btn-ink: var(--btn-ghost-ink);
-  color:var(--btn-ghost-ink);
-  border:1px solid transparent;
-  box-shadow:none;
-}
-.btn-wow--ghost:hover{ background:var(--btn-ghost-hover) }
-
-/* Semantic helpers (combine with any) */
-.is-success{ --btn-bg:var(--success); --btn-hover:#128a3e }
-.is-danger{  --btn-bg:var(--danger);  --btn-hover:#d03636 }
-.is-warning{ --btn-bg:var(--warning); --btn-hover:#d7860a }
-
-/* ======================
-   Sizes (set per-instance vars)
-   ====================== */
-.btn-xs{ --h:var(--btn-h-xs); --px:var(--btn-px-xs); --fz:var(--btn-fz-xs); }
-.btn-sm{ --h:var(--btn-h-sm); --px:var(--btn-px-sm); --fz:var(--btn-fz-sm); }
-.btn-md{ --h:var(--btn-h-md); --px:var(--btn-px-md); --fz:var(--btn-fz-md); } /* default */
-.btn-lg{ --h:var(--btn-h-lg); --px:var(--btn-px-lg); --fz:var(--btn-fz-lg); }
-.btn-xl{ --h:var(--btn-h-xl); --px:var(--btn-px-xl); --fz:var(--btn-fz-xl); }
-
-/* Icon-only uses width = height */
-.btn-icon{ width:var(--h); padding:0; justify-content:center; }
-
-/* Block */
-.is-block{ display:flex; width:100% }
-
-/* ===== New: Squarish radius helper (like the search button) ===== */
-.is-squarish{ --btn-rd:14px; }
-/* Square (3px radius) */
-.is-square{ --btn-rd:3px; }
-
-/* Explicit style for large squarish primary buttons (e.g., search)
-   Ensure no border/shadow per spec */
-button.btn-wow.is-squarish.btn-xl{
-  border:none;
-  box-shadow:none;
-}
-
-/* Square buttons: enforce symmetric padding and remove internal gap */
-.btn-wow.is-square,
-.cta-btn.is-square{
-  --pl: var(--px);
-  --pr: var(--px);
-  gap: 0;
-  box-shadow: none; /* remove inset halo on square (black) buttons */
-}
-
-/* Keep accessible outer focus ring for square buttons, without inset halo */
-.btn-wow.is-square:focus-visible{
-  box-shadow:
-    0 0 0 4px #ffffff,
-    0 0 0 6px #9ec2ff55;
-}
-
-/* ======================
-   Loading state
-   ====================== */
-.btn-wow.is-loading,
-.btn-wow--cta.is-loading,
-.cta-btn.is-loading{ opacity:.9; }
-
-.btn-wow.is-loading .btn-label,
-.btn-wow--cta.is-loading .btn-label,
-.cta-btn.is-loading .btn-label{ opacity:0 }
-
-.btn-spinner{
-  position:absolute; inset:0;
-  display:grid; place-items:center;
-  opacity:0; transition:opacity .18s ease;
-  pointer-events:none; /* never block clicks */
-}
-.btn-wow.is-loading .btn-spinner,
-.btn-wow--cta.is-loading .btn-spinner,
-.cta-btn.is-loading .btn-spinner{ opacity:1 }
-
-.btn-spinner .spin{
-  width:18px; height:18px;
-  border-radius:999px;
-  border:2px solid currentColor;
-  border-right-color:transparent;
-  animation:spin .8s linear infinite;
-}
-@keyframes spin{ to{ transform:rotate(360deg) } }
-
-/* ======================
-   Links (≤300 weight, random underline opt-in)
-   ====================== */
-
-/* Specific tweak: medium arrow button should have no shadow,
-   no extra right margin, and sit 5px to the right to align visuals */
-button.btn-wow.btn-md.btn-arrow{
-  box-shadow: none;
-  margin-right: 0;
-  right: -5px;
-}
-
-.link-wow,
-.link-wow--muted,
-.link-wow--nav,
-.link-wow--button{
-  color:var(--link);
-  text-decoration:none;      /* underline drawn via SVG when opted in */
-  transition:color .18s ease;
-  font-weight:300;           /* cap at 300 */
-  display:inline-block;
-  position:relative;
-  line-height:1;
-  vertical-align:baseline;
-}
-.link-wow:hover{ color:var(--link-hover) }
-
-.link-wow--muted{ color:var(--muted) }
-.link-wow--muted:hover{ color:#1f2937 }
-
-/* NAV LINKS: no underline effect */
-.link-wow--nav{
-  color:var(--ink);
-  padding:.35rem .6rem;
-  border-radius:10px;
-}
-.link-wow--nav:hover{ background:#0f1e2e0d; color:#0f1e2e }
-
-.link-wow--button{
-  color:var(--cta-bg);
-  white-space:nowrap;
-}
-.link-wow--button:hover{ color:var(--cta-hover) }
-
-/* Random underline container — exact distance & behind text */
-[data-draw-line]{ --underline-h:.45em; position:relative; }
-[data-draw-line] > span:not([data-draw-line-box]){
-  position:relative;
-  z-index:1;
-}
-[data-draw-line] [data-draw-line-box]{
-  position:absolute;
-  left:0; right:0;
-  height:var(--underline-h);
-  bottom:-0.6em;             /* distance from baseline */
-  pointer-events:none;
-  display:block;
-  z-index:0;                 /* underline behind the text */
-}
-.drawline-svg{
-  width:100%;
-  height:100%;
-  position:absolute;
-  overflow:visible !important;
-  display:block;
-}
+/* Compatibility aliases while templates migrate to deck names. */
+.btn-wow.btn-sm { --btn-height: var(--btn-h-sm); --btn-font-size: var(--btn-fz-sm); padding-inline: 14px; }
+.btn-wow.btn-md { --btn-height: var(--btn-h-md); --btn-font-size: var(--btn-fz-md); }
+.btn-wow.btn-lg { --btn-height: var(--btn-h-lg); --btn-font-size: var(--btn-fz-lg); padding-inline: 22px; }
+.btn-wow.is-block { display: flex; width: 100%; }
+.btn-wow.is-square { --btn-radius: 3px; }
+.btn-wow.is-squarish { --btn-radius: 14px; }
+.btn-icon-wrap { position: relative; display: inline-flex; width: 24px; height: 24px; flex: 0 0 24px; align-items: center; justify-content: center; }
+.btn-icon-default, .btn-icon-hover { width: 20px; height: 20px; transition: opacity .18s ease, transform .18s ease; }
+.btn-icon-hover { display: none; }
+.btn-wow:hover .btn-icon-default { display: none; }
+.btn-wow:hover .btn-icon-hover { display: block; }
+.btn-spinner { position: absolute; inset: 0; display: grid; place-items: center; opacity: 0; pointer-events: none; }
+.btn-wow.is-loading .btn-spinner { opacity: 1; }
+.btn-wow.is-loading .btn-label { opacity: 0; }
+.btn-spinner .spin { width: 18px; height: 18px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: wow-button-spin .8s linear infinite; }
+@keyframes wow-button-spin { to { transform: rotate(360deg); } }

@@ -9,7 +9,7 @@
 @if(!$order)
   <div class="account-empty">
     <p>We couldn’t find that order. Head back to your orders list to try again.</p>
-    <a class="btn-wow btn-wow--cta" href="{{ route('account.orders') }}">Back to orders</a>
+    <a class="btn-wow btn-wow--primary" href="{{ route('account.orders') }}">Back to orders</a>
   </div>
 @else
   <article class="account-card">
@@ -35,7 +35,7 @@
         </dl>
         <div class="order-actions">
           <a class="btn-wow btn-wow--outline" href="{{ route('account.orders') }}">Back to orders</a>
-          <a class="btn-wow btn-wow--ghost" href="mailto:hello@weofferwellness.co.uk?subject=Order%20%23{{ $order->id }}">Need adjustments?</a>
+          <a class="btn-wow btn-wow--soft" href="mailto:hello@weofferwellness.co.uk?subject=Order%20%23{{ $order->id }}">Need adjustments?</a>
         </div>
       </div>
       <div class="order-items">

@@ -286,7 +286,7 @@
               <svg class="btn-icon-default" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12l-4 4m4-4-4-4"></path></svg>
             </span>
           </a>
-          <a href="/search?type=gifts" class="btn-wow btn-wow--cta btn-sm btn-arrow" data-loader-init="1">
+          <a href="/search?type=gifts" class="btn-wow btn-wow--primary btn-sm btn-arrow" data-loader-init="1">
             <span class="btn-label">Browse gifting ideas</span>
             <span class="btn-icon-wrap" aria-hidden="true">
               <svg class="btn-icon-hover" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H5m14 0-4 4m4-4-4-4"></path></svg>
@@ -372,7 +372,7 @@
                       </button>
                       <button
                         type="button"
-                        class="btn-wow btn-wow--cta btn-sm js-buy-now"
+                        class="btn-wow btn-wow--primary btn-sm js-buy-now"
                         data-product-id="{{ $giftCard['id'] }}"
                         data-variant-id="{{ $denomination['variant_id'] }}"
                         data-variant-label="{{ $denomination['label'] }}"

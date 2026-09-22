@@ -242,11 +242,11 @@
     color: #fff !important;
     line-height:1.6;
   }
-  .therapies-finish .btn-wow--ghost,
-  .therapies-finish .btn-wow--ghost .btn-label{
+  .therapies-finish .btn-wow--soft,
+  .therapies-finish .btn-wow--soft .btn-label{
     color:#fff !important;
   }
-  .therapies-finish .btn-wow--ghost{
+  .therapies-finish .btn-wow--soft{
     border-color:rgba(255,255,255,.22);
     background:rgba(255,255,255,.06);
   }
@@ -468,11 +468,11 @@
         <p>Explore live massage, Reiki, breathwork, sound healing and other therapy experiences from trusted practitioners.</p>
 
         <div class="therapies-actions">
-          <a href="/search?type=therapies" class="btn-wow btn-wow--cta btn-arrow" data-loader-init="1">
+          <a href="/search?type=therapies" class="btn-wow btn-wow--primary btn-arrow" data-loader-init="1">
             <span class="btn-label">Search all therapies</span>
             <span class="btn-spinner" aria-hidden="true"><span class="spin"></span></span>
           </a>
-          <a href="/search?mode=online&type=therapies" class="btn-wow btn-wow--ghost" data-loader-init="1">Browse online</a>
+          <a href="/search?mode=online&type=therapies" class="btn-wow btn-wow--soft" data-loader-init="1">Browse online</a>
         </div>
       </div>
     </div>
@@ -545,11 +545,11 @@
         Search brings therapies, classes, workshops and retreats together. This page is for browsing the therapy modalities themselves, with a cleaner route into the right experiences.
       </p>
       <div class="therapies-actions">
-        <a href="/search" class="btn-wow btn-wow--cta btn-arrow" data-loader-init="1">
+        <a href="/search" class="btn-wow btn-wow--primary btn-arrow" data-loader-init="1">
           <span class="btn-label">Go to search</span>
           <span class="btn-spinner" aria-hidden="true"><span class="spin"></span></span>
         </a>
-        <a href="/online" class="btn-wow btn-wow--ghost" data-loader-init="1">Explore online</a>
+        <a href="/online" class="btn-wow btn-wow--soft" data-loader-init="1">Explore online</a>
       </div>
     </div>
   </div>

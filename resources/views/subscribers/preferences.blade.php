@@ -40,8 +40,8 @@
         <h1>Keep your inbox curated</h1>
         <p class="lead">Hey {{ $subscriber->first_name ?? $subscriber->name ?? 'friend' }}, tell us how you’d like We Offer Wellness to show up. We’ll only send launches, rituals, and experiences that match.</p>
         <div class="pref-hero__cta-row">
-          <a href="#pref-form" class="btn-wow btn-wow--cta">Edit preferences</a>
-          <a href="/" class="btn-wow btn-wow--ghost">Back to site</a>
+          <a href="#pref-form" class="btn-wow btn-wow--primary">Edit preferences</a>
+          <a href="/" class="btn-wow btn-wow--soft">Back to site</a>
         </div>
       </div>
       <div class="pref-hero__card">
@@ -123,8 +123,8 @@
           </div>
 
           <div class="pref-form__actions">
-            <button type="submit" class="btn-wow btn-wow--cta">Save preferences</button>
-            <a href="{{ route('subscribe.unsubscribe', ['token' => $token]) }}" class="btn-wow btn-wow--ghost">Unsubscribe instead</a>
+            <button type="submit" class="btn-wow btn-wow--primary">Save preferences</button>
+            <a href="{{ route('subscribe.unsubscribe', ['token' => $token]) }}" class="btn-wow btn-wow--soft">Unsubscribe instead</a>
           </div>
           <p class="pref-hint">Need a full reset? Every update sends you a confirmation email so you’re always in control.</p>
         </form>

@@ -5,8 +5,8 @@
         <p>We champion therapies that meet people where they are — online, nearby, gently, and with enough clarity that nobody has to guess what they are booking.</p>
 
         <div class="wow-approach-actions">
-            <a href="/collections/therapies" class="wow-btn wow-btn-primary">Browse therapies</a>
-            <a href="/pages/safety-contraindications" class="wow-btn wow-btn-outline">Safety guidance</a>
+            <a href="/collections/therapies" class="btn-wow btn-wow--primary btn-arrow">Browse therapies</a>
+            <a href="/pages/safety-contraindications" class="btn-wow btn-wow--outline btn-arrow">Safety guidance</a>
         </div>
     </div>
 

@@ -47,7 +47,7 @@
         We’ve emailed your receipt and next steps. If you checked out as a guest, create or log into your account using the same email to manage your sessions.
       </p>
       <div class="cta-row">
-        <a class="btn-wow btn-wow--cta" href="/login">Log in</a>
+        <a class="btn-wow btn-wow--primary" href="/login">Log in</a>
         <a class="btn-wow btn-wow--outline" href="/register">Create account</a>
         <a class="link-wow" href="/search">Discover more therapies</a>
       </div>
