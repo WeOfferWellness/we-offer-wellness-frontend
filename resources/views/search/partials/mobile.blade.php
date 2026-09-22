@@ -175,6 +175,16 @@
                 border-radius: 12px;
             }
         }
+
+        /* Tablet orientation contract: three columns in portrait and four
+           columns when landscape width gives the cards enough room. */
+        @media (min-width: 900px) and (max-width: 1040px) and (orientation: landscape) {
+            .wow-sr-v5-mobile .wow-sr-v5-mobile-grid,
+            .wow-sr-v5-mobile .wow-search-recommendations__grid {
+                grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+                gap: 14px;
+            }
+        }
     </style>
 @endonce
 

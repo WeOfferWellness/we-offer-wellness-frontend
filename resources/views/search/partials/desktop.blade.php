@@ -273,6 +273,19 @@
         @media (max-width: 1220px) {
             .wow-sr-v5-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         }
+
+        /* Keep the small-desktop catalogue at three columns. This must come
+           after the broad max-width fallback above and also covers map mode
+           so a later two-column rule cannot collapse the results. */
+        @media (min-width: 1041px) and (max-width: 1199.98px) {
+            .wow-sr-v5-desktop .wow-sr-v5-grid,
+            .wow-sr-v5-desktop.is-map-mode .wow-sr-v5-grid,
+            .wow-sr-v5-desktop .wow-search-recommendations__grid,
+            .wow-sr-v5-desktop.is-map-mode .wow-search-recommendations__grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+                gap: 16px;
+            }
+        }
     </style>
 @endonce
 
