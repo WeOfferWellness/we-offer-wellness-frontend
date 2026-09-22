@@ -252,7 +252,7 @@
   @endphp
   <script type="application/ld+json">{!! json_encode($schemaJsonLd, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT) !!}</script>
   <style>
-    .seo-money-page{
+    .show-structured-near-me-page{
       --ink:#101828;
       --muted:#596275;
       --line:#dfe4ea;
@@ -265,29 +265,25 @@
       --blue-soft:#e8f0ff;
       --blue-text:#254a85;
       padding:0 0 84px;
-      background:
-        radial-gradient(circle at top left, rgba(79,147,129,.08), transparent 30%),
-        radial-gradient(circle at top right, rgba(255,181,73,.08), transparent 24%),
-        #fff;
     }
-    .seo-money-grid{
+    .show-structured-near-me-grid{
       display:none;
       grid-template-columns:minmax(0,1fr) minmax(320px,.86fr);
       gap:24px;
       align-items:stretch;
     }
-    .seo-money-copy,
-    .seo-money-panel,
-    .seo-money-section{
+    .show-structured-near-me-copy,
+    .show-structured-near-me-panel,
+    .show-structured-near-me-section{
       background:rgba(255,255,255,.98);
       border:1px solid var(--line);
       border-radius:22px;
       box-shadow:0 18px 54px rgba(16,24,40,.07);
     }
-    .seo-money-copy{
+    .show-structured-near-me-copy{
       padding:32px;
     }
-    .seo-money-kicker{
+    .show-structured-near-me-kicker{
       margin:0 0 10px;
       color:#344054;
       font-size:13px;
@@ -295,37 +291,37 @@
       letter-spacing:.16em;
       text-transform:uppercase;
     }
-    .seo-money-copy h1,
-    .seo-money-panel h2,
-    .seo-money-section h2{
+    .show-structured-near-me-copy h1,
+    .show-structured-near-me-panel h2,
+    .show-structured-near-me-section h2{
       margin:0;
       color:var(--ink);
       font-family:"Playfair Display", Georgia, serif;
       font-weight:500;
       letter-spacing:-.055em;
     }
-    .seo-money-copy h1{
+    .show-structured-near-me-copy h1{
       max-width:11ch;
       font-size:clamp(42px,5.8vw,78px);
       line-height:.94;
     }
-    .seo-money-copy p,
-    .seo-money-panel p,
-    .seo-money-section p{
+    .show-structured-near-me-copy p,
+    .show-structured-near-me-panel p,
+    .show-structured-near-me-section p{
       color:var(--muted);
       line-height:1.6;
     }
-    .seo-money-copy p{
+    .show-structured-near-me-copy p{
       max-width:68ch;
       margin:16px 0 0;
       font-size:17px;
     }
-    .seo-money-points{
+    .show-structured-near-me-points{
       display:grid;
       gap:10px;
       margin-top:24px;
     }
-    .seo-money-point{
+    .show-structured-near-me-point{
       display:flex;
       gap:10px;
       align-items:flex-start;
@@ -333,7 +329,7 @@
       font-size:14px;
       line-height:1.45;
     }
-    .seo-money-point::before{
+    .show-structured-near-me-point::before{
       content:"✓";
       width:22px;
       height:22px;
@@ -348,13 +344,13 @@
       font-weight:800;
       margin-top:1px;
     }
-    .seo-money-actions{
+    .show-structured-near-me-actions{
       display:flex;
       flex-wrap:wrap;
       gap:10px;
       margin-top:26px;
     }
-    .seo-money-panel{
+    .show-structured-near-me-panel{
       display:flex;
       flex-direction:column;
       justify-content:space-between;
@@ -362,16 +358,16 @@
       padding:26px;
       background:linear-gradient(180deg, rgba(232,245,241,.72), rgba(255,255,255,.96));
     }
-    .seo-money-panel h2{
+    .show-structured-near-me-panel h2{
       font-size:clamp(34px,4vw,54px);
       line-height:.96;
     }
-    .seo-money-panel p{
+    .show-structured-near-me-panel p{
       margin:14px 0 0;
       font-size:15px;
       line-height:1.55;
     }
-    .seo-money-search{
+    .show-structured-near-me-search{
       display:grid;
       gap:10px;
       margin-top:18px;
@@ -380,17 +376,17 @@
       border-radius:18px;
       background:#fff;
     }
-    .seo-money-search label{
+    .show-structured-near-me-search label{
       color:#344054;
       font-size:13px;
       font-weight:700;
     }
-    .seo-money-search .row{
+    .show-structured-near-me-search .row{
       display:grid;
       grid-template-columns:1fr auto;
       gap:10px;
     }
-    .seo-money-search input{
+    .show-structured-near-me-search input{
       width:100%;
       height:44px;
       border:1px solid #d0d5dd;
@@ -401,11 +397,11 @@
       font-size:15px;
       outline:none;
     }
-    .seo-money-search input:focus{
+    .show-structured-near-me-search input:focus{
       border-color:var(--green);
       box-shadow:0 0 0 3px rgba(79,147,129,.14);
     }
-    .seo-money-saved-location{
+    .show-structured-near-me-saved-location{
       margin-top:10px;
       padding:10px 12px;
       border-radius:14px;
@@ -414,14 +410,14 @@
       border:1px solid rgba(79,147,129,.18);
       font-size:13px;
     }
-    .seo-money-search .btn{
+    .show-structured-near-me-search .btn{
       min-height:44px;
       border-radius:14px;
     }
-    .seo-money-search{
+    .show-structured-near-me-search{
       position:relative;
     }
-    .seo-money-search__dropdown{
+    .show-structured-near-me-search__dropdown{
       position:absolute;
       left:0;
       right:0;
@@ -434,7 +430,7 @@
       box-shadow:0 18px 42px rgba(16,24,40,.12);
       overflow:hidden;
     }
-    .seo-money-search__dropdown button{
+    .show-structured-near-me-search__dropdown button{
       width:100%;
       display:block;
       text-align:left;
@@ -444,37 +440,37 @@
       background:#fff;
       cursor:pointer;
     }
-    .seo-money-search__dropdown button:last-child{
+    .show-structured-near-me-search__dropdown button:last-child{
       border-bottom:none;
     }
-    .seo-money-search__dropdown button:hover,
-    .seo-money-search__dropdown button:focus-visible{
+    .show-structured-near-me-search__dropdown button:hover,
+    .show-structured-near-me-search__dropdown button:focus-visible{
       background:#f8fafc;
       outline:none;
     }
-    .seo-money-search__dropdown strong{
+    .show-structured-near-me-search__dropdown strong{
       display:block;
       color:var(--ink);
       font-size:14px;
     }
-    .seo-money-search__dropdown span{
+    .show-structured-near-me-search__dropdown span{
       display:block;
       margin-top:3px;
       color:var(--muted);
       font-size:12px;
     }
-    .seo-money-shell{
+    .show-structured-near-me-shell{
       margin-top:22px;
     }
-    .seo-money-section{
+    .show-structured-near-me-section{
       padding:26px;
       margin-top:24px;
     }
-    .seo-money-section h2{
+    .show-structured-near-me-section h2{
       font-size:clamp(30px,4vw,52px);
       line-height:.96;
     }
-    .seo-money-section p{
+    .show-structured-near-me-section p{
       margin:0px;
       font-size:12.75px;
     }
@@ -488,16 +484,16 @@
     @media(min-width:768px) and (max-width:1199.98px){.location-landing__grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}}
     @media(max-width:900px){.location-landing__grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media(max-width:560px){.location-landing__head{display:block}.location-landing__grid{gap:16px}}
-    .seo-money-grid-cards{
+    .show-structured-near-me-grid-cards{
       display:grid;
       grid-template-columns:repeat(3,minmax(0,1fr));
       gap:18px;
       margin-top:22px;
     }
-    .seo-money-listing{
+    .show-structured-near-me-listing{
       margin-top:24px;
     }
-    .seo-money-empty{
+    .show-structured-near-me-empty{
       margin-top:18px;
       padding:18px;
       border:1px dashed #d0d5dd;
@@ -505,13 +501,13 @@
       background:#fcfcfd;
       color:#344054;
     }
-    .seo-money-links{
+    .show-structured-near-me-links{
       display:grid;
       grid-template-columns:repeat(3,minmax(0,1fr));
       gap:14px;
       margin-top:18px;
     }
-    .seo-money-linkcard{
+    .show-structured-near-me-linkcard{
       display:block;
       padding:16px;
       border:1px solid var(--line-soft);
@@ -520,59 +516,59 @@
       text-decoration:none;
       box-shadow:0 10px 26px rgba(16,24,40,.04);
     }
-    .seo-money-linkcard strong{
+    .show-structured-near-me-linkcard strong{
       display:block;
       color:var(--ink);
       font-size:15px;
       line-height:1.35;
     }
-    .seo-money-linkcard span{
+    .show-structured-near-me-linkcard span{
       display:block;
       margin-top:4px;
       color:var(--muted);
       font-size:13px;
       line-height:1.4;
     }
-    .seo-money-faq{
+    .show-structured-near-me-faq{
       display:grid;
       gap:12px;
       margin-top:18px;
     }
-    .seo-money-faq details{
+    .show-structured-near-me-faq details{
       padding:16px 18px;
       border:1px solid var(--line-soft);
       border-radius:16px;
       background:#fff;
     }
-    .seo-money-faq summary{
+    .show-structured-near-me-faq summary{
       cursor:pointer;
       list-style:none;
       font-weight:700;
       color:var(--ink);
     }
-    .seo-money-faq summary::-webkit-details-marker{
+    .show-structured-near-me-faq summary::-webkit-details-marker{
       display:none;
     }
-    .seo-money-faq p{
+    .show-structured-near-me-faq p{
       margin-top:10px;
     }
     @media (max-width: 992px){
-      .seo-money-grid,
-      .seo-money-grid-cards,
-      .seo-money-links{
+      .show-structured-near-me-grid,
+      .show-structured-near-me-grid-cards,
+      .show-structured-near-me-links{
         grid-template-columns:1fr;
       }
     }
     @media (max-width: 560px){
-      .seo-money-copy,
-      .seo-money-panel,
-      .seo-money-section{
+      .show-structured-near-me-copy,
+      .show-structured-near-me-panel,
+      .show-structured-near-me-section{
         padding:20px;
       }
-      .seo-money-search .row{
+      .show-structured-near-me-search .row{
         grid-template-columns:1fr;
       }
-      .seo-money-copy h1{
+      .show-structured-near-me-copy h1{
         font-size:42px;
       }
     }
@@ -622,21 +618,21 @@
   ])),
 ])
 
-<section class="seo-money-page">
+<section class="show-structured-near-me-page">
   <div class="container-page">
-    <div class="seo-money-grid">
-      <div class="seo-money-copy">
-        <div class="seo-money-kicker">{{ $page['kicker'] ?? 'Search' }}</div>
+    <div class="show-structured-near-me-grid">
+      <div class="show-structured-near-me-copy">
+        <div class="show-structured-near-me-kicker">{{ $page['kicker'] ?? 'Search' }}</div>
         <h1>{{ $page['h1'] ?? $page['title'] }}</h1>
         <p>{{ $page['intro'] ?? '' }}</p>
 
-        <div class="seo-money-points">
+        <div class="show-structured-near-me-points">
           @foreach(($page['highlights'] ?? []) as $point)
-            <div class="seo-money-point">{{ $point }}</div>
+            <div class="show-structured-near-me-point">{{ $point }}</div>
           @endforeach
         </div>
 
-        <div class="seo-money-actions">
+        <div class="show-structured-near-me-actions">
           <button type="button" class="btn btn-primary" data-scroll-target="results">{{ $primaryCta['label'] ?? 'Browse live listings' }}</button>
           <button type="button" class="btn btn-light" data-scroll-target="{{ !empty($secondaryCta['href']) && $secondaryCta['href'] === '#related-pages' ? 'related-pages' : 'faq' }}">{{ $secondaryCta['label'] ?? 'Read FAQs' }}</button>
           @if(!empty($supportingCta['label']))
@@ -645,18 +641,18 @@
         </div>
       </div>
 
-      <aside class="seo-money-panel">
+      <aside class="show-structured-near-me-panel">
         <div>
           <h2>Start with your location</h2>
           <p>{{ $page['search_helper'] ?? 'Enter your town or postcode to narrow the results.' }}</p>
           @if(!empty($savedLocation['label']))
-            <div class="seo-money-saved-location">
+            <div class="show-structured-near-me-saved-location">
               Using your saved location: <strong>{{ $savedLocation['label'] }}</strong>
             </div>
           @endif
         </div>
 
-        <form class="seo-money-search" method="get" action="{{ $searchAction ?? url()->current() }}" id="moneyLocationSearchForm" autocomplete="off">
+        <form class="show-structured-near-me-search" method="get" action="{{ $searchAction ?? url()->current() }}" id="moneyLocationSearchForm" autocomplete="off">
           <label for="money-place">Location</label>
           <div class="row">
             <input id="money-place" name="place" type="text" placeholder="{{ $page['search_placeholder'] ?? 'e.g. Maidstone' }}" value="{{ request()->query('place', request()->query('postcode', $savedLocation['label'] ?? '')) }}">
@@ -671,7 +667,7 @@
           <input type="hidden" id="money-lat" name="lat" value="{{ request()->query('lat', $savedLocation['lat'] ?? '') }}">
           <input type="hidden" id="money-lng" name="lng" value="{{ request()->query('lng', $savedLocation['lng'] ?? '') }}">
           <input type="hidden" id="money-location-path" name="location_path" value="{{ ltrim((string) ($savedLocation['path'] ?? ''), '/') }}">
-          <div id="moneyLocationDropdown" class="seo-money-search__dropdown" hidden></div>
+          <div id="moneyLocationDropdown" class="show-structured-near-me-search__dropdown" hidden></div>
         </form>
 
         <div>
@@ -681,12 +677,12 @@
       </aside>
     </div>
 
-    <section class="seo-money-section">
+    <section class="show-structured-near-me-section">
       <h2>{{ $locationSectionTitle }}</h2>
       <p>{{ $locationSectionIntro }}</p>
-      <div class="seo-money-links">
+      <div class="show-structured-near-me-links">
         @foreach($popularLocations as $location)
-          <a class="seo-money-linkcard" href="{{ $location['search_url'] ?? url($location['path'] ?? '/') }}">
+          <a class="show-structured-near-me-linkcard" href="{{ $location['search_url'] ?? url($location['path'] ?? '/') }}">
             <strong>{{ $location['title'] ?? $location['label'] ?? 'Location' }}</strong>
             <span>{{ $location['country'] ?? 'We Offer Wellness' }}</span>
           </a>
@@ -715,12 +711,12 @@
       @endif
     </section>
 
-    <section class="seo-money-section" id="related-pages">
+    <section class="show-structured-near-me-section" id="related-pages">
       <h2>{{ $relatedLinksTitle }}</h2>
       <p>{{ $relatedLinksIntro }}</p>
-      <div class="seo-money-links">
+      <div class="show-structured-near-me-links">
         @foreach(($page['related_links'] ?? []) as $link)
-          <a class="seo-money-linkcard" href="{{ $link['href'] ?? '#' }}">
+          <a class="show-structured-near-me-linkcard" href="{{ $link['href'] ?? '#' }}">
             <strong>{{ $link['label'] ?? 'Related page' }}</strong>
             <span>Open the canonical landing page</span>
           </a>
@@ -729,9 +725,9 @@
     </section>
 
     @if(!empty($page['faqs'] ?? []))
-      <section class="seo-money-section" data-money-section="faq">
+      <section class="show-structured-near-me-section" data-money-section="faq">
         <h2>Frequently asked questions</h2>
-        <div class="seo-money-faq">
+        <div class="show-structured-near-me-faq">
           @foreach(($page['faqs'] ?? []) as $faq)
             <details>
               <summary>{{ $faq['q'] ?? '' }}</summary>
