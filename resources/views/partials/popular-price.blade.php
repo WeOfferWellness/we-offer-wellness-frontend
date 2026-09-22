@@ -3,7 +3,16 @@
     $heading = (string) ($heading ?? 'Wellness by price');
     $intro = (string) ($intro ?? 'Explore price points with actual availability.');
     $location = trim((string) ($location ?? ''));
-    $priceBands = collect($items ?? [])->filter(fn ($item): bool => is_array($item))->values();
+    $priceBandOrder = [
+        'under_30' => 1,
+        '30_59' => 2,
+        '60_99' => 3,
+        '100_plus' => 4,
+    ];
+    $priceBands = collect($items ?? [])
+        ->filter(fn ($item): bool => is_array($item))
+        ->sortBy(fn (array $item): int => $priceBandOrder[(string) ($item['key'] ?? '')] ?? 999)
+        ->values();
     $descriptors = [
         'under_30' => 'Accessible wellness',
         '30_59' => 'Everyday wellness',
