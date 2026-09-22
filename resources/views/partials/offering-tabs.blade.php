@@ -12,7 +12,7 @@
 @endphp
 
 <section class="wow-offering-tabs" id="{{ $tabId }}" data-wow-offering-tabs>
-    <div class="container-page">
+    <div class="container">
         <header class="wow-offering-tabs__header">
             <div>
                 <p class="wow-offering-tabs__eyebrow">{{ $eyebrow }}</p>
