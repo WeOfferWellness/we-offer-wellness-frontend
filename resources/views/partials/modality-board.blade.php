@@ -48,7 +48,7 @@
           <div class="wow-modality-card__body">
             <h3>{{ $name }}</h3>
             <p>{{ $item['description'] ?? 'Explore supportive wellness experiences for your next step.' }}</p>
-            <span class="wow-card-link">Browse modality &rarr;</span>
+            <span class="wow-card-link btn-wow btn-wow--text btn-arrow">Browse modality</span>
           </div>
         </a>
       @endforeach

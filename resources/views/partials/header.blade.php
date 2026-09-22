@@ -613,8 +613,8 @@
                                         <h3>Not sure where to start?</h3>
                                         <p>Answer a few quick questions and browse therapies that match how you feel today.</p>
                                         <div class="wow-button-row">
-                                            <a href="/needs" class="wow-mini-btn wow-mini-btn--primary">Browse needs</a>
-                                            <a href="/therapies" class="wow-mini-btn">View therapies</a>
+                                            <a href="/needs" class="btn-wow btn-wow--primary btn-wow--sm btn-arrow">Browse needs</a>
+                                            <a href="/therapies" class="btn-wow btn-wow--outline btn-wow--sm btn-arrow">View therapies</a>
                                         </div>
                                     </div>
                                     <div class="wow-for-you-card" data-need-default-block>
@@ -637,7 +637,7 @@
                                 <div class="wow-mega-col wow-mega-col--wide">
                                     <div class="wow-mega-row">
                                         <p class="mega-kicker">Featured therapies</p>
-                                        <a href="/therapies" class="wow-mini-btn">View all therapies</a>
+                                        <a href="/therapies" class="btn-wow btn-wow--outline btn-wow--sm btn-arrow">View all therapies</a>
                                     </div>
                                     <div class="wow-image-card-grid">
                                         <a href="/therapies/reiki" class="wow-image-card wow-image-card--reiki"><div><h3>Reiki</h3><p>Energy-led support for calm and balance.</p></div></a>
@@ -661,7 +661,7 @@
                                 <a href="/events" class="wow-feature-card">
                                     <h3>OUR VIBE Festival 2026</h3>
                                     <p>Sound healing, meditation, talks, workshops and chilled wellbeing at Bilsington Priory Estate.</p>
-                                    <span class="wow-mini-btn wow-mini-btn--primary">Explore event</span>
+                                        <span class="btn-wow btn-wow--primary btn-wow--sm btn-arrow">Explore event</span>
                                 </a>
                                 <div class="wow-mega-grid wow-mega-grid--2 wow-mega-grid--nested">
                                     <div class="wow-mega-col">
@@ -693,8 +693,8 @@
                                         <p class="mega-label">Find wellness near you</p>
                                         <h3>Explore trusted therapies by location.</h3>
                                         <div class="wow-button-row">
-                                            <a href="/locations" class="wow-mini-btn wow-mini-btn--primary">View all locations</a>
-                                            <a href="/online" class="wow-mini-btn">Online sessions</a>
+                                            <a href="/locations" class="btn-wow btn-wow--primary btn-wow--sm btn-arrow">View all locations</a>
+                                            <a href="/online" class="btn-wow btn-wow--outline btn-wow--sm btn-arrow">Online sessions</a>
                                         </div>
                                     </div>
                                 </div>

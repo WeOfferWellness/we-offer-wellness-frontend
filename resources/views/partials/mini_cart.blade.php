@@ -34,6 +34,6 @@
   <strong>{{ $money($total) }}</strong>
 </div>
 <div class="cartdd-foot" data-mini-foot>
-  <a href="/cart" class="btn visit-cart-btn">Visit cart</a>
-  <a href="/checkout" class="btn btn--primary checkout-btn">Checkout</a>
+  <a href="/cart" class="btn-wow btn-wow--outline btn-wow--sm visit-cart-btn"><span class="btn-label">Visit cart</span></a>
+  <a href="/checkout" class="btn-wow btn-wow--primary btn-wow--sm checkout-btn"><span class="btn-label">Checkout</span></a>
 </div>

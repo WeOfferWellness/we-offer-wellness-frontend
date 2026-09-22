@@ -94,7 +94,7 @@
       @else
         <div></div>
       @endif
-      <span class="cta">View</span>
+      <span class="cta btn-wow btn-wow--text btn-arrow">View</span>
     </div>
   </div>
 </a>
