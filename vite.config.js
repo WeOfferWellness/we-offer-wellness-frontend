@@ -79,6 +79,7 @@ export default defineConfig(({ mode }) => {
                 input: [
                     'resources/css/app.css',
                     'resources/js/app.js',
+                    'resources/js/analytics.js',
                     // Provide a direct CSS entry so Blade calls like
                     // @vite('resources/css/we-offer-wellness-base-styles.css')
                     // resolve in production manifests when present.

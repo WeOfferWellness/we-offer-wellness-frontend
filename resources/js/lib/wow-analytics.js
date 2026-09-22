@@ -152,6 +152,105 @@ function trackPurchase(params = {}) {
   return trackCommerce('purchase', params)
 }
 
+function readAnalyticsItem(element) {
+  if (!element) return null
+
+  const raw = element.getAttribute('data-wow-analytics-item')
+  if (!raw) return null
+
+  try {
+    const parsed = JSON.parse(raw)
+    return parsed && typeof parsed === 'object' ? parsed : null
+  } catch (_) {
+    return null
+  }
+}
+
+function trackViewItem(element) {
+  if (!element || element.dataset.wowAnalyticsViewed === '1') return false
+
+  const item = readAnalyticsItem(element)
+  if (!item) return false
+
+  element.dataset.wowAnalyticsViewed = '1'
+  return trackCommerce('view_item', {
+    currency: item.currency || DEFAULT_CURRENCY,
+    value: item.price ?? item.value ?? 0,
+    items: [item],
+  })
+}
+
+function trackVisibleItemLists(root = document) {
+  root.querySelectorAll?.('[data-wow-analytics-list]').forEach((list) => {
+    const listName = list.getAttribute('data-wow-analytics-list') || 'Catalogue'
+    const items = Array.from(list.querySelectorAll('[data-wow-analytics-item]'))
+      .map(readAnalyticsItem)
+      .filter(Boolean)
+      .slice(0, 24)
+
+    if (!items.length || list.dataset.wowAnalyticsListViewed === '1') return
+    list.dataset.wowAnalyticsListViewed = '1'
+    trackCommerce('view_item_list', {
+      item_list_name: listName,
+      items: items.map((item, index) => ({ ...item, index: index + 1 })),
+    })
+  })
+}
+
+function installAnalyticsRuntime() {
+  const win = getWindow()
+  if (!win || typeof document === 'undefined' || win.__wowAnalyticsRuntimeInstalled) return
+
+  win.__wowAnalyticsRuntimeInstalled = true
+  let lastLocation = win.location.href
+
+  const scan = () => {
+    document.querySelectorAll('[data-wow-analytics-page="offering"] [data-wow-analytics-item], [data-wow-analytics-page="product"] [data-wow-analytics-item]')
+      .forEach(trackViewItem)
+    trackVisibleItemLists(document)
+  }
+
+  document.addEventListener('click', (event) => {
+    const target = event.target?.closest?.('[data-wow-analytics-item]')
+    if (!target) return
+
+    const item = readAnalyticsItem(target)
+    if (!item) return
+
+    const list = target.closest('[data-wow-analytics-list]')
+    track('select_item', cleanObject({
+      item_list_name: list?.getAttribute('data-wow-analytics-list') || undefined,
+      index: item.index,
+      items: [item],
+    }))
+  }, { passive: true })
+
+  document.addEventListener('wow:subscriber-success', (event) => {
+    const source = event.detail?.form?.getAttribute?.('data-subscriber-source')
+      || event.detail?.form?.getAttribute?.('data-subscriber-form')
+      || 'site:subscribe-form'
+    track('newsletter_signup', { source })
+  })
+
+  document.addEventListener('inertia:success', () => {
+    if (win.location.href !== lastLocation) {
+      const previousLocation = lastLocation
+      lastLocation = win.location.href
+      trackPageView({
+        page_location: win.location.href,
+        page_referrer: previousLocation,
+      })
+    }
+    scan()
+  })
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', scan, { once: true })
+  } else {
+    scan()
+  }
+}
+
 const WOWAnalytics = {
   flowVersion: FLOW_VERSION,
   track,
@@ -159,6 +258,8 @@ const WOWAnalytics = {
   trackCommerce,
   trackPurchase,
   buildCommerceItems,
+  trackViewItem,
+  installAnalyticsRuntime,
 }
 
 const win = getWindow()
@@ -166,5 +267,5 @@ if (win) {
   win.WOWAnalytics = WOWAnalytics
 }
 
-export { FLOW_VERSION, buildCommerceItems, track, trackCommerce, trackPurchase, trackPageView }
+export { FLOW_VERSION, buildCommerceItems, installAnalyticsRuntime, track, trackCommerce, trackPurchase, trackPageView, trackViewItem }
 export default WOWAnalytics

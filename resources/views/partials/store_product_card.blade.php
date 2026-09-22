@@ -9,6 +9,15 @@
     $priceLabel = is_numeric($price) ? '£' . rtrim(rtrim(number_format((float) $price, 2, '.', ''), '0'), '.') : '£0';
     $trackingId = (int) data_get($product, 'id', 0);
     $rankingRequestId = trim((string) data_get($product, 'ranking_request_id', ''));
+    $analyticsItem = [
+        'id' => 'store-' . $trackingId,
+        'product_id' => $trackingId,
+        'title' => $title,
+        'price' => is_numeric($price) ? (float) $price : 0,
+        'currency' => 'GBP',
+        'source_version' => 'store',
+        'catalogue_type' => 'physical_product',
+    ];
 @endphp
 
 {{--
@@ -19,7 +28,7 @@
 @endonce
 --}}
 
-<article class="wow49-store-blade" aria-label="Product card {{ $title }}" @if($trackingId > 0) data-product-id="{{ $trackingId }}" data-source-version="store" @endif @if($rankingRequestId !== '') data-ranking-request-id="{{ $rankingRequestId }}" @endif>
+<article class="wow49-store-blade" aria-label="Product card {{ $title }}" data-wow-analytics-item="{{ e(json_encode($analyticsItem, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)) }}" @if($trackingId > 0) data-product-id="{{ $trackingId }}" data-source-version="store" @endif @if($rankingRequestId !== '') data-ranking-request-id="{{ $rankingRequestId }}" @endif>
     <a href="{{ $url }}" aria-label="Open {{ $title }}"></a>
     <div class="wow49-store-blade__media">
         @if($image)<img src="{{ $image }}" alt="{{ $title }}" loading="lazy">@endif

@@ -2,33 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
-@php
-  $isPublicProductionSite = in_array(request()->getHost(), ['www.weofferwellness.co.uk', 'weofferwellness.co.uk'], true);
-  $gaId = config('analytics.measurement_id');
-  if (!config('analytics.enabled') && !$isPublicProductionSite) {
-      $gaId = null;
-  }
-  // Keep the public property live while an older production config cache is
-  // being replaced; local and test hosts never use this fallback.
-  if ($isPublicProductionSite && !$gaId) {
-      $gaId = 'G-MZMQNETBYH';
-  }
-@endphp
-@if ($gaId)
-<!-- Google tag (gtag.js) -->
-<script async data-cfasync="false" src="https://www.googletagmanager.com/gtag/js?id={{ $gaId }}"></script>
-<script data-cfasync="false">
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('consent', 'default', @json(config('analytics.consent_default')));
-  gtag('js', new Date());
-  gtag('config', 'G-MZMQNETBYH', {
-    send_page_view: true,
-    allow_google_signals: true,
-    allow_ad_personalization_signals: true
-  });
-</script>
-@endif
+@include('partials.analytics.ga4-head')
 
 
 @php

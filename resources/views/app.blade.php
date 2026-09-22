@@ -12,7 +12,6 @@
           $defaultOg = asset('images/default-social-preview.jpg');
           $canonical = $seoService->canonicalUrl(request()->getPathInfo());
           $gtmId = config('services.gtm.id');
-          $gaId = config('analytics.enabled') ? config('analytics.measurement_id') : null;
           $favicon = asset('favicon.ico');
           $ogTitle = $seoService->shortOgTitle($appName);
           $ogDesc = $seoService->shortOgDescription($defaultDesc);
@@ -48,21 +47,7 @@
         </script>
         @endif
 
-        <!-- Google Analytics 4 (optional via env) -->
-        @if ($gaId)
-        <script async data-cfasync="false" src="https://www.googletagmanager.com/gtag/js?id={{ $gaId }}"></script>
-        <script data-cfasync="false">
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments)}
-          gtag('consent', 'default', @json(config('analytics.consent_default')));
-          gtag('js', new Date());
-          gtag('config', 'G-MZMQNETBYH', {
-            send_page_view: true,
-            allow_google_signals: true,
-            allow_ad_personalization_signals: true
-          });
-        </script>
-        @endif
+        @include('partials.analytics.ga4-head')
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
         <!-- Favicon -->
@@ -154,22 +139,6 @@
                 window.dataLayer.push({ event:name, ...(params || {}) });
               } catch(e){}
             }
-            function currentPageParams(){
-              try {
-                return {
-                  page_location: location.pathname + location.search + location.hash,
-                  page_title: document.title,
-                };
-              } catch(_){
-                return { page_location: '', page_title: document.title || '' };
-              }
-            }
-            var initialPageViewSent = false;
-            function trackInitialPageView(){
-              if (initialPageViewSent) return;
-              initialPageViewSent = true;
-              track('page_view', currentPageParams());
-            }
             function persistAttribution(){
               try {
                 var params = new URLSearchParams(location.search);
@@ -190,14 +159,13 @@
               try {
                 var preferences = event && event.detail;
                 if (!preferences) preferences = JSON.parse(localStorage.getItem('wow_cookie_preferences') || '{}');
-                var granted = preferences.analytics === true;
                 if (typeof window.gtag === 'function') window.gtag('consent', 'update', {
-                  analytics_storage: granted ? 'granted' : 'denied',
-                  ad_storage: granted ? 'granted' : 'denied',
-                  ad_user_data: granted ? 'granted' : 'denied',
-                  ad_personalization: granted ? 'granted' : 'denied'
+                  analytics_storage: preferences.analytics === true ? 'granted' : 'denied',
+                  ad_storage: preferences.marketing === true ? 'granted' : 'denied',
+                  ad_user_data: preferences.marketing === true ? 'granted' : 'denied',
+                  ad_personalization: preferences.marketing === true ? 'granted' : 'denied',
+                  personalization_storage: preferences.personalization === true ? 'granted' : 'denied'
                 });
-                if (granted) trackInitialPageView();
               } catch (_) {}
             }
             persistAttribution();
@@ -213,11 +181,9 @@
                 track('select_item', { catalogue_type: card.dataset.sourceVersion === 'store' ? 'product' : (card.dataset.catalogueType || 'offering'), items: [{ item_id: String(id), item_name: card.dataset.productTitle || card.querySelector('h2,h3')?.textContent?.trim() || 'Item', provider_id: card.dataset.providerId || undefined }] });
               } catch (_) {}
             }, true);
-            // Inertia page view
             document.addEventListener('inertia:success', function(ev){
               try {
                 persistAttribution();
-                track('page_view', currentPageParams());
               } catch {}
             });
             // Cart events (custom)
@@ -232,11 +198,6 @@
                 source: detail.source || 'inertia-bridge',
               });
             });
-            if (document.readyState === 'loading') {
-              document.addEventListener('DOMContentLoaded', trackInitialPageView, { once: true });
-            } else {
-              trackInitialPageView();
-            }
           })();
         </script>
     </body>

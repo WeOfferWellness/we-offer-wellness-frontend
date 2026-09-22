@@ -36,6 +36,22 @@
     ];
 @endphp
 
+<div
+    hidden
+    data-wow-analytics-page="product"
+    data-wow-analytics-item="{{ e(json_encode([
+        'id' => 'store-' . data_get($product, 'id', 0),
+        'product_id' => data_get($product, 'id', 0),
+        'title' => $title,
+        'price' => $price,
+        'currency' => strtoupper((string) data_get($product, 'currency', 'GBP')),
+        'source_version' => 'store',
+        'catalogue_type' => 'physical_product',
+        'modality' => $categoryName,
+        'variant_id' => $variantId,
+    ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)) }}"
+></div>
+
 <style>
     .store-product-page{--sp-ink:#13221d;--sp-muted:#647069;--sp-line:#d9dfda;--sp-soft:#f5f8f5;--sp-green:#549483;--sp-green-hover:#417b6d;--sp-dark:#254735;--sp-pale:#eaf3ed;--sp-gold:#d3ab25;color:var(--sp-ink);background:#fff;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
     .store-product-page *{box-sizing:border-box}.store-product-page a{color:inherit}.store-product-page img{display:block;max-width:100%}

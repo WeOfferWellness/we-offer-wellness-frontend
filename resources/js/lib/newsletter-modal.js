@@ -250,6 +250,7 @@ function initNewsletterModal() {
         source: 'site:newsletter-modal',
         tags: ['wow_weekly_newsletter'],
       });
+      window.WOWAnalytics?.track?.('newsletter_signup', { source: 'site:newsletter-modal' });
       setCookie(SUBSCRIBED_COOKIE, '1', 365);
       deleteCookie(DISMISSED_COOKIE);
       stopAutoTriggers();

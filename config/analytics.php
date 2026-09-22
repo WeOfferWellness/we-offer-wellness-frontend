@@ -18,6 +18,7 @@ return [
         'ad_storage' => 'denied',
         'ad_user_data' => 'denied',
         'ad_personalization' => 'denied',
+        'personalization_storage' => 'denied',
         'wait_for_update' => 500,
     ],
 ];
