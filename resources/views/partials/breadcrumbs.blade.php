@@ -7,6 +7,15 @@
       ];
     })
     ->filter(fn (array $crumb) => $crumb['label'] !== '')
+    ->reduce(function ($items, array $crumb) {
+      $previous = $items->last();
+      if ($previous && strcasecmp($previous['label'], $crumb['label']) === 0) {
+        return $items;
+      }
+
+      $items->push($crumb);
+      return $items;
+    }, collect())
     ->values();
 
   $schemaEnabled = $schemaEnabled ?? true;

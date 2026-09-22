@@ -445,6 +445,36 @@
   $items = collect($therapies ?? []);
   $total = $items->count();
   $offerings = collect($featuredOfferings ?? []);
+  $priceBandDefinitions = [
+    ['key' => 'under_30', 'label' => 'Under £30', 'max' => 30],
+    ['key' => '30_59', 'label' => '£30–£59', 'max' => 59],
+    ['key' => '60_99', 'label' => '£60–£99', 'max' => 99, 'featured' => true],
+    ['key' => '100_plus', 'label' => '£100+', 'max' => 500],
+  ];
+  $priceBands = collect($priceBandDefinitions)->map(function (array $band) use ($offerings): array {
+    $count = $offerings->filter(function ($product) use ($band): bool {
+      $price = data_get($product, 'variants_min_price', data_get($product, 'price'));
+      if (!is_numeric($price)) {
+        return false;
+      }
+
+      $price = (float) $price;
+      return match ($band['key']) {
+        'under_30' => $price < 30,
+        '30_59' => $price >= 30 && $price < 60,
+        '60_99' => $price >= 60 && $price < 100,
+        default => $price >= 100,
+      };
+    })->count();
+
+    return $band + ['count' => $count];
+  })->all();
+  $modalityItems = $items->take(5)->map(fn (array $therapy): array => [
+    'name' => $therapy['title'] ?? 'Wellness modality',
+    'slug' => 'therapies/'.($therapy['slug'] ?? ''),
+    'url' => route('therapies.show', ['slug' => $therapy['slug']]),
+    'description' => $therapy['seo_description'] ?? 'Explore this therapy and see what is currently available.',
+  ])->values()->all();
 @endphp
 
 @include('partials.breadcrumbs', [
@@ -460,7 +490,7 @@
 ])
 
 <section class="therapies-shell">
-  <div class="container-page">
+  <div class="container">
     <div class="therapies-hero">
       <div>
         <div class="therapies-kicker">Browse therapies</div>
@@ -510,33 +540,45 @@
       @endif
     </div>
 
-    <div class="therapies-section">
-      <div class="therapies-section__head">
-        <div>
-          <div class="kicker">Therapy modalities</div>
-          <h2>Browse therapies</h2>
-          <p>Choose a therapy to see related offerings and refine by format, location, and price.</p>
-        </div>
-        <a href="/search?type=therapies" class="btn-wow btn-wow--outline btn-sm btn-arrow" data-loader-init="1">
-          <span class="btn-label">Open search</span>
-        </a>
-      </div>
+    @include('partials.modality-board', [
+      'items' => $modalityItems,
+      'eyebrow' => 'Discover',
+      'heading' => 'Browse therapies by modality',
+      'intro' => 'Choose a therapy to explore live offerings, formats, locations and prices.',
+      'browseHref' => '/search?type=therapies',
+      'browseLabel' => 'Open search',
+    ])
 
-      <div class="therapies-grid">
-        @foreach($items as $t)
-          <a href="{{ route('therapies.show', ['slug' => $t['slug']]) }}" class="therapies-card">
-            <span class="therapies-card__badge">Therapy</span>
-            <h3>{{ $t['title'] }}</h3>
-            <p>{{ $t['seo_description'] ?? 'Explore offerings for this therapy and see what is currently available.' }}</p>
-            <div class="therapies-card__footer">
-              <span>View offerings</span>
-              <span class="arrow">→</span>
-            </div>
-          </a>
-        @endforeach
-      </div>
+    @include('partials.popular-price', [
+      'items' => $priceBands,
+      'heading' => 'Wellness by price',
+      'intro' => 'Explore price points across the live therapy offerings available to book now.',
+      'id' => 'therapies-price-discovery',
+    ])
 
-    </div>
+    @include('partials.faq-section', [
+      'id' => 'therapies-faqs',
+      'eyebrow' => 'Helpful to know',
+      'heading' => 'Frequently asked questions',
+      'intro' => 'Useful answers for choosing and booking a therapy on We Offer Wellness.',
+      'faqs' => [
+        ['q' => 'What therapies can I find on We Offer Wellness?', 'a' => 'Browse live offerings across modalities including massage, Reiki, breathwork, sound healing, reflexology and more.'],
+        ['q' => 'Can I find therapy sessions online?', 'a' => 'Yes. Use the online search option to find therapies and sessions that can be booked remotely.'],
+        ['q' => 'How do I choose the right therapy?', 'a' => 'Compare the practitioner, format, location, price, description and availability shown on each offering before booking.'],
+        ['q' => 'Are the offerings available to book now?', 'a' => 'The featured offerings are filtered to live listings with current availability or a recognised availability schedule.'],
+      ],
+    ])
+
+    @include('partials.related-pages', [
+      'id' => 'therapies-related-pages',
+      'heading' => 'Keep exploring',
+      'intro' => 'Continue discovering wellness experiences across the marketplace.',
+      'items' => [
+        ['href' => '/classes', 'type' => 'Classes', 'title' => 'Wellness classes', 'copy' => 'Browse classes for movement, calm and connection.'],
+        ['href' => '/events', 'type' => 'Events', 'title' => 'Wellness events', 'copy' => 'Find workshops, gatherings and experiences.'],
+        ['href' => '/online', 'type' => 'Online', 'title' => 'Online wellness', 'copy' => 'Explore sessions you can join from home.'],
+      ],
+    ])
 
     <div class="therapies-finish">
       <div class="kicker" style="color:rgba(255,255,255,.7);">Need help deciding?</div>
