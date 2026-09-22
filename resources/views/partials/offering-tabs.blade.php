@@ -12,7 +12,7 @@
 @endphp
 
 <section class="wow-offering-tabs" id="{{ $tabId }}" data-wow-offering-tabs>
-    <div class="wow-component-container">
+    <div class="container">
         <header class="wow-offering-tabs__header">
             <div>
                 <p class="wow-offering-tabs__eyebrow">{{ $eyebrow }}</p>
@@ -61,7 +61,6 @@
 </section>
 
 <style>
-    .wow-component-container { width: min(calc(100% - 48px), 1280px); margin-inline: auto; }
     .wow-offering-tabs { padding: 33px 0 33px; background: #fff; border-top: none; border-bottom: none; }
     .wow-offering-tabs__header { display: flex; align-items: flex-end; justify-content: space-between; gap: 32px; margin-bottom: 26px; }
     .wow-offering-tabs__eyebrow { margin: 0 0 8px; color: var(--wow-green, #4f9482); font-size: 11px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; }
@@ -91,7 +90,7 @@
     @media (min-width: 768px) and (max-width: 991.98px) { .wow-offering-rail { grid-auto-columns: calc((100% - 32px) / 3); } }
     @media (max-width: 767.98px) { .wow-offering-rail { grid-auto-columns: calc((100% - 10px) / 2); } }
     @media (min-width: 600px) and (max-width: 767.98px) and (orientation: landscape) { .wow-offering-rail { grid-auto-columns: calc((100% - 32px) / 3); } }
-    @media (max-width: 575.98px) { .wow-component-container { width: calc(100% - 30px); } .wow-offering-tabs { padding: 33px 0; } .wow-offering-tabs__header { display: block; margin-bottom: 21px; } .wow-offering-tabs__title { font-size: 38px; } .wow-offering-tabs__intro { font-size: 14px; } .wow-tabbar { margin-bottom: 20px; } .wow-tabbar__scroll { gap: 22px; } .wow-tab { padding-bottom: 13px; font-size: 13px; } .wow-tabbar__controls { display: none; } }
+    @media (max-width: 575.98px) { .wow-offering-tabs { padding: 33px 0; } .wow-offering-tabs__header { display: block; margin-bottom: 21px; } .wow-offering-tabs__title { font-size: 38px; } .wow-offering-tabs__intro { font-size: 14px; } .wow-tabbar { margin-bottom: 20px; } .wow-tabbar__scroll { gap: 22px; } .wow-tab { padding-bottom: 13px; font-size: 13px; } .wow-tabbar__controls { display: none; } }
 </style>
 
 <script>

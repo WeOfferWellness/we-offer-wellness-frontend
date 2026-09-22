@@ -23,7 +23,7 @@
 
 @if($priceBands->isNotEmpty())
 <section class="wow-price-discovery" aria-labelledby="{{ $id ?? 'wow-price-discovery-heading' }}">
-    <div class="wow-component-container">
+    <div class="container">
         <header class="wow-price-discovery__header">
             <p class="wow-price-discovery__eyebrow">{{ $eyebrow }}</p>
             <h2 id="{{ $id ?? 'wow-price-discovery-heading' }}">{{ $heading }}</h2>
@@ -64,7 +64,6 @@
 </section>
 
 <style>
-    .wow-component-container { width: min(calc(100% - 48px), 1280px); margin-inline: auto; }
     .wow-price-discovery { padding: 33px 0 33px; background: #fff; border-top: none; border-bottom: none; }
     .wow-price-discovery__header { margin-bottom: 27px; }
     .wow-price-discovery__eyebrow { margin: 0 0 9px; color: var(--wow-green, #4f9482); font: 700 11px/1 "Instrument Sans", sans-serif; letter-spacing: .18em; text-transform: uppercase; }
@@ -86,6 +85,6 @@
     .wow-price-card__arrow { display: inline-flex; align-items: center; justify-content: center; width: 27px; height: 27px; flex: 0 0 auto; border-radius: 50%; background: var(--wow-soft, #f3f7f5); color: var(--wow-green, #4f9482); font-size: 14px; transition: transform .18s ease, background-color .18s ease; }
     .wow-price-card:hover .wow-price-card__arrow { transform: translateX(3px); background: var(--wow-soft-strong, #e8f2ee); }
     @media (max-width: 991.98px) { .wow-price-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-    @media (max-width: 575.98px) { .wow-component-container { width: calc(100% - 30px); } .wow-price-discovery { padding: 33px 0; } .wow-price-discovery h2 { font-size: 38px; } .wow-price-discovery__intro { font-size: 14px; } .wow-price-grid { gap: 8px; } .wow-price-card { min-height: 170px; padding: 14px; } .wow-price-card__label { display: none; } .wow-price-card__count { font-size: 10px; } .wow-price-card__main { padding: 19px 0 15px; } .wow-price-card h3 { font-size: 26px; } .wow-price-card__footer { font-size: 11px; } }
+    @media (max-width: 575.98px) { .wow-price-discovery { padding: 33px 0; } .wow-price-discovery h2 { font-size: 38px; } .wow-price-discovery__intro { font-size: 14px; } .wow-price-grid { gap: 8px; } .wow-price-card { min-height: 170px; padding: 14px; } .wow-price-card__label { display: none; } .wow-price-card__count { font-size: 10px; } .wow-price-card__main { padding: 19px 0 15px; } .wow-price-card h3 { font-size: 26px; } .wow-price-card__footer { font-size: 11px; } }
 </style>
 @endif

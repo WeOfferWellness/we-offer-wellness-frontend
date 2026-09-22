@@ -11,7 +11,7 @@
 
 @if($links->isNotEmpty())
 <section class="wow-guides-section" id="{{ $sectionId }}" aria-labelledby="{{ $sectionId }}-heading">
-    <div class="wow-component-container">
+    <div class="container">
         <div class="wow-guides-section__header">
             <div class="wow-guides-section__heading">
                 <p class="wow-guides-section__eyebrow">{{ $eyebrow }}</p>
