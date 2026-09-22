@@ -284,6 +284,9 @@
 <section class="section">
   <div class="container-page">
     <style>
+      .therapy-results-heading{margin:0 0 24px}
+      .therapy-results-heading h2{margin:0;color:#0b3028;font-family:"Playfair Display",Georgia,serif;font-size:clamp(32px,4vw,50px);font-weight:500;line-height:1;letter-spacing:-.04em}
+      .therapy-results-heading p{max-width:680px;margin:10px 0 0;color:#66736e;font-size:15px;line-height:1.55}
       .therapy-results-layout{display:grid;grid-template-columns:250px minmax(0,1fr);gap:25px;align-items:start}
       .therapy-results-filters .wow-sr-v5-desktop{padding:0}
       .therapy-results-filters .wow-sr-v5-container{width:100%}
@@ -294,7 +297,12 @@
       @media(max-width:1040px){.therapy-results-layout{display:block}.therapy-results-filters{display:none}}
     </style>
 
-    <div class="therapy-results-layout">
+    <header class="therapy-results-heading">
+      <h2>Live {{ $therapy['title'] ?? 'wellness' }} offerings</h2>
+      <p>Browse the strongest matches available now.</p>
+    </header>
+
+    <div class="therapy-results-layout wow410-filter-layout">
       <div class="therapy-results-filters">
         @include('search.partials.desktop', [
           'products' => $items,
