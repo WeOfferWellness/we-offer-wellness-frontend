@@ -53,7 +53,7 @@
 <style>
     #trust-reviews, #trust-reviews * { box-sizing: border-box; font-family: "Instrument Sans", sans-serif; margin: 0; }
     #trust-reviews .wrap { width: min(calc(100% - 48px), 1280px); margin-inline: auto; }
-    .safe { padding: 68px 0; background: #f8faf9; border-block: 1px solid #e9eeeb; }
+    .safe { padding: 33px 0; background: none; border-block: none; }
     .safe-grid { display: grid; grid-template-columns: 1.05fr .95fr; gap: 22px; }
     .hero-card { position: relative; min-height: 410px; padding: 38px; border: 1px solid var(--wow-line, #dce4e0); border-radius: 4px; background: linear-gradient(145deg, rgba(79,148,130,.12), rgba(255,255,255,.82) 48%, #fff); overflow: hidden; }
     .hero-card::after { content: ""; position: absolute; width: 300px; height: 300px; right: -120px; bottom: -120px; border: 1px solid rgba(79,148,130,.15); border-radius: 50%; box-shadow: 0 0 0 55px rgba(79,148,130,.035), 0 0 0 110px rgba(79,148,130,.02); }
