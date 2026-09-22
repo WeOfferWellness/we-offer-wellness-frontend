@@ -9,22 +9,14 @@
     ->filter(fn (array $crumb) => $crumb['label'] !== '')
     ->values();
 
-  $chipItems = collect($chips ?? [])
-    ->map(fn ($chip) => trim((string) $chip))
-    ->filter(fn (string $chip) => $chip !== '')
-    ->values();
-
   $schemaEnabled = $schemaEnabled ?? true;
-  $schemaUrl = trim((string) ($schemaUrl ?? url()->current()));
-  if ($schemaUrl === '') {
-    $schemaUrl = url()->current();
-  }
-
+  $schemaUrl = trim((string) ($schemaUrl ?? url()->current())) ?: url()->current();
   $schemaId = trim((string) ($schemaId ?? ($schemaUrl . '#breadcrumb')));
-  $mobileCurrent = trim((string) ($mobileCurrent ?? ($breadcrumbItems->last()['label'] ?? '')));
-  $mobileBackUrl = trim((string) ($mobileBackUrl ?? ($breadcrumbItems->count() > 1 ? ($breadcrumbItems->slice(-2, 1)->first()['url'] ?? '') : '')));
-  $mobileBackLabel = trim((string) ($mobileBackLabel ?? 'Back'));
   $renderVisual = $renderVisual ?? true;
+  $currentIcon = trim((string) ($currentIcon ?? ''));
+  $isLocationTrail = $currentIcon === 'location' || $breadcrumbItems->contains(function (array $crumb): bool {
+    return strtolower($crumb['label']) === 'locations' || str_contains(strtolower($crumb['url']), '/locations');
+  });
 
   $schemaJsonLd = null;
   $schemaList = [];
@@ -56,24 +48,15 @@
   @push('styles')
     <style>
       .wow-breadcrumbs {
-        position: relative;
-        z-index: 2;
-        padding: 12px;
-        border: 1px solid #e5e7eb;
-        border-radius: 22px;
-        background: rgba(255, 255, 255, 0.92);
-        box-shadow: 0 18px 50px rgba(16, 24, 40, 0.08);
-        backdrop-filter: blur(12px);
+        background: #fff;
+        border-bottom: 1px solid #e9eeeb;
       }
-
       .wow-breadcrumbs__inner {
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        gap: 16px;
+        min-height: 50px;
       }
-
-      .wow-breadcrumb-list {
+      .wow-breadcrumbs__list {
         display: flex;
         align-items: center;
         flex-wrap: wrap;
@@ -81,153 +64,74 @@
         margin: 0;
         padding: 0;
         list-style: none;
-        min-width: 0;
-      }
-
-      .wow-breadcrumb-item {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        min-width: 0;
-      }
-
-      .wow-breadcrumb-link,
-      .wow-breadcrumb-current,
-      .wow-breadcrumb-chip,
-      .wow-breadcrumb-mobile-back {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        min-height: 36px;
-        padding: 9px 12px;
-        border: 1px solid #e5e7eb;
-        border-radius: 999px;
-        background: #ffffff;
-        color: #667085;
+        font-family: "Instrument Sans", sans-serif;
         font-size: 13px;
-        line-height: 1;
-        font-weight: 800;
+        line-height: 1.4;
+      }
+      .wow-breadcrumbs__item {
+        display: inline-flex;
+        align-items: center;
+        min-width: 0;
+      }
+      .wow-breadcrumbs__link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: #006b57;
+        font-weight: 500;
         text-decoration: none;
-        white-space: nowrap;
-        box-shadow: 0 8px 24px rgba(16, 24, 40, 0.04);
-        transition: transform 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+        transition: color .18s ease;
       }
-
-      .wow-breadcrumb-link:hover,
-      .wow-breadcrumb-mobile-back:hover {
-        color: #003c3c;
-        border-color: rgba(15, 107, 87, 0.38);
-        transform: translateY(-1px);
-        box-shadow: 0 12px 30px rgba(16, 24, 40, 0.08);
+      .wow-breadcrumbs__link:hover { color: #082f27; }
+      .wow-breadcrumbs__icon,
+      .wow-breadcrumbs__offering-icon,
+      .wow-breadcrumbs__location-icon {
+        width: 14px;
+        height: 14px;
+        flex: 0 0 auto;
       }
-
-      .wow-breadcrumb-current {
-        max-width: 420px;
-        color: #003c3c;
-        background: #d4fbe6;
-        border-color: rgba(15, 107, 87, 0.16);
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .wow-breadcrumb-text {
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .wow-breadcrumb-separator {
-        color: #98a2b3;
-        font-size: 17px;
-        line-height: 1;
-        font-weight: 900;
-      }
-
-      .wow-breadcrumb-home-icon {
+      .wow-breadcrumbs__icon { color: #006b57; }
+      .wow-breadcrumbs__offering-icon { color: #8b9692; }
+      .wow-breadcrumbs__location-icon { color: #006b57; }
+      .wow-breadcrumbs__separator {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        width: 18px;
-        height: 18px;
-        border-radius: 999px;
-        background: #eefaf4;
-        color: #0f6b57;
-        font-size: 12px;
-        line-height: 1;
-        font-weight: 900;
+        color: #a4aeaa;
       }
-
-      .wow-breadcrumb-meta {
-        display: flex;
+      .wow-breadcrumbs__separator svg { width: 14px; height: 14px; }
+      .wow-breadcrumbs__current {
+        display: inline-flex;
         align-items: center;
-        justify-content: flex-end;
-        gap: 8px;
-        flex: 0 0 auto;
-        flex-wrap: wrap;
-      }
-
-      .wow-breadcrumb-chip {
-        color: #0f6b57;
-        background: #f2fffa;
-        border-color: #ccebe0;
-        box-shadow: none;
-      }
-
-      .wow-breadcrumb-mobile {
-        display: none;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
+        gap: 6px;
         min-width: 0;
-        width: 100%;
+        color: #66736e;
+        font-weight: 400;
       }
-
-      .wow-breadcrumb-mobile-current {
-        min-width: 0;
-        color: #003c3c;
-        font-size: 13px;
-        line-height: 1.2;
-        font-weight: 900;
+      .wow-breadcrumbs__current span {
+        max-width: 360px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-        text-align: right;
       }
-
-      @media (max-width: 991px) {
+      @media (max-width: 575.98px) {
         .wow-breadcrumbs__inner {
-          align-items: flex-start;
-          flex-direction: column;
+          min-height: 44px;
+          overflow-x: auto;
+          scrollbar-width: none;
         }
-
-        .wow-breadcrumb-meta {
-          width: 100%;
-          justify-content: flex-start;
+        .wow-breadcrumbs__inner::-webkit-scrollbar { display: none; }
+        .wow-breadcrumbs__list {
+          flex-wrap: nowrap;
+          gap: 6px;
+          white-space: nowrap;
+          font-size: 12px;
         }
-
-        .wow-breadcrumb-current {
-          max-width: 280px;
-        }
-      }
-
-      @media (max-width: 991px) {
-        .wow-breadcrumb-list,
-        .wow-breadcrumb-meta {
-          display: none;
-        }
-
-        .wow-breadcrumb-mobile {
-          display: flex;
-        }
-
-        .wow-breadcrumbs {
-          padding: 10px;
-          border-radius: 18px;
-        }
-
-        .wow-breadcrumb-mobile-back {
-          min-height: 38px;
-          padding: 10px 13px;
-        }
+        .wow-breadcrumbs__separator svg { width: 12px; height: 12px; }
+        .wow-breadcrumbs__icon,
+        .wow-breadcrumbs__offering-icon,
+        .wow-breadcrumbs__location-icon { width: 13px; height: 13px; }
+        .wow-breadcrumbs__current span { max-width: 220px; }
       }
     </style>
   @endpush
@@ -242,46 +146,45 @@
 @endif
 
 @if($renderVisual && $breadcrumbItems->count() > 1)
-  <div class="container mt-3">
-    <nav class="wow-breadcrumbs" aria-label="Breadcrumb">
-      <div class="wow-breadcrumbs__inner">
-        <ol class="wow-breadcrumb-list">
-          @foreach($breadcrumbItems as $index => $crumb)
-            <li class="wow-breadcrumb-item">
-              @if($index < $breadcrumbItems->count() - 1)
-                <a href="{{ $crumb['url'] }}" class="wow-breadcrumb-link">
-                  @if($index === 0)
-                    <span class="wow-breadcrumb-home-icon">⌂</span>
-                  @endif
-                  <span class="wow-breadcrumb-text">{{ $crumb['label'] }}</span>
-                </a>
-                <span class="wow-breadcrumb-separator">›</span>
-              @else
-                <span class="wow-breadcrumb-current" aria-current="page">
-                  <span class="wow-breadcrumb-text">{{ $crumb['label'] }}</span>
-                </span>
-              @endif
+  <nav class="wow-breadcrumbs" aria-label="Breadcrumb">
+    <div class="container-page wow-breadcrumbs__inner">
+      <ol class="wow-breadcrumbs__list">
+        @foreach($breadcrumbItems as $index => $crumb)
+          @if($index > 0)
+            <li class="wow-breadcrumbs__separator" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path d="m9 6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
             </li>
-          @endforeach
-        </ol>
-
-        @if($chipItems->isNotEmpty())
-          <div class="wow-breadcrumb-meta">
-            @foreach($chipItems as $chip)
-              <span class="wow-breadcrumb-chip">{{ $chip }}</span>
-            @endforeach
-          </div>
-        @endif
-
-        <div class="wow-breadcrumb-mobile">
-          @if($mobileBackUrl !== '')
-            <a href="{{ $mobileBackUrl }}" class="wow-breadcrumb-mobile-back">‹ {{ $mobileBackLabel }}</a>
-          @else
-            <span class="wow-breadcrumb-mobile-back">‹ {{ $mobileBackLabel }}</span>
           @endif
-          <span class="wow-breadcrumb-mobile-current">{{ $mobileCurrent }}</span>
-        </div>
-      </div>
-    </nav>
-  </div>
+
+          <li class="wow-breadcrumbs__item{{ $index === $breadcrumbItems->count() - 1 ? ' wow-breadcrumbs__current' : '' }}" @if($index === $breadcrumbItems->count() - 1) aria-current="page" @endif>
+            @if($index < $breadcrumbItems->count() - 1)
+              <a href="{{ $crumb['url'] !== '' ? $crumb['url'] : '#' }}" class="wow-breadcrumbs__link{{ $index === 0 ? ' wow-breadcrumbs__home' : '' }}" @if($index === 0) aria-label="Home" @endif>
+                @if($index === 0)
+                  <svg class="wow-breadcrumbs__icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M3 10.8 12 3l9 7.8V21a1 1 0 0 1-1 1h-5.5v-7h-5v7H4a1 1 0 0 1-1-1V10.8Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                @endif
+                <span>{{ $crumb['label'] }}</span>
+              </a>
+            @else
+              @if($isLocationTrail)
+                <svg class="wow-breadcrumbs__location-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 21s6-5.1 6-11a6 6 0 1 0-12 0c0 5.9 6 11 6 11Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+                  <circle cx="12" cy="10" r="2" fill="none" stroke="currentColor" stroke-width="1.7" />
+                </svg>
+              @else
+                <svg class="wow-breadcrumbs__offering-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M7 3h10a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" fill="none" stroke="currentColor" stroke-width="1.7" />
+                  <path d="M9 8h6M9 12h6M9 16h4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+                </svg>
+              @endif
+              <span>{{ $crumb['label'] }}</span>
+            @endif
+          </li>
+        @endforeach
+      </ol>
+    </div>
+  </nav>
 @endif
