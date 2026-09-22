@@ -51,7 +51,7 @@
 </section>
 
 <style>
-    #trust-reviews, #trust-reviews * { box-sizing: border-box; font-family: "Instrument Sans", sans-serif; }
+    #trust-reviews, #trust-reviews * { box-sizing: border-box; font-family: "Instrument Sans", sans-serif; margin: 0; }
     #trust-reviews .wrap { width: min(calc(100% - 48px), 1280px); margin-inline: auto; }
     .safe { padding: 68px 0; background: #f8faf9; border-block: 1px solid #e9eeeb; }
     .safe-grid { display: grid; grid-template-columns: 1.05fr .95fr; gap: 22px; }
