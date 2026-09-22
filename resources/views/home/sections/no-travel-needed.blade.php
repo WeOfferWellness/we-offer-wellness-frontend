@@ -66,8 +66,7 @@
 <style>
     /* Price rails own the desktop card width; the shared card minimum must
        not turn a four-column homepage grid into 223px cards. */
-    .comfort-price-rail > .wow49-blade-card,
-    .comfort-price-rail > .wow49-store-blade {
+    .comfort-price-rail > .wow410-card {
         width: 100%;
         min-width: 0;
         max-width: none;

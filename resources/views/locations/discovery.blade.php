@@ -36,7 +36,7 @@
     .locations-discovery__section-head{display:flex;align-items:end;justify-content:space-between;gap:18px;margin-bottom:16px}
     .locations-discovery__copy{margin:8px 0 0;color:#667085;font-size:15px;line-height:1.5}
     .locations-discovery__grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
-    .locations-discovery__grid .wow49-blade-card{min-width:0}
+    .locations-discovery__grid .wow410-card{min-width:0;max-width:none}
     .locations-discovery__empty{padding:22px;border:1px solid #e1e7eb;border-radius:4px;color:#596275}
     .locations-discovery__place-grid,.locations-discovery__category-grid,.locations-discovery__price-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
     .locations-discovery__place,.locations-discovery__category,.locations-discovery__price{display:block;padding:18px;border:1px solid #dfe7ea;border-radius:4px;background:#fff;color:inherit;text-decoration:none}
@@ -50,7 +50,9 @@
     .locations-discovery__directory ul{display:flex;flex-wrap:wrap;gap:8px 22px;margin:0;padding:0 0 18px;list-style:none}
     .locations-discovery__directory a{color:#4f9381;text-decoration:none}
     @media(max-width:900px){.locations-discovery__grid{grid-template-columns:repeat(2,minmax(0,1fr))}.locations-discovery__place-grid,.locations-discovery__category-grid,.locations-discovery__price-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-    @media(max-width:620px){.locations-discovery{padding-top:8px}.locations-discovery__container{width:min(100% - 24px,520px)}.locations-discovery__hero{padding:24px 0 26px}.locations-discovery__search-wrap{width:min(100% - 24px,520px);margin:-12px auto 0}.locations-discovery__search{grid-template-columns:1fr 1fr}.locations-discovery__search button{grid-column:1/-1}.locations-discovery__section-head{display:block}.locations-discovery__grid{gap:8px}.locations-discovery__place-grid,.locations-discovery__category-grid,.locations-discovery__price-grid{gap:8px}.locations-discovery__place,.locations-discovery__category,.locations-discovery__price{padding:14px}.locations-discovery__grid .wow49-blade-card__event-content{padding:12px!important}}
+    @media(min-width:1200px){.locations-discovery__grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:16px}}
+    @media(min-width:768px) and (max-width:1199.98px){.locations-discovery__grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}}
+    @media(max-width:620px){.locations-discovery{padding-top:8px}.locations-discovery__container{width:min(100% - 24px,520px)}.locations-discovery__hero{padding:24px 0 26px}.locations-discovery__search-wrap{width:min(100% - 24px,520px);margin:-12px auto 0}.locations-discovery__search{grid-template-columns:1fr 1fr}.locations-discovery__search button{grid-column:1/-1}.locations-discovery__section-head{display:block}.locations-discovery__grid{gap:16px}.locations-discovery__place-grid,.locations-discovery__category-grid,.locations-discovery__price-grid{gap:8px}.locations-discovery__place,.locations-discovery__category,.locations-discovery__price{padding:14px}}
   </style>
 @endpush
 

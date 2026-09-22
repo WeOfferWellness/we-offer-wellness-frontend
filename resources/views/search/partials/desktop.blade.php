@@ -33,7 +33,7 @@
         .wow-sr-v5-desktop .wow-search-recommendation { position: relative; min-width: 0; padding-top: 14px; }
         .wow-sr-v5-desktop .wow-search-recommendation__label { position: absolute; top: 0; left: 10px; z-index: 5; display: inline-flex; align-items: center; min-height: 24px; padding: 0 9px; border-radius: 999px; background: #e4f2ee; color: #2f7464; font-size: 9px; font-weight: 800; letter-spacing: .04em; white-space: nowrap; }
         .wow-sr-v5-desktop .wow-search-recommendation.is-primary .wow-search-recommendation__label { background: #2f7464; color: #fff; }
-        .wow-sr-v5-desktop .wow-search-recommendation .wow49-blade-card, .wow-sr-v5-desktop .wow-search-recommendation .wow49-store-blade { width: 100%; min-width: 0; max-width: none; }
+        .wow-sr-v5-desktop .wow-search-recommendation .wow410-card { width: 100%; min-width: 0; max-width: none; }
         .wow-sr-v5-desktop .wow-search-recommendations + .wow-sr-v5-grid { margin-top: 4px; }
         .wow-sr-v5-desktop .wow-sr-v5-all-results-title { margin: 22px 0 12px; color: #53627a; font-size: 12px; font-weight: 750; letter-spacing: .08em; text-transform: uppercase; }
 
@@ -232,8 +232,7 @@
         .wow-sr-v5-grid > .col-12 { width: auto; max-width: none; padding: 0; }
         .wow-sr-v5-grid .result-view-map { display: none; }
         .wow-sr-v5-grid .result-view-list { display: block; }
-        .wow-sr-v5-grid .wow49-blade-card,
-        .wow-sr-v5-grid .wow49-store-blade,
+        .wow-sr-v5-grid .wow410-card,
         .wow-sr-v5-grid .product-v4-1-ghost-card { width: 100%; min-width: 0; max-width: none; }
         .wow-sr-v5-pagination { margin-top: 26px; }
         .wow-sr-v5-pagination .pagination { justify-content: center; margin-bottom: 0; }

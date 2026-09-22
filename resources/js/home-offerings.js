@@ -500,9 +500,12 @@ function initComfortPriceRails() {
 
   previous?.addEventListener('click', () => scrollRails(-1));
   next?.addEventListener('click', () => {
-    Promise.all(loaders.map((loadNext) => loadNext())).then(() => {
-      scrollRails(1);
-    });
+    // Each loader appends its five ghost cards before the fetch promise is
+    // yielded. Scroll after that synchronous append so one click immediately
+    // lands on visible skeletons instead of waiting for the API response.
+    const requests = loaders.map((loadNext) => loadNext());
+    scrollRails(1);
+    void Promise.all(requests);
   });
 }
 
