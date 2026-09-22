@@ -505,13 +505,6 @@
     'browseUrl' => url('/'.($type ?? 'therapies')),
   ])
 
-  <div class="container-page">
-    @include('partials.guide_panel', [
-      'guidePanelModality' => request()->route('modality'),
-      'guidePanelFormat' => $type ?? null,
-    ])
-  </div>
-
   <section class="landing-wow__results">
     <div class="container-page">
       <style>
@@ -615,5 +608,12 @@
       </div>
     </div>
   </section>
+
+  <div class="container-page">
+    @include('partials.guide_panel', [
+      'guidePanelModality' => request()->route('modality'),
+      'guidePanelFormat' => $type ?? null,
+    ])
+  </div>
 </div>
 @endsection
