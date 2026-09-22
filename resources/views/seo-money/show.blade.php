@@ -478,6 +478,16 @@
       margin:0px;
       font-size:12.75px;
     }
+    .location-landing__section{padding-top:38px}
+    .location-landing__head{display:flex;align-items:end;justify-content:space-between;gap:16px;margin-bottom:15px}
+    .location-landing__head h2{margin:0;color:var(--ink);font-family:"Playfair Display",Georgia,serif;font-size:clamp(30px,4vw,48px);font-weight:500;line-height:1;letter-spacing:-.045em}
+    .location-landing__copy{margin:8px 0 0;color:var(--muted);font-size:15px;line-height:1.5}
+    .location-landing__grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+    .location-landing__empty{padding:20px;border:1px solid var(--line);border-radius:4px;color:var(--muted)}
+    @media(min-width:1200px){.location-landing__grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:16px}}
+    @media(min-width:768px) and (max-width:1199.98px){.location-landing__grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}}
+    @media(max-width:900px){.location-landing__grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:560px){.location-landing__head{display:block}.location-landing__grid{gap:16px}}
     .seo-money-grid-cards{
       display:grid;
       grid-template-columns:repeat(3,minmax(0,1fr));
@@ -684,20 +694,22 @@
       </div>
     </section>
 
-    <section class="seo-money-section" data-money-section="results">
-      <h2>{{ $page['result_label'] ?? 'Live listings' }}</h2>
-      <p>{{ $page['result_intro'] ?? 'Browse the strongest matches available now.' }}</p>
+    <section class="location-landing__section" data-money-section="results">
+      <div class="location-landing__head">
+        <div>
+          <h2>{{ $page['result_label'] ?? 'Live listings' }}</h2>
+          <p class="location-landing__copy">{{ $page['result_intro'] ?? 'Browse the strongest matches available now.' }}</p>
+        </div>
+      </div>
 
       @if($products->isNotEmpty())
-        <div class="seo-money-listing">
-          <div class="seo-money-grid-cards">
-            @foreach($products as $product)
-              @include('partials.product_card_v4_1', ['product' => $product])
-            @endforeach
-          </div>
+        <div class="location-landing__grid">
+          @foreach($products as $product)
+            @include('partials.product_card_v4_1', ['product' => $product])
+          @endforeach
         </div>
       @else
-        <div class="seo-money-empty">
+        <div class="location-landing__empty">
           {{ $page['empty_state'] ?? 'We do not currently have direct local listings for this exact search, so start with online options, nearby towns and related format pages above.' }}
         </div>
       @endif
