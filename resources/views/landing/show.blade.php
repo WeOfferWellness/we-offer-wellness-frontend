@@ -304,11 +304,6 @@
       min-height:44px;
       border-radius:14px;
     }
-    .landing-wow__grid{
-      display:grid;
-      grid-template-columns:repeat(4, minmax(0,1fr));
-      gap:24px;
-    }
     .landing-wow__empty{
       padding:18px;
       border:1px dashed var(--line);
@@ -317,8 +312,7 @@
       background:#fff;
     }
     @media (max-width: 991px){
-      .landing-wow__hero-grid,
-      .landing-wow__grid{
+      .landing-wow__hero-grid{
         grid-template-columns:repeat(2, minmax(0,1fr));
       }
       .landing-wow__panel-list{
@@ -326,9 +320,6 @@
       }
     }
     @media (max-width: 720px){
-      .landing-wow__grid{
-        grid-template-columns:1fr;
-      }
       .landing-wow__panel-list{
         grid-auto-columns:88%;
       }
@@ -517,7 +508,7 @@
         .landing-results-content{min-width:0}
         @media(max-width:1040px){.landing-results-layout{display:block}.landing-results-filters{display:none}}
       </style>
-      <div class="landing-results-layout">
+      <div class="landing-results-layout wow410-filter-layout">
         <div class="landing-results-filters">
           @include('search.partials.desktop', [
             'products' => $items,
@@ -532,6 +523,17 @@
           ])
         </div>
         <div class="landing-results-content">
+      @include('search.partials.mobile', [
+        'products' => $items,
+        'mobileResultsCount' => $items->count(),
+        'mobileFullNavigation' => true,
+        'mobileShowMap' => false,
+        'filterOnly' => true,
+        'searchMapData' => [],
+        'searchRecommendationsHtml' => '',
+        'searchAsyncBoot' => false,
+        'searchUrl' => url('/' . $slug . '/' . ($type ?? 'therapies') . '/'),
+      ])
       @if(($type ?? '') === 'therapies')
         <div class="landing-wow__results-head">
           <div>
@@ -544,7 +546,7 @@
           </a>
         </div>
         @if(collect($featuredOfferings ?? [])->isNotEmpty())
-          <div class="landing-wow__grid" style="margin-bottom:32px;">
+          <div class="wow410-grid" style="margin-bottom:32px;">
             @foreach(collect($featuredOfferings)->take(8) as $product)
               @include('partials.product_card_v4_1', ['product' => $product, 'preferredLocation' => null])
             @endforeach
@@ -560,19 +562,8 @@
         </div>
       </div>
 
-      @include('search.partials.mobile', [
-        'products' => $items,
-        'mobileResultsCount' => $items->count(),
-        'mobileFullNavigation' => true,
-        'mobileShowMap' => false,
-        'filterOnly' => true,
-        'searchMapData' => [],
-        'searchRecommendationsHtml' => '',
-        'searchAsyncBoot' => false,
-        'searchUrl' => url('/' . $slug . '/' . ($type ?? 'therapies') . '/'),
-      ])
       @if($items->count())
-        <div id="landing-products" class="landing-wow__grid">
+        <div id="landing-products" class="wow410-grid">
           @foreach($items as $product)
             @include('partials.product_card_v4_1', [
               'product' => $product,
