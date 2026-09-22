@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Gift Cards | We Offer Wellness™')
+@section('body-class', 'giftcards-body')
 
 @push('styles')
 <style>
@@ -8,16 +9,18 @@
     position:relative;
     overflow:hidden;
     padding:0 0 76px;
-    background:#fff;
+    background:transparent;
   }
-  .giftcards-page::before{
-    content:"";
-    position:absolute;
-    inset:0;
-    background:
-      radial-gradient(circle at top left, rgba(79,147,129,.12), transparent 34%),
-      radial-gradient(circle at top right, rgba(17,24,39,.05), transparent 28%);
-    pointer-events:none;
+  body.giftcards-body,
+  body.giftcards-body main,
+  body.giftcards-body .text-ink-800{
+    background:transparent !important;
+  }
+  body.giftcards-body::before,
+  body.giftcards-body::after{
+    content:none !important;
+    display:none !important;
+    background:none !important;
   }
   .giftcards-shell{
     position:relative;
@@ -115,7 +118,7 @@
     justify-content:space-between;
     align-items:end;
     gap:12px;
-    margin:8px 0 0;
+    margin:33px 0 0;
   }
   .giftcards-section-title h2{
     margin:0;

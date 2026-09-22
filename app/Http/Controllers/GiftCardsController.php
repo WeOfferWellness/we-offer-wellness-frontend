@@ -19,6 +19,7 @@ class GiftCardsController extends Controller
                   ->orWhereRaw("LOWER(COALESCE(tags_list,'')) like ?", ['%gift%'])
                   ->orWhereRaw("LOWER(COALESCE(title,'')) like ?", ['%voucher%']);
             })
+            ->whereRaw("LOWER(COALESCE(title,'')) not like ?", ['%corporate%'])
             ->where(function ($q) {
                 $q->whereHas('status', function ($qs) {
                     $qs->whereIn('status', ['live', 'approved']);
