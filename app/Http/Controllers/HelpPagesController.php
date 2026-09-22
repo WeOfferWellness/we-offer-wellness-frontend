@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use Inertia\Inertia;
+
 class HelpPagesController extends Controller
 {
     public function faq()
