@@ -161,11 +161,11 @@
         /* v4.10 compact landscape contract: three cards per row on tablets
            and landscape mobile widths, including the mobile search renderer
            which remains active below the desktop search breakpoint. */
-        @media (min-width: 700px) and (max-width: 1040px) and (orientation: landscape) {
+        @media (min-width: 700px) and (max-width: 1040px) {
             .wow-sr-v5-mobile-grid,
             .wow-search-recommendations__grid {
                 grid-template-columns: repeat(3, minmax(0, 1fr));
-                gap: 12px;
+                gap: 16px;
             }
 
             .wow-sr-v5-mobile-grid .wow410-card,
