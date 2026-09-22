@@ -12,6 +12,7 @@
         'loading' => false,
         'ghost_view' => 'partials.product_card_v4_1_ghost',
         'force_new_card' => true,
+        'card_version' => 'v4.10',
         'page_size' => 12,
         'load_more' => true,
         'products' => $giftsUnder50 ?? collect(),

@@ -36,7 +36,7 @@
                         data-loading="false"
                     >
                         @forelse($row['items'] as $product)
-                            @include('partials.product_card_v4_1', ['product' => $product, 'preferredLocation' => null, 'forceNewCard' => true])
+                            @include('partials.product_card_v4_1', ['product' => $product, 'preferredLocation' => null, 'forceNewCard' => true, 'cardVersion' => 'v4.10'])
                         @empty
                             <p class="text-muted col-span-2 lg:col-span-4">No online offerings are available in this price range right now.</p>
                         @endforelse

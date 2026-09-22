@@ -1,0 +1,267 @@
+/* WOW v4.10 offering cards. The grid context controls the number of cards;
+   the card component controls equal heights, content clamps and CTA geometry. */
+:root {
+  --wow410-green: #4f9381;
+  --wow410-green-hover: #3f806f;
+  --wow410-green-dark: #2f6f60;
+  --wow410-ink: #101828;
+  --wow410-copy: #667085;
+  --wow410-subtle: #98a2b3;
+  --wow410-line: #e2e8e5;
+  --wow410-card-gap: 14px;
+  --wow410-card-h-desktop: 448px;
+  --wow410-card-h-tablet: 432px;
+  --wow410-card-h-mobile: 372px;
+}
+
+.wow410-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: var(--wow410-card-gap);
+  align-items: stretch;
+}
+
+.wow410-filter-layout {
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr);
+  gap: 25px;
+  align-items: start;
+}
+
+.wow410-filter-layout .wow410-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+.wow410-card {
+  position: relative;
+  display: grid;
+  grid-template-rows: 146px minmax(0, 1fr) auto;
+  width: 100%;
+  min-width: 0;
+  height: var(--wow410-card-h-desktop);
+  overflow: hidden;
+  border: 1px solid rgba(16, 24, 40, .1);
+  border-radius: 13px;
+  background: #fff;
+  box-shadow: 0 4px 16px rgba(16, 24, 40, .05);
+  color: var(--wow410-ink);
+  transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+
+.wow410-card:hover,
+.wow410-card:focus-within {
+  transform: translateY(-2px);
+  border-color: rgba(79, 147, 129, .42);
+  box-shadow: 0 18px 42px rgba(16, 24, 40, .085);
+}
+
+.wow410-card__link { position: absolute; inset: 0; z-index: 1; }
+
+.wow410-card__media {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  background: #eef2f4;
+}
+
+.wow410-card__media > img:first-child {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform .24s ease;
+}
+
+.wow410-card:hover .wow410-card__media > img:first-child { transform: scale(1.035); }
+
+.wow410-card__signal,
+.wow410-card__type {
+  position: absolute;
+  z-index: 4;
+  top: 10px;
+  left: 10px;
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 9px;
+  border: 1px solid rgba(199, 216, 251, .9);
+  border-radius: 999px;
+  background: rgba(232, 240, 255, .96);
+  color: #254a85;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.wow410-card__signal {
+  left: auto;
+  right: 10px;
+  border-color: rgba(240, 200, 121, .9);
+  background: rgba(255, 247, 237, .94);
+  color: #b54708;
+}
+
+.wow410-card__rosette {
+  position: absolute;
+  z-index: 4;
+  top: 8px;
+  right: 8px;
+  width: 46px;
+  height: 46px;
+  object-fit: contain !important;
+}
+
+.wow410-card__tags,
+.wow410-card__event-tags {
+  display: flex;
+  gap: 4px;
+  max-width: calc(100% - 20px);
+}
+
+.wow410-card__tags {
+  position: absolute;
+  z-index: 4;
+  bottom: 10px;
+  left: 10px;
+}
+
+.wow410-card__tag {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  max-width: 100%;
+  height: 22px;
+  padding: 0 7px;
+  overflow: hidden;
+  border: 1px solid rgba(240, 200, 121, .9);
+  border-radius: 999px;
+  background: rgba(255, 229, 179, .96);
+  color: #6f4b10;
+  font-size: 10px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wow410-card__tag--sub {
+  border-color: rgba(203, 213, 225, .9);
+  background: rgba(248, 250, 252, .96);
+  color: #475467;
+}
+
+.wow410-card__body {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  gap: 4px;
+  overflow: hidden;
+  padding: 11px 13px 10px;
+}
+
+.wow410-card__title {
+  display: -webkit-box;
+  min-height: 2.4em;
+  max-height: 3.6em;
+  margin: 0;
+  overflow: hidden;
+  color: var(--wow410-ink);
+  font-size: 17px;
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: -.035em;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.wow410-card:hover .wow410-card__title { color: var(--wow410-green); }
+.wow410-card__provider { display: -webkit-box; min-height: 1.35em; max-height: 2.7em; margin: 0; overflow: hidden; color: var(--wow410-copy); font-size: 11.5px; line-height: 1.35; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.wow410-card__rating { display: flex; min-height: 16px; align-items: center; gap: 5px; overflow: hidden; color: #344054; font-size: 11.5px; white-space: nowrap; }
+.wow410-card__stars { color: #f5c84b; font-size: 12px; letter-spacing: -1px; }
+.wow410-card__location { display: flex; min-height: 17px; align-items: center; gap: 4px; margin: 0; overflow: hidden; color: var(--wow410-copy); font-size: 11.5px; }
+.wow410-card__location span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wow410-card__location svg,
+.wow410-card__availability svg { width: 11px; height: 11px; flex: 0 0 11px; stroke: currentColor; stroke-width: 1.9; }
+.wow410-card__description { display: -webkit-box; min-height: 2.9em; max-height: 4.35em; margin: 1px 0 0; overflow: hidden; color: var(--wow410-copy); font-size: 12px; line-height: 1.45; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
+.wow410-card__availability { display: flex; min-height: 28px; align-items: center; gap: 5px; margin-top: auto; padding: 5px 8px; overflow: hidden; border-radius: 7px; background: #f6f8fa; color: #344054; font-size: 11.5px; font-weight: 600; }
+.wow410-card__availability span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wow410-card__availability.today { background: #eaf5f1; color: #2f6f60; }
+.wow410-card__availability.tomorrow { background: #edf4ff; color: #2456a6; }
+
+.wow410-card__footer {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  min-height: 56px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 7px;
+  padding: 9px 12px 10px;
+  border-top: 1px solid #edf0f2;
+  background: #fff;
+}
+
+.wow410-card__price { min-width: 0; }
+.wow410-card__price small { display: block; margin-bottom: 2px; color: var(--wow410-subtle); font-size: 10px; line-height: 1; }
+.wow410-card__price strong { display: block; overflow: hidden; font-size: 18px; font-weight: 400; line-height: 1.05; letter-spacing: -.045em; text-overflow: ellipsis; white-space: nowrap; }
+.wow410-card__button { position: relative; z-index: 3; min-width: 94px; height: 36px; padding-inline: 11px; border-radius: 4px !important; box-shadow: none !important; font-size: 10.5px; letter-spacing: .025em; }
+
+.wow410-card--event { display: block; background: #20312d; }
+.wow410-card--event .wow410-card__media { position: absolute; inset: 0; }
+.wow410-card--event .wow410-card__media::after { position: absolute; inset: 0; content: ''; background: linear-gradient(to top, rgba(10, 18, 30, .94), rgba(10, 18, 30, .52) 48%, rgba(0, 0, 0, .1)); }
+.wow410-card__date { position: absolute; z-index: 5; top: 12px; left: 12px; display: flex; width: 48px; height: 54px; flex-direction: column; align-items: center; justify-content: center; border-radius: 8px; background: rgba(255, 255, 255, .97); box-shadow: 0 6px 18px rgba(0, 0, 0, .2); }
+.wow410-card__date b { color: var(--wow410-green); font-size: 9px; font-weight: 800; letter-spacing: .08em; }
+.wow410-card__date strong { font-size: 21px; line-height: 1.05; }
+.wow410-card__event-content { position: relative; z-index: 4; display: flex; height: 100%; flex-direction: column; justify-content: flex-end; padding: 14px; color: #fff; }
+.wow410-card--event .wow410-card__title { color: #fff; }
+.wow410-card--event:hover .wow410-card__title { color: #fff; }
+.wow410-card--event .wow410-card__provider { color: rgba(255, 255, 255, .74); }
+.wow410-card--event .wow410-card__location { margin-top: 5px; color: rgba(255, 255, 255, .82); }
+.wow410-card__event-bottom { display: flex; align-items: end; justify-content: space-between; gap: 8px; margin-top: 12px; }
+.wow410-card__event-bottom small { display: block; color: rgba(255, 255, 255, .62); font-size: 10px; }
+.wow410-card__event-bottom strong { font-size: 19px; font-weight: 400; letter-spacing: -.04em; }
+
+/* Homepage rails: five-up without filters, then three-up and two-up. */
+@media (min-width: 1200px) {
+  #home-latest-catalogue-cards > .wow410-card,
+  #home-gifts-cards > .wow410-card,
+  .comfort-price-rail > .wow410-card { flex: 0 0 calc((100% - 56px) / 5); min-width: 0; max-width: none; }
+  .comfort-price-rail { grid-template-columns: repeat(5, minmax(0, 1fr)) !important; }
+}
+
+@media (min-width: 768px) and (max-width: 1199.98px) {
+  .wow410-grid, .wow410-filter-layout .wow410-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .wow410-card { height: var(--wow410-card-h-tablet); grid-template-rows: 145px minmax(0, 1fr) auto; }
+  #home-latest-catalogue-cards > .wow410-card,
+  #home-gifts-cards > .wow410-card,
+  .comfort-price-rail > .wow410-card { flex: 0 0 calc((100% - 28px) / 3); min-width: 0; max-width: none; }
+  .comfort-price-rail { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+}
+
+@media (max-width: 767.98px) {
+  .wow410-grid, .wow410-filter-layout .wow410-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .wow410-card { height: var(--wow410-card-h-mobile); grid-template-rows: 126px minmax(0, 1fr) auto; border-radius: 11px; }
+  .wow410-card__type, .wow410-card__signal { top: 7px; left: 7px; min-height: 21px; padding-inline: 7px; font-size: 8.5px; }
+  .wow410-card__signal { left: auto; right: 7px; }
+  .wow410-card__rosette { top: 6px; right: 6px; width: 34px; height: 34px; }
+  .wow410-card__tags { bottom: 7px; left: 7px; max-width: calc(100% - 14px); }
+  .wow410-card__tag { height: 19px; padding-inline: 6px; font-size: 8.5px; }
+  .wow410-card__body { gap: 3px; padding: 9px 9px 8px; }
+  .wow410-card__title { min-height: 3.45em; max-height: 3.45em; font-size: 13px; line-height: 1.15; }
+  .wow410-card__provider { min-height: 2.5em; max-height: 2.5em; font-size: 10px; line-height: 1.25; }
+  .wow410-card__rating { min-height: 14px; gap: 3px; font-size: 9.5px; }
+  .wow410-card__rating > span:last-child { display: none; }
+  .wow410-card__stars { font-size: 10px; }
+  .wow410-card__location { min-height: 15px; font-size: 9.5px; }
+  .wow410-card__description { display: none; }
+  .wow410-card__availability { min-height: 25px; padding: 4px 6px; font-size: 9.5px; }
+  .wow410-card__footer { min-height: 52px; padding: 8px 8px 9px; }
+  .wow410-card__price small { font-size: 8.5px; }
+  .wow410-card__price strong { font-size: 15px; }
+  .wow410-card__button { min-width: 0; height: 33px; padding-inline: 8px; font-size: 8.5px; }
+  .wow410-card__date { top: 8px; left: 8px; width: 43px; height: 48px; }
+  .wow410-card__date strong { font-size: 18px; }
+  .wow410-card__event-content { padding: 10px; }
+  .wow410-card__event-bottom { margin-top: 8px; }
+  .wow410-card__event-bottom strong { font-size: 16px; }
+  #home-latest-catalogue-cards > .wow410-card,
+  #home-gifts-cards > .wow410-card,
+  .comfort-price-rail > .wow410-card { flex: 0 0 calc((100% - 10px) / 2); min-width: 0; max-width: none; }
+  .comfort-price-rail { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+}

@@ -22,6 +22,7 @@
     $pageSize = max(1, (int) ($section['page_size'] ?? 12));
     $loadMore = ! empty($section['load_more']);
     $cardView = $section['card_view'] ?? 'partials.product_card_v4_1';
+    $cardVersion = $section['card_version'] ?? null;
     $ghostView = $section['ghost_view'] ?? 'partials.product_card_v4_ghost';
     $forceNewCard = (bool) ($section['force_new_card'] ?? false);
 @endphp
@@ -82,7 +83,7 @@
                 @endfor
             @else
                 @forelse($products as $product)
-                    @include($cardView, ['product' => $product, 'preferredLocation' => null, 'forceNewCard' => $forceNewCard])
+                    @include($cardView, ['product' => $product, 'preferredLocation' => null, 'forceNewCard' => $forceNewCard, 'cardVersion' => $cardVersion])
                 @empty
                     <div class="text-muted">{!! $section['empty_html'] ?? e($section['empty_text'] ?? 'Nothing to show right now.') !!}</div>
                 @endforelse

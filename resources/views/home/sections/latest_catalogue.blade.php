@@ -11,6 +11,7 @@
         ],
         'ghost_view' => 'partials.product_card_v4_1_ghost',
         'force_new_card' => true,
+        'card_version' => 'v4.10',
         // Server-render a usable rail first. The client may refresh it, but a
         // privacy extension must never leave the homepage on skeleton cards.
         'loading' => false,

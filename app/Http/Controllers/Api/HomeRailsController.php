@@ -95,11 +95,12 @@ class HomeRailsController extends Controller
         return $items
             ->filter()
             ->map(function (array $item) use ($forceNewCard): string {
-                if (data_get($item, 'kind') === 'physical_product' || data_get($item, 'source_type') === 'physical_product') {
-                    return view('partials.store_product_card', ['product' => (object) $item])->render();
-                }
-
-                return view('partials.product_card_v4_1', ['product' => $item, 'preferredLocation' => null, 'forceNewCard' => $forceNewCard])->render();
+                return view('partials.product_card_v4_1', [
+                    'product' => $item,
+                    'preferredLocation' => null,
+                    'forceNewCard' => $forceNewCard,
+                    'cardVersion' => 'v4.10',
+                ])->render();
             })
             ->implode('');
     }

@@ -169,7 +169,9 @@
     }
 @endphp
 
-@if($storeProduct)
+@if(($cardVersion ?? '') === 'v4.10')
+    @include('partials.offering_card_v4_10')
+@elseif($storeProduct)
     @include('partials.store_product_card', ['product' => $product])
 @else
 

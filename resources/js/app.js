@@ -7,6 +7,7 @@ import '../css/wow-cards.css';
 import '../css/site.css';
 import '../css/offering-cards-v49.css';
 import '../css/offering-cards-v49-mobile.css';
+import '../css/offering-cards-v410.css';
 import '../css/wow-buttons.css';
 import '../css/home-hero.css';
 import '../css/home-searchbar-v4.css';
