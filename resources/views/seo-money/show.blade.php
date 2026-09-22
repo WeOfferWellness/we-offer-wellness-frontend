@@ -581,6 +581,15 @@
   $products = collect($products ?? []);
   $savedLocation = collect($savedLocation ?? []);
   $catalogSuggestions = collect($catalogSuggestions ?? []);
+  $locationTiles = $popularLocations->map(function (array $location): array {
+    return array_merge($location, [
+      'path' => $location['path'] ?? '/locations',
+      'url' => $location['search_url'] ?? url($location['path'] ?? '/locations'),
+      'supply_count' => (int) ($location['supply_count'] ?? data_get($location, 'counts.total', 0)),
+    ]);
+  })->values();
+  $locationExplorerFeatured = $locationTiles->first();
+  $locationExplorerItems = $locationTiles->skip(1)->values()->all();
   $hasOnlineSessions = collect($page['highlights'] ?? [])->contains(fn ($item) => str_contains(strtolower((string) $item), 'online'))
     || collect($page['related_links'] ?? [])->contains(fn ($item) => str_contains(strtolower((string) ($item['label'] ?? '')), 'online'));
   $heroImage = trim((string) ($savedLocation['image_path'] ?? ''));
@@ -677,19 +686,6 @@
       </aside>
     </div>
 
-    <section class="show-structured-near-me-section">
-      <h2>{{ $locationSectionTitle }}</h2>
-      <p>{{ $locationSectionIntro }}</p>
-      <div class="show-structured-near-me-links">
-        @foreach($popularLocations as $location)
-          <a class="show-structured-near-me-linkcard" href="{{ $location['search_url'] ?? url($location['path'] ?? '/') }}">
-            <strong>{{ $location['title'] ?? $location['label'] ?? 'Location' }}</strong>
-            <span>{{ $location['country'] ?? 'We Offer Wellness' }}</span>
-          </a>
-        @endforeach
-      </div>
-    </section>
-
     <section class="location-landing__section" data-money-section="results">
       <div class="location-landing__head">
         <div>
@@ -710,6 +706,17 @@
         </div>
       @endif
     </section>
+
+    @if($locationExplorerFeatured !== null)
+      @include('partials.location-explorer', [
+        'eyebrow' => 'Explore nearby',
+        'heading' => $locationSectionTitle,
+        'intro' => $locationSectionIntro,
+        'featured' => $locationExplorerFeatured,
+        'items' => $locationExplorerItems,
+        'id' => 'nearby-location-heading',
+      ])
+    @endif
 
     <section class="show-structured-near-me-section" id="related-pages">
       <h2>{{ $relatedLinksTitle }}</h2>

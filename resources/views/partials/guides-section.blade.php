@@ -53,7 +53,7 @@
 </section>
 
 <style>
-    .wow-guides-section { padding: 64px 0 72px; background: #f8faf9; border-top: 1px solid #e8eeeb; border-bottom: 1px solid #e8eeeb; }
+    .wow-guides-section { padding: 64px 0 72px; }
     .wow-guides-section__header { display: flex; align-items: flex-end; justify-content: space-between; gap: 40px; margin-bottom: 30px; }
     .wow-guides-section__heading { max-width: 700px; }
     .wow-guides-section__eyebrow { margin: 0 0 10px; color: var(--wow-green, #4f9482); font: 700 11px/1 "Instrument Sans", sans-serif; letter-spacing: .18em; text-transform: uppercase; }

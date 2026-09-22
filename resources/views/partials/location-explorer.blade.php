@@ -47,6 +47,7 @@
                 @php
                     $title = trim((string) ($item['title'] ?? $item['label'] ?? 'Location'));
                     $path = (string) ($item['path'] ?? '/locations');
+                    $href = (string) ($item['url'] ?? url($path));
                     $image = $normaliseImage($item['image_url'] ?? $item['image_path'] ?? null);
                     $isFeatured = $index === 0 && $featured !== null;
                     $isWide = !$isFeatured && (
@@ -70,7 +71,7 @@
                         <h3>{{ $title }}</h3>
                         @if($description !== '')<p>{{ $description }}</p>@endif
                         @include('partials.wow-button', [
-                            'href' => url($path),
+                            'href' => $href,
                             'label' => $isFeatured ? 'Explore '.$title : 'Explore wellness',
                             'variant' => 'link',
                             'size' => 'md',
