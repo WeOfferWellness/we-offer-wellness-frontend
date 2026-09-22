@@ -508,6 +508,18 @@
         .landing-results-content{min-width:0}
         @media(max-width:1040px){.landing-results-layout{display:block}.landing-results-filters{display:none}}
       </style>
+      @if(($type ?? '') === 'therapies')
+        <div class="landing-wow__results-head">
+          <div>
+            <div class="landing-wow__kicker">Featured offerings</div>
+            <h2>Actual sessions you can book now</h2>
+            <p>Live therapy offerings from trusted practitioners, ready to explore and book.</p>
+          </div>
+          <a href="/search?type=therapies" class="btn-wow btn-wow--outline btn-sm btn-arrow">
+            Browse all
+          </a>
+        </div>
+      @endif
       <div class="landing-results-layout wow410-filter-layout">
         <div class="landing-results-filters">
           @include('search.partials.desktop', [
@@ -535,16 +547,6 @@
         'searchUrl' => url('/' . $slug . '/' . ($type ?? 'therapies') . '/'),
       ])
       @if(($type ?? '') === 'therapies')
-        <div class="landing-wow__results-head">
-          <div>
-            <div class="landing-wow__kicker">Featured offerings</div>
-            <h2>Actual sessions you can book now</h2>
-            <p>Live therapy offerings from trusted practitioners, ready to explore and book.</p>
-          </div>
-          <a href="/search?type=therapies" class="btn-wow btn-wow--outline btn-sm btn-arrow">
-            Browse all
-          </a>
-        </div>
         @if(collect($featuredOfferings ?? [])->isNotEmpty())
           <div class="wow410-grid" style="margin-bottom:32px;">
             @foreach(collect($featuredOfferings)->take(8) as $product)
