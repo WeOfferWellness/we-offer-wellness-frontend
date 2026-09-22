@@ -33,8 +33,11 @@
   height: var(--btn-height);
   padding: 0 18px;
   border: 1px solid transparent;
-  border-radius: var(--btn-radius);
+  /* The component owns the geometry. Legacy .btn/.btn-sm utilities must not
+     be able to replace a button variant's radius. */
+  border-radius: var(--btn-radius) !important;
   background: transparent;
+  background-image: none !important;
   color: var(--wow-text);
   font-family: "Instrument Sans", sans-serif;
   font-size: var(--btn-font-size);
@@ -44,12 +47,19 @@
   text-decoration: none;
   cursor: pointer;
   user-select: none;
+  appearance: none;
+  box-shadow: none !important;
+  text-shadow: none;
   transition: background-color .18s ease, border-color .18s ease, color .18s ease, transform .18s ease, opacity .18s ease;
   -webkit-tap-highlight-color: transparent;
 }
 .btn-wow:hover, .cta-btn:hover { text-decoration: none; }
 .btn-wow:active, .cta-btn:active { transform: translateY(1px); }
-.btn-wow:focus-visible, .cta-btn:focus-visible { outline: 2px solid var(--wow-green); outline-offset: 3px; }
+.btn-wow:focus-visible, .cta-btn:focus-visible {
+  outline: 2px solid var(--wow-green);
+  outline-offset: 3px;
+  box-shadow: none !important;
+}
 .btn-wow:disabled, .btn-wow[aria-disabled="true"], .cta-btn:disabled, .cta-btn[aria-disabled="true"] { opacity: .45; cursor: not-allowed; pointer-events: none; }
 
 .btn-wow--sm { --btn-height: var(--btn-h-sm); --btn-font-size: var(--btn-fz-sm); padding-inline: 14px; }
@@ -69,7 +79,7 @@
   height: auto;
   padding: 0;
   border: 0 !important;
-  border-radius: 0;
+  border-radius: 0 !important;
   background: transparent !important;
   color: var(--wow-green-dark);
   font-weight: 600;
