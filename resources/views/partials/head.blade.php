@@ -74,10 +74,9 @@
 @endif
 <link rel="canonical" href="{{ $canonicalUrl }}">
 <!-- Favicon -->
-<link rel="icon" href="{{ $favicon }}">
 <link rel="icon" type="image/png" sizes="48x48" href="{{ asset('favicon-48x48.png') }}">
 <link rel="icon" type="image/png" sizes="192x192" href="{{ asset('favicon-192x192.png') }}">
-<link rel="shortcut icon" href="{{ $favicon }}">
+<link rel="icon" href="{{ $favicon }}" sizes="any">
 <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
 <meta name="msapplication-TileImage" content="{{ asset('favicon-192x192.png') }}">
 <meta property="og:type" content="{{ $ogType }}">
