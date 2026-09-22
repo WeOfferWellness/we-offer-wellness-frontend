@@ -62,7 +62,7 @@ class NeedsController extends Controller
     private function fetchOfferings(array $query): array
     {
         $cacheKey = 'needs:offerings:backend:'.md5(json_encode($query));
-        return Cache::remember($cacheKey, now()->addMinutes(3), function () use ($query): array {
+        $load = function () use ($query): array {
             $filters = ['need' => $query['need'], 'per_page' => 100];
             $format = strtolower((string) ($query['format'] ?? ''));
             if ($format === 'online' || $format === 'in_person') $filters['mode'] = $format;
@@ -79,6 +79,14 @@ class NeedsController extends Controller
             $perPage = max(1, (int) ($query['per_page'] ?? 24));
 
             return ['items' => $items->forPage($page, $perPage)->values(), 'meta' => ['current_page' => $page, 'last_page' => max(1, (int) ceil($total / $perPage)), 'total' => $total]];
-        });
+        };
+
+        try {
+            return Cache::remember($cacheKey, now()->addMinutes(3), $load);
+        } catch (\Throwable $exception) {
+            // A missing/unwritable file-cache shard must not take down a public need page.
+            report($exception);
+            return $load();
+        }
     }
 }
