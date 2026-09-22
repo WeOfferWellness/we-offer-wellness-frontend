@@ -2,6 +2,7 @@
         'section' => [
         'id' => 'home-latest-catalogue',
         'section_class' => 'section home-latest-section',
+        'container_class' => 'container',
         'kicker' => 'New this week',
         'title' => 'Find what’s new',
         'description' => 'Discover newly published sessions, classes and products alongside recent favourites that are ready to explore.',

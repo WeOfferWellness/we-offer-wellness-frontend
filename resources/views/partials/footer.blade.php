@@ -1,5 +1,5 @@
 <footer class="wow-footer">
-    <div class="container-page py-10">
+    <div class="container py-10">
         <div class="footer-hero">
             <div class="brand-col">
                 <div class="logo" role="img" aria-label="We Offer Wellness" style="display:inline-block; line-height:0;">

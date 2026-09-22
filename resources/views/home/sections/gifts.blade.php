@@ -1,6 +1,7 @@
 @include('partials.product_showcase_section', [
     'section' => [
         'id' => 'home-gifts',
+        'container_class' => 'container',
         'section_class' => 'section',
         'kicker' => 'Give the gift of wellbeing',
         'title' => 'Thoughtful gifts under £50',

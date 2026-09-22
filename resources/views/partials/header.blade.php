@@ -392,7 +392,7 @@
 <div class="pointer-events-none fixed inset-0 -z-10"></div>
 <header id="wow-header-container">
     <div class="utility-bar wow-desktop-utility">
-        <div class="container-page">
+        <div class="container">
             <div class="utility-links">
                 <div class="utility-links__primary"><a href="/reset" style="display:none">Free 7-Day Reset</a><a href="/about">About We
                     Offer Wellness®</a><a href="/help" style="display:none;">Help Centre</a><a href="/safety-and-contraindications">Safety
@@ -404,7 +404,7 @@
     <div id="header-sentinel" style="position:relative;height:1px;width:1px"></div>
     <nav class="top-0 z-50 bg-white/90 backdrop-blur border-b"
             style="border-bottom: 1px solid rgba(153, 153, 153, 0.4); margin-top: -1px;">
-        <div class="container container-page header-inner h-16 flex items-center justify-between position-relative">
+        <div class="container header-inner h-16 flex items-center justify-between position-relative">
             <div class="flex items-center gap-4 wow-mobile-logo-group"><a class="flex items-center gap-2 shrink-0" href="/" aria-label="We Offer Wellness">
                 <!-- Inline SVG logo -->
                 <span class="wow-brand-mark block" style="height:28px; display:inline-flex; align-items:center">
