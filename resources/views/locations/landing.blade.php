@@ -41,7 +41,6 @@
     .location-landing__hero.is-dark{--location-hero-copy:#fff;--location-hero-muted:rgba(255,255,255,.88);--location-hero-accent:#d7fff1;--location-hero-overlay:rgba(7,24,21,.62)}
     .location-landing__hero.is-light{--location-hero-copy:#17202b;--location-hero-muted:#465466;--location-hero-accent:#236957;--location-hero-overlay:rgba(255,255,255,.72)}
     .location-landing__hero{color:var(--location-hero-copy)}
-    .location-landing__search-wrap{width:min(100% - 32px,900px);margin:-14px auto 0;position:relative;z-index:2}
     .location-landing__eyebrow{margin:0 0 8px;color:var(--location-hero-accent);font-size:12px;text-align:center;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
     .location-landing h1,.location-landing h2{margin:0;font-family:var(--wow-serif,'Playfair Display',Georgia,serif);font-weight:500;letter-spacing:-.045em}
     .location-landing h1{font-size:clamp(42px,6vw,74px);line-height:.95;text-align:center}
@@ -87,14 +86,6 @@
       'heroActions' => [['label' => 'Search all', 'href' => url('/search?where='.urlencode($label))]],
     ])
     <div class="location-landing__container">
-      <div class="location-landing__search-wrap">
-        <x-home-searchbar-v4
-          id-prefix="location-landing-search"
-          :search-url="url('/search')"
-          initial-where="{{ $label }}"
-        />
-      </div>
-
       <section class="location-landing__section" aria-labelledby="local-offerings-title"><div class="location-landing__head"><div><h2 id="local-offerings-title">{{ $isTown ? 'Wellness near '.$label : 'Explore wellness in '.$label }}</h2><p class="location-landing__copy">Live marketplace offerings, ordered for local relevance and useful quality signals.</p></div>@if($nearby->isNotEmpty())<a class="btn-wow btn-wow--outline btn-sm" href="{{ url('/search?where='.urlencode($label)) }}">View all</a>@endif</div>@if($nearby->isNotEmpty())<div class="location-landing__grid">@foreach($nearby->take(8) as $product)@include('partials.product_card_v4_1',['product'=>$product,'preferredLocation'=>$label])@endforeach</div>@else<div class="location-landing__empty">We don't have any wellness offerings listed in {{ $label }} yet. Try a nearby area or explore online options.</div>@endif</section>
 
       @if($categories->isNotEmpty())<section class="location-landing__section"><div class="location-landing__head"><div><h2>Top wellness categories in {{ $label }}</h2><p class="location-landing__copy">Categories with genuine local marketplace supply.</p></div></div><div class="location-landing__tiles">@foreach($categories as $category)@php($categoryPath = trim((string) ($location['path'] ?? ''), '/'))<a class="location-landing__tile" href="{{ url('/therapies/'.($category['slug'] ?? Str::slug($category['name'] ?? '')).($categoryPath !== '' ? '/'.Str::after($categoryPath, 'locations/') : '')) }}"><strong>{{ $category['name'] }}</strong><span>{{ $category['count'] }} local {{ $category['count'] === 1 ? 'offering' : 'offerings' }}</span></a>@endforeach</div></section>@endif
