@@ -127,9 +127,9 @@ class HomeController extends Controller
             ->values();
 
         $selected = collect();
-        while ($selected->count() < 4 && $groups->contains(fn (Collection $group): bool => $group->isNotEmpty())) {
+        while ($selected->count() < 5 && $groups->contains(fn (Collection $group): bool => $group->isNotEmpty())) {
             foreach ($groups as $index => $group) {
-                if ($group->isEmpty() || $selected->count() >= 4) {
+                if ($group->isEmpty() || $selected->count() >= 5) {
                     continue;
                 }
 

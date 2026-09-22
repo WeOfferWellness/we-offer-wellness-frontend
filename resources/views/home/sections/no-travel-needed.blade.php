@@ -36,7 +36,7 @@
                     </div>
 
                     <div
-                        class="comfort-price-rail grid grid-cols-2 gap-4 lg:grid-cols-4"
+                        class="comfort-price-rail"
                         data-comfort-rail
                         data-price-min="{{ $row['min'] }}"
                         data-price-max="{{ $row['max'] }}"
@@ -75,13 +75,49 @@
 
     @media (min-width: 1200px) {
         .comfort-price-rail {
+            display: flex !important;
+            flex-wrap: nowrap;
+            gap: 16px !important;
+            overflow-x: auto;
+            overflow-y: visible;
             grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+            scrollbar-width: none;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .comfort-price-rail::-webkit-scrollbar {
+            display: none;
+        }
+
+        .comfort-price-rail > article {
+            flex: 0 0 calc((100% - 64px) / 5);
+            min-width: calc((100% - 64px) / 5);
+            scroll-snap-align: start;
         }
     }
 
     @media (min-width: 768px) and (max-width: 1199.98px) {
         .comfort-price-rail {
+            display: flex !important;
+            flex-wrap: nowrap;
+            gap: 16px !important;
+            overflow-x: auto;
+            overflow-y: visible;
             grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+            scrollbar-width: none;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .comfort-price-rail::-webkit-scrollbar {
+            display: none;
+        }
+
+        .comfort-price-rail > article {
+            flex: 0 0 calc((100% - 32px) / 3);
+            min-width: calc((100% - 32px) / 3);
+            scroll-snap-align: start;
         }
     }
 
@@ -90,6 +126,7 @@
             display: flex !important;
             grid-template-columns: none !important;
             flex-wrap: nowrap;
+            gap: 16px !important;
             overflow-x: auto;
             overflow-y: visible;
             scroll-snap-type: x mandatory;

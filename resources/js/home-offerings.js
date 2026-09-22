@@ -500,8 +500,9 @@ function initComfortPriceRails() {
 
   previous?.addEventListener('click', () => scrollRails(-1));
   next?.addEventListener('click', () => {
-    scrollRails(1);
-    loaders.forEach((loadNext) => loadNext());
+    Promise.all(loaders.map((loadNext) => loadNext())).then(() => {
+      scrollRails(1);
+    });
   });
 }
 
