@@ -146,7 +146,14 @@
         ])
       @endif
 
-      @if($prices->isNotEmpty())<section class="location-landing__section"><div class="location-landing__head"><div><h2>Wellness by price</h2><p class="location-landing__copy">Explore price points with actual {{ $label }} supply.</p></div></div><div class="location-landing__tiles">@foreach($prices as $price)<a class="location-landing__tile" href="{{ url('/search?where='.urlencode($label).'&price_max='.($price['max'] ?? 500)) }}"><strong>{{ $price['label'] }}</strong><span>{{ $price['count'] }} local options</span></a>@endforeach</div></section>@endif
+      @include('partials.popular-price', [
+        'id' => 'location-price-discovery-heading',
+        'eyebrow' => 'Explore by budget',
+        'heading' => 'Wellness by price',
+        'intro' => 'Explore price points with actual '.$label.' availability.',
+        'location' => $label,
+        'items' => $prices,
+      ])
     </div>
   </main>
   @if($locationImage)
