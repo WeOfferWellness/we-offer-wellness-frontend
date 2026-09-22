@@ -90,7 +90,7 @@
                 const vibe = (Array.isArray(articles) ? articles : [])
                     .filter((article) => String(article?.title || '').trim().toUpperCase().startsWith('OUR VIBE'))
                     .filter((article) => article?.img && article?.href)
-                    .slice(0, 3);
+                    .slice(4, 7);
 
                 if (!vibe.length) {
                     grid.innerHTML = '<div class="media media-placeholder"><div class="media-content"><span class="tag">OUR VIBE</span><h3>No practitioner stories available yet</h3></div></div>';
