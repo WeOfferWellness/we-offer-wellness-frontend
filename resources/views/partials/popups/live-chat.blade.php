@@ -8,8 +8,17 @@
       <label><span>First name</span><input name="first_name" autocomplete="given-name" required></label>
       <label><span>Email</span><input name="email" type="email" autocomplete="email" required></label>
       <label><span>Message</span><textarea name="message" rows="4" required></textarea></label>
+      <label class="wow-live-chat-consent"><input name="subscribe" type="checkbox" value="1"><span>Add me to the WOW newsletter</span></label>
       <button class="wow-live-chat-submit" type="submit">Start conversation <span aria-hidden="true">→</span></button>
       <p class="wow-live-chat-status" data-live-chat-status role="status" aria-live="polite"></p>
     </form>
+    <div class="wow-live-chat-thread" data-live-chat-thread hidden>
+      <div class="wow-live-chat-messages" data-live-chat-messages aria-live="polite"></div>
+      <form class="wow-live-chat-reply" data-live-chat-reply>
+        <input name="message" placeholder="Write a message…" aria-label="Message" required>
+        <button type="submit" aria-label="Send message">→</button>
+      </form>
+      <p class="wow-live-chat-status" data-live-chat-thread-status role="status" aria-live="polite"></p>
+    </div>
   </section>
 </div>
