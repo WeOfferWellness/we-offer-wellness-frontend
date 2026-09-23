@@ -54,6 +54,9 @@ function frequencyAllows(config) {
     const last = Number(readStorage(localStorage, `${key}:last`) || 0);
     const cooldown = Number(config.cooldown_hours || 0) * 3600000;
     if (cooldown && Date.now() - last < cooldown) return false;
+    const closedAt = Number(readStorage(localStorage, `${key}:closed`) || 0);
+    const waitAfterClose = Number(config.wait_after_close_seconds || 0) * 1000;
+    if (waitAfterClose && Date.now() - closedAt < waitAfterClose) return false;
     if (frequency === 'once_session' && readStorage(sessionStorage, `${key}:seen`)) return false;
     if (frequency === 'once_day') {
         const day = new Date().toISOString().slice(0, 10);
@@ -154,7 +157,12 @@ function initPopupController() {
         window.setTimeout(() => openPopup(next, elements.get(next.key)), Math.max(0, Number(next.delay_seconds || 0) * 1000));
     };
     const enqueue = (config) => { if (!queue.some((item) => item.key === config.key)) { queue.push(config); queue.sort((a, b) => Number(a.priority) - Number(b.priority)); tryNext(); } };
-    document.addEventListener('wow:popup-closed', (event) => { if (event.detail?.key === active.key) { active.key = null; window.setTimeout(tryNext, 100); } });
+    document.addEventListener('wow:popup-closed', (event) => {
+        const key = event.detail?.key;
+        if (!key) return;
+        writeStorage(localStorage, `${key}:closed`, Date.now());
+        if (key === active.key) { active.key = null; window.setTimeout(tryNext, 100); }
+    });
     fetch(`${backendUrl}/api/popups?${new URLSearchParams({ page_url: window.location.href })}`, { credentials: 'include', headers: { Accept: 'application/json' } })
         .then((response) => response.ok ? response.json() : { data: [] })
         .then((payload) => {
@@ -165,8 +173,16 @@ function initPopupController() {
                 if (triggers.first_time_user && !firstVisit) return;
                 if (triggers.on_load) enqueue(config);
                 if (triggers.scroll) {
-                    const onScroll = () => { const max = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1); if ((window.scrollY / max) * 100 >= Number(triggers.scroll_percent || 50)) { enqueue(config); window.removeEventListener('scroll', onScroll); } };
+                    const onScroll = () => {
+                        const max = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
+                        if ((window.scrollY / max) * 100 >= Number(triggers.scroll_percent || 50)) {
+                            enqueue(config);
+                            window.removeEventListener('scroll', onScroll);
+                        }
+                    };
                     window.addEventListener('scroll', onScroll, { passive: true });
+                    window.addEventListener('resize', onScroll, { passive: true });
+                    window.requestAnimationFrame(onScroll);
                 }
                 if (triggers.exit_intent) document.addEventListener('mouseout', (event) => { if (event.clientY <= 0) enqueue(config); }, { once: true });
                 track(config, 'impression');
