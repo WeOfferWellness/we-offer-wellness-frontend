@@ -124,7 +124,13 @@ if (modal && openers.length) {
             previousUnreadCount = unread;
             updateUnreadBadge(unread);
             const online = !!payload.agents_online;
-            const agents = online && Array.isArray(payload.agent_presence) ? payload.agent_presence : [];
+            const agents = online
+                ? Array.isArray(payload.agent_presence)
+                    ? payload.agent_presence
+                    : payload.agent_presence && typeof payload.agent_presence === 'object'
+                        ? [payload.agent_presence]
+                        : []
+                : [];
             renderMessages(items, agents);
             if (!modal.hidden && thread?.classList.contains('is-active')) {
                 fetch(`${backendUrl}/api/live-chat/conversations/${encodeURIComponent(token)}/read`, { method: 'POST', credentials: 'include', headers: { Accept: 'application/json', 'Content-Type': 'application/json' }, body: '{}' }).catch(() => {});
