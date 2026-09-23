@@ -167,6 +167,7 @@ function initPopupController() {
         const key = event.detail?.key;
         if (!key || !layer) return;
         const config = configs.get(key) || { requires_backdrop: true };
+        if (!active.key) active.key = key;
         layer.hidden = false;
         layer.setAttribute('aria-hidden', 'false');
         layer.classList.toggle('is-backdropless', config.requires_backdrop === false);
