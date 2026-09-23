@@ -18,7 +18,15 @@ if (modal && openers.length) {
     const replyInput = reply?.querySelector('textarea');
     const unreadBadge = document.querySelector('[data-live-chat-unread]');
     let token = (() => { try { return sessionStorage.getItem(tokenKey) || ''; } catch (_) { return ''; } })();
+    const resumeToken = new URLSearchParams(window.location.hash.slice(1)).get('live-chat');
+    if (resumeToken && /^[A-Za-z0-9]{64}$/.test(resumeToken)) {
+        token = resumeToken;
+        try { sessionStorage.setItem(tokenKey, token); } catch (_) {}
+        window.history.replaceState(null, '', window.location.pathname + window.location.search);
+    }
     let pollTimer = null;
+    let pollInFlight = false;
+    let pollRetryAt = 0;
     let typingTimer = null;
     let typingHeartbeatTimer = null;
     let typingIdleTimer = null;
@@ -49,6 +57,10 @@ if (modal && openers.length) {
     const showThread = () => { prechat?.classList.remove('is-active'); prechat?.setAttribute('hidden', ''); thread?.removeAttribute('hidden'); thread?.classList.add('is-active'); };
     const setLayerOpen = (open) => { if (!layer) return; layer.hidden = !open; layer.setAttribute('aria-hidden', open ? 'false' : 'true'); };
     const initials = (name) => String(name || 'W').trim().charAt(0).toUpperCase() || 'W';
+    const agentDisplayName = (name) => {
+        const firstName = String(name || '').replace(/\s+from We Offer Wellness$/i, '').trim().split(/\s+/)[0];
+        return firstName ? `${firstName} from We Offer Wellness` : 'We Offer Wellness team';
+    };
     const wowAvatar = '<img src="https://www.weofferwellness.co.uk/favicon-48x48.png" alt="We Offer Wellness">';
     modal.querySelectorAll('.wow-chat-brand__avatar').forEach((avatar) => {
         const statusDot = avatar.querySelector('.wow-chat-brand__status');
@@ -183,13 +195,13 @@ if (modal && openers.length) {
             const time = date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
             const dayMarkup = day !== lastDay ? `<div class="wow-chat-day">${escapeHtml(day)}</div>` : '';
             lastDay = day;
-            const name = wow ? (item.sender_name || 'WOW team') : (item.sender_name || 'You');
+            const name = wow ? agentDisplayName(item.sender_name) : (item.sender_name || 'You');
             const receipt = !wow ? `<span class="wow-chat-message__checks" aria-label="${item.read_at ? 'Read' : 'Sent'}">${item.read_at ? '✓✓' : '✓'}</span>` : '';
             return `${dayMarkup}<div class="wow-chat-message wow-chat-message--${wow ? 'user' : 'wow'}"><div class="wow-chat-message__avatar">${wow ? wowAvatar : escapeHtml(initials(name))}</div><div class="wow-chat-message__group"><p class="wow-chat-message__name">${escapeHtml(name)}</p><div class="wow-chat-bubble"><div class="wow-chat-message__content" data-chat-message-content="${escapeHtml(item.message)}">${escapeHtml(item.message).replace(/\n/g, '<br>')}</div></div><div class="wow-chat-message__meta">${escapeHtml(time)}${receipt}</div></div></div>`;
         }).join('');
         const agents = Array.isArray(agentPresence) ? agentPresence : (agentPresence ? [agentPresence] : []);
         const connectionMessage = agents.length === 1
-            ? `You are now connected to ${escapeHtml(agents[0].role || 'Admin')} ${escapeHtml(agents[0].name || 'support')}.`
+            ? `You are now connected to ${escapeHtml(agentDisplayName(agents[0].name))}.`
             : agents.length > 1
                 ? `Support Team · ${agents.length} members are ready to write back.`
                 : 'We’re connecting you to a member of our support team now. They’ll be with you as soon as possible.';
@@ -202,9 +214,15 @@ if (modal && openers.length) {
     };
 
     const loadMessages = async () => {
-        if (!token) return;
+        if (!token || pollInFlight || Date.now() < pollRetryAt) return;
+        pollInFlight = true;
         try {
             const response = await fetch(`${backendUrl}/api/live-chat/conversations/${encodeURIComponent(token)}/messages`, { cache: 'no-store', credentials: 'include', headers: { Accept: 'application/json' } });
+            if (response.status === 429) {
+                const retrySeconds = Number(response.headers.get('Retry-After')) || 5;
+                pollRetryAt = Date.now() + Math.max(1, retrySeconds) * 1000;
+                return;
+            }
             if (!response.ok) return;
             const payload = await response.json();
             const items = payload.messages || [];
@@ -212,7 +230,10 @@ if (modal && openers.length) {
             if (!unreadBaselineSet) {
                 unreadBaselineSet = true;
             } else if (unread > previousUnreadCount && (modal.hidden || document.hidden || !document.hasFocus()) && typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-                try { new Notification('WOW Support', { body: 'A member of the WOW team has replied to your live chat.', tag: `wow-live-chat-${token}` }); } catch (_) {}
+                try {
+                    const notification = new Notification('WOW Support', { body: 'A member of the WOW team has replied to your live chat.', tag: `wow-live-chat-${token}` });
+                    notification.onclick = () => { window.focus(); open(); notification.close(); };
+                } catch (_) {}
             }
             previousUnreadCount = unread;
             updateUnreadBadge(unread);
@@ -233,12 +254,12 @@ if (modal && openers.length) {
             const agentCount = Number(payload.agent_count ?? agents.length) || 0;
             const presenceStatus = typing
                 ? agentCount === 1
-                    ? `${leadAgent?.role || 'Admin'} ${leadAgent?.name || 'team member'} is typing…`
+                    ? `${agentDisplayName(leadAgent?.name)} is typing…`
                     : agentCount > 1
                         ? `Support Team · ${agentCount} members are typing…`
                         : 'A member of our support team is typing…'
                 : agentCount === 1
-                    ? `You are now connected to ${leadAgent?.role || 'Admin'} ${leadAgent?.name || 'our support team'}`
+                    ? `You are now connected to ${agentDisplayName(leadAgent?.name)}`
                     : agentCount > 1
                         ? `Support Team · ${agentCount} members are ready to write back`
                         : 'We’re connecting you to a member of our support team now. They’ll be with you as soon as possible.';
@@ -246,9 +267,13 @@ if (modal && openers.length) {
             if (typingLabel) typingLabel.hidden = !typing;
             if (typingRow) typingRow.hidden = !typing;
             if (typing) { typingLabel?.scrollIntoView({ block: 'nearest' }); }
-        } catch (_) {}
+        } catch (_) {
+            // Keep retrying without stacking concurrent requests on a slow connection.
+        } finally {
+            pollInFlight = false;
+        }
     };
-    const startPolling = () => { loadMessages(); if (!pollTimer) pollTimer = window.setInterval(loadMessages, 500); };
+    const startPolling = () => { loadMessages(); if (!pollTimer) pollTimer = window.setInterval(loadMessages, 1000); };
     const stopPolling = () => { if (pollTimer) window.clearInterval(pollTimer); pollTimer = null; };
     const close = () => {
         modal.classList.add('is-closing');
@@ -298,4 +323,5 @@ if (modal && openers.length) {
     replyInput?.addEventListener('blur', () => { if (!replyInput?.value.trim()) sendTypingSignal(false); });
     replyInput?.addEventListener('keydown', (event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); reply?.requestSubmit(); } });
     if (token) startPolling();
+    if (resumeToken && resumeToken === token) open();
 }
