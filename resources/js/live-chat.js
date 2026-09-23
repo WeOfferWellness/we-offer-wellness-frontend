@@ -75,7 +75,7 @@ if (modal && openers.length) {
         if (hint) hint.hidden = true;
     };
 
-    const renderMessages = (items, agentPresence = null) => {
+    const renderMessages = (items, agentPresence = []) => {
         if (!messages) return;
         if (!Array.isArray(items) || !items.length) {
             messages.innerHTML = '<div class="wow-chat-empty">Your conversation is ready. Send us a message and we’ll be with you shortly.</div>';
@@ -95,8 +95,14 @@ if (modal && openers.length) {
             const receipt = !wow ? `<span class="wow-chat-message__checks" aria-label="${item.read_at ? 'Read' : 'Sent'}">${item.read_at ? '✓✓' : '✓'}</span>` : '';
             return `${dayMarkup}<div class="wow-chat-message wow-chat-message--${wow ? 'user' : 'wow'}"><div class="wow-chat-message__avatar">${wow ? wowAvatar : escapeHtml(initials(name))}</div><div class="wow-chat-message__group"><p class="wow-chat-message__name">${escapeHtml(name)}</p><div class="wow-chat-bubble">${escapeHtml(item.message).replace(/\n/g, '<br>')}</div><div class="wow-chat-message__meta">${escapeHtml(time)}${receipt}</div></div></div>`;
         }).join('');
+        const agents = Array.isArray(agentPresence) ? agentPresence : (agentPresence ? [agentPresence] : []);
+        const connectionMessage = agents.length === 1
+            ? `You are now connected to ${escapeHtml(agents[0].role || 'Admin')} ${escapeHtml(agents[0].name || 'support')}.`
+            : agents.length > 1
+                ? `Support Team · ${agents.length} members are ready to write back.`
+                : 'We’re connecting you to a member of our support team now. They’ll be with you as soon as possible.';
         const connectionNotice = hasCustomerMessage && !hasAgentReply
-            ? `<div class="wow-chat-connection-notice" role="status">${agentPresence?.name ? `You are now connected with ${escapeHtml(agentPresence.role || 'Admin')} ${escapeHtml(agentPresence.name)}.` : 'We’re connecting you to a member of our support team now. They’ll be with you as soon as possible.'}</div>`
+            ? `<div class="wow-chat-connection-notice" role="status">${connectionMessage}</div>`
             : '';
         messages.innerHTML = renderedMessages + connectionNotice;
         messages.scrollTop = messages.scrollHeight;
@@ -118,16 +124,25 @@ if (modal && openers.length) {
             previousUnreadCount = unread;
             updateUnreadBadge(unread);
             const online = !!payload.agents_online;
-            renderMessages(items, online ? payload.agent_presence : null);
+            const agents = online && Array.isArray(payload.agent_presence) ? payload.agent_presence : [];
+            renderMessages(items, agents);
             if (!modal.hidden && thread?.classList.contains('is-active')) {
                 fetch(`${backendUrl}/api/live-chat/conversations/${encodeURIComponent(token)}/read`, { method: 'POST', credentials: 'include', headers: { Accept: 'application/json', 'Content-Type': 'application/json' }, body: '{}' }).catch(() => {});
             }
             const typing = !!payload.agent_typing;
+            const leadAgent = agents[0];
+            const agentCount = Number(payload.agent_count ?? agents.length) || 0;
             if (threadStatus) threadStatus.textContent = typing
-                ? `${payload.agent_presence?.role || 'Admin'} ${payload.agent_presence?.name || 'team member'} is typing…`
-                : online
-                    ? `You are now connected with ${payload.agent_presence?.role || 'Admin'} ${payload.agent_presence?.name || 'our support team'}`
-                    : 'We’re connecting you to a member of our support team now. They’ll be with you as soon as possible.';
+                ? agentCount === 1
+                    ? `${leadAgent?.role || 'Admin'} ${leadAgent?.name || 'team member'} is typing…`
+                    : agentCount > 1
+                        ? `Support Team · ${agentCount} members are typing…`
+                        : 'A member of our support team is typing…'
+                : agentCount === 1
+                    ? `You are now connected to ${leadAgent?.role || 'Admin'} ${leadAgent?.name || 'our support team'}`
+                    : agentCount > 1
+                        ? `Support Team · ${agentCount} members are ready to write back`
+                        : 'We’re connecting you to a member of our support team now. They’ll be with you as soon as possible.';
             if (typingLabel) typingLabel.hidden = !typing;
             if (typingRow) typingRow.hidden = !typing;
             if (typing) { typingLabel?.scrollIntoView({ block: 'nearest' }); }
