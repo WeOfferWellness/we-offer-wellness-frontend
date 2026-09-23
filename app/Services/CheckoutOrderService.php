@@ -884,6 +884,10 @@ class CheckoutOrderService
             return (int) $item->product_id;
         }
 
-        return is_numeric($item->product_id ?? null) && (int) $item->product_id > 0 ? (int) $item->product_id : null;
+        // Legacy catalogue product IDs belong to `products`, not the v3
+        // `offerings` table referenced by bookings.offering_id. Returning a
+        // legacy product ID here causes paid-order reconciliation to fail on
+        // the foreign key when it tries to create the provider booking.
+        return null;
     }
 }
