@@ -252,11 +252,15 @@ if (modal && openers.length) {
     const close = () => {
         modal.classList.add('is-closing');
         modal.classList.remove('is-open');
+        document.documentElement.classList.remove('wow-live-chat-open');
+        document.body.classList.remove('wow-live-chat-open');
         window.setTimeout(() => { modal.classList.remove('is-closing'); modal.hidden = true; modal.setAttribute('aria-hidden', 'true'); setLayerOpen(false); if (!token) stopPolling(); }, 420);
         document.dispatchEvent(new CustomEvent('wow:popup-closed', { detail: { key: 'live-chat' } }));
     };
     const open = () => {
         modal.hidden = false; modal.setAttribute('aria-hidden', 'false'); setLayerOpen(true);
+        document.documentElement.classList.add('wow-live-chat-open');
+        document.body.classList.add('wow-live-chat-open');
         requestAnimationFrame(() => { modal.classList.add('is-open'); (token ? replyInput : modal.querySelector('input'))?.focus({ preventScroll: true }); });
         document.dispatchEvent(new CustomEvent('wow:popup-opened', { detail: { key: 'live-chat' } }));
         if (token) { showThread(); startPolling(); requestChatNotifications(); }
