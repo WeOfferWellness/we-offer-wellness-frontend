@@ -128,13 +128,27 @@ if (modal && openers.length) {
     };
     let draftPreviewTimer = null;
     let draftPreviewRequest = 0;
+    let pendingComposerUrl = '';
     const draftPreview = document.createElement('div');
     draftPreview.className = 'wow-chat-link-preview-draft';
     draftPreview.hidden = true;
-    reply?.querySelector('.wow-chat-compose__row')?.before(draftPreview);
+    reply?.querySelector('.wow-chat-compose__row')?.append(draftPreview);
+    const captureComposerUrl = () => {
+        if (!replyInput || pendingComposerUrl) return;
+        const raw = replyInput.value;
+        const match = raw.match(/(?:https?:\/\/|www\.)[^\s<>'"]+|[a-z0-9.-]+\.[a-z]{2,}(?:\/[^\s<>'"]*)?/i);
+        if (!match) return;
+        const end = (match.index || 0) + match[0].length;
+        const boundary = end === raw.length || /\s/.test(raw.charAt(end));
+        if (!boundary) return;
+        const normalized = normaliseChatUrl(match[0].replace(/[.,;:!?)]$/, ''));
+        if (!normalized) return;
+        pendingComposerUrl = normalized;
+        replyInput.value = `${raw.slice(0, match.index || 0)}${raw.slice(end)}`.replace(/\s{2,}/g, ' ').trimStart();
+    };
     const updateDraftPreview = () => {
         window.clearTimeout(draftPreviewTimer);
-        const url = extractChatUrl(replyInput?.value || '');
+        const url = pendingComposerUrl || extractChatUrl(replyInput?.value || '');
         if (!url) { draftPreview.hidden = true; draftPreview.innerHTML = ''; return; }
         const requestId = ++draftPreviewRequest;
         draftPreviewTimer = window.setTimeout(async () => {
@@ -146,8 +160,7 @@ if (modal && openers.length) {
     };
     draftPreview.addEventListener('click', (event) => {
         if (!event.target.closest('[data-chat-preview-remove]')) return;
-        const url = extractChatUrl(replyInput?.value || '');
-        if (url && replyInput) replyInput.value = replyInput.value.replace(url, '').replace(/\s{2,}/g, ' ').trim();
+        pendingComposerUrl = '';
         draftPreview.hidden = true;
         draftPreview.innerHTML = '';
         replyInput?.dispatchEvent(new Event('input', { bubbles: true }));
@@ -273,9 +286,9 @@ if (modal && openers.length) {
     });
     const sendTypingSignal = (active = true) => { if (!token || (active && !replyInput?.value.trim())) return; fetch(`${backendUrl}/api/live-chat/conversations/${encodeURIComponent(token)}/typing`, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ active }), keepalive: true }).catch(() => {}); };
     const stopTypingHeartbeat = (notify = false) => { window.clearTimeout(typingTimer); window.clearInterval(typingHeartbeatTimer); typingTimer = null; typingHeartbeatTimer = null; if (notify) sendTypingSignal(false); };
-    reply?.addEventListener('submit', async (event) => { event.preventDefault(); const value = replyInput?.value.trim(); if (!value || !token) return; stopTypingHeartbeat(true); replyInput.value = ''; replyInput.style.height = '42px'; updateDraftPreview(); try { const response = await fetch(`${backendUrl}/api/live-chat/conversations/${encodeURIComponent(token)}/messages`, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ message: value }) }); if (!response.ok) throw new Error(); await loadMessages(); } catch (_) { if (threadStatus) threadStatus.textContent = 'Message could not be sent. Please try again.'; } });
+    reply?.addEventListener('submit', async (event) => { event.preventDefault(); const text = replyInput?.value.trim() || ''; const value = [pendingComposerUrl, text].filter(Boolean).join(' '); if (!value || !token) return; stopTypingHeartbeat(true); pendingComposerUrl = ''; replyInput.value = ''; replyInput.style.height = '42px'; updateDraftPreview(); try { const response = await fetch(`${backendUrl}/api/live-chat/conversations/${encodeURIComponent(token)}/messages`, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ message: value }) }); if (!response.ok) throw new Error(); await loadMessages(); } catch (_) { if (threadStatus) threadStatus.textContent = 'Message could not be sent. Please try again.'; } });
     reply?.querySelectorAll('.wow-chat-quick button').forEach((button) => button.addEventListener('click', () => { if (replyInput) { replyInput.value = button.textContent.trim(); replyInput.focus(); } }));
-    replyInput?.addEventListener('input', () => { replyInput.style.height = '42px'; replyInput.style.height = `${Math.min(replyInput.scrollHeight, 110)}px`; updateDraftPreview(); stopTypingHeartbeat(); if (!token || !replyInput.value.trim()) { sendTypingSignal(false); return; } typingTimer = window.setTimeout(() => { sendTypingSignal(); typingHeartbeatTimer = window.setInterval(sendTypingSignal, 1000); }, 100); });
+    replyInput?.addEventListener('input', () => { replyInput.style.height = '42px'; replyInput.style.height = `${Math.min(replyInput.scrollHeight, 110)}px`; captureComposerUrl(); updateDraftPreview(); stopTypingHeartbeat(); if (!token || (!replyInput.value.trim() && !pendingComposerUrl)) { sendTypingSignal(false); return; } typingTimer = window.setTimeout(() => { sendTypingSignal(); typingHeartbeatTimer = window.setInterval(sendTypingSignal, 1000); }, 100); });
     replyInput?.addEventListener('blur', () => { if (!replyInput?.value.trim()) sendTypingSignal(false); });
     replyInput?.addEventListener('keydown', (event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); reply?.requestSubmit(); } });
     if (token) startPolling();
