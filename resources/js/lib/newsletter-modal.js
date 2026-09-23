@@ -39,6 +39,16 @@ function initUtilityRail() {
     document.documentElement.style.setProperty('--wow-utility-rail-top', top);
 
     let bottom = 0;
+
+    // Keep both fixed rails inside the page's usable corridor. Once the
+    // footer enters the viewport, the rails stop at its top edge instead of
+    // floating over footer content.
+    const footer = document.querySelector('footer.wow-footer, footer[data-wow-footer]');
+    const footerTop = footer?.getBoundingClientRect?.().top;
+    if (Number.isFinite(footerTop) && footerTop < window.innerHeight) {
+      bottom = Math.max(bottom, Math.round(window.innerHeight - footerTop));
+    }
+
     if (window.matchMedia('(max-width: 767px)').matches) {
       const ticketBar = Array.from(document.querySelectorAll('.mobile-ticket-bar'))
         .map((element) => ({
@@ -63,6 +73,7 @@ function initUtilityRail() {
   const scheduleUpdate = () => window.requestAnimationFrame(updateBounds);
   window.addEventListener('resize', scheduleUpdate, { passive: true });
   window.addEventListener('orientationchange', scheduleUpdate, { passive: true });
+  window.addEventListener('scroll', scheduleUpdate, { passive: true });
 
   if (typeof MutationObserver !== 'undefined') {
     const observer = new MutationObserver((records) => {
