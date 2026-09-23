@@ -80,6 +80,78 @@ if (modal && openers.length) {
         if (agentStatus) agentStatus.textContent = value;
         if (threadStatus) threadStatus.textContent = value;
     };
+    const chatPreviewCache = new Map();
+    const normaliseChatUrl = (value = '') => {
+        const raw = String(value || '').trim();
+        if (!raw) return '';
+        try { return new URL(/^https?:\/\//i.test(raw) ? raw : `https://${raw}`).toString(); } catch (_) { return ''; }
+    };
+    const extractChatUrl = (value = '') => {
+        const match = String(value || '').match(/(?:https?:\/\/|www\.)[^\s<>'"]+|[a-z0-9.-]+\.[a-z]{2,}(?:\/[^\s<>'"]*)?/i);
+        return match ? normaliseChatUrl(match[0].replace(/[.,;:!?)]$/, '')) : '';
+    };
+    const truncateChatTitle = (value = '') => {
+        const title = String(value || '').trim();
+        return title.length > 50 ? `${title.slice(0, 48)}..` : title;
+    };
+    const getChatPreview = async (url) => {
+        const normalized = normaliseChatUrl(url);
+        if (!normalized) return null;
+        if (!chatPreviewCache.has(normalized)) {
+            chatPreviewCache.set(normalized, fetch(`${backendUrl}/api/live-chat/preview?url=${encodeURIComponent(normalized)}`, { headers: { Accept: 'application/json' } })
+                .then(async (response) => response.ok ? response.json() : null)
+                .catch(() => null));
+        }
+        return chatPreviewCache.get(normalized);
+    };
+    const renderChatLinkPreview = (url, preview, removable = false) => {
+        const normalized = normaliseChatUrl(url);
+        if (!normalized) return '';
+        const title = truncateChatTitle(preview?.title || new URL(normalized).hostname.replace(/^www\./, ''));
+        const image = String(preview?.image || '').trim();
+        const domain = String(preview?.domain || new URL(normalized).hostname.replace(/^www\./, '')).trim();
+        const remove = removable ? '<button type="button" class="wow-chat-link-preview__remove" data-chat-preview-remove aria-label="Remove link preview">×</button>' : '';
+        return `<a class="wow-chat-link-preview" href="${escapeHtml(normalized)}" target="_blank" rel="noopener noreferrer"><span class="wow-chat-link-preview__image">${image ? `<img src="${escapeHtml(image)}" alt="">` : ''}</span><span class="wow-chat-link-preview__copy"><strong>${escapeHtml(title)}</strong><small>${escapeHtml(domain)}</small></span>${remove}</a>`;
+    };
+    const hydrateChatLinkPreviews = async () => {
+        const nodes = Array.from(messages?.querySelectorAll?.('[data-chat-message-content]') || []);
+        await Promise.all(nodes.map(async (node) => {
+            const raw = node.dataset.chatMessageContent || '';
+            const url = extractChatUrl(raw);
+            if (!url) return;
+            const preview = await getChatPreview(url);
+            if (!preview) return;
+            const card = renderChatLinkPreview(url, preview);
+            if (/^\s*(?:https?:\/\/|www\.)[^\s]+\s*$/i.test(raw)) node.innerHTML = card;
+            else node.insertAdjacentHTML('beforeend', card);
+        }));
+    };
+    let draftPreviewTimer = null;
+    let draftPreviewRequest = 0;
+    const draftPreview = document.createElement('div');
+    draftPreview.className = 'wow-chat-link-preview-draft';
+    draftPreview.hidden = true;
+    reply?.querySelector('.wow-chat-compose__row')?.before(draftPreview);
+    const updateDraftPreview = () => {
+        window.clearTimeout(draftPreviewTimer);
+        const url = extractChatUrl(replyInput?.value || '');
+        if (!url) { draftPreview.hidden = true; draftPreview.innerHTML = ''; return; }
+        const requestId = ++draftPreviewRequest;
+        draftPreviewTimer = window.setTimeout(async () => {
+            const preview = await getChatPreview(url);
+            if (requestId !== draftPreviewRequest || !preview) return;
+            draftPreview.innerHTML = renderChatLinkPreview(url, preview, true);
+            draftPreview.hidden = false;
+        }, 180);
+    };
+    draftPreview.addEventListener('click', (event) => {
+        if (!event.target.closest('[data-chat-preview-remove]')) return;
+        const url = extractChatUrl(replyInput?.value || '');
+        if (url && replyInput) replyInput.value = replyInput.value.replace(url, '').replace(/\s{2,}/g, ' ').trim();
+        draftPreview.hidden = true;
+        draftPreview.innerHTML = '';
+        replyInput?.dispatchEvent(new Event('input', { bubbles: true }));
+    });
 
     const renderMessages = (items, agentPresence = []) => {
         if (!messages) return;
@@ -99,7 +171,7 @@ if (modal && openers.length) {
             lastDay = day;
             const name = wow ? (item.sender_name || 'WOW team') : (item.sender_name || 'You');
             const receipt = !wow ? `<span class="wow-chat-message__checks" aria-label="${item.read_at ? 'Read' : 'Sent'}">${item.read_at ? '✓✓' : '✓'}</span>` : '';
-            return `${dayMarkup}<div class="wow-chat-message wow-chat-message--${wow ? 'user' : 'wow'}"><div class="wow-chat-message__avatar">${wow ? wowAvatar : escapeHtml(initials(name))}</div><div class="wow-chat-message__group"><p class="wow-chat-message__name">${escapeHtml(name)}</p><div class="wow-chat-bubble">${escapeHtml(item.message).replace(/\n/g, '<br>')}</div><div class="wow-chat-message__meta">${escapeHtml(time)}${receipt}</div></div></div>`;
+            return `${dayMarkup}<div class="wow-chat-message wow-chat-message--${wow ? 'user' : 'wow'}"><div class="wow-chat-message__avatar">${wow ? wowAvatar : escapeHtml(initials(name))}</div><div class="wow-chat-message__group"><p class="wow-chat-message__name">${escapeHtml(name)}</p><div class="wow-chat-bubble"><div class="wow-chat-message__content" data-chat-message-content="${escapeHtml(item.message)}">${escapeHtml(item.message).replace(/\n/g, '<br>')}</div></div><div class="wow-chat-message__meta">${escapeHtml(time)}${receipt}</div></div></div>`;
         }).join('');
         const agents = Array.isArray(agentPresence) ? agentPresence : (agentPresence ? [agentPresence] : []);
         const connectionMessage = agents.length === 1
@@ -112,6 +184,7 @@ if (modal && openers.length) {
             : '';
         messages.innerHTML = renderedMessages + connectionNotice;
         messages.scrollTop = messages.scrollHeight;
+        hydrateChatLinkPreviews();
     };
 
     const loadMessages = async () => {
@@ -200,9 +273,9 @@ if (modal && openers.length) {
     });
     const sendTypingSignal = (active = true) => { if (!token || (active && !replyInput?.value.trim())) return; fetch(`${backendUrl}/api/live-chat/conversations/${encodeURIComponent(token)}/typing`, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ active }), keepalive: true }).catch(() => {}); };
     const stopTypingHeartbeat = (notify = false) => { window.clearTimeout(typingTimer); window.clearInterval(typingHeartbeatTimer); typingTimer = null; typingHeartbeatTimer = null; if (notify) sendTypingSignal(false); };
-    reply?.addEventListener('submit', async (event) => { event.preventDefault(); const value = replyInput?.value.trim(); if (!value || !token) return; stopTypingHeartbeat(true); replyInput.value = ''; replyInput.style.height = '42px'; try { const response = await fetch(`${backendUrl}/api/live-chat/conversations/${encodeURIComponent(token)}/messages`, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ message: value }) }); if (!response.ok) throw new Error(); await loadMessages(); } catch (_) { if (threadStatus) threadStatus.textContent = 'Message could not be sent. Please try again.'; } });
+    reply?.addEventListener('submit', async (event) => { event.preventDefault(); const value = replyInput?.value.trim(); if (!value || !token) return; stopTypingHeartbeat(true); replyInput.value = ''; replyInput.style.height = '42px'; updateDraftPreview(); try { const response = await fetch(`${backendUrl}/api/live-chat/conversations/${encodeURIComponent(token)}/messages`, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ message: value }) }); if (!response.ok) throw new Error(); await loadMessages(); } catch (_) { if (threadStatus) threadStatus.textContent = 'Message could not be sent. Please try again.'; } });
     reply?.querySelectorAll('.wow-chat-quick button').forEach((button) => button.addEventListener('click', () => { if (replyInput) { replyInput.value = button.textContent.trim(); replyInput.focus(); } }));
-    replyInput?.addEventListener('input', () => { replyInput.style.height = '42px'; replyInput.style.height = `${Math.min(replyInput.scrollHeight, 110)}px`; stopTypingHeartbeat(); if (!token || !replyInput.value.trim()) { sendTypingSignal(false); return; } typingTimer = window.setTimeout(() => { sendTypingSignal(); typingHeartbeatTimer = window.setInterval(sendTypingSignal, 1000); }, 100); });
+    replyInput?.addEventListener('input', () => { replyInput.style.height = '42px'; replyInput.style.height = `${Math.min(replyInput.scrollHeight, 110)}px`; updateDraftPreview(); stopTypingHeartbeat(); if (!token || !replyInput.value.trim()) { sendTypingSignal(false); return; } typingTimer = window.setTimeout(() => { sendTypingSignal(); typingHeartbeatTimer = window.setInterval(sendTypingSignal, 1000); }, 100); });
     replyInput?.addEventListener('blur', () => { if (!replyInput?.value.trim()) sendTypingSignal(false); });
     replyInput?.addEventListener('keydown', (event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); reply?.requestSubmit(); } });
     if (token) startPolling();
