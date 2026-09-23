@@ -211,6 +211,7 @@ function initNewsletterModal() {
     document.body.style.overflow = originalOverflow;
     if (remember && !isSubscribed()) setCookie(DISMISSED_COOKIE, String(Date.now()), DISMISSAL_DAYS);
     lastFocused?.focus?.({ preventScroll: true });
+    document.dispatchEvent(new CustomEvent('wow:popup-closed', { detail: { key: 'newsletter-modal' } }));
   };
 
   const onScroll = () => {
@@ -266,6 +267,8 @@ function initNewsletterModal() {
     }
   });
 
+  window.WOWNewsletterModal = { open, close, isSubscribed };
+
   if (isSubscribed()) {
     trigger.hidden = true;
     updateReviewBadgePosition();
@@ -273,11 +276,6 @@ function initNewsletterModal() {
   }
   trigger.hidden = false;
   updateReviewBadgePosition();
-  if (isDismissedRecently()) return;
-
-  window.addEventListener('scroll', onScroll, { passive: true });
-  onScroll();
-  timer = window.setTimeout(() => requestAutomaticOpen(), 12000);
 }
 
 if (document.readyState === 'loading') {

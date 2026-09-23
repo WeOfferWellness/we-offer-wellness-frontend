@@ -1,4 +1,4 @@
-<div class="wow-cookie-banner" id="wowCookieBanner" data-cookie-banner hidden aria-hidden="true">
+<div class="wow-cookie-banner" id="wowCookieBanner" data-cookie-banner data-wow-popup="cookie-banner" hidden aria-hidden="true">
   <div class="wow-cookie-banner__panel" role="dialog" aria-modal="true" aria-labelledby="wowCookieTitle">
     <div class="wow-cookie-banner__simple" data-cookie-simple>
       <p class="wow-cookie-banner__eyebrow">Your privacy</p>
@@ -182,6 +182,7 @@
   function hideBanner(){
     banner.hidden = true;
     banner.setAttribute('aria-hidden', 'true');
+    document.dispatchEvent(new CustomEvent('wow:popup-closed', { detail: { key: 'cookie-banner' } }));
   }
 
   function openAdvanced(){
@@ -256,9 +257,11 @@
     });
   });
 
-  if (shouldPrompt()) {
-    showBanner();
-    closeAdvanced();
-  }
+  window.WOWCookieBanner = {
+    open(){ applyToUI(readPrefs()); closeAdvanced(); showBanner(); },
+    openPreferences,
+    close: hideBanner,
+    shouldPrompt,
+  };
 })();
 </script>

@@ -48,6 +48,7 @@ import './analytics';
 import './lib/cart-shortcuts';
 import './lib/cart-mini';
 import './lib/newsletter-modal';
+import './popup-controller';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 const inertiaRoot = document.getElementById('app');

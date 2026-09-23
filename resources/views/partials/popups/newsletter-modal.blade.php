@@ -21,7 +21,7 @@
   </div>
 </aside>
 
-<div class="wow-newsletter-modal" id="wow-newsletter-modal" role="dialog" aria-modal="true" aria-labelledby="wow-newsletter-title" hidden>
+<div class="wow-newsletter-modal" id="wow-newsletter-modal" data-wow-popup="newsletter-modal" role="dialog" aria-modal="true" aria-labelledby="wow-newsletter-title" hidden>
   <div class="wow-newsletter-backdrop" data-wow-newsletter-close></div>
   <section class="wow-newsletter-card">
     <div class="wow-newsletter-layout">
