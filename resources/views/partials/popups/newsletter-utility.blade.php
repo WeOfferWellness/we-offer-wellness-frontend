@@ -23,6 +23,6 @@
 <aside class="wow-live-chat-rail" aria-label="Live chat">
   <button class="wow-live-chat-trigger" type="button" data-live-chat-open aria-controls="wow-live-chat-modal" aria-label="Open live chat">
     <svg aria-hidden="true" viewBox="0 0 24 24" fill="none"><path d="M5 6.5A3.5 3.5 0 0 1 8.5 3h7A3.5 3.5 0 0 1 19 6.5v5a3.5 3.5 0 0 1-3.5 3.5H12l-4.5 4v-4.08A3.5 3.5 0 0 1 5 11.5v-5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 8.8h6M9 11.8h3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-    <span>Chat</span>
+    <span class="wow-live-chat-unread" data-live-chat-unread hidden aria-live="polite"></span>
   </button>
 </aside>

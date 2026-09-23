@@ -9,6 +9,7 @@ use App\Services\TransactionalMail;
 use Illuminate\Support\Str;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Validator;
 
 class V3SubscriberController extends Controller
@@ -47,6 +48,8 @@ class V3SubscriberController extends Controller
             'geo_accuracy' => 'nullable|numeric',
             'session_started_at' => 'nullable|date',
             'session_duration_seconds' => 'nullable|integer|min:0',
+            'website' => 'nullable|string|max:120',
+            'form_started_at' => 'nullable|integer|min:0',
         ]);
 
         $validator->after(function ($validator) use ($request) {
@@ -70,6 +73,21 @@ class V3SubscriberController extends Controller
         });
 
         $data = $validator->validate();
+
+        if (filled($data['website'] ?? null)) {
+            abort(422, 'Invalid subscription request.');
+        }
+
+        $formStartedAt = (int) ($data['form_started_at'] ?? 0);
+        if ($formStartedAt > 0 && ((microtime(true) * 1000) - $formStartedAt) < 1500) {
+            abort(422, 'Please take a moment before submitting the form.');
+        }
+
+        $rateKey = 'subscriber-signup:' . sha1($request->ip() . '|' . strtolower((string) $data['email']));
+        if (RateLimiter::tooManyAttempts($rateKey, 5)) {
+            return response()->json(['message' => 'Too many subscription attempts. Please try again later.'], 429);
+        }
+        RateLimiter::hit($rateKey, 600);
         $hasOffersOnline = array_key_exists('offers_online', $data);
         $offersOnline = $hasOffersOnline ? $this->normalizeBoolean($data['offers_online']) : null;
         $hasOffersInPerson = array_key_exists('offers_in_person', $data);

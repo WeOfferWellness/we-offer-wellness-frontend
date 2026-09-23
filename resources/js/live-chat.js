@@ -15,9 +15,12 @@ if (modal && openers.length) {
     const typingRow = modal.querySelector('[data-live-chat-typing-row]');
     const reply = modal.querySelector('[data-live-chat-reply]');
     const replyInput = reply?.querySelector('textarea');
+    const unreadBadge = document.querySelector('[data-live-chat-unread]');
     let token = (() => { try { return sessionStorage.getItem(tokenKey) || ''; } catch (_) { return ''; } })();
     let pollTimer = null;
     let typingTimer = null;
+    let unreadBaselineSet = false;
+    let previousUnreadCount = 0;
 
     const escapeHtml = (value) => String(value || '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[char]));
     const saveToken = (value) => { try { sessionStorage.setItem(tokenKey, value); } catch (_) {} };
@@ -26,24 +29,62 @@ if (modal && openers.length) {
         const name = form?.querySelector('[name="first_name"]');
         const email = form?.querySelector('[name="email"]');
         const message = form?.querySelector('[name="message"]');
+        const messageField = form?.querySelector('[data-field="message"]');
         const submit = form?.querySelector('[type="submit"]');
         if (!submit) return;
-        const enabled = !!name?.value.trim() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email?.value.trim() || '') && !!message?.value.trim();
+        const identityReady = !!name?.value.trim() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email?.value.trim() || '');
+        if (messageField) messageField.hidden = !identityReady;
+        if (message) {
+            message.disabled = !identityReady;
+            message.setAttribute('aria-disabled', identityReady ? 'false' : 'true');
+            if (!identityReady) message.value = '';
+        }
+        const enabled = identityReady && !!message?.value.trim();
         submit.disabled = !enabled;
         submit.setAttribute('aria-disabled', enabled ? 'false' : 'true');
     };
     const showThread = () => { prechat?.classList.remove('is-active'); prechat?.setAttribute('hidden', ''); thread?.removeAttribute('hidden'); thread?.classList.add('is-active'); };
     const setLayerOpen = (open) => { if (!layer) return; layer.hidden = !open; layer.setAttribute('aria-hidden', open ? 'false' : 'true'); };
     const initials = (name) => String(name || 'W').trim().charAt(0).toUpperCase() || 'W';
+    const wowAvatar = '<img src="https://www.weofferwellness.co.uk/favicon-48x48.png" alt="We Offer Wellness">';
+    modal.querySelectorAll('.wow-chat-brand__avatar').forEach((avatar) => {
+        const statusDot = avatar.querySelector('.wow-chat-brand__status');
+        avatar.innerHTML = wowAvatar + (statusDot ? statusDot.outerHTML : '');
+    });
+    modal.querySelectorAll('[data-live-chat-typing-row] .wow-chat-message__avatar').forEach((avatar) => {
+        avatar.innerHTML = wowAvatar;
+    });
+    const updateUnreadBadge = (count) => {
+        const unread = Math.max(0, Number(count) || 0);
+        if (!unreadBadge) return;
+        unreadBadge.textContent = unread > 99 ? '99+' : String(unread);
+        unreadBadge.hidden = unread === 0;
+    };
+    const requestChatNotifications = async () => {
+        if (!token || typeof Notification === 'undefined' || Notification.permission !== 'default') return;
+        let hint = modal.querySelector('[data-live-chat-notification-hint]');
+        if (!hint) {
+            hint = document.createElement('p');
+            hint.className = 'wow-chat-notification-hint';
+            hint.dataset.liveChatNotificationHint = '1';
+            hint.textContent = 'Allow notifications so WOW can let you know when a team member replies while you’re away.';
+            modal.querySelector('[data-live-chat-messages]')?.before(hint);
+        }
+        if (hint) hint.hidden = false;
+        try { await Notification.requestPermission(); } catch (_) {}
+        if (hint) hint.hidden = true;
+    };
 
-    const renderMessages = (items) => {
+    const renderMessages = (items, agentPresence = null) => {
         if (!messages) return;
         if (!Array.isArray(items) || !items.length) {
             messages.innerHTML = '<div class="wow-chat-empty">Your conversation is ready. Send us a message and we’ll be with you shortly.</div>';
             return;
         }
         let lastDay = '';
-        messages.innerHTML = items.map((item) => {
+        const hasCustomerMessage = items.some((item) => item.sender_type === 'customer');
+        const hasAgentReply = items.some((item) => item.sender_type === 'agent');
+        const renderedMessages = items.map((item) => {
             const wow = item.sender_type === 'agent';
             const date = item.created_at ? new Date(item.created_at) : new Date();
             const day = date.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
@@ -52,8 +93,12 @@ if (modal && openers.length) {
             lastDay = day;
             const name = wow ? (item.sender_name || 'WOW team') : (item.sender_name || 'You');
             const receipt = !wow ? `<span class="wow-chat-message__checks" aria-label="${item.read_at ? 'Read' : 'Sent'}">${item.read_at ? '✓✓' : '✓'}</span>` : '';
-            return `${dayMarkup}<div class="wow-chat-message wow-chat-message--${wow ? 'wow' : 'user'}"><div class="wow-chat-message__avatar">${escapeHtml(initials(wow ? 'W' : name))}</div><div class="wow-chat-message__group"><p class="wow-chat-message__name">${escapeHtml(name)}</p><div class="wow-chat-bubble">${escapeHtml(item.message).replace(/\n/g, '<br>')}</div><div class="wow-chat-message__meta">${escapeHtml(time)}${receipt}</div></div></div>`;
+            return `${dayMarkup}<div class="wow-chat-message wow-chat-message--${wow ? 'user' : 'wow'}"><div class="wow-chat-message__avatar">${wow ? wowAvatar : escapeHtml(initials(name))}</div><div class="wow-chat-message__group"><p class="wow-chat-message__name">${escapeHtml(name)}</p><div class="wow-chat-bubble">${escapeHtml(item.message).replace(/\n/g, '<br>')}</div><div class="wow-chat-message__meta">${escapeHtml(time)}${receipt}</div></div></div>`;
         }).join('');
+        const connectionNotice = hasCustomerMessage && !hasAgentReply
+            ? `<div class="wow-chat-connection-notice" role="status">${agentPresence?.name ? `You are now connected with ${escapeHtml(agentPresence.role || 'Admin')} ${escapeHtml(agentPresence.name)}.` : 'We’re connecting you to a member of our support team now. They’ll be with you as soon as possible.'}</div>`
+            : '';
+        messages.innerHTML = renderedMessages + connectionNotice;
         messages.scrollTop = messages.scrollHeight;
     };
 
@@ -63,11 +108,26 @@ if (modal && openers.length) {
             const response = await fetch(`${backendUrl}/api/live-chat/conversations/${encodeURIComponent(token)}/messages`, { credentials: 'include', headers: { Accept: 'application/json' } });
             if (!response.ok) return;
             const payload = await response.json();
-            renderMessages(payload.messages || []);
-            fetch(`${backendUrl}/api/live-chat/conversations/${encodeURIComponent(token)}/read`, { method: 'POST', credentials: 'include', headers: { Accept: 'application/json', 'Content-Type': 'application/json' }, body: '{}' }).catch(() => {});
+            const items = payload.messages || [];
+            const unread = items.filter((item) => item.sender_type === 'agent' && !item.read_at).length;
+            if (!unreadBaselineSet) {
+                unreadBaselineSet = true;
+            } else if (unread > previousUnreadCount && modal.hidden && typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+                try { new Notification('WOW Support', { body: 'A member of the WOW team has replied to your live chat.', tag: `wow-live-chat-${token}` }); } catch (_) {}
+            }
+            previousUnreadCount = unread;
+            updateUnreadBadge(unread);
             const online = !!payload.agents_online;
+            renderMessages(items, online ? payload.agent_presence : null);
+            if (!modal.hidden && thread?.classList.contains('is-active')) {
+                fetch(`${backendUrl}/api/live-chat/conversations/${encodeURIComponent(token)}/read`, { method: 'POST', credentials: 'include', headers: { Accept: 'application/json', 'Content-Type': 'application/json' }, body: '{}' }).catch(() => {});
+            }
             const typing = !!payload.agent_typing;
-            if (threadStatus) threadStatus.textContent = typing ? 'A WOW team member is typing…' : online ? 'A WOW team member is online' : 'We’ll reply as soon as someone is available.';
+            if (threadStatus) threadStatus.textContent = typing
+                ? `${payload.agent_presence?.role || 'Admin'} ${payload.agent_presence?.name || 'team member'} is typing…`
+                : online
+                    ? `You are now connected with ${payload.agent_presence?.role || 'Admin'} ${payload.agent_presence?.name || 'our support team'}`
+                    : 'We’re connecting you to a member of our support team now. They’ll be with you as soon as possible.';
             if (typingLabel) typingLabel.hidden = !typing;
             if (typingRow) typingRow.hidden = !typing;
             if (typing) { typingLabel?.scrollIntoView({ block: 'nearest' }); }
@@ -78,7 +138,7 @@ if (modal && openers.length) {
     const close = () => {
         modal.classList.add('is-closing');
         modal.classList.remove('is-open');
-        window.setTimeout(() => { modal.classList.remove('is-closing'); modal.hidden = true; modal.setAttribute('aria-hidden', 'true'); setLayerOpen(false); stopPolling(); }, 420);
+        window.setTimeout(() => { modal.classList.remove('is-closing'); modal.hidden = true; modal.setAttribute('aria-hidden', 'true'); setLayerOpen(false); if (!token) stopPolling(); }, 420);
         document.dispatchEvent(new CustomEvent('wow:popup-closed', { detail: { key: 'live-chat' } }));
     };
     const open = () => {
@@ -92,7 +152,7 @@ if (modal && openers.length) {
     modal.querySelectorAll('[data-live-chat-close],[data-live-chat-minimise]').forEach((button) => button.addEventListener('click', close));
     modal.addEventListener('click', (event) => { if (event.target === modal) close(); });
     document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && !modal.hidden) close(); });
-    modal.querySelectorAll('.wow-chat-topic').forEach((button) => button.addEventListener('click', () => { modal.querySelectorAll('.wow-chat-topic').forEach((item) => item.classList.remove('is-selected')); button.classList.add('is-selected'); const input = form?.querySelector('[name="message"]'); if (input && !input.value.trim()) { input.value = `${button.textContent.trim()}: `; input.focus(); } }));
+    modal.querySelectorAll('.wow-chat-topic').forEach((button) => button.addEventListener('click', () => { const input = form?.querySelector('[name="message"]'); if (input?.disabled) { form?.querySelector('[name="first_name"]')?.focus(); return; } modal.querySelectorAll('.wow-chat-topic').forEach((item) => item.classList.remove('is-selected')); button.classList.add('is-selected'); if (input && !input.value.trim()) { input.value = `${button.textContent.trim()}: `; input.focus(); syncStartButton(); } }));
     form?.querySelectorAll('.wow-chat-control').forEach((input) => input.addEventListener('input', () => { input.closest('.wow-chat-field')?.classList.remove('is-invalid'); syncStartButton(); }));
     syncStartButton();
     form?.addEventListener('submit', async (event) => {
@@ -107,11 +167,12 @@ if (modal && openers.length) {
             const payload = Object.fromEntries(new FormData(form).entries()); payload.subscribe = !!form.querySelector('[name="subscribe"]')?.checked;
             const response = await fetch(`${backendUrl}/api/live-chat/conversations`, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(payload) });
             const result = await response.json(); if (!response.ok) throw new Error(result.message || 'Unable to start chat');
-            token = result.conversation_token; saveToken(token); showThread(); setStatus(''); startPolling();
+            token = result.conversation_token; saveToken(token); showThread(); setStatus(''); startPolling(); requestChatNotifications();
         } catch (error) { setStatus(error.message || 'Unable to start chat. Please try again.'); if (submit) submit.disabled = false; }
     });
     reply?.addEventListener('submit', async (event) => { event.preventDefault(); const value = replyInput?.value.trim(); if (!value || !token) return; replyInput.value = ''; replyInput.style.height = '42px'; try { const response = await fetch(`${backendUrl}/api/live-chat/conversations/${encodeURIComponent(token)}/messages`, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ message: value }) }); if (!response.ok) throw new Error(); await loadMessages(); } catch (_) { if (threadStatus) threadStatus.textContent = 'Message could not be sent. Please try again.'; } });
     reply?.querySelectorAll('.wow-chat-quick button').forEach((button) => button.addEventListener('click', () => { if (replyInput) { replyInput.value = button.textContent.trim(); replyInput.focus(); } }));
     replyInput?.addEventListener('input', () => { replyInput.style.height = '42px'; replyInput.style.height = `${Math.min(replyInput.scrollHeight, 110)}px`; if (!token || !replyInput.value.trim()) return; window.clearTimeout(typingTimer); typingTimer = window.setTimeout(() => fetch(`${backendUrl}/api/live-chat/conversations/${encodeURIComponent(token)}/typing`, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: '{}', keepalive: true }).catch(() => {}), 250); });
     replyInput?.addEventListener('keydown', (event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); reply?.requestSubmit(); } });
+    if (token) startPolling();
 }

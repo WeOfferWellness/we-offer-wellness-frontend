@@ -57,6 +57,10 @@ Route::get('/booking/product/{product}', [BookingLinkApiController::class, 'avai
 Route::post('/reservations/hold', [ReservationController::class, 'hold'])->name('api.reservations.hold');
 Route::post('/reservations/release', [ReservationController::class, 'release'])->name('api.reservations.release');
 
-// V3 subscriber opt-in API
-Route::post('/v3-subscribers', [V3SubscriberController::class, 'store'])->name('api.v3-subscribers.store');
-Route::post('/v3-subscribers/track', [V3SubscriberController::class, 'track'])->name('api.v3-subscribers.track');
+// Browser subscriber forms require the Laravel session and CSRF token.
+Route::middleware(['web', 'throttle:6,10'])->group(function () {
+    Route::post('/v3-subscribers', [V3SubscriberController::class, 'store'])->name('api.v3-subscribers.store');
+});
+Route::post('/v3-subscribers/track', [V3SubscriberController::class, 'track'])
+    ->middleware('throttle:30,10')
+    ->name('api.v3-subscribers.track');

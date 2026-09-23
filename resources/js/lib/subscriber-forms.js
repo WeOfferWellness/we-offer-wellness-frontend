@@ -129,6 +129,23 @@ function collectFormPayload(form) {
   return payload;
 }
 
+function ensureAntiBotFields(form) {
+  if (!form.querySelector('[name="website"]')) {
+    const honeypot = document.createElement('input');
+    honeypot.type = 'text';
+    honeypot.name = 'website';
+    honeypot.tabIndex = -1;
+    honeypot.autocomplete = 'off';
+    honeypot.setAttribute('aria-hidden', 'true');
+    honeypot.hidden = true;
+    form.appendChild(honeypot);
+  }
+
+  if (!form.dataset.subscriberStartedAt) {
+    form.dataset.subscriberStartedAt = String(Date.now());
+  }
+}
+
 async function submitSubscriber(additionalPayload = {}) {
   const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
   const payload = Object.assign({}, additionalPayload);
@@ -302,7 +319,10 @@ async function handleSubscriberSubmit(form) {
   setLoading(form, true);
 
   try {
-    const payload = Object.assign(basePayload(source), collectFormPayload(form), { email });
+    const payload = Object.assign(basePayload(source), collectFormPayload(form), {
+      email,
+      form_started_at: Number(form.dataset.subscriberStartedAt || Date.now()),
+    });
     const result = await submitSubscriber(payload);
     form.reset?.();
     const successMessage = result?.message || DEFAULT_SUCCESS_MESSAGE;
@@ -322,6 +342,8 @@ async function handleSubscriberSubmit(form) {
 function initSubscriberForms() {
   if (typeof document === 'undefined' || submitListenerBound) return;
   submitListenerBound = true;
+
+  document.querySelectorAll(SUBSCRIBER_FORM_SELECTOR).forEach(ensureAntiBotFields);
 
   document.addEventListener('submit', (event) => {
     const form = findSubscriberForm(event.target);
