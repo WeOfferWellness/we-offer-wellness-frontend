@@ -193,6 +193,13 @@ export function installBehaviourTelemetry() {
   if (!backendUrl || typeof window === 'undefined' || window.__wowBehaviourTelemetryInstalled) return;
   window.__wowBehaviourTelemetryInstalled = true;
   document.addEventListener('wow:cookie-preferences', (event) => { void syncConsent(event.detail || preferences()); });
+  window.addEventListener('wow:location-updated', (event) => {
+    const location = event.detail?.location;
+    if (!location || typeof location !== 'object') return;
+    queue('location_changed', {
+      metadata: { ...pageMetadata(), location },
+    });
+  });
   if (preferences()?.personalization === true) void syncConsent(preferences());
   window.addEventListener('wow:search-results-loaded', queueCurrentSearch);
   document.addEventListener('click', (event) => {

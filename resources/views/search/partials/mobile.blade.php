@@ -12,6 +12,8 @@
             --sr-line: #dfe5ea;
             --sr-page: #fbfaf8;
             color: var(--sr-ink);
+            background: #fff;
+            font-family: "Instrument Sans", sans-serif;
             padding-bottom: 32px;
         }
         @media (min-width: 1041px) {
@@ -22,38 +24,55 @@
             position: sticky;
             top: 0;
             z-index: 30;
-            min-height: 57px;
+            min-height: 70px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 12px;
-            padding: 0 11px;
-            border-top: 1px solid #eceff1;
-            border-bottom: 1px solid #eceff1;
-            background: rgba(251, 250, 248, .97);
-            backdrop-filter: blur(7px);
+            gap: 16px;
+            margin: 0;
+            padding: 12px 0;
+            border-top: 1px solid #e9eeeb;
+            border-bottom: 1px solid #dce4e0;
+            background: rgba(255, 255, 255, .96);
+            box-shadow: 0 8px 22px rgba(11, 48, 40, .055);
+            backdrop-filter: blur(12px);
         }
 
-        .wow-sr-v5-mobile-count { display: grid; gap: 1px; color: #202b3b; font-size: 13px; font-weight: 700; line-height: 1.15; }
-        .wow-sr-v5-mobile-count strong { color: #202b3b; }
-        .wow-sr-v5-mobile-count span { color: #8c98aa; font-size: 9px; font-weight: 650; }
+        .wow-sr-v5-mobile-count { display: grid; min-width: 0; gap: 3px; color: #17201d; font-size: 14px; font-weight: 700; line-height: 1.15; }
+        .wow-sr-v5-mobile-count strong { overflow: hidden; color: #0b3028; text-overflow: ellipsis; white-space: nowrap; }
+        .wow-sr-v5-mobile-count span { color: #68736f; font-size: 11px; font-weight: 500; }
         .wow-sr-v5-mobile-count b { color: var(--sr-green); }
-        .wow-sr-v5-mobile-actions { display: flex; align-items: center; gap: 7px; }
+        .wow-sr-v5-mobile-actions { display: flex; flex: 0 0 auto; align-items: center; gap: 8px; }
         .wow-sr-v5-mobile[data-show-map="true"] [data-map-toggle] { display: inline-flex; }
         .wow-sr-v5-mobile-tool {
-            min-height: 35px;
+            min-height: 40px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 7px;
-            padding: 0 12px;
-            border: 1px solid #d6dee5;
+            gap: 8px;
+            padding: 0 14px;
+            border: 1px solid #c9d9d3;
             border-radius: 999px;
-            background: #fff;
-            color: #2d394e;
-            font-size: 11px;
-            font-weight: 650;
+            background: #f3f7f5;
+            color: #0b3028;
+            font-size: 12px;
+            font-weight: 700;
             cursor: pointer;
+            box-shadow: 0 5px 14px rgba(11, 48, 40, .06);
+            transition: background-color .18s ease, border-color .18s ease, transform .18s ease, box-shadow .18s ease;
+        }
+        .wow-sr-v5-mobile-tool:hover,
+        .wow-sr-v5-mobile-tool:focus-visible {
+            border-color: #4f9482;
+            background: #e8f2ee;
+            box-shadow: 0 7px 18px rgba(11, 48, 40, .1);
+            outline: none;
+            transform: translateY(-1px);
+        }
+        .wow-sr-v5-mobile-tool svg {
+            width: 16px;
+            height: 16px;
+            color: #4f9482;
         }
 
         .wow-sr-v5-mobile-results { padding: 13px 10px 0; }
@@ -155,7 +174,8 @@
 
         @media (max-width: 359px) {
             .wow-sr-v5-mobile-grid, .wow-search-recommendations__grid { grid-template-columns: minmax(0, 1fr); }
-            .wow-sr-v5-mobile-tool { padding: 0 9px; }
+            .wow-sr-v5-mobile-toolbar { gap: 8px; }
+            .wow-sr-v5-mobile-tool { padding: 0 11px; }
         }
 
         /* v4.10 compact landscape contract: three cards per row on tablets

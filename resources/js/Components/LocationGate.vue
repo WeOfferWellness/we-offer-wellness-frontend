@@ -25,6 +25,21 @@ function markPromptSeen(){
   cookieSet('wow_geo_done', '1', rememberDays)
 }
 
+function hasStoredLocation(){
+  return Boolean(cookieGet('wow_lat') && cookieGet('wow_lng'))
+}
+
+function isNearMePage(){
+  return window.location.pathname === '/near-me'
+}
+
+function shouldOpen(){
+  if (isNearMePage() && !hasStoredLocation()) {
+    try { return sessionStorage.getItem('wow_near_me_prompted') !== '1' } catch { return true }
+  }
+  return cookieGet(promptCookieName) !== '1'
+}
+
 async function save(data){
   status.value = 'saving'
   try {
@@ -42,7 +57,7 @@ async function useMyLocation(){
   if (!('geolocation' in navigator)) { status.value='idle'; error.value = 'Geolocation not available'; return }
   navigator.geolocation.getCurrentPosition(async (pos) => {
     const lat = pos.coords.latitude, lng = pos.coords.longitude
-    let city='', region='', country=''
+    let city='', region='', country='', postcode='', district='', full_name=''
     try {
       const key = window.WOW_MAPS_KEY || ''
       if (key) {
@@ -57,10 +72,15 @@ async function useMyLocation(){
           city = (comps.find(c=>c.id?.startsWith('place'))?.text) || (comps.find(c=>c.id?.startsWith('locality'))?.text) || ''
           region = (comps.find(c=>c.id?.startsWith('region'))?.text) || ''
           country = (comps.find(c=>c.id?.startsWith('country'))?.text) || ''
+          postcode = (comps.find(c=>c.id?.startsWith('postcode'))?.text) || ''
+          district = (comps.find(c=>c.id?.startsWith('district'))?.text) || ''
+          full_name = feat.place_name || city || 'Current location'
         }
       }
     } catch {}
-    await save({ lat, lng, city, region, country, mode: 'mixed' })
+    const location = { lat, lng, city, region, country, postcode, district, full_name }
+    await save({ ...location, mode: 'mixed' })
+    window.dispatchEvent(new CustomEvent('wow:location-updated', { detail: { location } }))
   }, () => { status.value='idle'; error.value = 'We couldn\'t get your location.' }, { enableHighAccuracy:false, timeout:6000, maximumAge:60000 })
 }
 
@@ -69,13 +89,15 @@ function allowLocation(){
 }
 
 function skipLocation(){
+  if (isNearMePage()) {
+    try { sessionStorage.setItem('wow_near_me_prompted', '1') } catch {}
+  }
   markPromptSeen()
   open.value = false
 }
 
 onMounted(() => {
-  const seen = cookieGet(promptCookieName) === '1'
-  if (!seen) { open.value = true }
+  open.value = shouldOpen()
 })
 </script>
 
@@ -102,36 +124,48 @@ onMounted(() => {
 <style scoped>
 .wow-location-banner{
   position:fixed;
-  left:20px;
-  bottom:20px;
+  inset:0;
   z-index:1200;
-  width:min(460px, calc(100% - 32px));
-  font-family:'Manrope',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  display:grid;
+  place-items:center;
+  width:100%;
+  padding:20px;
+  background:rgba(11,48,40,.28);
+  backdrop-filter:blur(4px);
+  font-family:'Instrument Sans',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 }
 .wow-location-banner[hidden]{ display:none !important; }
 .wow-location-banner__panel{
+  width:min(520px, 100%);
   background:#fff;
-  color:#0b1220;
-  border-radius:3px;
-  border:1px solid rgba(15,23,42,.12);
-  box-shadow:0 30px 80px rgba(15,23,42,.18);
-  padding:24px;
+  color:#17201d;
+  border-radius:8px;
+  border:1px solid #dce4e0;
+  box-shadow:0 28px 90px rgba(11,48,40,.22);
+  padding:32px;
 }
 .wow-location-banner__eyebrow{
   text-transform:uppercase;
   letter-spacing:.24em;
   font-size:11px;
-  color:#64748b;
+  color:#4f9482;
+  font-weight:700;
   margin:0 0 8px;
 }
 .wow-location-banner__simple h2{
   margin:0 0 8px;
-  font-size:1.35rem;
+  color:#0b3028;
+  font-family:'Playfair Display',serif;
+  font-size:clamp(30px,5vw,42px);
+  font-weight:500;
+  line-height:1;
+  letter-spacing:-.04em;
 }
 .wow-location-banner__simple p{
   margin:0 0 16px;
-  font-size:12px;
-  color:#475569;
+  font-size:14px;
+  line-height:1.6;
+  color:#68736f;
 }
 .wow-location-banner__actions.actions{
   display:flex;
@@ -143,34 +177,34 @@ onMounted(() => {
   min-width:110px;
 }
 .wow-location-btn{
-  height:36px;
-  min-height:36px;
-  border-radius:3px;
-  font-size:16px;
-  font-weight:400;
-  border:1px solid rgba(16,24,40,.22);
+  height:42px;
+  min-height:42px;
+  border-radius:999px;
+  font-size:13px;
+  font-weight:600;
+  border:1px solid #cfd9d5;
   background:#fff;
-  color:rgba(11,18,32,.82);
+  color:#17201d;
   cursor:pointer;
   display:flex;
   align-items:center;
   justify-content:center;
-  box-shadow:0 10px 22px rgba(16,24,40,.08);
+  box-shadow:none;
   padding:0 18px;
   transition:background .2s ease, color .2s ease, border-color .2s ease;
 }
 .wow-location-btn:hover,
 .wow-location-btn:focus-visible{
-  background:#000;
-  color:#fff;
-  border-color:#000;
+  background:#f3f7f5;
+  color:#0b3028;
+  border-color:#9eafa9;
   outline:none;
 }
 .wow-location-btn--primary{
-  background:#0b1220;
+  background:#4f9482;
   color:#fff;
-  border-color:#0b1220;
-  box-shadow:0 12px 28px rgba(11,18,32,.18);
+  border-color:#4f9482;
+  box-shadow:0 10px 22px rgba(79,148,130,.2);
 }
 .wow-location-btn:disabled{
   opacity:.7;
@@ -182,11 +216,7 @@ onMounted(() => {
   font-size:12px;
 }
 @media (max-width: 640px){
-  .wow-location-banner{
-    left:16px;
-    right:16px;
-    width:auto;
-  }
+  .wow-location-banner__panel{ padding:26px 20px; }
   .wow-location-banner__actions .wow-location-btn{
     width:100%;
   }
