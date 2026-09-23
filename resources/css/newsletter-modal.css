@@ -58,7 +58,7 @@
 }
 .wow-utility-rail .wow-review-float{transform-origin:bottom center}
 .wow-utility-rail .wow-review-float.is-hidden{display:none}
-.wow-utility-rail .wow-newsletter-trigger{margin-left:0;align-self:flex-start;transform-origin:left center}
+.wow-utility-rail .wow-newsletter-trigger{margin-left:10px;align-self:flex-start;transform-origin:left center}
 @media(max-width:767px){
   .wow-utility-rail{width:90px;padding:10px 8px}
 }

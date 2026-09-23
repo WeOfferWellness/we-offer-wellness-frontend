@@ -173,6 +173,7 @@
   function showBanner(){
     banner.hidden = false;
     banner.setAttribute('aria-hidden', 'false');
+    document.dispatchEvent(new CustomEvent('wow:popup-opened', { detail: { key: 'cookie-banner' } }));
   }
 
   function hideBanner(){

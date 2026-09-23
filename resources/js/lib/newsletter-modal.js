@@ -198,6 +198,7 @@ function initNewsletterModal() {
     originalOverflow = document.body.style.overflow;
     modal.hidden = false;
     document.body.style.overflow = 'hidden';
+    document.dispatchEvent(new CustomEvent('wow:popup-opened', { detail: { key: 'newsletter-modal' } }));
     if (automatic) {
       autoOpened = true;
       stopAutoTriggers();

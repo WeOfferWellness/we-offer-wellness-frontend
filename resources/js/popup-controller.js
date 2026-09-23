@@ -141,7 +141,12 @@ function locationController(element) {
     });
 }
 
-function openPopup(config, element) {
+function openPopup(config, element, layer) {
+    if (layer) {
+        layer.hidden = false;
+        layer.setAttribute('aria-hidden', 'false');
+        layer.classList.toggle('is-backdropless', config.requires_backdrop === false);
+    }
     if (config.key === 'newsletter-modal' && window.WOWNewsletterModal?.open) window.WOWNewsletterModal.open(true);
     else if (config.key === 'cookie-banner' && window.WOWCookieBanner?.open) window.WOWCookieBanner.open();
     else { locationController(element); showElement(element); }
@@ -153,16 +158,25 @@ function initPopupController() {
     const elements = new Map([...document.querySelectorAll('[data-wow-popup]')].map((element) => [element.dataset.wowPopup, element]));
     if (!elements.size || document.documentElement.dataset.wowPopupsInitialized === 'true') return;
     document.documentElement.dataset.wowPopupsInitialized = 'true';
+    const layer = document.querySelector('[data-wow-popup-layer]');
     const active = { key: null };
     const firstVisit = !readStorage(localStorage, 'has_visited');
     const queue = [];
     const configs = new Map();
+    document.addEventListener('wow:popup-opened', (event) => {
+        const key = event.detail?.key;
+        if (!key || !layer) return;
+        const config = configs.get(key) || { requires_backdrop: true };
+        layer.hidden = false;
+        layer.setAttribute('aria-hidden', 'false');
+        layer.classList.toggle('is-backdropless', config.requires_backdrop === false);
+    });
     const tryNext = () => {
         if (active.key) return;
         const next = queue.find((config) => elements.has(config.key) && frequencyAllows(config));
         if (!next) return;
         active.key = next.key;
-        window.setTimeout(() => openPopup(next, elements.get(next.key)), Math.max(0, Number(next.delay_seconds || 0) * 1000));
+        window.setTimeout(() => openPopup(next, elements.get(next.key), layer), Math.max(0, Number(next.delay_seconds || 0) * 1000));
     };
     const enqueue = (config) => {
         if (active.key && active.key !== config.key) writeStorage(sessionStorage, `${config.key}:pending`, '1');
@@ -179,7 +193,20 @@ function initPopupController() {
         const config = configs.get(key);
         markInteracted(config);
         if (config) track(config, 'close');
-        if (key === active.key) { active.key = null; window.setTimeout(tryNext, 100); }
+        if (key === active.key) {
+            active.key = null;
+            if (layer) {
+                layer.hidden = true;
+                layer.setAttribute('aria-hidden', 'true');
+                layer.classList.remove('is-backdropless');
+            }
+            window.setTimeout(tryNext, 100);
+        }
+    });
+    layer?.addEventListener('click', (event) => {
+        if (!event.target.closest('[data-wow-popup-backdrop]')) return;
+        if (active.key === 'newsletter-modal') window.WOWNewsletterModal?.close?.();
+        if (active.key === 'cookie-banner') window.WOWCookieBanner?.close?.();
     });
     fetch(`${backendUrl}/api/popups?${new URLSearchParams({ page_url: window.location.href })}`, { credentials: 'include', headers: { Accept: 'application/json' } })
         .then((response) => response.ok ? response.json() : { data: [] })
