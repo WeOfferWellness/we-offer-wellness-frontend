@@ -11,6 +11,7 @@ if (modal && openers.length) {
     const messages = modal.querySelector('[data-live-chat-messages]');
     const status = modal.querySelector('[data-live-chat-status]');
     const threadStatus = modal.querySelector('[data-live-chat-thread-status]');
+    const agentStatus = modal.querySelector('[data-live-chat-agent-status]');
     const typingLabel = modal.querySelector('[data-live-chat-typing-label]');
     const typingRow = modal.querySelector('[data-live-chat-typing-row]');
     const reply = modal.querySelector('[data-live-chat-reply]');
@@ -139,6 +140,14 @@ if (modal && openers.length) {
             const typing = !!payload.agent_typing;
             const leadAgent = agents[0];
             const agentCount = Number(payload.agent_count ?? agents.length) || 0;
+            const connectedStatus = agentCount === 1
+                ? `Connected to ${leadAgent?.role || 'Admin'} ${leadAgent?.name || 'WOW support'}`
+                : agentCount > 1
+                    ? `Support Team · ${agentCount} members online`
+                    : 'Connecting…';
+            if (agentStatus) agentStatus.textContent = typing && agentCount === 1
+                ? `${leadAgent?.name || 'WOW support'} is typing…`
+                : connectedStatus;
             if (threadStatus) threadStatus.textContent = typing
                 ? agentCount === 1
                     ? `${leadAgent?.role || 'Admin'} ${leadAgent?.name || 'team member'} is typing…`
