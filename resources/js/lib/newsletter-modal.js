@@ -34,7 +34,9 @@ function initUtilityRail() {
   const updateBounds = () => {
     const header = document.getElementById('wow-header-container');
     const headerBottom = header?.getBoundingClientRect?.().bottom || 0;
-    rail.style.setProperty('--wow-utility-rail-top', `${Math.max(0, Math.round(headerBottom))}px`);
+    const top = `${Math.max(0, Math.round(headerBottom))}px`;
+    rail.style.setProperty('--wow-utility-rail-top', top);
+    document.documentElement.style.setProperty('--wow-utility-rail-top', top);
 
     let bottom = 0;
     if (window.matchMedia('(max-width: 767px)').matches) {
@@ -55,6 +57,7 @@ function initUtilityRail() {
       if (ticketBar) bottom = Math.max(0, Math.round(window.innerHeight - ticketBar.rect.top));
     }
     rail.style.setProperty('--wow-utility-rail-bottom', `${bottom}px`);
+    document.documentElement.style.setProperty('--wow-utility-rail-bottom', `${bottom}px`);
   };
 
   const scheduleUpdate = () => window.requestAnimationFrame(updateBounds);

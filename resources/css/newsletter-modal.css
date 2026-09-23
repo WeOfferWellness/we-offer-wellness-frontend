@@ -60,7 +60,8 @@
 .wow-utility-rail .wow-review-float{transform-origin:bottom center}
 .wow-utility-rail .wow-review-float.is-hidden{display:none}
 .wow-utility-rail .wow-newsletter-trigger{margin-left:13px;align-self:flex-start;transform-origin:left center}
-.wow-live-chat-rail{position:fixed;right:0;bottom:0;z-index:890;width:90px;display:flex;align-items:flex-end;padding:12px 8px;box-sizing:border-box;pointer-events:none}
+.wow-live-chat-rail{position:fixed;z-index:890;right:0;top:var(--wow-utility-rail-top,72px);bottom:var(--wow-utility-rail-bottom,0px);width:90px;min-height:0;display:flex;align-items:stretch;padding:12px 8px;box-sizing:border-box;background:transparent;overflow:visible;pointer-events:none;transition:top .2s ease,bottom .2s ease}
+.wow-live-chat-rail .wow-live-chat-trigger{position:relative;right:auto;top:auto;bottom:auto;margin:0 0 0 auto;align-self:flex-end;flex:0 0 auto}
 .wow-live-chat-trigger{width:58px;height:58px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;margin-left:auto;padding:8px;border:1px solid rgba(84,148,131,.42);border-radius:14px;background:linear-gradient(145deg,#ffffff 0%,#eef7f3 100%);color:#183b32;box-shadow:0 18px 42px rgba(16,24,40,.18);font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;pointer-events:auto;transition:transform .18s ease,box-shadow .18s ease}
 .wow-live-chat-trigger:hover,.wow-live-chat-trigger:focus-visible{transform:translateY(-3px);box-shadow:0 23px 48px rgba(16,24,40,.22);outline:3px solid rgba(84,148,131,.2);outline-offset:3px}
 .wow-live-chat-trigger svg{width:24px;height:24px;color:#4f9482}
@@ -72,7 +73,7 @@
 .wow-live-chat-copy{margin:12px 0 22px;color:#68736f;font-size:14px;line-height:1.55}
 .wow-live-chat-form{display:grid;gap:12px}.wow-live-chat-form label{display:grid;gap:5px;color:#315e52;font-size:11px;font-weight:700}.wow-live-chat-form input,.wow-live-chat-form textarea{width:100%;box-sizing:border-box;padding:11px 12px;border:1px solid #dce4e0;border-radius:8px;background:#fbfdfc;color:#17201d;font:inherit;resize:vertical}.wow-live-chat-form input:focus,.wow-live-chat-form textarea:focus{border-color:#4f9482;outline:3px solid rgba(79,148,130,.14)}
 .wow-live-chat-submit{height:44px;border:0;border-radius:999px;background:#4f9482;color:#fff;font-size:13px;font-weight:700;cursor:pointer}.wow-live-chat-submit:hover{background:#3f7869}.wow-live-chat-status{min-height:18px;margin:0;color:#68736f;font-size:12px}
-@media(max-width:767px){.wow-live-chat-rail{width:72px;padding:10px 8px}.wow-live-chat-trigger{width:52px;height:52px}.wow-live-chat-modal{align-items:end;padding:16px}.wow-live-chat-card{padding:26px 20px 22px}}
+@media(max-width:767px){.wow-live-chat-rail{width:90px;padding:10px 8px}.wow-live-chat-trigger{width:52px;height:52px}.wow-live-chat-modal{align-items:end;padding:16px}.wow-live-chat-card{padding:26px 20px 22px}}
 @media(max-width:767px){
   .wow-utility-rail{width:90px;padding:10px 8px}
 }
