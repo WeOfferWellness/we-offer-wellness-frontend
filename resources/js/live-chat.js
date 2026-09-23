@@ -203,7 +203,7 @@ if (modal && openers.length) {
     const loadMessages = async () => {
         if (!token) return;
         try {
-            const response = await fetch(`${backendUrl}/api/live-chat/conversations/${encodeURIComponent(token)}/messages`, { credentials: 'include', headers: { Accept: 'application/json' } });
+            const response = await fetch(`${backendUrl}/api/live-chat/conversations/${encodeURIComponent(token)}/messages`, { cache: 'no-store', credentials: 'include', headers: { Accept: 'application/json' } });
             if (!response.ok) return;
             const payload = await response.json();
             const items = payload.messages || [];
