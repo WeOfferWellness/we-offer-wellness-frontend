@@ -3,6 +3,7 @@
     $sectionTitle = $sectionTitle ?? 'Shop wellness by modality';
     $sectionDescription = $sectionDescription ?? 'Explore therapies, classes, workshops and experiences by the kind of support you are looking for.';
     $browseUrl = $browseUrl ?? url('/therapies');
+    $modalityBasePath = trim((string) ($modalityBasePath ?? ''), '/');
     $fallback = collect([
         ['name' => 'Breathwork', 'slug' => 'breathwork', 'description' => 'Guided breathing sessions for calm, clarity, nervous-system support and deeper connection with yourself.', 'image_url' => 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=700&q=80', 'url' => url('/breathwork')],
         ['name' => 'Sound Healing', 'slug' => 'sound-healing', 'description' => 'Immersive sound, vibration and restorative sessions.', 'image_url' => 'https://images.pexels.com/photos/6997998/pexels-photo-6997998.jpeg', 'url' => url('/sound-healing')],
@@ -13,6 +14,18 @@
     $items = collect($discoveryCategories ?? [])->filter(fn ($item) => is_array($item))->take(5);
     if ($items->count() < 5) {
         $items = $items->concat($fallback->reject(fn ($fallbackItem) => $items->contains('slug', $fallbackItem['slug'])))->take(5);
+    }
+
+    if ($modalityBasePath !== '') {
+        $items = $items->map(function (array $item) use ($modalityBasePath): array {
+            $slug = trim((string) ($item['slug'] ?? ''), '/');
+
+            if ($slug !== '') {
+                $item['url'] = url('/'.$modalityBasePath.'/'.$slug);
+            }
+
+            return $item;
+        });
     }
 @endphp
 

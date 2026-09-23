@@ -495,6 +495,7 @@
   @include('home.sections.discover_category', [
     'discoveryCategories' => $discoveryCategories ?? [],
     'browseUrl' => url('/'.($type ?? 'therapies')),
+    'modalityBasePath' => $type ?? 'therapies',
   ])
 
   <section class="landing-wow__results">
