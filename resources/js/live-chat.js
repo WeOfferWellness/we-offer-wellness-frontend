@@ -197,7 +197,7 @@ if (modal && openers.length) {
             const unread = items.filter((item) => item.sender_type === 'agent' && !item.read_at).length;
             if (!unreadBaselineSet) {
                 unreadBaselineSet = true;
-            } else if (unread > previousUnreadCount && modal.hidden && typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+            } else if (unread > previousUnreadCount && (modal.hidden || document.hidden || !document.hasFocus()) && typeof Notification !== 'undefined' && Notification.permission === 'granted') {
                 try { new Notification('WOW Support', { body: 'A member of the WOW team has replied to your live chat.', tag: `wow-live-chat-${token}` }); } catch (_) {}
             }
             previousUnreadCount = unread;
@@ -234,7 +234,7 @@ if (modal && openers.length) {
             if (typing) { typingLabel?.scrollIntoView({ block: 'nearest' }); }
         } catch (_) {}
     };
-    const startPolling = () => { loadMessages(); if (!pollTimer) pollTimer = window.setInterval(loadMessages, 1000); };
+    const startPolling = () => { loadMessages(); if (!pollTimer) pollTimer = window.setInterval(loadMessages, 500); };
     const stopPolling = () => { if (pollTimer) window.clearInterval(pollTimer); pollTimer = null; };
     const close = () => {
         modal.classList.add('is-closing');
@@ -246,7 +246,7 @@ if (modal && openers.length) {
         modal.hidden = false; modal.setAttribute('aria-hidden', 'false'); setLayerOpen(true);
         requestAnimationFrame(() => { modal.classList.add('is-open'); (token ? replyInput : modal.querySelector('input'))?.focus({ preventScroll: true }); });
         document.dispatchEvent(new CustomEvent('wow:popup-opened', { detail: { key: 'live-chat' } }));
-        if (token) { showThread(); startPolling(); }
+        if (token) { showThread(); startPolling(); requestChatNotifications(); }
     };
 
     openers.forEach((button) => button.addEventListener('click', open));
