@@ -76,6 +76,10 @@ if (modal && openers.length) {
         try { await Notification.requestPermission(); } catch (_) {}
         if (hint) hint.hidden = true;
     };
+    const setPresenceStatus = (value) => {
+        if (agentStatus) agentStatus.textContent = value;
+        if (threadStatus) threadStatus.textContent = value;
+    };
 
     const renderMessages = (items, agentPresence = []) => {
         if (!messages) return;
@@ -140,15 +144,7 @@ if (modal && openers.length) {
             const typing = !!payload.agent_typing;
             const leadAgent = agents[0];
             const agentCount = Number(payload.agent_count ?? agents.length) || 0;
-            const connectedStatus = agentCount === 1
-                ? `Connected to ${leadAgent?.role || 'Admin'} ${leadAgent?.name || 'WOW support'}`
-                : agentCount > 1
-                    ? `Support Team · ${agentCount} members online`
-                    : 'Connecting…';
-            if (agentStatus) agentStatus.textContent = typing && agentCount === 1
-                ? `${leadAgent?.name || 'WOW support'} is typing…`
-                : connectedStatus;
-            if (threadStatus) threadStatus.textContent = typing
+            const presenceStatus = typing
                 ? agentCount === 1
                     ? `${leadAgent?.role || 'Admin'} ${leadAgent?.name || 'team member'} is typing…`
                     : agentCount > 1
@@ -159,12 +155,13 @@ if (modal && openers.length) {
                     : agentCount > 1
                         ? `Support Team · ${agentCount} members are ready to write back`
                         : 'We’re connecting you to a member of our support team now. They’ll be with you as soon as possible.';
+            setPresenceStatus(presenceStatus);
             if (typingLabel) typingLabel.hidden = !typing;
             if (typingRow) typingRow.hidden = !typing;
             if (typing) { typingLabel?.scrollIntoView({ block: 'nearest' }); }
         } catch (_) {}
     };
-    const startPolling = () => { loadMessages(); if (!pollTimer) pollTimer = window.setInterval(loadMessages, 3000); };
+    const startPolling = () => { loadMessages(); if (!pollTimer) pollTimer = window.setInterval(loadMessages, 1000); };
     const stopPolling = () => { if (pollTimer) window.clearInterval(pollTimer); pollTimer = null; };
     const close = () => {
         modal.classList.add('is-closing');
@@ -201,11 +198,12 @@ if (modal && openers.length) {
             token = result.conversation_token; saveToken(token); showThread(); setStatus(''); startPolling(); requestChatNotifications();
         } catch (error) { setStatus(error.message || 'Unable to start chat. Please try again.'); if (submit) submit.disabled = false; }
     });
-    const stopTypingHeartbeat = () => { window.clearTimeout(typingTimer); window.clearInterval(typingHeartbeatTimer); typingTimer = null; typingHeartbeatTimer = null; };
-    const sendTypingSignal = () => { if (!token || !replyInput?.value.trim()) return; fetch(`${backendUrl}/api/live-chat/conversations/${encodeURIComponent(token)}/typing`, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: '{}', keepalive: true }).catch(() => {}); };
-    reply?.addEventListener('submit', async (event) => { event.preventDefault(); const value = replyInput?.value.trim(); if (!value || !token) return; stopTypingHeartbeat(); replyInput.value = ''; replyInput.style.height = '42px'; try { const response = await fetch(`${backendUrl}/api/live-chat/conversations/${encodeURIComponent(token)}/messages`, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ message: value }) }); if (!response.ok) throw new Error(); await loadMessages(); } catch (_) { if (threadStatus) threadStatus.textContent = 'Message could not be sent. Please try again.'; } });
+    const sendTypingSignal = (active = true) => { if (!token || (active && !replyInput?.value.trim())) return; fetch(`${backendUrl}/api/live-chat/conversations/${encodeURIComponent(token)}/typing`, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ active }), keepalive: true }).catch(() => {}); };
+    const stopTypingHeartbeat = (notify = false) => { window.clearTimeout(typingTimer); window.clearInterval(typingHeartbeatTimer); typingTimer = null; typingHeartbeatTimer = null; if (notify) sendTypingSignal(false); };
+    reply?.addEventListener('submit', async (event) => { event.preventDefault(); const value = replyInput?.value.trim(); if (!value || !token) return; stopTypingHeartbeat(true); replyInput.value = ''; replyInput.style.height = '42px'; try { const response = await fetch(`${backendUrl}/api/live-chat/conversations/${encodeURIComponent(token)}/messages`, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ message: value }) }); if (!response.ok) throw new Error(); await loadMessages(); } catch (_) { if (threadStatus) threadStatus.textContent = 'Message could not be sent. Please try again.'; } });
     reply?.querySelectorAll('.wow-chat-quick button').forEach((button) => button.addEventListener('click', () => { if (replyInput) { replyInput.value = button.textContent.trim(); replyInput.focus(); } }));
-    replyInput?.addEventListener('input', () => { replyInput.style.height = '42px'; replyInput.style.height = `${Math.min(replyInput.scrollHeight, 110)}px`; stopTypingHeartbeat(); if (!token || !replyInput.value.trim()) return; typingTimer = window.setTimeout(() => { sendTypingSignal(); typingHeartbeatTimer = window.setInterval(sendTypingSignal, 2000); }, 250); });
+    replyInput?.addEventListener('input', () => { replyInput.style.height = '42px'; replyInput.style.height = `${Math.min(replyInput.scrollHeight, 110)}px`; stopTypingHeartbeat(); if (!token || !replyInput.value.trim()) { sendTypingSignal(false); return; } typingTimer = window.setTimeout(() => { sendTypingSignal(); typingHeartbeatTimer = window.setInterval(sendTypingSignal, 1000); }, 100); });
+    replyInput?.addEventListener('blur', () => { if (!replyInput?.value.trim()) sendTypingSignal(false); });
     replyInput?.addEventListener('keydown', (event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); reply?.requestSubmit(); } });
     if (token) startPolling();
 }
