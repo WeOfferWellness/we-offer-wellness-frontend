@@ -21,6 +21,7 @@ if (modal && openers.length) {
     let pollTimer = null;
     let typingTimer = null;
     let typingHeartbeatTimer = null;
+    let typingIdleTimer = null;
     let unreadBaselineSet = false;
     let previousUnreadCount = 0;
 
@@ -289,11 +290,11 @@ if (modal && openers.length) {
         } catch (error) { setStatus(error.message || 'Unable to start chat. Please try again.'); if (submit) submit.disabled = false; }
     });
     const sendTypingSignal = (active = true) => { if (!token || (active && !replyInput?.value.trim())) return; fetch(`${backendUrl}/api/live-chat/conversations/${encodeURIComponent(token)}/typing`, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ active }), keepalive: true }).catch(() => {}); };
-    const stopTypingHeartbeat = (notify = false) => { window.clearTimeout(typingTimer); window.clearInterval(typingHeartbeatTimer); typingTimer = null; typingHeartbeatTimer = null; if (notify) sendTypingSignal(false); };
+    const stopTypingHeartbeat = (notify = false) => { window.clearTimeout(typingTimer); window.clearTimeout(typingIdleTimer); window.clearInterval(typingHeartbeatTimer); typingTimer = null; typingIdleTimer = null; typingHeartbeatTimer = null; if (notify) sendTypingSignal(false); };
     reply?.addEventListener('submit', async (event) => { event.preventDefault(); const text = replyInput?.value.trim() || ''; const value = [pendingComposerUrl, text].filter(Boolean).join(' '); if (!value || !token) return; stopTypingHeartbeat(true); pendingComposerUrl = ''; replyInput.value = ''; replyInput.style.height = '42px'; updateDraftPreview(); try { const response = await fetch(`${backendUrl}/api/live-chat/conversations/${encodeURIComponent(token)}/messages`, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ message: value }) }); if (!response.ok) throw new Error(); await loadMessages(); } catch (_) { if (threadStatus) threadStatus.textContent = 'Message could not be sent. Please try again.'; } });
     reply?.querySelectorAll('.wow-chat-quick button').forEach((button) => button.addEventListener('click', () => { if (replyInput) { replyInput.value = button.textContent.trim(); replyInput.focus(); } }));
     replyInput?.addEventListener('keydown', (event) => { if (event.key === ' ') { captureComposerUrl(true); updateDraftPreview(); } });
-    replyInput?.addEventListener('input', () => { replyInput.style.height = '42px'; replyInput.style.height = `${Math.min(replyInput.scrollHeight, 110)}px`; captureComposerUrl(); updateDraftPreview(); stopTypingHeartbeat(); if (!token || (!replyInput.value.trim() && !pendingComposerUrl)) { sendTypingSignal(false); return; } typingTimer = window.setTimeout(() => { sendTypingSignal(); typingHeartbeatTimer = window.setInterval(sendTypingSignal, 1000); }, 100); });
+    replyInput?.addEventListener('input', () => { replyInput.style.height = '42px'; replyInput.style.height = `${Math.min(replyInput.scrollHeight, 110)}px`; captureComposerUrl(); updateDraftPreview(); stopTypingHeartbeat(); if (!token || (!replyInput.value.trim() && !pendingComposerUrl)) { sendTypingSignal(false); return; } typingTimer = window.setTimeout(() => { sendTypingSignal(); typingHeartbeatTimer = window.setInterval(sendTypingSignal, 1000); }, 100); typingIdleTimer = window.setTimeout(() => stopTypingHeartbeat(true), 2200); });
     replyInput?.addEventListener('blur', () => { if (!replyInput?.value.trim()) sendTypingSignal(false); });
     replyInput?.addEventListener('keydown', (event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); reply?.requestSubmit(); } });
     if (token) startPolling();
