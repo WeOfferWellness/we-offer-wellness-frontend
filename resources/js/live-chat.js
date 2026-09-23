@@ -22,6 +22,16 @@ if (modal && openers.length) {
     const escapeHtml = (value) => String(value || '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[char]));
     const saveToken = (value) => { try { sessionStorage.setItem(tokenKey, value); } catch (_) {} };
     const setStatus = (value) => { if (status) status.textContent = value || ''; };
+    const syncStartButton = () => {
+        const name = form?.querySelector('[name="first_name"]');
+        const email = form?.querySelector('[name="email"]');
+        const message = form?.querySelector('[name="message"]');
+        const submit = form?.querySelector('[type="submit"]');
+        if (!submit) return;
+        const enabled = !!name?.value.trim() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email?.value.trim() || '') && !!message?.value.trim();
+        submit.disabled = !enabled;
+        submit.setAttribute('aria-disabled', enabled ? 'false' : 'true');
+    };
     const showThread = () => { prechat?.classList.remove('is-active'); prechat?.setAttribute('hidden', ''); thread?.removeAttribute('hidden'); thread?.classList.add('is-active'); };
     const setLayerOpen = (open) => { if (!layer) return; layer.hidden = !open; layer.setAttribute('aria-hidden', open ? 'false' : 'true'); };
     const initials = (name) => String(name || 'W').trim().charAt(0).toUpperCase() || 'W';
@@ -81,12 +91,14 @@ if (modal && openers.length) {
     modal.addEventListener('click', (event) => { if (event.target === modal) close(); });
     document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && !modal.hidden) close(); });
     modal.querySelectorAll('.wow-chat-topic').forEach((button) => button.addEventListener('click', () => { modal.querySelectorAll('.wow-chat-topic').forEach((item) => item.classList.remove('is-selected')); button.classList.add('is-selected'); const input = form?.querySelector('[name="message"]'); if (input && !input.value.trim()) { input.value = `${button.textContent.trim()}: `; input.focus(); } }));
-    form?.querySelectorAll('.wow-chat-control').forEach((input) => input.addEventListener('input', () => input.closest('.wow-chat-field')?.classList.remove('is-invalid')));
+    form?.querySelectorAll('.wow-chat-control').forEach((input) => input.addEventListener('input', () => { input.closest('.wow-chat-field')?.classList.remove('is-invalid'); syncStartButton(); }));
+    syncStartButton();
     form?.addEventListener('submit', async (event) => {
         event.preventDefault();
         const name = form.querySelector('[name="first_name"]'); const email = form.querySelector('[name="email"]'); const message = form.querySelector('[name="message"]');
         const validName = !!name?.value.trim(); const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email?.value.trim() || ''); const validMessage = !!message?.value.trim();
         [['name', validName], ['email', validEmail], ['message', validMessage]].forEach(([field, valid]) => form.querySelector(`[data-field="${field}"]`)?.classList.toggle('is-invalid', !valid));
+        syncStartButton();
         if (!validName || !validEmail || !validMessage) return;
         const submit = form.querySelector('[type="submit"]'); if (submit) submit.disabled = true; setStatus('Starting your conversation…');
         try {
