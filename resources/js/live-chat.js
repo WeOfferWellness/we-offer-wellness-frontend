@@ -133,13 +133,13 @@ if (modal && openers.length) {
     draftPreview.className = 'wow-chat-link-preview-draft';
     draftPreview.hidden = true;
     reply?.querySelector('.wow-chat-compose__row')?.append(draftPreview);
-    const captureComposerUrl = () => {
+    const captureComposerUrl = (forceBoundary = false) => {
         if (!replyInput || pendingComposerUrl) return;
         const raw = replyInput.value;
         const match = raw.match(/(?:https?:\/\/|www\.)[^\s<>'"]+|[a-z0-9.-]+\.[a-z]{2,}(?:\/[^\s<>'"]*)?/i);
         if (!match) return;
         const end = (match.index || 0) + match[0].length;
-        const boundary = end === raw.length || /\s/.test(raw.charAt(end));
+        const boundary = forceBoundary || end === raw.length || /\s/.test(raw.charAt(end));
         if (!boundary) return;
         const normalized = normaliseChatUrl(match[0].replace(/[.,;:!?)]$/, ''));
         if (!normalized) return;
@@ -152,8 +152,8 @@ if (modal && openers.length) {
         if (!url) { draftPreview.hidden = true; draftPreview.innerHTML = ''; return; }
         const requestId = ++draftPreviewRequest;
         draftPreviewTimer = window.setTimeout(async () => {
-            const preview = await getChatPreview(url);
-            if (requestId !== draftPreviewRequest || !preview) return;
+            const preview = await getChatPreview(url) || {};
+            if (requestId !== draftPreviewRequest) return;
             draftPreview.innerHTML = renderChatLinkPreview(url, preview, true);
             draftPreview.hidden = false;
         }, 180);
@@ -288,6 +288,7 @@ if (modal && openers.length) {
     const stopTypingHeartbeat = (notify = false) => { window.clearTimeout(typingTimer); window.clearInterval(typingHeartbeatTimer); typingTimer = null; typingHeartbeatTimer = null; if (notify) sendTypingSignal(false); };
     reply?.addEventListener('submit', async (event) => { event.preventDefault(); const text = replyInput?.value.trim() || ''; const value = [pendingComposerUrl, text].filter(Boolean).join(' '); if (!value || !token) return; stopTypingHeartbeat(true); pendingComposerUrl = ''; replyInput.value = ''; replyInput.style.height = '42px'; updateDraftPreview(); try { const response = await fetch(`${backendUrl}/api/live-chat/conversations/${encodeURIComponent(token)}/messages`, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ message: value }) }); if (!response.ok) throw new Error(); await loadMessages(); } catch (_) { if (threadStatus) threadStatus.textContent = 'Message could not be sent. Please try again.'; } });
     reply?.querySelectorAll('.wow-chat-quick button').forEach((button) => button.addEventListener('click', () => { if (replyInput) { replyInput.value = button.textContent.trim(); replyInput.focus(); } }));
+    replyInput?.addEventListener('keydown', (event) => { if (event.key === ' ') { captureComposerUrl(true); updateDraftPreview(); } });
     replyInput?.addEventListener('input', () => { replyInput.style.height = '42px'; replyInput.style.height = `${Math.min(replyInput.scrollHeight, 110)}px`; captureComposerUrl(); updateDraftPreview(); stopTypingHeartbeat(); if (!token || (!replyInput.value.trim() && !pendingComposerUrl)) { sendTypingSignal(false); return; } typingTimer = window.setTimeout(() => { sendTypingSignal(); typingHeartbeatTimer = window.setInterval(sendTypingSignal, 1000); }, 100); });
     replyInput?.addEventListener('blur', () => { if (!replyInput?.value.trim()) sendTypingSignal(false); });
     replyInput?.addEventListener('keydown', (event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); reply?.requestSubmit(); } });
