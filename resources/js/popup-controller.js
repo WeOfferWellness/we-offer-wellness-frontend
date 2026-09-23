@@ -57,24 +57,31 @@ function frequencyAllows(config) {
     const closedAt = Number(readStorage(localStorage, `${key}:closed`) || 0);
     const waitAfterClose = Number(config.wait_after_close_seconds || 0) * 1000;
     if (waitAfterClose && Date.now() - closedAt < waitAfterClose) return false;
-    if (frequency === 'once_session' && readStorage(sessionStorage, `${key}:seen`)) return false;
+    if (frequency === 'once_session' && readStorage(sessionStorage, `${key}:interacted`)) return false;
     if (frequency === 'once_day') {
         const day = new Date().toISOString().slice(0, 10);
-        if (readStorage(localStorage, `${key}:day`) === day) return false;
+        if (readStorage(localStorage, `${key}:interacted_day`) === day) return false;
     }
-    if (frequency === 'once_visitor' && readStorage(localStorage, `${key}:visitor`)) return false;
+    if (frequency === 'once_visitor' && readStorage(localStorage, `${key}:interacted_visitor`)) return false;
     if (key === 'cookie-banner' && cookieValue('wow_cookie_preferences')) return false;
     if (key === 'location-banner' && cookieValue('wow_location_prompt_v2') === '1') return false;
     if (key === 'newsletter-modal' && window.WOWNewsletterModal?.isSubscribed?.()) return false;
     return true;
 }
 
-function markShown(config) {
+function markServed(config) {
+    const key = config.key;
+    writeStorage(sessionStorage, `${key}:served`, Date.now());
+    try { sessionStorage.removeItem(`${storagePrefix}${key}:pending`); } catch (_) {}
+}
+
+function markInteracted(config) {
+    if (!config) return;
     const key = config.key;
     writeStorage(localStorage, `${key}:last`, Date.now());
-    if (config.frequency === 'once_session') writeStorage(sessionStorage, `${key}:seen`, '1');
-    if (config.frequency === 'once_day') writeStorage(localStorage, `${key}:day`, new Date().toISOString().slice(0, 10));
-    if (config.frequency === 'once_visitor') writeStorage(localStorage, `${key}:visitor`, '1');
+    writeStorage(sessionStorage, `${key}:interacted`, Date.now());
+    if (config.frequency === 'once_day') writeStorage(localStorage, `${key}:interacted_day`, new Date().toISOString().slice(0, 10));
+    if (config.frequency === 'once_visitor') writeStorage(localStorage, `${key}:interacted_visitor`, '1');
 }
 
 function track(config, event, metadata = {}) {
@@ -138,7 +145,7 @@ function openPopup(config, element) {
     if (config.key === 'newsletter-modal' && window.WOWNewsletterModal?.open) window.WOWNewsletterModal.open(true);
     else if (config.key === 'cookie-banner' && window.WOWCookieBanner?.open) window.WOWCookieBanner.open();
     else { locationController(element); showElement(element); }
-    markShown(config);
+    markServed(config);
     track(config, 'open');
 }
 
@@ -149,6 +156,7 @@ function initPopupController() {
     const active = { key: null };
     const firstVisit = !readStorage(localStorage, 'has_visited');
     const queue = [];
+    const configs = new Map();
     const tryNext = () => {
         if (active.key) return;
         const next = queue.find((config) => elements.has(config.key) && frequencyAllows(config));
@@ -156,22 +164,33 @@ function initPopupController() {
         active.key = next.key;
         window.setTimeout(() => openPopup(next, elements.get(next.key)), Math.max(0, Number(next.delay_seconds || 0) * 1000));
     };
-    const enqueue = (config) => { if (!queue.some((item) => item.key === config.key)) { queue.push(config); queue.sort((a, b) => Number(a.priority) - Number(b.priority)); tryNext(); } };
+    const enqueue = (config) => {
+        if (active.key && active.key !== config.key) writeStorage(sessionStorage, `${config.key}:pending`, '1');
+        if (!queue.some((item) => item.key === config.key)) {
+            queue.push(config);
+            queue.sort((a, b) => Number(a.priority) - Number(b.priority));
+            tryNext();
+        }
+    };
     document.addEventListener('wow:popup-closed', (event) => {
         const key = event.detail?.key;
         if (!key) return;
         writeStorage(localStorage, `${key}:closed`, Date.now());
+        const config = configs.get(key);
+        markInteracted(config);
+        if (config) track(config, 'close');
         if (key === active.key) { active.key = null; window.setTimeout(tryNext, 100); }
     });
     fetch(`${backendUrl}/api/popups?${new URLSearchParams({ page_url: window.location.href })}`, { credentials: 'include', headers: { Accept: 'application/json' } })
         .then((response) => response.ok ? response.json() : { data: [] })
         .then((payload) => {
             (payload.data || []).forEach((config) => {
+                configs.set(config.key, config);
                 const element = elements.get(config.key);
                 if (!element || !frequencyAllows(config)) return;
                 const triggers = config.triggers || {};
                 if (triggers.first_time_user && !firstVisit) return;
-                if (triggers.on_load) enqueue(config);
+                if (triggers.on_load || readStorage(sessionStorage, `${config.key}:pending`)) enqueue(config);
                 if (triggers.scroll) {
                     const onScroll = () => {
                         const max = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
