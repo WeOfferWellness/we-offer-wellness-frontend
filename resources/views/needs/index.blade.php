@@ -278,6 +278,13 @@
       'heroAsideTitle' => 'A clearer place to start',
       'heroAsideText' => 'No clutter. Just clear pathways into the right support.',
     ])
+    @include('partials.hero-meta', [
+      'items' => [
+        ['label' => count($needs ?? []).' needs', 'strong' => true],
+        ['label' => 'Therapies, classes and experiences'],
+        ['label' => 'Clear starting points'],
+      ],
+    ])
 
     <section class="wow-needs-grid" aria-label="Need modalities">
       @foreach(($needs ?? []) as $need)

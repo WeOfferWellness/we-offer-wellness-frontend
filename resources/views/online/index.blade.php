@@ -17,6 +17,25 @@
   'schemaUrl' => $pageUrl ?? url('/online'),
 ])
 
+@include('partials.landing-hero', [
+  'heroEyebrow' => 'Online support when you need it',
+  'heroTitle' => $modalityLabel ?? 'Online wellness',
+  'heroIntro' => !empty($modality)
+    ? 'Online '.strtolower((string) $modalityLabel).' experiences you can join from anywhere — calm, convenient, and actually enjoyable.'
+    : 'Online wellness therapies you can join from anywhere — calm, convenient, and actually enjoyable.',
+  'heroActions' => [['label' => 'Browse all online offerings', 'href' => url('/online'), 'style' => 'outline']],
+  'heroAsideLabel' => 'A useful starting point',
+  'heroAsideTitle' => 'Support from the comfort of home',
+  'heroAsideText' => 'Find online therapies, classes and one-to-one sessions that fit around your day.',
+])
+@include('partials.hero-meta', [
+  'items' => array_values(array_filter([
+    isset($results['meta']['total']) ? number_format((int) $results['meta']['total']).' live offerings' : null,
+    $modalityLabel ?? 'Online wellness',
+    'Join from anywhere',
+  ])),
+])
+
 @php
   $items = collect($results['items'] ?? []);
   $isMobile = (bool) ($isMobile ?? false);
@@ -72,18 +91,6 @@
 
 <section class="section">
   <div class="container-page">
-    <div class="mb-4">
-      <div class="kicker">Browse</div>
-      <h1>{{ $modalityLabel ?? 'Online' }}</h1>
-      <p class="text-ink-600 mt-2" style="max-width:70ch;">
-        @if(!empty($modality))
-          Online {{ strtolower((string) $modalityLabel) }} experiences you can join from anywhere — calm, convenient, and actually enjoyable.
-        @else
-          Online wellness therapies you can join from anywhere — calm, convenient, and actually enjoyable.
-        @endif
-      </p>
-    </div>
-
     @if(!empty($modality))
       @include('partials.guide_panel', [
         'guidePanelModality' => $modality,

@@ -316,6 +316,13 @@
   'heroAsideTitle' => $rangeLabel !== '' ? $rangeLabel : 'Find your next event',
   'heroAsideText' => 'Live listings, useful timing and clear routes into wellness experiences.',
 ])
+@include('partials.hero-meta', [
+  'items' => array_values(array_filter([
+    $rangeLabel !== '' ? $rangeLabel : null,
+    $featuredCount > 0 ? number_format((int) $featuredCount).' featured events' : null,
+    'Online and in-person options',
+  ])),
+])
 
 <section class="schedule-section pt-0">
   <div class="container">
@@ -654,27 +661,13 @@
   </div>
 </section>
 
-<section class="schedule-section">
-  <div class="container">
-    <div class="schedule-card p-4">
-      <h2 class="h3 mb-3">FAQs</h2>
-      <div class="accordion" id="scheduleFaqs">
-        @foreach($faqs as $index => $faq)
-          <div class="accordion-item">
-            <h3 class="accordion-header" id="faq-heading-{{ $index }}">
-              <button class="accordion-button {{ $index === 0 ? '' : 'collapsed' }}" type="button" data-bs-toggle="collapse" data-bs-target="#faq-collapse-{{ $index }}" aria-expanded="{{ $index === 0 ? 'true' : 'false' }}" aria-controls="faq-collapse-{{ $index }}">
-                {{ $faq['q'] ?? '' }}
-              </button>
-            </h3>
-            <div id="faq-collapse-{{ $index }}" class="accordion-collapse collapse {{ $index === 0 ? 'show' : '' }}" aria-labelledby="faq-heading-{{ $index }}" data-bs-parent="#scheduleFaqs">
-              <div class="accordion-body">{{ $faq['a'] ?? '' }}</div>
-            </div>
-          </div>
-        @endforeach
-      </div>
-    </div>
-  </div>
-</section>
+@include('partials.faq-section', [
+  'id' => 'schedule-faq',
+  'eyebrow' => 'Helpful to know',
+  'heading' => 'Frequently asked questions',
+  'intro' => 'Useful answers about discovering and booking upcoming wellness events.',
+  'faqs' => $faqs,
+])
 
 <section class="schedule-section pb-5">
   <div class="container">

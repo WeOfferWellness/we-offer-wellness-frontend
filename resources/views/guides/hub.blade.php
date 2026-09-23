@@ -62,6 +62,13 @@
         'heroAsideTitle' => count($page['popular_guides'] ?? []).' ways to begin',
         'heroAsideText' => 'Useful landing pages linking education into real discovery, nearby browsing and live offerings.',
       ])
+      @include('partials.hero-meta', [
+        'items' => array_values(array_filter([
+          count($page['popular_guides'] ?? []).' popular guides',
+          count($page['what_is_guides'] ?? []).' explainers',
+          'Practical wellness guidance',
+        ])),
+      ])
 
       <div class="guide-block guide-grid">
         <div class="guide-panel guide-card">

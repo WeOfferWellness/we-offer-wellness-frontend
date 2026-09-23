@@ -81,16 +81,24 @@
   'schemaUrl' => url('/near-me'),
 ])
 
+@include('partials.landing-hero', [
+  'heroEyebrow' => 'Find wellness near you',
+  'heroTitle' => 'Near Me',
+  'heroIntro' => 'Enter your location and we’ll show what’s available near you.',
+  'heroAsideLabel' => 'A useful starting point',
+  'heroAsideTitle' => 'Find support nearby',
+  'heroAsideText' => 'Explore relevant therapies, classes and experiences based on where you are.',
+])
+@include('partials.hero-meta', [
+  'items' => [
+    ['label' => 'Location-based discovery', 'strong' => true],
+    ['label' => 'Nearby therapies and experiences'],
+    ['label' => 'Online options available'],
+  ],
+])
+
 <section class="section">
   <div class="container-page" style="max-width:760px;">
-    <div class="mb-4">
-      <div class="kicker">Find</div>
-      <h1>Near Me</h1>
-      <p class="text-ink-600 mt-2" style="max-width:70ch;">
-        Enter your location and we’ll show what’s available near you.
-      </p>
-    </div>
-
     <div class="card p-4" style="border-radius:18px;">
       <form method="get" action="{{ url('/locations') }}" id="nearMeSearchForm" autocomplete="off">
         <label class="form-label">Location</label>

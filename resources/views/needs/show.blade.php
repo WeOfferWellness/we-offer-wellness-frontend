@@ -44,6 +44,13 @@
   'heroAsideTitle' => 'Find support that fits',
   'heroAsideText' => 'Explore relevant therapies, classes and experiences without the noise.',
 ])
+@include('partials.hero-meta', [
+  'items' => array_values(array_filter([
+    isset($results['meta']['total']) ? number_format((int) $results['meta']['total']).' live offerings' : null,
+    $need['title'] ?? 'Need support',
+    'Online and in-person options',
+  ])),
+])
 
 <section class="section">
   <div class="container-page">
