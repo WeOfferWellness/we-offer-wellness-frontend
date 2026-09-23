@@ -51,7 +51,8 @@ if (modal && openers.length) {
             const dayMarkup = day !== lastDay ? `<div class="wow-chat-day">${escapeHtml(day)}</div>` : '';
             lastDay = day;
             const name = wow ? (item.sender_name || 'WOW team') : (item.sender_name || 'You');
-            return `${dayMarkup}<div class="wow-chat-message wow-chat-message--${wow ? 'wow' : 'user'}"><div class="wow-chat-message__avatar">${escapeHtml(initials(wow ? 'W' : name))}</div><div class="wow-chat-message__group"><p class="wow-chat-message__name">${escapeHtml(name)}</p><div class="wow-chat-bubble">${escapeHtml(item.message).replace(/\n/g, '<br>')}</div><div class="wow-chat-message__meta">${escapeHtml(time)}${wow ? '<span class="wow-chat-message__checks" aria-label="Sent">✓✓</span>' : ''}</div></div></div>`;
+            const receipt = !wow ? `<span class="wow-chat-message__checks" aria-label="${item.read_at ? 'Read' : 'Sent'}">${item.read_at ? '✓✓' : '✓'}</span>` : '';
+            return `${dayMarkup}<div class="wow-chat-message wow-chat-message--${wow ? 'wow' : 'user'}"><div class="wow-chat-message__avatar">${escapeHtml(initials(wow ? 'W' : name))}</div><div class="wow-chat-message__group"><p class="wow-chat-message__name">${escapeHtml(name)}</p><div class="wow-chat-bubble">${escapeHtml(item.message).replace(/\n/g, '<br>')}</div><div class="wow-chat-message__meta">${escapeHtml(time)}${receipt}</div></div></div>`;
         }).join('');
         messages.scrollTop = messages.scrollHeight;
     };
@@ -63,6 +64,7 @@ if (modal && openers.length) {
             if (!response.ok) return;
             const payload = await response.json();
             renderMessages(payload.messages || []);
+            fetch(`${backendUrl}/api/live-chat/conversations/${encodeURIComponent(token)}/read`, { method: 'POST', credentials: 'include', headers: { Accept: 'application/json', 'Content-Type': 'application/json' }, body: '{}' }).catch(() => {});
             const online = !!payload.agents_online;
             const typing = !!payload.agent_typing;
             if (threadStatus) threadStatus.textContent = typing ? 'A WOW team member is typing…' : online ? 'A WOW team member is online' : 'We’ll reply as soon as someone is available.';
