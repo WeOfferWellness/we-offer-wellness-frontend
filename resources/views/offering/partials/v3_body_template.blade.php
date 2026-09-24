@@ -3337,24 +3337,10 @@ SVG;
                                     <button type="button" id="plusGroup">+</button>
                                 </div>
                             </div>
-
-                            <label class="field-label" id="availabilityFieldLabel">Availability</label>
-
-                            <div class="availability-mode">
-                                <button class="availability-card is-selected" type="button" data-availability-mode="confirm">
-                                    Confirm later
-                                    <span id="confirmAvailabilityCopy">Book now, confirm date later</span>
-                                </button>
-                                <button class="availability-card" type="button" data-availability-mode="pick">
-                                    <span id="pickAvailabilityTitle">Pick Date &amp; Time</span>
-                                    <span id="pickAvailabilityCopy">Open calendar</span>
-                                </button>
-                            </div>
-
                             <div class="selected-summary">
                                 <div class="selected-summary-row"><span>Location</span><strong id="summaryLocation">{{ $selectedLocationLabel }}</strong></div>
                                 <div class="selected-summary-row"><span>Session</span><strong id="summarySession">{{ $selectedVariantLabel }}</strong></div>
-                                <div class="selected-summary-row"><span>Date &amp; time</span><strong id="summaryDate">Confirm later</strong></div>
+                                <div class="selected-summary-row"><span>Date &amp; time</span><strong id="summaryDate">Checking availability…</strong></div>
                                 <div class="selected-summary-row"><span>Confirmation</span><strong>Email confirmation</strong></div>
                             </div>
 
@@ -4190,6 +4176,8 @@ SVG;
     let slotsByDay = {};
     let reservationHolds = {};
     let requestMode = false;
+    let hasLiveAvailability = false;
+    let availabilityResolved = false;
     let bookingTimezone = 'Europe/London';
     let bookingDurationMinutes = Number(config.durationMinutes || 60) || 60;
     let desktopMap = null;
@@ -4527,11 +4515,11 @@ SVG;
 
     function bookingSummaryText() {
         if (holdActive) return `Held for ${holdTimerText()}`;
-        if (selectedAvailabilityMode === 'pick') {
-            if (!selectedDateKey || !selectedTime) return 'Pick Date & Time';
+        if (hasLiveAvailability) {
+            if (!selectedDateKey || !selectedTime) return 'Book now to choose date & time';
             return `${formatDateLabel(selectedDateKey)} at ${selectedTime}`;
         }
-        return 'Confirm later';
+        return 'Arrange after booking';
     }
 
     function holdTimerText() {
@@ -4646,7 +4634,7 @@ SVG;
             desktopSecondaryAction.textContent = 'Add to cart';
         }
         if (confirmDateTime) {
-            confirmDateTime.disabled = !(selectedAvailabilityMode === 'pick' && selectedDateKey && selectedTime);
+            confirmDateTime.disabled = !(hasLiveAvailability && selectedDateKey && selectedTime);
         }
     }
 
@@ -4767,7 +4755,7 @@ SVG;
             if (dateTimeHelper) {
                 dateTimeHelper.textContent = bookingPayload?.slotsByDay && Object.keys(bookingPayload.slotsByDay).length
                     ? 'Pick another date.'
-                    : (requestMode ? 'Choose another weekday request time.' : 'No live slots are currently published. Confirm later if you want to book now.');
+                    : (requestMode ? 'Choose another weekday request time.' : 'No live slots are currently published.');
             }
             if (dateTimeFooterNote) {
                 dateTimeFooterNote.textContent = bookingPayload?.slotsByDay && Object.keys(bookingPayload.slotsByDay).length
@@ -4840,9 +4828,6 @@ SVG;
 
     function setAvailabilityMode(mode) {
         selectedAvailabilityMode = mode;
-        qsa('.availability-card', page).forEach(card => {
-            card.classList.toggle('is-selected', String(card.dataset.availabilityMode) === mode);
-        });
 
         if (mode === 'confirm') {
             selectedDateKey = null;
@@ -4859,12 +4844,25 @@ SVG;
     }
 
     async function fetchBookingAvailability() {
+        availabilityResolved = false;
+        hasLiveAvailability = false;
+        selectedAvailabilityMode = 'confirm';
+        selectedDateKey = null;
+        selectedTime = null;
+        selectedDateLabel = '';
+        clearHoldState();
+
         if (!bookingEndpoint) {
             slotsByDay = {};
             reservationHolds = {};
             bookingPayload = null;
-            renderCalendarMonth();
-            renderDateTimeModalState();
+            requestMode = false;
+            minAvailableDate = null;
+            maxAvailableDate = null;
+            bookingMonth = new Date();
+            availabilityResolved = true;
+            syncPanelSummary();
+            updatePrimaryActions();
             return;
         }
 
@@ -4885,14 +4883,15 @@ SVG;
             bookingPayload = json.bookingPayload || null;
             slotsByDay = bookingPayload?.slotsByDay || {};
             reservationHolds = bookingPayload?.reservationHolds || {};
-            requestMode = !hasAnySlots(slotsByDay);
-            if (requestMode) {
-                slotsByDay = generateRequestSlots();
-                reservationHolds = {};
-            }
+            requestMode = false;
+            hasLiveAvailability = hasAnySlots(slotsByDay);
+            selectedAvailabilityMode = hasLiveAvailability ? 'pick' : 'confirm';
             bookingTimezone = bookingPayload?.availabilitySettings?.timezone || 'Europe/London';
             bookingDurationMinutes = Number(bookingPayload?.duration || config.durationMinutes || 60) || 60;
-            const keys = Object.keys(slotsByDay).sort();
+
+            const keys = Object.keys(slotsByDay)
+                .filter(key => Array.isArray(slotsByDay[key]?.slots) && slotsByDay[key].slots.length > 0)
+                .sort();
             minAvailableDate = keys[0] || null;
             maxAvailableDate = keys[keys.length - 1] || null;
             bookingMonth = minAvailableDate ? parseDateKey(minAvailableDate) : new Date();
@@ -4900,20 +4899,19 @@ SVG;
             slotsByDay = {};
             reservationHolds = {};
             bookingPayload = null;
-            requestMode = true;
-            slotsByDay = generateRequestSlots();
+            requestMode = false;
+            hasLiveAvailability = false;
+            selectedAvailabilityMode = 'confirm';
             minAvailableDate = null;
             maxAvailableDate = null;
-            const keys = Object.keys(slotsByDay).sort();
-            minAvailableDate = keys[0] || null;
-            maxAvailableDate = keys[keys.length - 1] || null;
-            bookingMonth = minAvailableDate ? parseDateKey(minAvailableDate) : new Date();
+            bookingMonth = new Date();
         }
 
-        syncAvailabilityCopy();
+        availabilityResolved = true;
         renderCalendarMonth();
-        renderTimeOptions(selectedDateKey || minAvailableDate || '');
+        renderTimeOptions(hasLiveAvailability ? (selectedDateKey || minAvailableDate || '') : '');
         renderDateTimeModalState();
+        syncPanelSummary();
         updatePrimaryActions();
     }
 
@@ -4964,6 +4962,9 @@ SVG;
         selectedTime = null;
         selectedDateLabel = '';
         clearHoldState();
+        availabilityResolved = false;
+        hasLiveAvailability = false;
+        selectedAvailabilityMode = 'confirm';
         syncPanelSummary();
         syncVariantQueryParam();
         fetchBookingAvailability();
@@ -5154,7 +5155,13 @@ SVG;
     }
 
     async function handlePrimaryAction(openCartAfter = true) {
-        if (selectedAvailabilityMode === 'pick') {
+        if (!availabilityResolved) {
+            await fetchBookingAvailability();
+        }
+
+        if (hasLiveAvailability) {
+            selectedAvailabilityMode = 'pick';
+
             if (!selectedDateKey || !selectedTime) {
                 openDateTimeModal();
                 return;
@@ -5163,6 +5170,12 @@ SVG;
             if (!holdActive) {
                 await reserveSelectedSlot();
             }
+        } else {
+            selectedAvailabilityMode = 'confirm';
+            selectedDateKey = null;
+            selectedTime = null;
+            selectedDateLabel = '';
+            clearHoldState();
         }
 
         await addToBasket(openCartAfter);
@@ -5442,6 +5455,11 @@ SVG;
     }
 
     function openDateTimeModal() {
+        if (!hasLiveAvailability) {
+            return;
+        }
+
+        selectedAvailabilityMode = 'pick';
         openChildModal('date');
         renderCalendarMonth();
         renderTimeOptions(selectedDateKey || minAvailableDate || '');
@@ -5474,15 +5492,6 @@ SVG;
         renderLocationOptions();
         syncPanelSummary();
         updatePrimaryActions();
-        if (selectedAvailabilityMode === 'pick') {
-            qsa('.availability-card', page).forEach(card => {
-                card.classList.toggle('is-selected', String(card.dataset.availabilityMode) === 'pick');
-            });
-        } else {
-            qsa('.availability-card', page).forEach(card => {
-                card.classList.toggle('is-selected', String(card.dataset.availabilityMode) === 'confirm');
-            });
-        }
 
         await fetchBookingAvailability();
         slideHero();
@@ -5550,16 +5559,6 @@ SVG;
     closeDateTimeModal.addEventListener('click', () => closeChildModal('date', { reopenParent: true }));
     cancelDateTimeModal.addEventListener('click', () => closeChildModal('date', { reopenParent: true }));
     calendarBackdrop.addEventListener('click', () => closeChildModal('date', { reopenParent: true }));
-
-    qsa('.availability-card', page).forEach(card => {
-        card.addEventListener('click', () => {
-            const mode = card.dataset.availabilityMode;
-            setAvailabilityMode(mode);
-            if (mode === 'pick') {
-                openDateTimeModal();
-            }
-        });
-    });
 
     if (prevMonthBtn) prevMonthBtn.addEventListener('click', () => navigateCalendar(-1));
     if (nextMonthBtn) nextMonthBtn.addEventListener('click', () => navigateCalendar(1));
