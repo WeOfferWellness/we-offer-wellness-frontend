@@ -2928,7 +2928,7 @@ SVG;
                         <div class="booking-top">
                             <div>
                                 <div class="price-label">From</div>
-                                <div class="price" id="panelPrice">{{ $priceSummary }}</div>
+                                <div class="price" id="panelPrice">{{ '£' . number_format((float) $selectedVariantPrice, 2) }}</div>
                             </div>
                             <span class="status-dot" id="statusDot">{{ $bookingSummaryLabel }}</span>
                         </div>
@@ -2969,7 +2969,7 @@ SVG;
                                 <button class="custom-select-trigger" type="button" aria-haspopup="listbox" aria-expanded="false">
                                     <span class="custom-select-value">
                                         <strong id="sessionSelectTitle">{{ $selectedVariantLabel }}</strong>
-                                        <span id="sessionSelectMeta">{{ $variantCards[0]['meta'] ?? $selectedVariantLabel }} · {{ $priceSummary }}</span>
+                                        <span id="sessionSelectMeta">{{ $selectedVariantCard['meta'] ?? $selectedVariantLabel }} · {{ '£' . number_format((float) $selectedVariantPrice, 2) }}</span>
                                     </span>
                                     <span class="custom-select-arrow" aria-hidden="true"></span>
                                 </button>
@@ -3344,7 +3344,7 @@ SVG;
     @if(! $usesLegacyBuybox)
     <div class="mobile-ticket-bar" id="mobileTicketBar">
         <div>
-            <strong id="mobilePrice">{{ $priceSummary }}</strong>
+            <strong id="mobilePrice">{{ '£' . number_format((float) $selectedVariantPrice, 2) }}</strong>
             <span id="mobileTicket">{{ $mobileTicketText }}</span>
         </div>
         <button class="btn checkout-button" type="button" data-open-booking>Choose location &amp; date</button>
