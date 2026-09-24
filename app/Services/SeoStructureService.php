@@ -792,8 +792,15 @@ class SeoStructureService
 
     public function inferTypeKeyFromOffering(OfferingV3 $offering): string
     {
+        // V3 has an explicit canonical type. Never let incidental words in an
+        // offering title/summary (for example "workshop") override that type
+        // and silently move an existing canonical URL to another format.
+        $structuredType = trim((string) optional($offering->type)->name);
+        if ($structuredType !== '') {
+            return $this->canonicalTypeKey($structuredType);
+        }
+
         return $this->inferTypeKeyFromText(implode(' ', array_filter([
-            (string) optional($offering->type)->name,
             (string) optional($offering->category)->name,
             (string) ($offering->title ?? ''),
             (string) ($offering->summary ?? ''),

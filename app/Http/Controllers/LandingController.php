@@ -1998,7 +1998,10 @@ class LandingController extends Controller
             $id = (int) $canonicalMatch[1];
             $canonicalId = true;
         } elseif (str_starts_with(trim($handle), 'product-')) {
-            return null;
+            // Migrated V3 offerings deliberately retain the legacy product-{id}-...
+            // canonical slug so existing indexed URLs do not change. Do not treat
+            // that prefix as a V3 numeric ID; resolve it by the offering slug below.
+            $id = null;
         }
 
         // Canonical title slugs can legitimately begin with a number (for
@@ -2717,6 +2720,12 @@ class LandingController extends Controller
 
                     $variants[] = [
                         'id' => 'po_'.(string) $option->id.'_tier_'.(string) $tierRow->id,
+                        'price_option_id' => (int) $option->id,
+                        'price_tier_id' => (int) $tierRow->id,
+                        'audience_type' => $audienceType,
+                        'pricing_type' => $pricingType,
+                        'group_min' => (int) ($tierRow->min_qty ?? 3),
+                        'group_max' => $tierRow->max_qty === null ? null : (int) $tierRow->max_qty,
                         'options' => $variantOptions,
                         'selection' => $variantOptions,
                         'price' => (float) ($tierRow->price_amount ?? $option->price_amount ?? 0),
@@ -2735,6 +2744,11 @@ class LandingController extends Controller
 
             $variants[] = [
                 'id' => 'po_'.(string) $option->id,
+                'price_option_id' => (int) $option->id,
+                'audience_type' => $audienceType,
+                'pricing_type' => $pricingType,
+                'group_min' => $audienceType === 'group' ? max(3, (int) ($option->min_qty ?? 3)) : null,
+                'group_max' => null,
                 'options' => array_values(array_filter([$formatLabel, $basePeopleLabel], fn ($v) => $v !== null && $v !== '')),
                 'selection' => array_values(array_filter([$formatLabel, $basePeopleLabel], fn ($v) => $v !== null && $v !== '')),
                 'price' => (float) ($option->price_amount ?? 0),
