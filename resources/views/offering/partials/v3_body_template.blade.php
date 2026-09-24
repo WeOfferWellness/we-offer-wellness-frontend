@@ -2260,10 +2260,14 @@ SVG;
     }
     .wow-v3-offering-page .side-stack {
         position: sticky;
-        top: 136px;
+        top: 96px;
         display: grid;
         gap: 16px;
         align-self: start;
+        max-height: calc(100vh - 112px);
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        scrollbar-width: thin;
     }
     .wow-v3-offering-page .side-card {
         padding: 22px;
@@ -3256,7 +3260,7 @@ SVG;
                         </div>
 
                         <button class="btn checkout-button mobile-panel-pick" type="button" data-open-booking>
-                            Choose location &amp; date
+                            Choose options
                         </button>
 
                         <div class="booking-fields" id="bookingFields">
@@ -3371,7 +3375,7 @@ SVG;
                             <button class="btn checkout-button" type="button" id="desktopPrimaryAction">Book now</button>
                         </div>
 
-                        <p class="secure-note">Secure checkout. Email confirmation. Live booking support where available.</p>
+                        <p class="secure-note" id="bookingFlowNote">Secure checkout. Email confirmation. Book now opens the live calendar when slots are available.</p>
                     </aside>
                 @endif
                 @endif
@@ -3889,14 +3893,14 @@ SVG;
             <strong id="mobilePrice">{{ $priceSummary }}</strong>
             <span id="mobileTicket">{{ $mobileTicketText }}</span>
         </div>
-        <button class="btn checkout-button" type="button" data-open-booking>Choose location &amp; date</button>
+        <button class="btn checkout-button" type="button" data-open-booking>View &amp; Book</button>
     </div>
 
     <div class="modal-backdrop" id="bookingBackdrop"></div>
 
     <section class="booking-modal" id="bookingModal" aria-label="Mobile booking modal">
         <div class="booking-modal-head">
-            <h3>Choose location &amp; date</h3>
+            <h3>Choose your options</h3>
             <button class="booking-modal-close" type="button" id="closeBookingModal">×</button>
         </div>
         <div class="booking-modal-body">
@@ -4078,6 +4082,7 @@ SVG;
     const heroSlides = Array.from(page.querySelectorAll('.hero-slide'));
     const panelPrice = page.querySelector('#panelPrice');
     const mobilePrice = page.querySelector('#mobilePrice');
+    const statusDot = page.querySelector('#statusDot');
     const summaryLocation = page.querySelector('#summaryLocation');
     const summarySession = page.querySelector('#summarySession');
     const summaryDate = page.querySelector('#summaryDate');
@@ -4106,6 +4111,7 @@ SVG;
     const mobilePrimaryAction = page.querySelector('#mobilePrimaryAction');
     const desktopPrimaryAction = page.querySelector('#desktopPrimaryAction');
     const desktopSecondaryAction = page.querySelector('#desktopSecondaryAction');
+    const bookingFlowNote = page.querySelector('#bookingFlowNote');
     const openBookingButtons = page.querySelectorAll('[data-open-booking]');
     const openLocationButtons = page.querySelectorAll('[data-open-locations]');
     const locationChips = page.querySelectorAll('[data-location-chip]');
@@ -4621,6 +4627,18 @@ SVG;
     }
 
     function updatePrimaryActions() {
+        if (statusDot) {
+            statusDot.textContent = availabilityResolved
+                ? (hasLiveAvailability ? 'Live availability' : 'Flexible booking')
+                : 'Checking availability…';
+        }
+        if (bookingFlowNote) {
+            bookingFlowNote.textContent = availabilityResolved
+                ? (hasLiveAvailability
+                    ? 'Secure checkout. Email confirmation. Book now opens the live calendar so you can choose an available date and time.'
+                    : 'Secure checkout. Email confirmation. No live calendar is connected, so the practitioner will arrange the date with you after booking.')
+                : 'Checking live availability…';
+        }
         if (desktopPrimaryAction) {
             desktopPrimaryAction.disabled = false;
             desktopPrimaryAction.textContent = 'Book now';
