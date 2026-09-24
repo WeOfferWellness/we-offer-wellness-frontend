@@ -1136,7 +1136,9 @@ SVG;
 
     .wow-v3-offering-page .booking-panel {
         display: block;
-        align-self: end;
+        position: sticky;
+        top: 136px;
+        align-self: start;
         min-width: 0;
         padding: 22px;
         border-radius: var(--radius);
@@ -1212,6 +1214,24 @@ SVG;
         color: var(--ink);
         font-size: 13px;
         font-weight: 400;
+    }
+    .wow-v3-offering-page .booking-availability-state {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 14px;
+        padding: 10px 12px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--soft);
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.4;
+    }
+    .wow-v3-offering-page .booking-availability-state .status-dot {
+        flex: 0 0 auto;
+        padding: 6px 8px;
+        font-size: 11px;
     }
     .wow-v3-offering-page .selected-location-card {
         display: grid;
@@ -2983,23 +3003,17 @@ SVG;
                                 </div>
                             </div>
 
-                            <label class="field-label" id="availabilityFieldLabel">Availability</label>
-
-                            <div class="availability-mode">
-                                <button class="availability-card is-selected" type="button" data-availability-mode="confirm">
-                                    Confirm later
-                                    <span id="confirmAvailabilityCopy">Book now, confirm date later</span>
-                                </button>
-                                <button class="availability-card" type="button" data-availability-mode="pick">
-                                    <span id="pickAvailabilityTitle">Pick Date &amp; Time</span>
-                                    <span id="pickAvailabilityCopy">Open calendar</span>
-                                </button>
+                            <div class="booking-availability-state" id="bookingAvailabilityState">
+                                <span class="status-dot" id="availabilityFieldLabel">{{ $bookingFlow === 'live' ? 'Live availability' : 'Flexible booking' }}</span>
+                                <span id="pickAvailabilityCopy">{{ $bookingFlow === 'live' ? 'Book now to choose an available date and time.' : 'Your date is arranged with the practitioner after booking.' }}</span>
+                                <span id="confirmAvailabilityCopy" hidden></span>
+                                <span id="pickAvailabilityTitle" hidden></span>
                             </div>
 
                             <div class="selected-summary">
                                 <div class="selected-summary-row"><span>Location</span><strong id="summaryLocation">{{ $selectedLocationLabel }}</strong></div>
                                 <div class="selected-summary-row"><span>Session</span><strong id="summarySession">{{ $selectedVariantLabel }}</strong></div>
-                                <div class="selected-summary-row"><span>Date &amp; time</span><strong id="summaryDate">Confirm later</strong></div>
+                                <div class="selected-summary-row"><span>Date &amp; time</span><strong id="summaryDate">{{ $bookingFlow === 'live' ? 'Choose after Book now' : 'Arrange after booking' }}</strong></div>
                                 <div class="selected-summary-row"><span>Confirmation</span><strong>Email confirmation</strong></div>
                             </div>
 
@@ -3611,6 +3625,8 @@ SVG;
     let slotsByDay = {};
     let reservationHolds = {};
     let requestMode = false;
+    let pendingBookAfterCalendar = false;
+    let pendingBookOpenCart = true;
     let bookingTimezone = 'Europe/London';
     let bookingDurationMinutes = Number(config.durationMinutes || 60) || 60;
     let desktopMap = null;
@@ -3657,52 +3673,25 @@ SVG;
     }
 
     function generateRequestSlots() {
-        const generated = {};
-        const earliest = new Date(Date.now() + (72 * 60 * 60 * 1000));
-        const cursor = new Date(earliest);
-        cursor.setHours(0, 0, 0, 0);
-        const end = new Date(cursor);
-        end.setDate(end.getDate() + 56);
-
-        while (cursor <= end) {
-            const day = cursor.getDay();
-            if (day >= 1 && day <= 5) {
-                const dateKey = dateKeyFromDate(cursor);
-                const slots = [];
-                for (let hour = 9; hour <= 17; hour += 1) {
-                    const slotDate = new Date(cursor);
-                    slotDate.setHours(hour, 0, 0, 0);
-                    if (slotDate.getTime() < earliest.getTime()) {
-                        continue;
-                    }
-                    slots.push({
-                        start: `${pad(hour)}:00`,
-                        iso: slotDate.toISOString(),
-                        request: true,
-                    });
-                }
-                if (slots.length) {
-                    generated[dateKey] = { slots };
-                }
-            }
-            cursor.setDate(cursor.getDate() + 1);
-        }
-
-        return generated;
+        // Live calendar dates/times must only come from the booking API.
+        // Flexible offerings do not receive synthetic request slots.
+        return {};
     }
 
     function syncAvailabilityCopy() {
         if (availabilityFieldLabel) {
-            availabilityFieldLabel.textContent = requestMode ? 'Request day/time' : 'Availability';
-        }
-        if (confirmAvailabilityCopy) {
-            confirmAvailabilityCopy.textContent = 'Book now, confirm date later';
-        }
-        if (pickAvailabilityTitle) {
-            pickAvailabilityTitle.textContent = requestMode ? 'Request Date' : 'Pick Date & Time';
+            availabilityFieldLabel.textContent = requestMode ? 'Flexible booking' : 'Live availability';
         }
         if (pickAvailabilityCopy) {
-            pickAvailabilityCopy.textContent = requestMode ? 'Weekdays, 9am-5pm' : 'Open calendar';
+            pickAvailabilityCopy.textContent = requestMode
+                ? 'Your date is arranged with the practitioner after booking.'
+                : 'Book now to choose an available date and time.';
+        }
+        if (confirmAvailabilityCopy) {
+            confirmAvailabilityCopy.textContent = requestMode ? 'Arrange after booking' : '';
+        }
+        if (pickAvailabilityTitle) {
+            pickAvailabilityTitle.textContent = requestMode ? '' : 'Pick Date & Time';
         }
     }
 
@@ -3932,11 +3921,10 @@ SVG;
 
     function bookingSummaryText() {
         if (holdActive) return `Held for ${holdTimerText()}`;
-        if (selectedAvailabilityMode === 'pick') {
-            if (!selectedDateKey || !selectedTime) return 'Pick Date & Time';
+        if (selectedDateKey && selectedTime) {
             return `${formatDateLabel(selectedDateKey)} at ${selectedTime}`;
         }
-        return 'Confirm later';
+        return requestMode ? 'Arrange after booking' : 'Choose after Book now';
     }
 
     function holdTimerText() {
@@ -4046,7 +4034,7 @@ SVG;
             desktopSecondaryAction.textContent = 'Add to basket';
         }
         if (confirmDateTime) {
-            confirmDateTime.disabled = !(selectedAvailabilityMode === 'pick' && selectedDateKey && selectedTime);
+            confirmDateTime.disabled = !(selectedDateKey && selectedTime);
         }
     }
 
@@ -4235,7 +4223,7 @@ SVG;
         const text = `${formatDateLabel(selectedDateKey)} at ${selectedTime}`;
         dateTimeHelper.textContent = text;
         dateTimeFooterNote.textContent = text;
-        confirmDateTime.disabled = !(selectedAvailabilityMode === 'pick' && selectedDateKey && selectedTime);
+        confirmDateTime.disabled = !(selectedDateKey && selectedTime);
     }
 
     function setAvailabilityMode(mode) {
@@ -4263,9 +4251,15 @@ SVG;
             slotsByDay = {};
             reservationHolds = {};
             bookingPayload = null;
+            requestMode = true;
+            selectedAvailabilityMode = 'confirm';
+            minAvailableDate = null;
+            maxAvailableDate = null;
+            syncAvailabilityCopy();
             renderCalendarMonth();
             renderDateTimeModalState();
-            return;
+            updatePrimaryActions();
+            return false;
         }
 
         const params = new URLSearchParams();
@@ -4281,33 +4275,44 @@ SVG;
                 headers: { Accept: 'application/json' },
                 credentials: 'same-origin',
             });
+
+            if (!res.ok) {
+                throw new Error(`Availability request failed (${res.status})`);
+            }
+
             const json = await res.json();
             bookingPayload = json.bookingPayload || null;
             slotsByDay = bookingPayload?.slotsByDay || {};
             reservationHolds = bookingPayload?.reservationHolds || {};
             requestMode = !hasAnySlots(slotsByDay);
-            if (requestMode) {
-                slotsByDay = generateRequestSlots();
-                reservationHolds = {};
-            }
+            selectedAvailabilityMode = requestMode ? 'confirm' : 'pick';
+
             bookingTimezone = bookingPayload?.availabilitySettings?.timezone || 'Europe/London';
             bookingDurationMinutes = Number(bookingPayload?.duration || config.durationMinutes || 60) || 60;
-            const keys = Object.keys(slotsByDay).sort();
+
+            const keys = Object.keys(slotsByDay)
+                .filter(key => Array.isArray(slotsByDay?.[key]?.slots) && slotsByDay[key].slots.length > 0)
+                .sort();
+
             minAvailableDate = keys[0] || null;
             maxAvailableDate = keys[keys.length - 1] || null;
             bookingMonth = minAvailableDate ? parseDateKey(minAvailableDate) : new Date();
+
+            if (selectedDateKey && !keys.includes(selectedDateKey)) {
+                selectedDateKey = null;
+                selectedTime = null;
+                selectedDateLabel = '';
+                clearHoldState();
+            }
         } catch (error) {
             slotsByDay = {};
             reservationHolds = {};
             bookingPayload = null;
             requestMode = true;
-            slotsByDay = generateRequestSlots();
+            selectedAvailabilityMode = 'confirm';
             minAvailableDate = null;
             maxAvailableDate = null;
-            const keys = Object.keys(slotsByDay).sort();
-            minAvailableDate = keys[0] || null;
-            maxAvailableDate = keys[keys.length - 1] || null;
-            bookingMonth = minAvailableDate ? parseDateKey(minAvailableDate) : new Date();
+            bookingMonth = new Date();
         }
 
         syncAvailabilityCopy();
@@ -4315,6 +4320,31 @@ SVG;
         renderTimeOptions(selectedDateKey || minAvailableDate || '');
         renderDateTimeModalState();
         updatePrimaryActions();
+        syncPanelSummary();
+
+        return !requestMode;
+    }
+
+    function selectFirstAvailableDate() {
+        const keys = Object.keys(slotsByDay || {})
+            .filter(key => Array.isArray(slotsByDay?.[key]?.slots) && slotsByDay[key].slots.length > 0)
+            .sort();
+
+        const first = keys[0] || null;
+        if (!first) {
+            selectedDateKey = null;
+            selectedTime = null;
+            selectedDateLabel = '';
+            return false;
+        }
+
+        selectedAvailabilityMode = 'pick';
+        selectedDateKey = first;
+        selectedTime = null;
+        selectedDateLabel = formatDateLabel(first);
+        bookingMonth = parseDateKey(first);
+        clearHoldState();
+        return true;
     }
 
     function setSelectedLocation(locationId) {
@@ -4518,8 +4548,14 @@ SVG;
         } catch (error) {}
 
         reservationId = null;
-        startHoldCountdown(new Date(Date.now() + 600000).toISOString());
-        return true;
+        clearHoldState();
+        if (dateTimeHelper) {
+            dateTimeHelper.textContent = 'We could not hold that slot. Please choose it again or try another time.';
+        }
+        if (dateTimeFooterNote) {
+            dateTimeFooterNote.textContent = 'Unable to hold this slot. Please try again.';
+        }
+        return false;
     }
 
     async function addToBasket(openCartAfter = false) {
@@ -4531,17 +4567,28 @@ SVG;
     }
 
     async function handlePrimaryAction(openCartAfter = true) {
-        if (selectedAvailabilityMode === 'pick') {
-            if (!selectedDateKey || !selectedTime) {
-                openDateTimeModal();
-                return;
-            }
+        pendingBookOpenCart = openCartAfter;
 
-            if (!holdActive) {
-                await reserveSelectedSlot();
+        const hasLiveBooking = String(config.bookingFlow || '').toLowerCase() === 'live';
+        if (hasLiveBooking) {
+            const hasRealAvailability = await fetchBookingAvailability();
+
+            if (hasRealAvailability && hasAnySlots(slotsByDay)) {
+                pendingBookAfterCalendar = true;
+                selectFirstAvailableDate();
+                openDateTimeModal({ forceFirst: true });
+                return;
             }
         }
 
+        // No genuine live slots: do not show a calendar.
+        selectedAvailabilityMode = 'confirm';
+        pendingBookAfterCalendar = false;
+        selectedDateKey = null;
+        selectedTime = null;
+        selectedDateLabel = '';
+        clearHoldState();
+        syncPanelSummary();
         await addToBasket(openCartAfter);
     }
 
@@ -4810,11 +4857,22 @@ SVG;
         if (locationModalMap) locationModalMap.resize();
     }
 
-    function openDateTimeModal() {
+    function openDateTimeModal(options = {}) {
+        if (!hasAnySlots(slotsByDay)) {
+            return false;
+        }
+
+        if (options.forceFirst !== false || !selectedDateKey || !Array.isArray(slotsByDay?.[selectedDateKey]?.slots) || !slotsByDay[selectedDateKey].slots.length) {
+            selectFirstAvailableDate();
+        }
+
+        selectedAvailabilityMode = 'pick';
         openChildModal('date');
         renderCalendarMonth();
-        renderTimeOptions(selectedDateKey || minAvailableDate || '');
+        renderTimeOptions(selectedDateKey);
         renderDateTimeModalState();
+        syncPanelSummary();
+        return true;
     }
 
     function slideHero() {
@@ -4843,16 +4901,6 @@ SVG;
         renderLocationOptions();
         syncPanelSummary();
         updatePrimaryActions();
-        if (selectedAvailabilityMode === 'pick') {
-            qsa('.availability-card', page).forEach(card => {
-                card.classList.toggle('is-selected', String(card.dataset.availabilityMode) === 'pick');
-            });
-        } else {
-            qsa('.availability-card', page).forEach(card => {
-                card.classList.toggle('is-selected', String(card.dataset.availabilityMode) === 'confirm');
-            });
-        }
-
         await fetchBookingAvailability();
         slideHero();
         await waitForMapboxReady();
@@ -4912,23 +4960,28 @@ SVG;
     locationBackdrop.addEventListener('click', () => closeChildModal('location', { reopenParent: true }));
 
     confirmDateTime.addEventListener('click', async () => {
-        if (!(selectedAvailabilityMode === 'pick' && selectedDateKey && selectedTime)) return;
-        await reserveSelectedSlot();
-        closeChildModal('date', { reopenParent: true });
+        if (!(selectedDateKey && selectedTime)) return;
+
+        confirmDateTime.disabled = true;
+        const reserved = await reserveSelectedSlot();
+        if (!reserved) {
+            confirmDateTime.disabled = false;
+            return;
+        }
+
+        const continueBooking = pendingBookAfterCalendar;
+        const openCartAfter = pendingBookOpenCart;
+        pendingBookAfterCalendar = false;
+
+        closeChildModal('date', { reopenParent: !continueBooking });
+
+        if (continueBooking) {
+            await addToBasket(openCartAfter);
+        }
     });
     closeDateTimeModal.addEventListener('click', () => closeChildModal('date', { reopenParent: true }));
     cancelDateTimeModal.addEventListener('click', () => closeChildModal('date', { reopenParent: true }));
     calendarBackdrop.addEventListener('click', () => closeChildModal('date', { reopenParent: true }));
-
-    qsa('.availability-card', page).forEach(card => {
-        card.addEventListener('click', () => {
-            const mode = card.dataset.availabilityMode;
-            setAvailabilityMode(mode);
-            if (mode === 'pick') {
-                openDateTimeModal();
-            }
-        });
-    });
 
     if (prevMonthBtn) prevMonthBtn.addEventListener('click', () => navigateCalendar(-1));
     if (nextMonthBtn) nextMonthBtn.addEventListener('click', () => navigateCalendar(1));
@@ -4957,7 +5010,7 @@ SVG;
         button.addEventListener('click', () => handlePrimaryAction(true));
     });
     if (desktopSecondaryAction) {
-        desktopSecondaryAction.addEventListener('click', () => handlePrimaryAction(false));
+        desktopSecondaryAction.addEventListener('click', () => addToBasket(false));
     }
 
     openBookingButtons.forEach(button => {
