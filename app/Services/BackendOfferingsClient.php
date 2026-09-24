@@ -13,7 +13,7 @@ class BackendOfferingsClient
 
     public function reviewStats(): array
     {
-        $baseUrl = rtrim((string) env('BACKEND_URL', env('BACKEND_ASSET_URL', '')), '/');
+        $baseUrl = rtrim((string) env('BACKEND_URL', env('VITE_BACKEND_URL', env('BACKEND_ASSET_URL', ''))), '/');
         if ($baseUrl === '') {
             return [];
         }
@@ -31,7 +31,7 @@ class BackendOfferingsClient
 
     public function catalogue(array $filters = [], int $maxPages = 2, ?bool $personalised = null): Collection
     {
-        $baseUrl = rtrim((string) env('BACKEND_URL', env('BACKEND_ASSET_URL', '')), '/');
+        $baseUrl = rtrim((string) env('BACKEND_URL', env('VITE_BACKEND_URL', env('BACKEND_ASSET_URL', ''))), '/');
 
         if ($baseUrl === '') {
             return collect();

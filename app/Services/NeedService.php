@@ -81,6 +81,6 @@ class NeedService
 
     private function baseUrl(): string
     {
-        return rtrim((string) env('BACKEND_URL', env('BACKEND_ASSET_URL', '')), '/');
+        return rtrim((string) env('BACKEND_URL', env('VITE_BACKEND_URL', env('BACKEND_ASSET_URL', ''))), '/');
     }
 }

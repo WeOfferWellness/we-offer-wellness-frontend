@@ -15,7 +15,7 @@ class SyncV3SubscribersToBackend extends Command
 
     public function handle(): int
     {
-        $backendUrl = rtrim((string) env('BACKEND_URL', env('BACKEND_ASSET_URL', '')), '/');
+        $backendUrl = rtrim((string) env('BACKEND_URL', env('VITE_BACKEND_URL', env('BACKEND_ASSET_URL', ''))), '/');
         if ($backendUrl === '') {
             $this->error('BACKEND_URL is not configured.');
             return self::FAILURE;

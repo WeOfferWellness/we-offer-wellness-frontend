@@ -9,7 +9,7 @@ class BackendDiscoveryClient
 {
     public function modalityBoard(int $limit = 5, ?string $location = null): array
     {
-        $baseUrl = rtrim((string) env('BACKEND_URL', env('BACKEND_ASSET_URL', '')), '/');
+        $baseUrl = rtrim((string) env('BACKEND_URL', env('VITE_BACKEND_URL', env('BACKEND_ASSET_URL', ''))), '/');
         if ($baseUrl === '') {
             return [];
         }

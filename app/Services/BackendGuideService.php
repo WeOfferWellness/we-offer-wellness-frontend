@@ -9,7 +9,7 @@ class BackendGuideService
 {
     public function all(bool $fresh = false): array
     {
-        $base = rtrim((string) env('BACKEND_URL', env('BACKEND_ASSET_URL', '')), '/');
+        $base = rtrim((string) env('BACKEND_URL', env('VITE_BACKEND_URL', env('BACKEND_ASSET_URL', ''))), '/');
         if ($base === '') return [];
 
         if ($fresh) {
@@ -34,7 +34,7 @@ class BackendGuideService
             if (($guide['format'] ?? '') === $format && ($guide['modality'] ?? '') === $modality && ($guide['slug'] ?? '') === $slug) return $guide;
         }
 
-        $base = rtrim((string) env('BACKEND_URL', env('BACKEND_ASSET_URL', '')), '/');
+        $base = rtrim((string) env('BACKEND_URL', env('VITE_BACKEND_URL', env('BACKEND_ASSET_URL', ''))), '/');
         if ($base === '') return null;
 
         return Cache::remember('frontend:guide:'.$format.':'.$modality.':'.$slug, now()->addMinutes(10), function () use ($base, $format, $modality, $slug): ?array {

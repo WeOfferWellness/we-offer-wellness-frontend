@@ -13,7 +13,7 @@ $resolvedStripeWebhookSecret = $stripeTesting
 $mailRelayUrl = env('MAIL_RELAY_URL');
 
 if (! $mailRelayUrl) {
-    $backendBase = rtrim((string) env('BACKEND_URL', env('BACKEND_ASSET_URL', '')), '/');
+    $backendBase = rtrim((string) env('BACKEND_URL', env('VITE_BACKEND_URL', env('BACKEND_ASSET_URL', ''))), '/');
     $mailRelayUrl = $backendBase !== '' ? $backendBase.'/api/internal/mail/send' : '';
 }
 

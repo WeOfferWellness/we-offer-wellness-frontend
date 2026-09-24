@@ -209,7 +209,7 @@ class SubscriberController extends Controller
 
     protected function syncBackendSubscriber(V3Subscriber $subscriber): void
     {
-        $backendUrl = rtrim((string) env('BACKEND_URL', env('BACKEND_ASSET_URL', '')), '/');
+        $backendUrl = rtrim((string) env('BACKEND_URL', env('VITE_BACKEND_URL', env('BACKEND_ASSET_URL', ''))), '/');
         if ($backendUrl === '') {
             return;
         }

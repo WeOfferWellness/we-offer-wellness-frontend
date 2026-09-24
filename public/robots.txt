@@ -27,6 +27,12 @@ Allow: /
 
 User-agent: Googlebot
 Allow: /
+Allow: /favicon.ico
+
+# Explicitly permit the favicon crawler as well as the general Google crawler.
+User-agent: Googlebot-Image
+Allow: /
+Allow: /favicon.ico
 
 # Primary sitemap index
 Sitemap: https://www.weofferwellness.co.uk/sitemap.xml

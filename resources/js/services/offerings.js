@@ -145,7 +145,7 @@ export async function fetchOfferings(params = {}, options = {}) {
   ).toString();
   const base = opts.baseUrl
     || import.meta.env.VITE_OFFERINGS_URL
-    || `${String(import.meta.env.VITE_BACKEND_URL || '').replace(/\/$/, '')}/api/behaviour/offerings`;
+    || `${String(import.meta.env.VITE_BACKEND_URL || '').replace(/\/$/, '')}/api/offerings`;
   const url = qs ? `${base}?${qs}` : base;
 
   try {

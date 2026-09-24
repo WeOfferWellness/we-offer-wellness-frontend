@@ -86,7 +86,7 @@ export async function fetchProducts(params = {}, options = {}) {
   const qs = new URLSearchParams(apiParams).toString();
   const backendUrl = String(import.meta.env.VITE_BACKEND_URL || '').replace(/\/$/, '')
   const candidates = [
-    import.meta.env.VITE_OFFERINGS_URL || `${backendUrl}/api/behaviour/offerings`,
+    import.meta.env.VITE_OFFERINGS_URL || `${backendUrl}/api/offerings`,
   ]
 
   if (import.meta.env.VITE_PRODUCTS_URL) {
