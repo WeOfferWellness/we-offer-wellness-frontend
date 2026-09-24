@@ -9,8 +9,15 @@
     RewriteCond %{HTTP_HOST} ^weofferwellness\.co\.uk$ [NC]
     RewriteRule ^ https://www.weofferwellness.co.uk%{REQUEST_URI} [R=301,L,NE]
 
+    # Behind Cloudflare, trust an explicit visitor scheme first. This avoids a
+    # redirect loop if the edge is HTTPS but the origin connection is HTTP.
     RewriteCond %{HTTP_HOST} ^www\.weofferwellness\.co\.uk$ [NC]
-    RewriteCond %{HTTP:X-Forwarded-Proto} =http [OR]
+    RewriteCond %{HTTP:X-Forwarded-Proto} ^http$ [NC]
+    RewriteRule ^ https://www.weofferwellness.co.uk%{REQUEST_URI} [R=301,L,NE]
+
+    # Direct-origin fallback when there is no forwarded scheme header.
+    RewriteCond %{HTTP_HOST} ^www\.weofferwellness\.co\.uk$ [NC]
+    RewriteCond %{HTTP:X-Forwarded-Proto} ^$
     RewriteCond %{HTTPS} !=on
     RewriteRule ^ https://www.weofferwellness.co.uk%{REQUEST_URI} [R=301,L,NE]
 
