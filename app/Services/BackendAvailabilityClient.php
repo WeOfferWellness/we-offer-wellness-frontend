@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Http;
 
 class BackendAvailabilityClient
 {
-    public function forUsers(array $userIds, array $durations = [], int $days = 30): array
+    public function forUsers(array $userIds, array $durations = [], int $days = 30, bool $includeSlots = false): array
     {
         $userIds = collect($userIds)
             ->filter(fn ($id): bool => is_numeric($id) && (int) $id > 0)
@@ -21,14 +21,14 @@ class BackendAvailabilityClient
             return [];
         }
 
-        $baseUrl = rtrim((string) env('BACKEND_URL', env('BACKEND_ASSET_URL', '')), '/');
+        $baseUrl = rtrim((string) env('BACKEND_URL', env('VITE_BACKEND_URL', env('BACKEND_ASSET_URL', ''))), '/');
         if ($baseUrl === '') {
             return [];
         }
 
-        $cacheKey = 'backend:availability:'.sha1(json_encode([$baseUrl, $userIds, $durations, $days]));
+        $cacheKey = 'backend:availability:'.sha1(json_encode([$baseUrl, $userIds, $durations, $days, $includeSlots]));
 
-        return Cache::remember($cacheKey, now()->addMinutes(10), function () use ($baseUrl, $userIds, $durations, $days): array {
+        return Cache::remember($cacheKey, now()->addMinutes(10), function () use ($baseUrl, $userIds, $durations, $days, $includeSlots): array {
             try {
                 $response = Http::acceptJson()
                     ->withHeaders([
@@ -41,6 +41,7 @@ class BackendAvailabilityClient
                         'user_ids' => $userIds,
                         'durations' => $durations,
                         'days' => $days,
+                        'include_slots' => $includeSlots,
                     ]);
             } catch (\Throwable) {
                 return [];

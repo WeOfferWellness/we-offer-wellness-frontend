@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Support\WowEventsFeed;
+use App\Services\BackendAvailabilityClient;
+use App\Services\BackendOfferingsClient;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -10,15 +12,135 @@ use Illuminate\Support\Str;
 
 class ScheduleDiscoveryController extends Controller
 {
-    public function index()
+    public function index(Request $request, BackendOfferingsClient $offeringsClient, BackendAvailabilityClient $availabilityClient)
     {
+        $selectedDate = $this->validScheduleDate($request->query('date'));
+        $days = 30;
+        $type = ['therapies' => 'therapy', 'classes' => 'class', 'events' => 'event', 'retreats' => 'retreats'][$request->query('type')] ?? $request->query('type');
+        $rating = $request->query('rating');
+        $sort = $request->query('sort');
+        $filters = array_filter([
+            'type' => $type,
+            'max_price' => $request->query('price_max', $request->query('max_price')),
+            'sort' => in_array($sort, ['price_asc', 'price_desc'], true) ? 'price' : null,
+            'direction' => $sort === 'price_asc' ? 'asc' : 'desc',
+            'min_rating' => is_numeric($rating) ? $rating : null,
+            'min_reviews' => $rating === 'reviewed' ? 1 : null,
+        ], fn ($value) => filled($value));
+        $offerings = $offeringsClient->catalogue($filters, 3, false);
+        $format = strtolower(trim((string) $request->query('format')));
+        $location = strtolower(trim((string) $request->query('where')));
+        $offerings = $offerings->filter(function (array $item) use ($format, $location): bool {
+            $channels = collect(data_get($item, 'channels', []))->map(fn ($value) => strtolower((string) $value));
+            $onlineOnly = (bool) data_get($item, 'online_only', false);
+            $formatMatches = $format === ''
+                || ($format === 'online' && ($onlineOnly || $channels->contains('online')))
+                || ($format === 'in_person' && ! $onlineOnly && ($channels->isEmpty() || $channels->contains('in_person')));
+            $locations = collect(data_get($item, 'locations', []))->map(fn ($value) => strtolower((string) $value));
+            $vendorLocation = strtolower((string) (data_get($item, 'vendor.user.location', '') ?: data_get($item, 'vendor.user.location_name', '')));
+            $locationMatches = $location === '' || $locations->contains(fn ($value) => str_contains($value, $location)) || str_contains($vendorLocation, $location);
+            return $formatMatches && $locationMatches;
+        })->values();
+        // Availability must be checked against the actual session duration.
+        // Group by duration so one practitioner can expose multiple offerings with
+        // different durations without a short slot falsely qualifying a long session.
+        $durationGroups = $offerings->groupBy(
+            fn (array $item): string => (string) ($this->offeringDurationMinutes($item) ?? 0)
+        );
+        $availabilityByDuration = [];
+
+        foreach ($durationGroups as $durationKey => $group) {
+            $duration = (int) $durationKey;
+            $groupUserIds = $group
+                ->map(fn (array $item) => $this->offeringUserId($item))
+                ->filter()
+                ->unique()
+                ->values()
+                ->all();
+
+            $availabilityByDuration[$durationKey] = collect($groupUserIds)->chunk(100)->reduce(
+                function (array $carry, $chunk) use ($availabilityClient, $days, $duration): array {
+                    $ids = $chunk->all();
+                    $durations = $duration >= 15 ? array_fill_keys($ids, $duration) : [];
+
+                    return $carry + $availabilityClient->forUsers($ids, $durations, $days, true);
+                },
+                []
+            );
+        }
+
+        $scheduled = $offerings->filter(
+            fn (array $item): bool => $this->offeringHasAvailabilityOnDate($item, $availabilityByDuration, $selectedDate)
+        )->values();
+
+        $dates = collect(range(0, 13))->map(function (int $offset) use ($availabilityByDuration, $offerings): array {
+            $date = Carbon::today()->addDays($offset);
+            $key = $date->toDateString();
+            $count = $offerings->filter(
+                fn (array $item): bool => $this->offeringHasAvailabilityOnDate($item, $availabilityByDuration, $key)
+            )->count();
+
+            return ['key' => $key, 'day' => $date->format('D'), 'date' => $date->format('j'), 'label' => $date->format('l, j F'), 'count' => $count];
+        })->all();
+
+        $availability = $availabilityByDuration;
+
         return view('schedule-discovery.index', [
+            'scheduleOfferings' => $scheduled,
+            'scheduleAvailability' => $availability,
+            'scheduleDates' => $dates,
+            'selectedScheduleDate' => $selectedDate,
+            'scheduleFilters' => $request->query(),
             'seo' => [
-                'title' => 'Schedule Discovery | We Offer Wellness™',
-                'description' => 'Schedule Discovery placeholder page.',
+                'title' => 'Find Wellness Sessions by Date | We Offer Wellness™',
+                'description' => 'Find bookable wellness therapies, classes and sessions by date, live practitioner availability, format and location.',
                 'canonical' => url('/schedule-discovery'),
             ],
         ]);
+    }
+
+    private function validScheduleDate(?string $date): string
+    {
+        try {
+            $parsed = Carbon::createFromFormat('Y-m-d', (string) $date)->startOfDay();
+            if ($parsed->lt(Carbon::today()) || $parsed->gt(Carbon::today()->addDays(29))) {
+                return Carbon::today()->toDateString();
+            }
+            return $parsed->toDateString();
+        } catch (\Throwable) {
+            return Carbon::today()->toDateString();
+        }
+    }
+
+    private function offeringUserId(array $item): ?int
+    {
+        $id = data_get($item, 'vendor_user_id')
+            ?? data_get($item, 'provider_user_id')
+            ?? data_get($item, 'vendor.user_id')
+            ?? data_get($item, 'vendor_details.user_id');
+        return is_numeric($id) && (int) $id > 0 ? (int) $id : null;
+    }
+
+    private function offeringDurationMinutes(array $item): ?int
+    {
+        $durations = collect(data_get($item, 'session_packages', []))
+            ->filter(fn ($package): bool => is_array($package))
+            ->map(fn (array $package): int => (int) data_get($package, 'session_duration_minutes', 0))
+            ->filter(fn (int $duration): bool => $duration >= 15);
+
+        return $durations->isNotEmpty() ? (int) $durations->min() : null;
+    }
+
+    private function offeringHasAvailabilityOnDate(array $item, array $availabilityByDuration, string $date): bool
+    {
+        $userId = $this->offeringUserId($item);
+        if (! $userId) {
+            return false;
+        }
+
+        $durationKey = (string) ($this->offeringDurationMinutes($item) ?? 0);
+
+        return isset($availabilityByDuration[$durationKey][(string) $userId]['slots_by_date'][$date]);
     }
 
     private const TOPICS = [
