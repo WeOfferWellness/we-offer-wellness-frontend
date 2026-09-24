@@ -1420,6 +1420,35 @@ class LandingController extends Controller
         } catch (\Throwable $e) { /* swallow fallback errors */
         }
 
+        // Preserve the requested legacy Product v1/v2 variant (for example ?variant=po_154)
+        // all the way into the shared V3 offering template.
+        $selectedLegacyVariant = null;
+        if ($priceOptionId) {
+            foreach ($variantsArr as $legacyVariant) {
+                if ((int) ($legacyVariant['id'] ?? 0) === (int) $priceOptionId) {
+                    $selectedLegacyVariant = $legacyVariant;
+                    break;
+                }
+            }
+        }
+        if (! $selectedLegacyVariant && ! empty($variantsArr)) {
+            $selectedLegacyVariant = $variantsArr[0];
+        }
+
+        $selectedLegacyVariantId = $selectedLegacyVariant
+            ? (string) ($selectedLegacyVariant['id'] ?? '')
+            : ($priceOptionId ? (string) $priceOptionId : '');
+        $selectedLegacyVariantSelection = array_values(array_filter(array_map(
+            static fn ($value) => trim((string) $value),
+            (array) ($selectedLegacyVariant['options'] ?? [])
+        )));
+        $selectedLegacyVariantLabel = trim((string) ($variantLabel ?? ''));
+        if ($selectedLegacyVariantLabel === '') {
+            $selectedLegacyVariantLabel = $selectedLegacyVariantSelection
+                ? implode(' • ', $selectedLegacyVariantSelection)
+                : 'Option';
+        }
+
         $vendor = $product->vendor;
         $clientReviews = [];
         $vendorReviewCount = 0;
@@ -1485,6 +1514,10 @@ class LandingController extends Controller
             'images' => $images,
             'options' => $optionsArr,
             'variants' => $variantsArr,
+            'selectedVariantId' => $selectedLegacyVariantId,
+            'selectedVariantLabel' => $selectedLegacyVariantLabel,
+            'selectedVariantSelection' => $selectedLegacyVariantSelection,
+            'selectedVariantPriceOptionId' => $priceOptionId ?: (is_numeric($selectedLegacyVariant['id'] ?? null) ? (int) $selectedLegacyVariant['id'] : null),
             'mode' => $isOnline && count($phys) === 0 ? 'Online' : (count($phys) ? 'In-person' : null),
             'location' => $phys[0] ?? ($isOnline ? 'Online' : (trim((string) data_get($meta, 'location', data_get($meta, 'venue.name', ''))) ?: null)),
             'locations' => $locations,
