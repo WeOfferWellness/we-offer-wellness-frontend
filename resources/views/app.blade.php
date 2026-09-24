@@ -1,7 +1,9 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-    <head>
-        <meta charset="utf-8">
+@extends('layouts.base')
+
+@section('html-lang', str_replace('_', '-', app()->getLocale()))
+
+@section('document-head')
+<meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
@@ -11,8 +13,7 @@
           $defaultDesc = 'Holistic therapy, classes, workshops and retreats from trusted practitioners across the UK, online and in person.';
           $defaultOg = asset('images/default-social-preview.jpg');
           $canonical = $seoService->canonicalUrl(request()->getPathInfo());
-          $gtmId = config('services.gtm.id');
-          $favicon = asset('favicon.ico');
+$favicon = asset('favicon.ico');
           $ogTitle = $seoService->shortOgTitle($appName);
           $ogDesc = $seoService->shortOgDescription($defaultDesc);
         @endphp
@@ -35,20 +36,7 @@
         <meta name="twitter:title" content="{{ $ogTitle }}" />
         <meta name="twitter:description" content="{{ $ogDesc }}" />
         <meta name="twitter:image" content="{{ $defaultOg }}" />
-
-        <!-- Google Tag Manager (optional via env) -->
-        @if ($gtmId)
-        <script>
-          (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-          new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-          j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-          'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-          })(window,document,'script','dataLayer','{{ $gtmId }}');
-        </script>
-        @endif
-
-        @include('partials.analytics.ga4-head')
-        <meta name="csrf-token" content="{{ csrf_token() }}">
+<meta name="csrf-token" content="{{ csrf_token() }}">
 
         <!-- Favicon -->
         <link rel="icon" type="image/png" sizes="48x48" href="{{ asset('favicon-48x48.png') }}">
@@ -117,12 +105,14 @@
         <script type="application/ld+json">{!! json_encode($orgLd, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE) !!}</script>
         <script type="application/ld+json">{!! json_encode($siteLd, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE) !!}</script>
         @inertiaHead
-    </head>
-    <body class="antialiased">
-        @if ($gtmId)
-        <noscript><iframe src="https://www.googletagmanager.com/ns.html?id={{ $gtmId }}" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-        @endif
-        @inertia
+@endsection
+
+@section('document-body-class')
+antialiased
+@endsection
+
+@section('document-body')
+@inertia
 
         <script>
           // Basic analytics bridge for SPA navigations and key commerce events
@@ -155,22 +145,7 @@
                 localStorage.setItem('wow_first_touch', JSON.stringify(first));
               } catch (_) {}
             }
-            function syncConsent(event){
-              try {
-                var preferences = event && event.detail;
-                if (!preferences) preferences = JSON.parse(localStorage.getItem('wow_cookie_preferences') || '{}');
-                if (typeof window.gtag === 'function') window.gtag('consent', 'update', {
-                  analytics_storage: preferences.analytics === true ? 'granted' : 'denied',
-                  ad_storage: preferences.marketing === true ? 'granted' : 'denied',
-                  ad_user_data: preferences.marketing === true ? 'granted' : 'denied',
-                  ad_personalization: preferences.marketing === true ? 'granted' : 'denied',
-                  personalization_storage: preferences.personalization === true ? 'granted' : 'denied'
-                });
-              } catch (_) {}
-            }
             persistAttribution();
-            syncConsent();
-            document.addEventListener('wow:cookie-preferences', syncConsent);
             document.addEventListener('inertia:success', function(ev){
               try {
                 persistAttribution();
@@ -185,10 +160,9 @@
                 currency: detail.currency || 'GBP',
                 value: detail.value ?? null,
                 item_count: detail.item_count ?? detail.qty ?? null,
-                source: detail.source || 'inertia-bridge',
+                interaction_source: detail.source || 'inertia-bridge',
               });
             });
           })();
         </script>
-    </body>
-</html>
+@endsection

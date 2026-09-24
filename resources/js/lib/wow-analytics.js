@@ -71,14 +71,34 @@ function buildCommerceItems(items) {
   return items.map((item, index) => toCommerceItem(item, index)).filter(Boolean)
 }
 
+function normalizeGa4EventParams(params = {}) {
+  const safe = { ...(params || {}) }
+
+  const mappings = [
+    ['source', 'interaction_source'],
+    ['medium', 'interaction_medium'],
+    ['campaign', 'interaction_campaign'],
+  ]
+
+  mappings.forEach(([legacyKey, safeKey]) => {
+    if (safe[legacyKey] != null && safe[safeKey] == null) {
+      safe[safeKey] = safe[legacyKey]
+    }
+    delete safe[legacyKey]
+  })
+
+  return safe
+}
+
 function track(eventName, params = {}) {
   const win = getWindow()
   if (!win) return false
 
+  const eventParams = normalizeGa4EventParams(params)
   const payload = cleanObject({
     flow_version: FLOW_VERSION,
     wow_event_name: eventName,
-    ...params,
+    ...eventParams,
   })
 
   try {
@@ -111,7 +131,7 @@ function track(eventName, params = {}) {
 function trackPageView(params = {}) {
   const win = getWindow()
   return track('page_view', {
-    page_location: params.page_location || (win ? `${win.location.pathname}${win.location.search}${win.location.hash}` : ''),
+    page_location: params.page_location || (win ? win.location.href : ''),
     page_title: params.page_title || (typeof document !== 'undefined' ? document.title : ''),
     ...params,
   })

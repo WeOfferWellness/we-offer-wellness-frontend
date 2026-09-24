@@ -1,16 +1,22 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    @include('partials.head')
-</head>
-<body class="antialiased @yield('body-class')">
-  <div class="text-ink-800">
+@extends('layouts.base')
+
+@section('html-lang', 'en')
+
+@section('document-head')
+@include('partials.head')
+@endsection
+
+@section('document-body-class')
+antialiased @yield('body-class')
+@endsection
+
+@section('document-body')
+<div class="text-ink-800">
       @include('partials.header')
       <main>
           @yield('content')
       </main>
       @include('partials.footer')
-      @include('partials.analytics-bridge')
   </div>
 
   @include('partials.popups.container')
@@ -1012,6 +1018,4 @@
 })();
 </script>
 @stack('scripts')
-
-</body>
-</html>
+@endsection

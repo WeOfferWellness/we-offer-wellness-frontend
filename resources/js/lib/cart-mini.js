@@ -188,7 +188,7 @@ import { trackCommerce } from './wow-analytics'
         currency: 'GBP',
         value: Number(price || 0) * qty,
         item_count: qty,
-        source: 'mini',
+        interaction_source: 'mini',
       })
     } catch(_){}
     return addToCart({ id: resolvedId, cartKey: resolvedId, productId: productId || id, variantId: variantId || null, variantLabel, sourceVersion: btn.getAttribute('data-source-version') || null, title, price, image, url, qty, meta: priceIncludesMarkup ? { price_includes_marketplace_markup: true } : {} }, { openCart });

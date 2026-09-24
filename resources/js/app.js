@@ -43,7 +43,6 @@ if (document.readyState === 'loading') {
 
 import { initDrawRandomUnderline } from './lib/wow-links';
 import { initClickLoaders } from './lib/wow-buttons';
-import './lib/wow-analytics';
 import './analytics';
 import './lib/cart-shortcuts';
 import './lib/cart-mini';

@@ -110,7 +110,7 @@ function recordSearch({ searchTerm = '', locationQuery = '', source = 'site-sear
       search_term: cleanSearchTerm || undefined,
       location_context: safeLocation,
       online_or_in_person: analyticsContext().online_flag || undefined,
-      source,
+      interaction_source: source,
     });
   }
 

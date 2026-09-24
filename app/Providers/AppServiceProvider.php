@@ -32,7 +32,10 @@ class AppServiceProvider extends ServiceProvider
             $request = request();
             $host = strtolower((string) $request->getHost());
 
-            if ($host !== '' && ! in_array($host, ['localhost', '127.0.0.1', '::1'], true)) {
+            if (in_array($host, ['weofferwellness.co.uk', 'www.weofferwellness.co.uk'], true)) {
+                URL::forceRootUrl('https://www.weofferwellness.co.uk');
+                URL::forceScheme('https');
+            } elseif ($host !== '' && ! in_array($host, ['localhost', '127.0.0.1', '::1'], true)) {
                 URL::forceRootUrl($request->getSchemeAndHttpHost());
 
                 if ($request->isSecure() || $request->header('X-Forwarded-Proto') === 'https') {

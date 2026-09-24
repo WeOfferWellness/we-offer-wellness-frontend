@@ -1,11 +1,12 @@
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
+@extends('layouts.base')
+
+@section('html-lang', 'en')
+
+@section('document-head')
+<meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="refresh" content="0;url={{ $target }}">
-    @include('partials.analytics.ga4-head')
-    <title>Taking you to We Offer Wellness</title>
+<title>Taking you to We Offer Wellness</title>
     <style>
         :root { color-scheme: light; font-family: Manrope, Arial, sans-serif; }
         body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #f5fbf8; color: #0b1320; }
@@ -16,13 +17,17 @@
         a { display: inline-flex; margin-top: 22px; padding: 11px 18px; border-radius: 999px; background: #105b4b; color: #fff; font-weight: 700; text-decoration: none; }
         a:hover { background: #0b463b; }
     </style>
-</head>
-<body>
-    <main>
+@endsection
+
+@section('document-body-class')
+
+@endsection
+
+@section('document-body')
+<main>
         <span class="mark" aria-hidden="true">WOW</span>
         <h1>Taking you to the right place</h1>
         <p>This page is no longer available.</p>
         <a href="{{ $target }}">Continue</a>
     </main>
-</body>
-</html>
+@endsection

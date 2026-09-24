@@ -1,12 +1,12 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-<head>
-    <meta charset="utf-8">
+@extends('layouts.base')
+
+@section('html-lang', str_replace('_', '-', app()->getLocale()))
+
+@section('document-head')
+<meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-
-    @include('partials.analytics.ga4-head')
-    <title>@yield('page-title', 'We Offer Wellness™')</title>
+<title>@yield('page-title', 'We Offer Wellness™')</title>
     @php
         $favicon = asset('favicon.ico');
     @endphp
@@ -197,8 +197,13 @@
         @keyframes fadeIn{ from{ opacity:0; transform: translateY(4px);} to{ opacity:1; transform: translateY(0);} }
     </style>
     @stack('styles')
-</head>
-<body class="account-auth-body">
+@endsection
+
+@section('document-body-class')
+account-auth-body
+@endsection
+
+@section('document-body')
 <main class="account-auth-window">
     <section class="account-auth-left" aria-label="Authentication form">
         <div class="brand-mark" role="img" aria-label="We Offer Wellness">
@@ -318,5 +323,4 @@
 })();
 </script>
 @stack('scripts')
-</body>
-</html>
+@endsection

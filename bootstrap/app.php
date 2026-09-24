@@ -21,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->web(prepend: [
+            \App\Http\Middleware\ForceCanonicalHttps::class,
             \App\Http\Middleware\ResolveConfiguredRedirects::class,
         ]);
 
