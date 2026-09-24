@@ -52,6 +52,8 @@ Route::get('/review-stats', [ReviewStatsController::class, 'index']);
 // Booking availability for v3 offerings
 Route::get('/booking/offering/{offering}', [BookingLinkApiController::class, 'availability']);
 Route::get('/booking/product/{product}', [BookingLinkApiController::class, 'availabilityForProduct']);
+Route::post('/booking/offering/{offering}/hold', [\App\Http\Controllers\Api\OfferingReservationProxyController::class, 'hold'])
+    ->name('api.booking.offering.hold');
 
 // Lightweight reservation hold/release endpoints
 Route::post('/reservations/hold', [ReservationController::class, 'hold'])->name('api.reservations.hold');

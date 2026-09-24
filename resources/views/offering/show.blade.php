@@ -1323,30 +1323,6 @@
 ])
 
 <section class="section product-page">
-  <style>
-    /* Force Manrope for all headings/titles on product page */
-    .product-page h1,
-    .product-page h2,
-    .product-page h3,
-    .product-page .wow-section-title,
-    .product-page .wow-acc-title,
-    .product-page .wow-title {
-      font-family: 'Manrope', var(--bs-font-sans-serif) !important;
-    }
-    .product-page h1 { font-weight: 600 !important; }
-
-    /* FOMO text styling within content-bottom */
-    .content-bottom .fomo {
-      margin: 0 0 8px;
-      font-size: var(--fomo);
-      font-weight: 600;
-      color: rgba(11, 18, 32, .84);
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-  </style>
   <div class="container-page">
     @if($isEventOffering)
       <div class="row g-4 align-items-start">
@@ -1355,9 +1331,9 @@
         </div>
       </div>
     @elseif($isV3Offering)
-      @include('offering.partials.v3_body_template', ['product' => $p, 'type' => $type, 'showPaymentModule' => $showPaymentModule])
+      @include('offering.partials.v5_body_template', ['product' => $p, 'type' => $type, 'showPaymentModule' => $showPaymentModule])
     @else
-      @include('offering.partials.v3_body_template', ['product' => $p, 'type' => $type, 'showPaymentModule' => $showPaymentModule])
+      @include('offering.partials.v5_body_template', ['product' => $p, 'type' => $type, 'showPaymentModule' => $showPaymentModule])
       @if(false)
       <div class="row g-4 align-items-start">
         <div class="col-12 col-lg-8">
