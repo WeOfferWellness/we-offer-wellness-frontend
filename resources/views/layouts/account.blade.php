@@ -24,7 +24,6 @@
 
     @php $manifest = public_path('build/manifest.json'); @endphp
     @if (file_exists($manifest))
-        @vite('resources/js/analytics.js')
     @endif
 
     <style>

@@ -11,7 +11,37 @@
 @if ($gaId)
 <script data-cfasync="false">
   window.dataLayer = window.dataLayer || [];
-  window.gtag = window.gtag || function gtag(){ window.dataLayer.push(arguments); };
+
+  function normalizeWowGa4Params(eventName, params) {
+    if (!params || typeof params !== 'object' || Array.isArray(params)) return params;
+
+    var safe = Object.assign({}, params);
+    [['source', 'interaction_source'], ['medium', 'interaction_medium'], ['campaign', 'interaction_campaign']]
+      .forEach(function(pair) {
+        var legacyKey = pair[0];
+        var safeKey = pair[1];
+        if (safe[legacyKey] != null && safe[safeKey] == null) safe[safeKey] = safe[legacyKey];
+        delete safe[legacyKey];
+      });
+
+    if (
+      eventName === 'page_view'
+      && typeof safe.page_location === 'string'
+      && safe.page_location.charAt(0) === '/'
+      && window.location
+    ) {
+      safe.page_location = window.location.origin + safe.page_location;
+    }
+
+    return safe;
+  }
+
+  window.gtag = window.gtag || function gtag(){
+    if (arguments[0] === 'event' && arguments.length >= 3) {
+      arguments[2] = normalizeWowGa4Params(arguments[1], arguments[2]);
+    }
+    window.dataLayer.push(arguments);
+  };
   window.WOW_GA4_MEASUREMENT_ID = @json($gaId);
 
   window.WOWSyncGoogleConsent = window.WOWSyncGoogleConsent || function(preferences) {
@@ -30,9 +60,8 @@
     'personalization_storage' => 'denied',
   ])));
 
-  // Apply a returning visitor's stored consent before gtag.js/config runs so
-  // the first page_view joins the correct cookie/session whenever consent was
-  // already granted on an earlier visit.
+  // Returning visitors who already granted consent are restored before the
+  // Google tag/config call, so the first page_view joins the correct session.
   try {
     var storedPreferences = JSON.parse(localStorage.getItem('wow_cookie_preferences') || 'null');
     if (storedPreferences) window.WOWSyncGoogleConsent(storedPreferences);
