@@ -29,7 +29,7 @@
         || !empty($product['end_date']);
     $primaryActionLabel = $isEventOffering ? 'Book tickets' : 'Add to cart';
     $secondaryActionLabel = $isEventOffering ? 'Checkout' : 'Book now';
-    $mobileActionLabel = $isEventOffering ? 'Book tickets' : 'Add to cart';
+    $mobileActionLabel = $isEventOffering ? 'Book tickets' : 'Book now';
     $bookingHeaderLabel = $isEventOffering ? 'Book tickets' : 'Select a Date & Time';
 @endphp
 
@@ -87,6 +87,9 @@
     .btn-basket{background:#f1f3f5;color:#111827;border:1px solid #d0d5dd}
     .group-range{display:none}
     .booking-wrap{border:1px solid #e5e7eb;border-radius:12px;padding:12px;background:#fafafa}
+    /* V3 booking UX: availability is chosen from Book now, not a separate Confirm later/Pick now block. */
+    .buybox .booking-wrap{display:none!important}
+    #configModal .booking-wrap{display:none!important}
     .availability-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;align-items:start}
     .availability-action-stack{display:flex;flex-direction:column;gap:10px;width:100%;align-items:stretch}
     .availability-action-stack .btn,
@@ -538,6 +541,7 @@ const sheetBtnRequestTime = document.getElementById('sheetBtnRequestTime');
 const sheetPreferredTimeBox = document.getElementById('sheetPreferredTimeBox');
 const sheetPreferredTimeNote = document.getElementById('sheetPreferredTimeNote');
 let sheetIntent='add';
+let bookingIntent='select';
 const btnBookNow=document.getElementById('btnBookNow'),btnBookLater=document.getElementById('btnBookLater'),bookingChoice=document.getElementById('bookingChoice'),preferredDateValue=document.getElementById('preferredDateValue'),preferredTimeValue=document.getElementById('preferredTimeValue'),preferredTZValue=document.getElementById('preferredTZValue'),bookingSelectionRow=document.getElementById('bookingSelectionRow'),bookingSelectionText=document.getElementById('bookingSelectionText'),changeBooking=document.getElementById('changeBooking');
 const bookingModalEl=document.getElementById('bookingModal'),bookingModal=new bootstrap.Modal(bookingModalEl),bookingModalContent=document.getElementById('bookingModalContent'),calMonthLabel=document.getElementById('calMonthLabel'),calDayNames=document.getElementById('calDayNames'),calGrid=document.getElementById('calGrid'),calPrev=document.getElementById('calPrev'),calNext=document.getElementById('calNext'),slotList=document.getElementById('slotList'),bookingSummary=document.getElementById('bookingSummary'),confirmBooking=document.getElementById('confirmBooking'),tzCurrent=document.getElementById('tzCurrent'),tzSelect=document.getElementById('tzSelect'),modalHint=document.getElementById('modalHint'),mobileBack=document.getElementById('mobileBack'),holdTimer=document.getElementById('holdTimer'),holdCountdown=document.getElementById('holdCountdown');
 const pillHoldBanner=document.getElementById('pillHoldBanner'),pillHoldCountdown=document.getElementById('pillHoldCountdown'),pillHourglass=pillHoldBanner.querySelector('i.bi-hourglass-split');
@@ -737,17 +741,17 @@ function firstAvailableBookingDate(){
     return null;
   }
 }
-function syncCalendarToAvailability(){
+function syncCalendarToAvailability(forceFirst = false){
   try{
     if (!bookingState.loaded) return false;
     const selected = calendarState.selectedDate;
     const selectedHasAvailability = selected ? bookingSlotsForDate(selected).length > 0 : false;
     const firstAvailable = firstAvailableBookingDate();
-    const target = selectedHasAvailability ? selected : firstAvailable;
+    const target = forceFirst ? firstAvailable : (selectedHasAvailability ? selected : firstAvailable);
     if (!target) return false;
     calendarState.viewYear = target.getFullYear();
     calendarState.viewMonth = target.getMonth();
-    if (!selectedHasAvailability) {
+    if (forceFirst || !selectedHasAvailability) {
       calendarState.selectedDate = target;
       calendarState.selectedTime = null;
     }
@@ -1415,17 +1419,38 @@ function openConfigSheet(intent){
   updateSheetSubtotal();
   configModal.show();
 }
-mobileAdd?.addEventListener('click',()=>{ openConfigSheet('add'); });
+mobileAdd?.addEventListener('click',()=>{ openConfigSheet('buy'); });
+
+async function continueBookNow(){
+  bookingIntent = 'buy';
+
+  if (IS_LIVE_BOOKING) {
+    const loaded = await loadBookingContext(true);
+    if (loaded && hasLiveAvailability()) {
+      syncCalendarToAvailability(true);
+      bookingModal.show();
+      return;
+    }
+  }
+
+  // Flexible/no-slot offerings never get a fake calendar.
+  // Preserve the existing order flow and let the practitioner/date be confirmed later.
+  doAddToCart({ redirect:true });
+}
+
 if(buyNow){
-  buyNow.addEventListener('click',function(e){
+  buyNow.addEventListener('click',async function(e){
     e.preventDefault();
     if(isMobile()){
       openConfigSheet('buy');
       return;
     }
-    try { syncCartButtons(); } catch(_e){}
-    triggerGlobalAdd(buyNow);
-    goToCart();
+    buyNow.disabled = true;
+    try {
+      await continueBookNow();
+    } finally {
+      buyNow.disabled = false;
+    }
   });
 }
 const calendarState={viewYear:new Date().getFullYear(),viewMonth:new Date().getMonth(),selectedDate:null,selectedTime:null,tz:Intl.DateTimeFormat().resolvedOptions().timeZone||'Europe/London'};
@@ -1468,11 +1493,28 @@ sheetBtnRequestTime?.addEventListener('click',()=>{
   if (sheetPreferredTimeBox) sheetPreferredTimeBox.classList.remove('d-none');
 });
 sheetPreferredTimeNote?.addEventListener('input',()=>{ if (preferredTimeNoteValue) preferredTimeNoteValue.value = sheetPreferredTimeNote.value || ''; });
-sheetConfirm?.addEventListener('click',()=>{if(bookingChoice.value==='now' && !(preferredDateValue.value && preferredTimeValue.value)){configModal.hide();bookingModal.show();return;}configModal.hide();const redirect = (sheetIntent==='buy');doAddToCart({ redirect });sheetIntent='add';});
-function generateSlotsForDate(d){const day=d.getDay(); if(day===0||day===6) return [];const slots=[]; for(let h=9;h<=16;h++){slots.push(`${String(h).padStart(2,'0')}:00`);slots.push(`${String(h).padStart(2,'0')}:30`)} return slots}
+sheetConfirm?.addEventListener('click',async()=>{
+  const intent = sheetIntent;
+  configModal.hide();
+
+  if (intent === 'buy' && IS_LIVE_BOOKING) {
+    const loaded = await loadBookingContext(true);
+    if (loaded && hasLiveAvailability()) {
+      bookingIntent = 'buy';
+      syncCalendarToAvailability(true);
+      window.setTimeout(()=>bookingModal.show(), 180);
+      sheetIntent='add';
+      return;
+    }
+  }
+
+  doAddToCart({ redirect: intent === 'buy' });
+  sheetIntent='add';
+});
+function generateSlotsForDate(_d){ return []; }
 function renderDayNames(){calDayNames.innerHTML='';['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(n=>{const el=document.createElement('div');el.className='cal-dayname text-center';el.textContent=n;calDayNames.appendChild(el)})}
 function daysInMonth(y,m){return new Date(y,m+1,0).getDate()}function firstWeekday(y,m){const js=new Date(y,m,1).getDay();return (js+6)%7}function isSameDate(a,b){return a&&b&&a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate()}
-function renderCalendar(){const y=calendarState.viewYear,m=calendarState.viewMonth;calMonthLabel.textContent=new Date(y,m,1).toLocaleDateString(undefined,{month:'long',year:'numeric'});calGrid.innerHTML='';const lead=firstWeekday(y,m),total=daysInMonth(y,m);if(!calDayNames.children.length) renderDayNames();const today=new Date(); today.setHours(0,0,0,0);for(let i=0;i<lead;i++){const d=document.createElement('div');d.className='cal-cell';d.setAttribute('aria-disabled','true');calGrid.appendChild(d)}for(let day=1;day<=total;day++){const cellDate=new Date(y,m,day); cellDate.setHours(0,0,0,0);const btn=document.createElement('button'); btn.type='button'; btn.className='cal-cell'; btn.textContent=String(day);const past=cellDate<today; const slots=IS_LIVE_BOOKING ? (bookingState.loaded ? bookingSlotsForDate(cellDate) : []) : generateSlotsForDate(cellDate); const noAvailability=slots.length===0; if(past||noAvailability){btn.disabled=true;btn.setAttribute('aria-disabled','true');btn.title=past?'Past date':'No availability'}btn.addEventListener('click',()=>{if(past||noAvailability) return;calendarState.selectedDate=cellDate; calendarState.selectedTime=null;[...calGrid.querySelectorAll('.cal-cell')].forEach(c=>c.classList.remove('active'));btn.classList.add('active'); renderSlots(); updateSummary(); confirmBooking.disabled=true; modalHint.textContent='Choose a time.'; if (window.matchMedia('(max-width: 991px)').matches) bookingModalContent.classList.add('mobile-times');});if(isSameDate(cellDate,calendarState.selectedDate)&&!past&&!noAvailability) btn.classList.add('active');calGrid.appendChild(btn)}}
+function renderCalendar(){const y=calendarState.viewYear,m=calendarState.viewMonth;calMonthLabel.textContent=new Date(y,m,1).toLocaleDateString(undefined,{month:'long',year:'numeric'});calGrid.innerHTML='';const lead=firstWeekday(y,m),total=daysInMonth(y,m);if(!calDayNames.children.length) renderDayNames();const today=new Date(); today.setHours(0,0,0,0);for(let i=0;i<lead;i++){const d=document.createElement('div');d.className='cal-cell';d.setAttribute('aria-disabled','true');calGrid.appendChild(d)}for(let day=1;day<=total;day++){const cellDate=new Date(y,m,day); cellDate.setHours(0,0,0,0);const btn=document.createElement('button'); btn.type='button'; btn.className='cal-cell'; btn.textContent=String(day);const past=cellDate<today; const slots=bookingState.loaded ? bookingSlotsForDate(cellDate) : []; const noAvailability=slots.length===0; if(past||noAvailability){btn.disabled=true;btn.setAttribute('aria-disabled','true');btn.title=past?'Past date':'No availability'}btn.addEventListener('click',()=>{if(past||noAvailability) return;calendarState.selectedDate=cellDate; calendarState.selectedTime=null;[...calGrid.querySelectorAll('.cal-cell')].forEach(c=>c.classList.remove('active'));btn.classList.add('active'); renderSlots(); updateSummary(); confirmBooking.disabled=true; modalHint.textContent='Choose a time.'; if (window.matchMedia('(max-width: 991px)').matches) bookingModalContent.classList.add('mobile-times');});if(isSameDate(cellDate,calendarState.selectedDate)&&!past&&!noAvailability) btn.classList.add('active');calGrid.appendChild(btn)}}
 function validReserved(dayObj, timeKey){const res = dayObj.reserved[timeKey]; if(!res) return null; const now = new Date(); if(now >= res.until){delete dayObj.reserved[timeKey]; return null;} return res }
 function mmss(ms){const total=Math.max(0,Math.ceil(ms/1000));const m=String(Math.floor(total/60)).padStart(2,'0');const s=String(total%60).padStart(2,'0');return `${m}:${s}`}
 let userHoldInterval=null,userHoldUntil=null,userHoldKey=null;
@@ -1480,27 +1522,51 @@ function startUserHold(dateObj,timeStr){stopUserHold();const k=dateKey(new Date(
 function stopUserHold(){document.getElementById('holdTimer').style.display='none';document.getElementById('holdCountdown').textContent='10:00';const banner=document.getElementById('pillHoldBanner');banner.style.display='none';banner.classList.remove('hourglass-active');banner.querySelector('i')?.classList.remove('hourglass-spin');document.getElementById('pillHoldCountdown').textContent='10:00';if(userHoldInterval){clearInterval(userHoldInterval);userHoldInterval=null}if(userHoldKey){const d = bookings[userHoldKey.k];if(d && d.reserved[userHoldKey.timeStr]){delete d.reserved[userHoldKey.timeStr]}userHoldKey=null}userHoldUntil=null}
 function tickUserHold(){if(!userHoldUntil){document.getElementById('holdTimer').style.display='none';const banner=document.getElementById('pillHoldBanner');banner.style.display='none';banner.classList.remove('hourglass-active');banner.querySelector('i')?.classList.remove('hourglass-spin');return}const remaining=userHoldUntil-Date.now();if(remaining<=0){stopUserHold();calendarState.selectedTime=null;updateSummary();confirmBooking.disabled=true;modalHint.textContent='Hold expired — please choose another time.';renderSlots();return}const t=mmss(remaining);document.getElementById('holdCountdown').textContent=t;document.getElementById('pillHoldCountdown').textContent=t}
 function refreshReservedCountdowns(){const spans=[...document.querySelectorAll('button.slot.reserved span[data-until]')];if(!spans.length) return;const now=new Date();spans.forEach(s=>{const until=new Date(s.dataset.until);const remaining=until-now;if(remaining<=0){renderSlots()}else{s.textContent=`(${mmss(remaining)}) reserved`}})}
-function renderSlots(){slotList.innerHTML='';const d=calendarState.selectedDate;if(!d){slotList.innerHTML='<div class="text-secondary small">Select a date to see available times.</div>';return}const slots=IS_LIVE_BOOKING ? (bookingState.loaded ? bookingSlotsForDate(d) : []) : generateSlotsForDate(d); if(!slots.length){slotList.innerHTML='<div class="text-secondary small">No times available for this date.</div>';return;}const dayObj=(IS_LIVE_BOOKING&&bookingState.loaded)?null:ensureDay(new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())));slots.forEach(s=>{const slotStart=String(s?.start||s||''); if(dayObj && dayObj.booked.has(slotStart)) return;const reservedUntil=IS_LIVE_BOOKING&&bookingState.loaded?bookingHoldUntilForSlot(d,slotStart):(validReserved(dayObj,slotStart)?.until || null);const b=document.createElement('button');b.type='button';b.className='slot';b.textContent=slotStart;if(reservedUntil){b.classList.add('reserved');b.disabled=true;const span=document.createElement('span');span.className='ms-1 small';span.dataset.until=reservedUntil;span.textContent='(reserved)';b.appendChild(span)}else{b.addEventListener('click',()=>{[...slotList.querySelectorAll('.slot')].forEach(x=>x.classList.remove('active'));b.classList.add('active');calendarState.selectedTime=slotStart;updateSummary();confirmBooking.disabled=false;modalHint.textContent='Nice choice — we’ll hold this for 10 minutes.';startUserHold(d,slotStart);})}if(calendarState.selectedTime===slotStart) b.classList.add('active');slotList.appendChild(b)});refreshReservedCountdowns()}
+function renderSlots(){slotList.innerHTML='';const d=calendarState.selectedDate;if(!d){slotList.innerHTML='<div class="text-secondary small">Select a date to see available times.</div>';return}const slots=bookingState.loaded ? bookingSlotsForDate(d) : []; if(!slots.length){slotList.innerHTML='<div class="text-secondary small">No times available for this date.</div>';return;}const dayObj=null;slots.forEach(s=>{const slotStart=String(s?.start||s||''); if(dayObj && dayObj.booked.has(slotStart)) return;const reservedUntil=IS_LIVE_BOOKING&&bookingState.loaded?bookingHoldUntilForSlot(d,slotStart):(validReserved(dayObj,slotStart)?.until || null);const b=document.createElement('button');b.type='button';b.className='slot';b.textContent=slotStart;if(reservedUntil){b.classList.add('reserved');b.disabled=true;const span=document.createElement('span');span.className='ms-1 small';span.dataset.until=reservedUntil;span.textContent='(reserved)';b.appendChild(span)}else{b.addEventListener('click',()=>{[...slotList.querySelectorAll('.slot')].forEach(x=>x.classList.remove('active'));b.classList.add('active');calendarState.selectedTime=slotStart;updateSummary();confirmBooking.disabled=false;modalHint.textContent='Nice choice — we’ll hold this for 10 minutes.';startUserHold(d,slotStart);})}if(calendarState.selectedTime===slotStart) b.classList.add('active');slotList.appendChild(b)});refreshReservedCountdowns()}
 function populateTimezones(){const tzs=['Europe/London','Europe/Dublin','Europe/Lisbon','Europe/Paris','Europe/Berlin','UTC','America/New_York','America/Chicago','America/Denver','America/Los_Angeles','Asia/Dubai','Asia/Kolkata','Asia/Singapore','Australia/Sydney'];tzSelect.innerHTML='';tzs.forEach(tz=>{const o=document.createElement('option');o.value=tz;o.textContent=tz;if(tz===calendarState.tz)o.selected=true;tzSelect.appendChild(o)});tzCurrent.textContent=calendarState.tz;if(IS_LIVE_BOOKING&&bookingState.loaded){tzSelect.value=calendarState.tz;tzSelect.disabled=true;return}tzSelect.addEventListener('change',()=>{calendarState.tz=tzSelect.value;tzCurrent.textContent=calendarState.tz;updateSummary()})}
 function updateSummary(){if(calendarState.selectedDate && calendarState.selectedTime){const ds=calendarState.selectedDate.toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long',year:'numeric'});bookingSummary.innerHTML=`<div class="fw-semibold">${ds}</div><div>${calendarState.selectedTime} (${calendarState.tz})</div>`}else if(calendarState.selectedDate){const ds=calendarState.selectedDate.toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long',year:'numeric'});bookingSummary.textContent=`${ds} — select a time`}else bookingSummary.textContent='No date selected.'}
 calPrev.addEventListener('click',()=>{calendarState.viewMonth--; if(calendarState.viewMonth<0){calendarState.viewMonth=11;calendarState.viewYear--} renderCalendar()});calNext.addEventListener('click',()=>{calendarState.viewMonth++; if(calendarState.viewMonth>11){calendarState.viewMonth=0;calendarState.viewYear++} renderCalendar()});mobileBack?.addEventListener('click',()=>{bookingModalContent.classList.remove('mobile-times')});
-confirmBooking.addEventListener('click',()=>{if(!(calendarState.selectedDate && calendarState.selectedTime)) return;preferredDateValue.value=calendarState.selectedDate.toISOString().slice(0,10);preferredTimeValue.value=calendarState.selectedTime;preferredTZValue.value=calendarState.tz;const ds=calendarState.selectedDate.toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short',year:'numeric'});bookingSelectionText.textContent=`${ds} • ${calendarState.selectedTime}`;bookingSelectionRow.style.display='inline-block';bookingModal.hide()});
+confirmBooking.addEventListener('click',()=>{
+  if(!(calendarState.selectedDate && calendarState.selectedTime)) return;
+  preferredDateValue.value=bookingDateKey(calendarState.selectedDate);
+  preferredTimeValue.value=calendarState.selectedTime;
+  preferredTZValue.value=calendarState.tz;
+  bookingChoice.value='now';
+  const ds=calendarState.selectedDate.toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+  bookingSelectionText.textContent=`${ds} • ${calendarState.selectedTime}`;
+  bookingSelectionRow.style.display='inline-block';
+  bookingModal.hide();
+
+  if (bookingIntent === 'buy') {
+    bookingIntent = 'select';
+    window.setTimeout(()=>doAddToCart({ redirect:true }), 160);
+  }
+});
 bookingModalEl.addEventListener('shown.bs.modal',async()=>{
   bookingModalContent.classList.remove('mobile-times');
   if(!calDayNames.children.length){
     populateTimezones();
   }
-  if(IS_LIVE_BOOKING){
-    slotList.innerHTML='<div class="text-secondary small">Loading availability…</div>';
-    const loaded = await loadBookingContext(true);
-    if(!loaded && modalHint){
-      modalHint.textContent='Availability is temporarily unavailable.';
-    }
-    syncCalendarToAvailability();
+
+  slotList.innerHTML='<div class="text-secondary small">Loading availability…</div>';
+  const loaded = IS_LIVE_BOOKING ? await loadBookingContext(false) : false;
+
+  if (!loaded || !hasLiveAvailability()) {
+    if(modalHint) modalHint.textContent='No live availability is currently configured.';
+    calendarState.selectedDate=null;
+    calendarState.selectedTime=null;
+    renderCalendar();
+    renderSlots();
+    updateSummary();
+    return;
   }
+
+  syncCalendarToAvailability(true);
   renderCalendar();
   renderSlots();
   updateSummary();
+  confirmBooking.disabled=true;
+  if(modalHint) modalHint.textContent='Choose a time for the first available date.';
 });
 configModalEl?.addEventListener('shown.bs.modal',async()=>{await loadBookingContext(false);syncBookingMode();});
 // (mode note removed)
@@ -1516,9 +1582,14 @@ function init(){
   updatePriceUI();
   window.addEventListener('resize',()=>{ bookingModalContent.classList.remove('mobile-times'); });
   const load = loadBookingContext(false).then(syncAvailabilityCopy).catch(()=>{});
-  if (IS_EVENT_OFFERING) {
+  if (IS_EVENT_OFFERING && IS_LIVE_BOOKING) {
     load.finally(() => {
-      try { bookingModal.show(); } catch(_e) {}
+      try {
+        if (hasLiveAvailability()) {
+          syncCalendarToAvailability(true);
+          bookingModal.show();
+        }
+      } catch(_e) {}
     });
   }
 }
