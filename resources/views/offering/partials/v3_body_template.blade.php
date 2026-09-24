@@ -1726,11 +1726,24 @@ SVG;
         color: var(--ink);
         font-size: 18px;
     }
-    .wow-v3-offering-page .qty span {
+    .wow-v3-offering-page .qty span,
+    .wow-v3-offering-page .qty input {
         min-width: 34px;
         text-align: center;
         color: var(--ink);
     }
+    .wow-v3-offering-page .qty input {
+        width: 46px;
+        height: 38px;
+        border: 0;
+        border-inline: 1px solid var(--line-dark);
+        background: #ffffff;
+        font: inherit;
+        font-weight: 700;
+        -moz-appearance: textfield;
+    }
+    .wow-v3-offering-page .qty input::-webkit-inner-spin-button,
+    .wow-v3-offering-page .qty input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
     .wow-v3-offering-page .checkout-button {
         width: 100%;
         min-height: 54px;
@@ -3337,7 +3350,15 @@ SVG;
 
                                 <div class="qty" aria-label="Group size">
                                     <button type="button" id="minusGroup">−</button>
-                                    <span id="groupValue">3</span>
+                                    <input
+                                        id="groupValue"
+                                        type="number"
+                                        inputmode="numeric"
+                                        min="{{ $groupMin }}"
+                                        @if($groupMax !== null) max="{{ $groupMax }}" @endif
+                                        value="{{ $selectedGroupCount }}"
+                                        aria-label="Group size"
+                                    >
                                     <button type="button" id="plusGroup">+</button>
                                 </div>
                             </div>
@@ -4579,6 +4600,12 @@ SVG;
             if (holdTimer) holdTimer.textContent = holdTimerText();
             if (holdSeconds <= 0) {
                 clearHoldState();
+                selectedDateKey = null;
+                selectedTime = null;
+                selectedDateLabel = '';
+                // The server remains authoritative for slots. Refresh when a
+                // hold expires so an expired selection cannot be checked out.
+                fetchBookingAvailability();
                 updatePrimaryActions();
             }
         }, 1000);
@@ -4615,7 +4642,7 @@ SVG;
         summarySession.textContent = selectedVariantLabel;
         summaryDate.textContent = bookingSummaryText();
         qtyValue.textContent = String(qty);
-        if (groupValue) groupValue.textContent = String(groupCount);
+        if (groupValue) groupValue.value = String(groupCount);
         if (groupSizeControl) groupSizeControl.hidden = !isGroup;
         if (groupPricePerPerson) groupPricePerPerson.textContent = isGroup ? `${money(selectedVariantPrice)} per person` : 'Per person';
         timezoneLabel.textContent = bookingTimezone || 'Europe/London';
@@ -4913,6 +4940,12 @@ SVG;
             minAvailableDate = keys[0] || null;
             maxAvailableDate = keys[keys.length - 1] || null;
             bookingMonth = minAvailableDate ? parseDateKey(minAvailableDate) : new Date();
+            // Open the calendar with a genuine slot already selected so the
+            // customer sees the corresponding times immediately.
+            if (hasLiveAvailability && minAvailableDate) {
+                selectedDateKey = minAvailableDate;
+                selectedDateLabel = formatDateLabel(minAvailableDate);
+            }
         } catch (error) {
             slotsByDay = {};
             reservationHolds = {};
@@ -4935,6 +4968,9 @@ SVG;
 
     function setSelectedLocation(locationId) {
         if (!locationId) return;
+        if (String(locationId) !== String(selectedLocationId) && reservationId) {
+            releaseReservationIfAny();
+        }
         selectedLocationId = String(locationId);
         pendingLocationId = selectedLocationId;
         const location = selectedLocation();
@@ -4953,6 +4989,9 @@ SVG;
     function setSelectedVariantById(variantId) {
         const next = variants.find(v => String(v.id) === String(variantId));
         if (!next) return;
+        if (String(next.id) !== String(selectedVariantId) && reservationId) {
+            releaseReservationIfAny();
+        }
         selectedVariant = next;
         selectedVariantId = String(next.id);
         selectedVariantLabel = String(next.label || '');
@@ -5133,10 +5172,22 @@ SVG;
         }
 
         const token = document.querySelector('meta[name="csrf-token"]')?.content || window.__csrfToken || '';
+        const [slotHour = 0, slotMinute = 0] = String(selectedTime).split(':').map(Number);
+        const slotEndMinutes = (slotHour * 60) + slotMinute + bookingDurationMinutes;
+        const slotEnd = `${pad(Math.floor(slotEndMinutes / 60) % 24)}:${pad(slotEndMinutes % 60)}`;
         const payload = {
+            // The local compatibility endpoint accepts date/time while the
+            // authoritative booking API uses explicit slot fields. Sending
+            // both keeps legacy products working and makes the booking
+            // contract unambiguous for v3 reservations.
             date: selectedDateKey,
             time: selectedTime,
             duration_minutes: bookingDurationMinutes,
+            slot_date: selectedDateKey,
+            slot_start: selectedTime,
+            slot_end: slotEnd,
+            price_option_id: selectedPriceOptionId || undefined,
+            reservation_id: reservationId || undefined,
         };
 
         try {
@@ -5153,15 +5204,19 @@ SVG;
 
             if (response.ok) {
                 const json = await response.json();
-                reservationId = json.id || null;
-                startHoldCountdown(json.expires_at || new Date(Date.now() + 600000).toISOString());
-                return true;
+                reservationId = json.reservation_id || json.id || null;
+                const expiresAt = json.hold_expires_at || json.expires_at || null;
+                if (reservationId && expiresAt) {
+                    startHoldCountdown(expiresAt);
+                    return true;
+                }
             }
         } catch (error) {}
 
-        reservationId = null;
-        startHoldCountdown(new Date(Date.now() + 600000).toISOString());
-        return true;
+        // Never manufacture a local hold: checkout must only carry an ID and
+        // expiry returned by the reservation service.
+        clearHoldState();
+        return false;
     }
 
     async function addToBasket(openCartAfter = false) {
@@ -5612,6 +5667,18 @@ SVG;
             && Number.isFinite(Number(config.groupMax));
         const maximum = hasMaximum ? Number(config.groupMax) : Infinity;
         groupCount = Math.min(maximum, groupCount + 1);
+        syncPanelSummary();
+    });
+    groupValue?.addEventListener('input', () => {
+        const minimum = Number(config.groupMin || 3);
+        const configuredMaximum = Number(config.groupMax);
+        const maximum = Number.isFinite(configuredMaximum) && configuredMaximum >= minimum
+            ? configuredMaximum
+            : Infinity;
+        const requested = Number.parseInt(groupValue.value, 10);
+        groupCount = Number.isFinite(requested)
+            ? Math.min(maximum, Math.max(minimum, requested))
+            : minimum;
         syncPanelSummary();
     });
 
