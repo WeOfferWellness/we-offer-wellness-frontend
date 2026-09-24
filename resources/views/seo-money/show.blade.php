@@ -718,32 +718,23 @@
       ])
     @endif
 
-    <section class="show-structured-near-me-section" id="related-pages">
-      <h2>{{ $relatedLinksTitle }}</h2>
-      <p>{{ $relatedLinksIntro }}</p>
-      <div class="show-structured-near-me-links">
-        @foreach(($page['related_links'] ?? []) as $link)
-          <a class="show-structured-near-me-linkcard" href="{{ $link['href'] ?? '#' }}">
-            <strong>{{ $link['label'] ?? 'Related page' }}</strong>
-            <span>Open the canonical landing page</span>
-          </a>
-        @endforeach
-      </div>
-    </section>
+    @include('partials.related-pages', [
+      'id' => 'related-pages',
+      'heading' => $relatedLinksTitle,
+      'intro' => $relatedLinksIntro,
+      'items' => collect($page['related_links'] ?? [])->map(fn (array $link): array => [
+        'href' => $link['href'] ?? '#',
+        'title' => $link['label'] ?? 'Related page',
+        'type' => 'Explore next',
+        'copy' => 'Open the canonical landing page.',
+      ])->all(),
+    ])
 
-    @if(!empty($page['faqs'] ?? []))
-      <section class="show-structured-near-me-section" data-money-section="faq">
-        <h2>Frequently asked questions</h2>
-        <div class="show-structured-near-me-faq">
-          @foreach(($page['faqs'] ?? []) as $faq)
-            <details>
-              <summary>{{ $faq['q'] ?? '' }}</summary>
-              <p>{{ $faq['a'] ?? '' }}</p>
-            </details>
-          @endforeach
-        </div>
-      </section>
-    @endif
+    @include('partials.faq-section', [
+      'id' => 'faq',
+      'intro' => 'Useful answers about finding and booking '.($page['modality_label'] ?? 'wellness').' in '.($page['location_label'] ?? 'your area').'.',
+      'faqs' => $page['faqs'] ?? [],
+    ])
 
     @include('partials.guide_panel', [
       'guidePanelModality' => data_get($page, 'modality', data_get($page, 'category_slug', request()->route('modality'))),

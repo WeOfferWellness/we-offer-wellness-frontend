@@ -22,54 +22,19 @@
       <p class="lead text-muted mb-0">Answers to the most common booking, payment and account questions.</p>
     </div>
 
-    <div class="row g-4">
-      <div class="col-12 col-lg-4">
-        <div class="card h-100 border-0 shadow-sm">
-          <div class="card-body">
-            <h2 class="h5">Popular topics</h2>
-            <ul class="list-unstyled mb-0">
-              <li class="mb-2"><a href="#booking">Bookings</a></li>
-              <li class="mb-2"><a href="#payments">Payments</a></li>
-              <li class="mb-2"><a href="#account">Account</a></li>
-              <li class="mb-2"><a href="#sessions">Online sessions</a></li>
-              <li class="mb-2"><a href="#safety">Safety</a></li>
-            </ul>
-          </div>
-        </div>
-      </div>
-      <div class="col-12 col-lg-8">
-        <div class="card border-0 shadow-sm mb-4" id="booking">
-          <div class="card-body">
-            <h2 class="h4">How do I manage a booking?</h2>
-            <p class="mb-0">Visit your confirmation email to reschedule or cancel, or message the practitioner directly from your account.</p>
-          </div>
-        </div>
-        <div class="card border-0 shadow-sm mb-4" id="payments">
-          <div class="card-body">
-            <h2 class="h4">What if I need to cancel?</h2>
-            <p class="mb-0">Each listing includes a cancellation window. If you cannot find it, <a href="/contact?topic=support">contact support</a>.</p>
-          </div>
-        </div>
-        <div class="card border-0 shadow-sm mb-4" id="account">
-          <div class="card-body">
-            <h2 class="h4">How do I reset my password?</h2>
-            <p class="mb-0">Use the forgot-password link on sign in. If the email does not arrive, check spam/junk and search for We Offer Wellness®.</p>
-          </div>
-        </div>
-        <div class="card border-0 shadow-sm mb-4" id="sessions">
-          <div class="card-body">
-            <h2 class="h4">Do I need any equipment?</h2>
-            <p class="mb-0">Most therapies only require comfortable clothing and a quiet space. Classes will note props if needed.</p>
-          </div>
-        </div>
-        <div class="card border-0 shadow-sm" id="safety">
-          <div class="card-body">
-            <h2 class="h4">How do I check whether a session is suitable?</h2>
-            <p class="mb-0">Read the listing details and our <a href="/safety-and-contraindications">Safety &amp; Contraindications</a> guidance before booking if you are unsure.</p>
-          </div>
-        </div>
-      </div>
-    </div>
+    @include('partials.faq-section', [
+      'id' => 'help-faq',
+      'eyebrow' => 'Help Centre',
+      'heading' => 'Frequently asked questions',
+      'intro' => 'Answers to the most common booking, payment and account questions.',
+      'faqs' => [
+        ['q' => 'How do I manage a booking?', 'a' => 'Visit your confirmation email to reschedule or cancel, or message the practitioner directly from your account.'],
+        ['q' => 'What if I need to cancel?', 'a' => 'Each listing includes a cancellation window. If you cannot find it, contact support at /contact?topic=support.'],
+        ['q' => 'How do I reset my password?', 'a' => 'Use the forgot-password link on sign in. If the email does not arrive, check spam/junk and search for We Offer Wellness®.'],
+        ['q' => 'Do I need any equipment?', 'a' => 'Most therapies only require comfortable clothing and a quiet space. Classes will note props if needed.'],
+        ['q' => 'How do I check whether a session is suitable?', 'a' => 'Read the listing details and our Safety & Contraindications guidance before booking if you are unsure.'],
+      ],
+    ])
   </div>
 </section>
 @endsection

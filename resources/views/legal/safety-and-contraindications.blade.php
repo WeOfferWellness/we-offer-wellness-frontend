@@ -55,39 +55,15 @@ We review profiles for clarity and alignment with our wellness guidelines and ma
             </div>
         </div>
 
-        {{-- FAQ --}}
-        <section class="mt-10 md:mt-12" aria-label="Safety FAQ">
-            <div class="max-w-3xl">
-                <h2 class="text-xl md:text-2xl font-semibold tracking-tight">Frequently asked questions</h2>
-
-                <div class="mt-5 space-y-3 mb-4">
-                    @foreach($faqs as $i => $item)
-                        <details class="group rounded-2xl border border-ink-200/60 bg-white shadow-sm overflow-hidden">
-                            <summary class="cursor-pointer list-none px-5 py-4 md:px-6 md:py-5 flex items-start gap-3">
-                                <span class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-ink-200/70 bg-white">
-                                    {{-- plus/minus (pure CSS toggle) --}}
-                                    <span class="relative block h-3 w-3">
-                                        <span class="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[2px] w-full bg-ink-700/70"></span>
-                                        <span class="absolute inset-y-0 left-1/2 -translate-x-1/2 w-[2px] h-full bg-ink-700/70 transition-opacity duration-200 group-open:opacity-0"></span>
-                                    </span>
-                                </span>
-
-                                <span class="flex-1">
-                                    <span class="block font-semibold text-ink-900">{{ $item['q'] }}</span>
-                                    <span class="block mt-1 text-sm text-ink-600">
-                                        Tap to {{ $i === 0 ? 'see how we review providers' : 'read more' }}
-                                    </span>
-                                </span>
-                            </summary>
-
-                            <div class="px-5 pb-5 md:px-6 md:pb-6 text-ink-700 leading-relaxed">
-                                {!! nl2br(e($item['a'])) !!}
-
-                                @if(str_contains($item['a'], 'hello@weofferwellness.co.uk'))
-                                    <div class="mt-4">
-                                        <a
-                                            class="inline-flex items-center gap-2 rounded-full border border-ink-200/70 bg-white px-4 py-2 text-sm font-medium text-ink-900 hover:bg-ink-50 transition"
-                                            href="mailto:hello@weofferwellness.co.uk"
+        @include('partials.faq-section', [
+            'id' => 'safety-faq',
+            'eyebrow' => 'Safety',
+            'heading' => 'Frequently asked questions',
+            'faqs' => collect($faqs ?? [])->map(fn (array $item): array => [
+                'q' => $item['q'] ?? '',
+                'a' => $item['a'] ?? '',
+            ])->all(),
+        ])
                                         >
                                             Email hello@weofferwellness.co.uk
                                             <span aria-hidden="true">→</span>

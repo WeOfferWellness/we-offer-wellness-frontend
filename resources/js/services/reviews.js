@@ -1,4 +1,5 @@
 const cache = new Map()
+const backendUrl = String(import.meta.env.VITE_BACKEND_URL || '').replace(/\/$/, '')
 
 export async function fetchProductReviewSummary(productId) {
   const id = Number(productId)
@@ -6,7 +7,14 @@ export async function fetchProductReviewSummary(productId) {
   if (cache.has(id)) return cache.get(id)
   const p = (async () => {
     try {
-      const res = await fetch(`/api/products/${id}/reviews/summary`, { cache: 'no-store' })
+      const endpoint = backendUrl
+        ? `${backendUrl}/api/products/${id}/reviews/summary`
+        : `/api/products/${id}/reviews/summary`
+      const res = await fetch(endpoint, {
+        cache: 'no-store',
+        credentials: 'include',
+        headers: { Accept: 'application/json' },
+      })
       if (!res.ok) throw new Error(String(res.status))
       const data = await res.json()
       return {
@@ -30,9 +38,13 @@ export async function fetchFeaturedReviews(params = {}) {
   if (params.limit) query.set('limit', params.limit)
   if (params.minRating) query.set('min_rating', params.minRating)
   const qs = query.toString()
-  const url = `/api/reviews/featured${qs ? `?${qs}` : ''}`
+  const url = `${backendUrl || ''}/api/reviews/featured${qs ? `?${qs}` : ''}`
   try {
-    const res = await fetch(url, { cache: 'no-store' })
+    const res = await fetch(url, {
+      cache: 'no-store',
+      credentials: 'include',
+      headers: { Accept: 'application/json' },
+    })
     if (!res.ok) throw new Error(String(res.status))
     const data = await res.json()
     return Array.isArray(data?.data) ? data.data : []

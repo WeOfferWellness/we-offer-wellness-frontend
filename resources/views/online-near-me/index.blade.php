@@ -11,7 +11,7 @@
       overflow:hidden;
       background:#fff;
       color:#101828;
-      padding:64px 0 76px;
+      padding:0 0 76px;
     }
     .wow-page-grid{
       position:absolute;
@@ -353,7 +353,7 @@
       .wow-quick-browse{ grid-template-columns:repeat(2, minmax(0,1fr)); }
     }
     @media (max-width: 760px){
-      .wow-online-near-page{ padding:42px 0 58px; }
+      .wow-online-near-page{ padding:0 0 58px; }
       .wow-route-card__footer,
       .wow-trust-panel{
         align-items:flex-start;
@@ -388,23 +388,31 @@
   'schemaUrl' => url('/online-near-me'),
 ])
 
+@include('partials.landing-hero', [
+  'heroEyebrow' => 'Wellness discovery',
+  'heroTitle' => 'Online & Near Me',
+  'heroIntro' => 'Choose wellness support you can join from home, or discover trusted practitioners, therapies and events close by.',
+  'heroActions' => [
+    ['label' => 'Browse online', 'href' => url('/online'), 'style' => 'primary'],
+    ['label' => 'Find nearby', 'href' => url('/locations'), 'style' => 'outline'],
+  ],
+  'heroAsideLabel' => 'Choose your route',
+  'heroAsideTitle' => 'Simple, calm, and useful',
+  'heroAsideText' => 'Two clear ways into the marketplace: flexible online support or wellness experiences close to you.',
+])
+
+@include('partials.hero-meta', [
+  'items' => [
+    ['label' => 'Trusted wellness options', 'strong' => true],
+    'Online sessions',
+    'Nearby practitioners',
+  ],
+])
+
 <main class="wow-online-near-page">
   <div class="wow-page-grid" aria-hidden="true"></div>
 
   <div class="wow-online-near-container">
-    <header class="wow-online-near-hero">
-      <div>
-        <p class="wow-kicker">Browse</p>
-        <h1>Online &amp; Near Me</h1>
-        <p>Choose how you want to discover wellness support, whether you want something you can join from home or something close by.</p>
-      </div>
-
-      <aside class="wow-hero-note">
-        <strong>Simple, calm, and useful.</strong>
-        <span>No endless page. No waffle. Just two clear routes into the marketplace.</span>
-      </aside>
-    </header>
-
     <section class="wow-route-grid" aria-label="Choose online or near me">
       <article class="wow-route-card">
         <div class="wow-route-card__inner">

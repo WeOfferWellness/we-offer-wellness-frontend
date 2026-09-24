@@ -114,19 +114,11 @@
             </div>
           @endif
 
-          @if(!empty($page['faqs']))
-            <div class="guide-box guide-section">
-              <h2>FAQs</h2>
-              <div class="guide-faq-list">
-                @foreach(($page['faqs'] ?? []) as $faq)
-                  <div class="guide-faq">
-                    <strong>{{ $faq['q'] }}</strong>
-                    <span>{{ $faq['a'] }}</span>
-                  </div>
-                @endforeach
-              </div>
-            </div>
-          @endif
+          @include('partials.faq-section', [
+            'id' => 'guide-faq',
+            'heading' => 'Frequently asked questions',
+            'faqs' => $page['faqs'] ?? [],
+          ])
         </div>
 
         <aside class="guide-rail">
