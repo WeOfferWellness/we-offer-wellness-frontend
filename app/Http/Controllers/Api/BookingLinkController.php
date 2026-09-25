@@ -20,7 +20,7 @@ class BookingLinkController extends Controller
         // Reservations are created by Backend, so it must also be the source
         // of truth for what a customer may select.  A local availability
         // snapshot can otherwise show a slot that the hold endpoint rejects.
-        $baseUrl = rtrim((string) env('BACKEND_URL', env('VITE_BACKEND_URL', '')), '/');
+        $baseUrl = rtrim((string) config('services.backend_url', ''), '/');
         if ($baseUrl !== '') {
             try {
                 $response = Http::acceptJson()

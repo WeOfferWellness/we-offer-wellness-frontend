@@ -18,6 +18,9 @@ if (! $mailRelayUrl) {
 }
 
 return [
+    // Booking availability and holds must use the same Backend authority.
+    'backend_url' => rtrim((string) env('BACKEND_URL', env('VITE_BACKEND_URL', env('BACKEND_ASSET_URL', 'https://studio.weofferwellness.co.uk'))), '/'),
+
     'location_media_url' => rtrim((string) env('LOCATION_MEDIA_URL', 'https://studio.weofferwellness.co.uk'), '/'),
 
     /*

@@ -24,7 +24,7 @@ class OfferingReservationProxyController extends Controller
             'reservation_id' => ['nullable', 'integer'],
         ]);
 
-        $baseUrl = rtrim((string) env('BACKEND_URL', env('VITE_BACKEND_URL', '')), '/');
+        $baseUrl = rtrim((string) config('services.backend_url', ''), '/');
         if ($baseUrl === '') {
             return response()->json(['message' => 'Booking service is unavailable.'], 503);
         }
