@@ -9,7 +9,15 @@
     $v5Title = trim((string) ($offering['title'] ?? 'Offering'));
     // `summary` is often a catalogue excerpt (and can end in an ellipsis).
     // The offering description is the source for the expandable detail.
-    $v5Summary = trim((string) ($offering['description'] ?? $offering['summary'] ?? ''));
+    // Older payloads do not always put the full editor content in the same
+    // field. Prefer the richest available source, rather than accidentally
+    // rendering a short catalogue teaser as the entire About section.
+    $v5DescriptionCandidates = array_filter([
+        (string) ($offering['description'] ?? ''),
+        (string) ($offering['body_html'] ?? ''),
+        (string) ($offering['summary'] ?? ''),
+    ], fn ($value) => trim($value) !== '');
+    $v5Summary = (string) (collect($v5DescriptionCandidates)->sortByDesc(fn ($value) => mb_strlen(strip_tags($value)))->first() ?? '');
     // Supplier descriptions arrive with a mixture of pasted editor markup,
     // headings and list styles.  Keep the useful words, but render only our
     // own V5 paragraph/list elements so the public page remains consistent.
@@ -17,6 +25,7 @@
     $v5DescriptionSource = preg_replace('#</?(?:p|div|section|article|h[1-6]|li|ul|ol|br)[^>]*>#i', "\n", $v5DescriptionSource);
     $v5DescriptionSource = html_entity_decode(strip_tags((string) $v5DescriptionSource), ENT_QUOTES | ENT_HTML5, 'UTF-8');
     $v5DescriptionSource = preg_replace("/[\t\x{00A0}]+/u", ' ', $v5DescriptionSource);
+    $v5Lead = trim(preg_replace('/\s+/', ' ', (string) $v5DescriptionSource));
     $v5DescriptionBlocks = [];
     $v5List = null;
     foreach (preg_split('/\R+/', (string) $v5DescriptionSource) as $line) {
@@ -34,8 +43,28 @@
         $v5List = null;
     }
     if (!$v5DescriptionBlocks && trim(strip_tags($v5Summary)) !== '') $v5DescriptionBlocks[] = ['type' => 'p', 'text' => trim(strip_tags($v5Summary))];
-    $v5DescriptionPreview = array_slice($v5DescriptionBlocks, 0, 2);
-    $v5DescriptionMore = array_slice($v5DescriptionBlocks, 2);
+    // Keep the hero concise and never echo source markup. The full clean
+    // content is rendered in the About section below.
+    $v5Lead = trim((string) data_get($v5DescriptionBlocks, '0.text', $v5Lead));
+    $v5LeadWords = preg_split('/\s+/', $v5Lead, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+    if (count($v5LeadWords) > 42) $v5Lead = implode(' ', array_slice($v5LeadWords, 0, 42)).'…';
+    // A single long editor paragraph still needs the V5 Read more affordance.
+    // Split only the rendered presentation, never the stored source content.
+    $v5DescriptionPreviewLimit = 2;
+    if (count($v5DescriptionBlocks) === 1 && ($v5DescriptionBlocks[0]['type'] ?? null) === 'p') {
+        $v5Words = preg_split('/\s+/', (string) $v5DescriptionBlocks[0]['text'], -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        if (count($v5Words) > 28) {
+            $v5DescriptionPreviewLimit = 1;
+            $v5DescriptionBlocks = [
+                ['type' => 'p', 'text' => implode(' ', array_slice($v5Words, 0, 28)).'…'],
+                ['type' => 'p', 'text' => implode(' ', array_slice($v5Words, 28))],
+            ];
+        }
+    }
+    // The optional single-paragraph split above changes the rendered blocks,
+    // so derive the visible/expandable groups only after normalisation.
+    $v5DescriptionPreview = array_slice($v5DescriptionBlocks, 0, $v5DescriptionPreviewLimit);
+    $v5DescriptionMore = array_slice($v5DescriptionBlocks, $v5DescriptionPreviewLimit);
     $v5ExpectSource = (string) ($offering['what_to_expect'] ?? 'Your practitioner will explain the session and answer any questions before you begin.');
     $v5ExpectSource = preg_replace('#<(script|style)[^>]*>.*?</\1>#is', '', $v5ExpectSource);
     $v5ExpectSource = preg_replace('#</?(?:p|div|section|article|h[1-6]|li|ul|ol|br)[^>]*>#i', "\n", $v5ExpectSource);
@@ -73,9 +102,9 @@
     $v5Currency = (string) ($offering['currency'] ?? 'GBP');
     $v5Source = strtolower((string) ($offering['source_version'] ?? 'legacy'));
     $v5Price = (float) ($offering['selectedVariantPrice'] ?? $offering['price_min'] ?? $offering['price'] ?? 0);
-    $v5Images = array_values(array_filter((array) ($offering['images'] ?? [$offering['image'] ?? ''])));
+    $v5Images = array_values(array_filter((array) ($offering['images'] ?? [$offering['image'] ?? '']), fn ($image) => is_string($image) && trim($image) !== ''));
     if (!$v5Images) $v5Images = [asset('images/default-social-preview.jpg')];
-    $v5Images = array_slice(array_pad($v5Images, 4, $v5Images[0]), 0, 4);
+    $v5ImageCount = count($v5Images);
     $v5RawLocations = array_values(array_filter((array) ($offering['locations'] ?? [])));
     $v5Locations = [];
     foreach ($v5RawLocations as $i => $location) {
@@ -136,6 +165,8 @@
     $v5Related = array_values(array_filter((array) ($offering['related_offerings'] ?? $offering['related'] ?? []), fn ($item) => is_array($item) && (string) ($item['id'] ?? '') !== (string) ($offering['id'] ?? '')));
     $v5Guides = array_values(array_filter((array) ($offering['guides'] ?? []), fn ($guide) => is_array($guide)));
     $v5Format = trim((string) ($offering['modality'] ?? data_get($offering, 'category.name') ?? $type ?? 'Wellness'));
+    $v5AboutType = strtolower(trim((string) ($offering['type'] ?? $type ?? 'offering')));
+    if ($v5AboutType === '') $v5AboutType = 'offering';
     $v5Config = [
         'id' => (int) ($offering['id'] ?? 0), 'title' => $v5Title, 'source' => $v5Source, 'currency' => $v5Currency,
         'duration' => max(15, $v5Duration), 'locations' => $v5Locations, 'variants' => $v5Variants,
@@ -164,6 +195,7 @@
 .wow-v5__map-copy{position:relative;z-index:1;padding:30px}
 .wow-v5__map.is-physical .wow-v5__map-copy{display:none}
 .wow-v5__map.is-physical>div:not(.wow-v5__map-canvas){display:none}
+.wow-v5__gallery .wow-v5__gallery-item{display:none;grid-column:auto;grid-row:auto;will-change:transform,opacity}.wow-v5__gallery .wow-v5__gallery-item.slot-0{display:block;grid-column:1;grid-row:1/3}.wow-v5__gallery .wow-v5__gallery-item.slot-1{display:block;grid-column:2;grid-row:1}.wow-v5__gallery .wow-v5__gallery-item.slot-2{display:block;grid-column:2;grid-row:2}.wow-v5__gallery .wow-v5__gallery-item.slot-3{display:block;grid-column:3;grid-row:1/3}.wow-v5__gallery.count-3 .wow-v5__gallery-item.slot-1{grid-column:2;grid-row:1/3}.wow-v5__gallery.count-3 .wow-v5__gallery-item.slot-2{grid-column:3;grid-row:1/3}.wow-v5__gallery.count-1{display:block;height:420px}.wow-v5__gallery.count-1 .wow-v5__gallery-item{display:block;height:420px}.wow-v5__gallery.count-2{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:320px}.wow-v5__gallery.count-2 .wow-v5__gallery-item{display:block;height:320px;grid-column:auto;grid-row:auto}.wow-v5__gallery .wow-v5__gallery-item.is-moving{z-index:3}.wow-v5__gallery .wow-v5__gallery-item.is-entering{opacity:0}.wow-v5__gallery .wow-v5__gallery-item.is-entering.is-moving{opacity:1}.wow-v5__mobile-gallery-count{position:absolute;right:10px;bottom:10px;z-index:2;padding:6px 9px;border-radius:999px;background:#fffd;font-size:10px;font-weight:700}
 .wow-v5__aside{position:relative;height:100%}
 @media(min-width:992px){.wow-v5__buybox{top:100px}}
 .wow-v5 .wow-v5__eyebrow{display:block;margin:0 0 9px!important;color:#4f9482!important;font-family:"Instrument Sans",sans-serif!important;font-size:11px!important;font-weight:700!important;letter-spacing:.18em!important;line-height:1.2!important;text-transform:uppercase!important}
@@ -253,12 +285,32 @@
 @endpush
 
 <main class="wow-v5" id="wowOfferingV5" data-config='@json($v5Config)'>
-    <div class="wow-v5__shell"><section><p class="wow-v5__eyebrow">{{ $v5Format }}</p><h1>{{ $v5Title }}</h1>@if($v5Summary)<p class="wow-v5__lead">{{ $v5Summary }}</p>@endif
-        <div class="wow-v5__gallery" id="v5Gallery">@foreach($v5Images as $image)<figure><img src="{{ $image }}" alt="{{ $v5Title }}"></figure>@endforeach<button class="prev" type="button" aria-label="Previous image">‹</button><button class="next" type="button" aria-label="Next image">›</button><span class="wow-v5__gallery-count">1 / {{ count($v5Images) }}</span></div>
-        <div class="wow-v5__mobile-gallery" id="v5MobileGallery"><div class="wow-v5__mobile-track">@foreach($v5Images as $image)<figure><img src="{{ $image }}" alt="{{ $v5Title }}"></figure>@endforeach</div><button class="prev" type="button" aria-label="Previous image">‹</button><button class="next" type="button" aria-label="Next image">›</button></div>
+    <div class="wow-v5__shell"><section><p class="wow-v5__eyebrow">{{ $v5Format }}</p><h1>{{ $v5Title }}</h1>@if($v5Lead)<p class="wow-v5__lead">{{ $v5Lead }}</p>@endif
+        <div class="wow-v5__gallery count-{{ min($v5ImageCount, 4) }}" id="v5Gallery">
+            @foreach($v5Images as $image)
+                <figure class="wow-v5__gallery-item {{ $loop->index < 4 ? 'slot-'.$loop->index : '' }}"><img src="{{ $image }}" alt="{{ $v5Title }}"></figure>
+            @endforeach
+            @if($v5ImageCount >= 3)
+                <button class="prev" type="button" aria-label="Previous image">‹</button>
+                <button class="next" type="button" aria-label="Next image">›</button>
+                <span class="wow-v5__gallery-count">1 / {{ $v5ImageCount }}</span>
+            @endif
+        </div>
+        <div class="wow-v5__mobile-gallery" id="v5MobileGallery">
+            <div class="wow-v5__mobile-track">
+                @foreach($v5Images as $image)
+                    <figure><img src="{{ $image }}" alt="{{ $v5Title }}"></figure>
+                @endforeach
+            </div>
+            @if($v5ImageCount > 1)
+                <button class="prev" type="button" aria-label="Previous image">‹</button>
+                <button class="next" type="button" aria-label="Next image">›</button>
+                <span class="wow-v5__mobile-gallery-count">1 / {{ $v5ImageCount }}</span>
+            @endif
+        </div>
         <div class="wow-v5__snapshot"><div class="wow-v5__snap"><i>◷</i><span><small>Duration</small><strong>{{ $v5Duration }} minutes</strong></span></div><div class="wow-v5__snap"><i>◎</i><span><small>Format</small><strong>{{ collect($v5Locations)->contains('online', true) ? 'Online' : 'In person' }}</strong></span></div><div class="wow-v5__snap"><i>□</i><span><small>Booking</small><strong id="v5BookingType">Checking…</strong></span></div><div class="wow-v5__snap"><i>£</i><span><small>From</small><strong id="v5SnapshotPrice">£{{ number_format($v5Price, 2) }}</strong></span></div><div class="wow-v5__snap"><i>✉</i><span><small>Confirmation</small></span></div></div>
         <section class="wow-v5__block wow-v5__about" id="about">
-            <p class="wow-v5__eyebrow">Overview</p><h2>About this offering</h2>
+            <p class="wow-v5__eyebrow">Overview</p><h2>About this {{ \Illuminate\Support\Str::singular($v5AboutType) }}</h2>
             <div class="wow-v5__about-copy">
                 @forelse($v5DescriptionPreview as $block)
                     @if($block['type'] === 'p')
@@ -391,6 +443,15 @@ function renderMobileBooking(){
     document.body.append(sheet);const render=()=>{const locations=sheet.querySelector('[data-locations]');locations.replaceChildren();sheet.querySelector('[data-location-wrap]').hidden=cfg.locations.length<2;cfg.locations.forEach(item=>{const button=document.createElement('button');button.type='button';button.textContent=item.label;button.classList.toggle('is-selected',item.id===location.id);button.onclick=()=>{location=item;date=time=null;load().then(()=>{sync();render()})};locations.append(button)});const variants=sheet.querySelector('[data-variants]');variants.replaceChildren();cfg.variants.forEach(item=>{const button=document.createElement('button');button.type='button';button.classList.toggle('is-selected',item.id===variant.id);button.textContent=`${item.label} · ${money(item.per_person&&item.kind==='group'?item.price*group:item.price)}`;button.onclick=()=>{variant=item;group=Math.max(3,Number(item.group_min||3));date=time=null;load().then(()=>{sync();render()})};variants.append(button)});const groupWrap=sheet.querySelector('[data-group-wrap]');groupWrap.hidden=variant.kind!=='group';const groupInput=sheet.querySelector('[data-group-input]');groupInput.value=group;if(cfg.groupMax)groupInput.max=cfg.groupMax;sheet.querySelector('[data-group-minus]').onclick=()=>{group=Math.max(3,group-1);load().then(()=>{sync();render()})};sheet.querySelector('[data-group-plus]').onclick=()=>{group=Math.min(cfg.groupMax||Infinity,group+1);load().then(()=>{sync();render()})};groupInput.onchange=()=>{group=Math.max(3,Math.min(cfg.groupMax||Infinity,Number(groupInput.value)||3));load().then(()=>{sync();render()})};sheet.querySelector('[data-qty]').textContent=qty;sheet.querySelector('[data-qty-minus]').onclick=()=>{qty=Math.max(1,qty-1);sync();render()};sheet.querySelector('[data-qty-plus]').onclick=()=>{qty++;sync();render()};sheet.querySelector('[data-summary-location]').textContent=location.label;sheet.querySelector('[data-summary-variant]').textContent=variant.kind==='group'?`${variant.label} · ${group} people`:variant.label;sheet.querySelector('[data-summary-date]').textContent=date&&time?`${date} · ${time}`:'Choose after clicking Book now';sheet.querySelector('[data-book]').textContent=reservation&&date&&time?'Book now':live()?'Choose Date & Time':'Book now'};sheet.querySelector('[data-close]').onclick=()=>sheet.remove();sheet.addEventListener('click',event=>{if(event.target===sheet)sheet.remove()});sheet.querySelector('[data-book]').onclick=()=>{sheet.remove();if(reservation&&date&&time)return add();return live()?renderCalendar():add()};render();
 }
 function remaining(){return Math.max(0,Math.ceil((new Date(expires)-Date.now())/1000));}function start(){clearInterval(timer);timer=setInterval(()=>{const s=remaining();if(!s){clearInterval(timer);sessionStorage.removeItem(holdKey);reservation=expires=null;date=time=null;load();alert('Your selected slot is no longer held. Please choose another time.')}else{const el=document.querySelector('[data-hold] b');if(el)el.textContent=`${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`}},1000)}async function hold(){const [h,m]=time.split(':').map(Number),end=`${String(Math.floor(((h*60+m)+cfg.duration)/60)%24).padStart(2,'0')}:${String(((h*60+m)+cfg.duration)%60).padStart(2,'0')}`,token=document.querySelector('meta[name=csrf-token]')?.content;const r=await fetch(cfg.holdEndpoint,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json',...(token?{'X-CSRF-TOKEN':token}:{})},credentials:'same-origin',body:JSON.stringify({slot_date:date,slot_start:time,slot_end:end,date,time,duration_minutes:cfg.duration,price_option_id:variant.price_option_id})});if(!r.ok){alert('That time is no longer available.');await load();return}const x=await r.json();reservation=x.reservation_id||x.id;expires=x.hold_expires_at||x.expires_at;if(!reservation||!expires){alert('Unable to hold that time.');return}sessionStorage.setItem(holdKey,JSON.stringify({reservation,expires,date,time}));start();sync()}async function add(){const token=document.querySelector('meta[name=csrf-token]')?.content;const response=await fetch(cfg.cartEndpoint,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json',...(token?{'X-CSRF-TOKEN':token}:{})},credentials:'same-origin',body:JSON.stringify({id:cfg.id,qty,variant_id:variant.id,variant_label:variant.label,group_count:variant.kind==='group'?group:null,location:location.id,source_version:cfg.source,booking:{date,time,reservation_id:reservation,hold_expires_at:expires,location_id:location.id}})});if(!response.ok){alert('We could not add this offering to your basket. Please try again.');return}window.location.assign(cfg.cartUrl)}
-$$('[data-location-option]').forEach(b=>b.onclick=()=>{location=cfg.locations.find(x=>x.id===b.dataset.locationOption)||location;$$('[data-location-option]').forEach(x=>x.classList.toggle('selected',x===b));$$('[data-location]').forEach(x=>x.classList.toggle('active',x.dataset.location===location.id));date=time=null;load();sync()});$$('[data-location]').forEach(b=>b.onclick=()=>{location=cfg.locations.find(x=>x.id===b.dataset.location)||location;$$('[data-location]').forEach(x=>x.classList.toggle('active',x===b));$('#v5MapTitle').textContent=location.online?'Join online':location.label;$('#v5MapCopy').textContent=location.online?'Your joining link is sent after booking.':location.address;sync()});$$('[data-variant]').forEach(b=>b.onclick=()=>{variant=JSON.parse(b.dataset.variant);group=3;$$('[data-variant]').forEach(x=>x.classList.toggle('selected',x===b));date=time=null;load();sync()});$('#v5GroupMinus').onclick=()=>{group=Math.max(3,group-1);sync();load()};$('#v5GroupPlus').onclick=()=>{group=Math.min(cfg.groupMax||Infinity,group+1);sync();load()};$('#v5GroupInput').onchange=e=>{group=Math.max(3,Math.min(cfg.groupMax||Infinity,Number(e.target.value)||3));sync();load()};$('#v5QtyMinus').onclick=()=>{qty=Math.max(1,qty-1);sync()};$('#v5QtyPlus').onclick=()=>{qty++;sync()};$('#v5Book').onclick=()=>reservation&&date&&time?add():(live()?renderCalendar():add());$('#v5MobileBook').onclick=()=>renderMobileBooking();$$('.wow-v5__faq-item button').forEach(b=>b.onclick=()=>{const i=b.parentElement;i.classList.toggle('open');$('b',b).textContent=i.classList.contains('open')?'−':'+'});let gi=0;const g=$('#v5Gallery'),items=$$('figure',g);function gallery(d){gi=(gi+d+items.length)%items.length;g.querySelector('.wow-v5__gallery-count').textContent=`${gi+1} / ${items.length}`;items.forEach((x,i)=>x.style.order=(i-gi+items.length)%items.length)}g.querySelector('.next').onclick=()=>gallery(1);g.querySelector('.prev').onclick=()=>gallery(-1);let mi=0,track=$('.wow-v5__mobile-track'),startX=0,mobileCount=track.children.length;function mobile(d){mi=(mi+d+mobileCount)%mobileCount;track.style.transform=`translateX(-${mi*100}%)`}$('[class="prev"]',$('#v5MobileGallery')).onclick=()=>mobile(-1);$('[class="next"]',$('#v5MobileGallery')).onclick=()=>mobile(1);track.addEventListener('touchstart',e=>startX=e.touches[0].clientX,{passive:true});track.addEventListener('touchend',e=>{const d=e.changedTouches[0].clientX-startX;if(Math.abs(d)>45)mobile(d<0?1:-1)},{passive:true});if(reservation&&expires)start();load();sync()})();
+$$('[data-location-option]').forEach(b=>b.onclick=()=>{location=cfg.locations.find(x=>x.id===b.dataset.locationOption)||location;$$('[data-location-option]').forEach(x=>x.classList.toggle('selected',x===b));$$('[data-location]').forEach(x=>x.classList.toggle('active',x.dataset.location===location.id));date=time=null;load();sync()});$$('[data-location]').forEach(b=>b.onclick=()=>{location=cfg.locations.find(x=>x.id===b.dataset.location)||location;$$('[data-location]').forEach(x=>x.classList.toggle('active',x===b));$('#v5MapTitle').textContent=location.online?'Join online':location.label;$('#v5MapCopy').textContent=location.online?'Your joining link is sent after booking.':location.address;sync()});$$('[data-variant]').forEach(b=>b.onclick=()=>{variant=JSON.parse(b.dataset.variant);group=3;$$('[data-variant]').forEach(x=>x.classList.toggle('selected',x===b));date=time=null;load();sync()});$('#v5GroupMinus').onclick=()=>{group=Math.max(3,group-1);sync();load()};$('#v5GroupPlus').onclick=()=>{group=Math.min(cfg.groupMax||Infinity,group+1);sync();load()};$('#v5GroupInput').onchange=e=>{group=Math.max(3,Math.min(cfg.groupMax||Infinity,Number(e.target.value)||3));sync();load()};$('#v5QtyMinus').onclick=()=>{qty=Math.max(1,qty-1);sync()};$('#v5QtyPlus').onclick=()=>{qty++;sync()};$('#v5Book').onclick=()=>reservation&&date&&time?add():(live()?renderCalendar():add());$('#v5MobileBook').onclick=()=>renderMobileBooking();$$('.wow-v5__faq-item button').forEach(b=>b.onclick=()=>{const i=b.parentElement;i.classList.toggle('open');$('b',b).textContent=i.classList.contains('open')?'−':'+'});
+const gallery=$('#v5Gallery');
+if(gallery){
+ const galleryItems=$$('.wow-v5__gallery-item',gallery),galleryCount=$('.wow-v5__gallery-count',gallery),next=$('.next',gallery),prev=$('.prev',gallery);let galleryIndex=0,galleryBusy=false;
+ const setGallerySlots=()=>galleryItems.forEach((item,index)=>{const offset=(index-galleryIndex+galleryItems.length)%galleryItems.length;for(let slot=0;slot<4;slot++)item.classList.remove(`slot-${slot}`);if(offset<4)item.classList.add(`slot-${offset}`)});
+ const rotateGallery=direction=>{if(galleryBusy||galleryItems.length<3)return;galleryBusy=true;const before=new Map(galleryItems.map(item=>[item,item.getBoundingClientRect()]));galleryIndex=(galleryIndex+direction+galleryItems.length)%galleryItems.length;setGallerySlots();galleryItems.forEach(item=>{const startBox=before.get(item),endBox=item.getBoundingClientRect();item.classList.add('is-moving');if(startBox.width&&startBox.height&&endBox.width&&endBox.height){item.style.transformOrigin='top left';item.style.transition='none';item.style.transform=`translate(${startBox.left-endBox.left}px,${startBox.top-endBox.top}px) scale(${startBox.width/endBox.width},${startBox.height/endBox.height})`}else item.classList.add('is-entering')});gallery.offsetHeight;requestAnimationFrame(()=>galleryItems.forEach(item=>{item.style.transition='transform .48s cubic-bezier(.22,.8,.24,1),opacity .28s ease';item.style.transform='translate(0,0) scale(1)';item.classList.remove('is-entering')}));if(galleryCount)galleryCount.textContent=`${galleryIndex+1} / ${galleryItems.length}`;setTimeout(()=>{galleryItems.forEach(item=>{item.classList.remove('is-moving','is-entering');item.style.transition='';item.style.transform='';item.style.transformOrigin=''});galleryBusy=false},520)};
+ next?.addEventListener('click',()=>rotateGallery(1));prev?.addEventListener('click',()=>rotateGallery(-1));
+}
+const mobileGallery=$('#v5MobileGallery'),track=$('.wow-v5__mobile-track',mobileGallery);
+if(mobileGallery&&track&&track.children.length>1){const mobileCount=track.children.length,counter=$('.wow-v5__mobile-gallery-count',mobileGallery);let mobileIndex=0,startX=0;const mobile=direction=>{mobileIndex=(mobileIndex+direction+mobileCount)%mobileCount;track.style.transform=`translateX(-${mobileIndex*100}%)`;if(counter)counter.textContent=`${mobileIndex+1} / ${mobileCount}`};$('.prev',mobileGallery)?.addEventListener('click',()=>mobile(-1));$('.next',mobileGallery)?.addEventListener('click',()=>mobile(1));track.addEventListener('touchstart',event=>startX=event.touches[0].clientX,{passive:true});track.addEventListener('touchend',event=>{const distance=event.changedTouches[0].clientX-startX;if(Math.abs(distance)>45)mobile(distance<0?1:-1)},{passive:true})}if(reservation&&expires)start();load();sync()})();
 </script>
 @endpush
