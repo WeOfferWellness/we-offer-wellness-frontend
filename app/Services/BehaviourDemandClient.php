@@ -8,13 +8,16 @@ class BehaviourDemandClient
 {
     public function insights(): array
     {
-        $baseUrl = rtrim((string) env('BACKEND_URL', env('VITE_BACKEND_URL', env('BACKEND_ASSET_URL', ''))), '/');
+        $baseUrl = rtrim((string) config('services.backend_url', ''), '/');
         if ($baseUrl === '') {
             return [];
         }
 
         try {
-            $response = Http::acceptJson()->timeout(6)->retry(1, 150)->get($baseUrl.'/api/behaviour/location-insights');
+            $response = Http::acceptJson()->timeout(6)->retry(1, 150)->withHeaders([
+                'Origin' => config('app.url'),
+                'Referer' => rtrim((string) config('app.url'), '/').'/',
+            ])->get($baseUrl.'/api/behaviour/location-insights');
         } catch (\Throwable) {
             return [];
         }

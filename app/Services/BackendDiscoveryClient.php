@@ -9,7 +9,7 @@ class BackendDiscoveryClient
 {
     public function modalityBoard(int $limit = 5, ?string $location = null): array
     {
-        $baseUrl = rtrim((string) env('BACKEND_URL', env('VITE_BACKEND_URL', env('BACKEND_ASSET_URL', ''))), '/');
+        $baseUrl = rtrim((string) config('services.backend_url', ''), '/');
         if ($baseUrl === '') {
             return [];
         }
@@ -19,7 +19,10 @@ class BackendDiscoveryClient
 
         return Cache::remember($cacheKey, now()->addSeconds(60), function () use ($baseUrl, $limit, $location): array {
             try {
-                $response = Http::acceptJson()->timeout(3)->get($baseUrl.'/api/behaviour/discovery', array_filter([
+                $response = Http::acceptJson()->timeout(3)->withHeaders([
+                    'Origin' => config('app.url'),
+                    'Referer' => rtrim((string) config('app.url'), '/').'/',
+                ])->get($baseUrl.'/api/behaviour/discovery', array_filter([
                     'limit' => min(5, max(5, $limit)),
                     'location' => $location !== '' ? $location : null,
                 ], static fn ($value): bool => $value !== null && $value !== ''));

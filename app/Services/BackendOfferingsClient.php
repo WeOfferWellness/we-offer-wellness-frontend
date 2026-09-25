@@ -13,14 +13,17 @@ class BackendOfferingsClient
 
     public function reviewStats(): array
     {
-        $baseUrl = rtrim((string) env('BACKEND_URL', env('VITE_BACKEND_URL', env('BACKEND_ASSET_URL', ''))), '/');
+        $baseUrl = rtrim((string) config('services.backend_url', ''), '/');
         if ($baseUrl === '') {
             return [];
         }
 
         return Cache::remember('backend:review-stats:'.sha1($baseUrl), now()->addMinutes(10), function () use ($baseUrl): array {
             try {
-                $response = Http::acceptJson()->timeout(3)->get($baseUrl.'/api/reviews/stats');
+                $response = Http::acceptJson()->timeout(3)->withHeaders([
+                    'Origin' => config('app.url'),
+                    'Referer' => rtrim((string) config('app.url'), '/').'/',
+                ])->get($baseUrl.'/api/reviews/stats');
             } catch (\Throwable) {
                 return [];
             }
@@ -31,7 +34,7 @@ class BackendOfferingsClient
 
     public function catalogue(array $filters = [], int $maxPages = 2, ?bool $personalised = null): Collection
     {
-        $baseUrl = rtrim((string) env('BACKEND_URL', env('VITE_BACKEND_URL', env('BACKEND_ASSET_URL', ''))), '/');
+        $baseUrl = rtrim((string) config('services.backend_url', ''), '/');
 
         if ($baseUrl === '') {
             return collect();

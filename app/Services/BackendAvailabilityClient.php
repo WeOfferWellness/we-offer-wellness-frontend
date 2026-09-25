@@ -21,7 +21,7 @@ class BackendAvailabilityClient
             return [];
         }
 
-        $baseUrl = rtrim((string) env('BACKEND_URL', env('VITE_BACKEND_URL', env('BACKEND_ASSET_URL', ''))), '/');
+        $baseUrl = rtrim((string) config('services.backend_url', ''), '/');
         if ($baseUrl === '') {
             return [];
         }

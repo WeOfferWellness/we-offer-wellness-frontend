@@ -26,7 +26,10 @@ class NeedService
 
         $load = function () use ($baseUrl): Collection {
             try {
-                $response = Http::acceptJson()->timeout(6)->retry(1, 150)->get($baseUrl.'/api/catalog/needs');
+                $response = Http::acceptJson()->timeout(6)->retry(1, 150)->withHeaders([
+                    'Origin' => config('app.url'),
+                    'Referer' => rtrim((string) config('app.url'), '/').'/',
+                ])->get($baseUrl.'/api/catalog/needs');
                 if (! $response->successful()) {
                     return collect();
                 }
@@ -61,7 +64,10 @@ class NeedService
         $baseUrl = $this->baseUrl();
         if ($baseUrl === '') return null;
         try {
-            $response = Http::acceptJson()->timeout(6)->retry(1, 150)->get($baseUrl.'/api/catalog/needs/'.rawurlencode($slug));
+            $response = Http::acceptJson()->timeout(6)->retry(1, 150)->withHeaders([
+                'Origin' => config('app.url'),
+                'Referer' => rtrim((string) config('app.url'), '/').'/',
+            ])->get($baseUrl.'/api/catalog/needs/'.rawurlencode($slug));
             if (! $response->successful()) return null;
             $need = data_get($response->json(), 'need');
             return is_array($need) && ($need['status'] ?? 'approved') === 'approved' ? $this->normalise($need) : null;
@@ -81,6 +87,6 @@ class NeedService
 
     private function baseUrl(): string
     {
-        return rtrim((string) env('BACKEND_URL', env('VITE_BACKEND_URL', env('BACKEND_ASSET_URL', ''))), '/');
+        return rtrim((string) config('services.backend_url', ''), '/');
     }
 }
