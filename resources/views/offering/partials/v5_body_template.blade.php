@@ -156,30 +156,78 @@
     $v5Images = array_values(array_filter(array_map($v5NormaliseMediaUrl, (array) ($offering['images'] ?? [$offering['image'] ?? '']))));
     if (!$v5Images) $v5Images = [asset('images/default-social-preview.jpg')];
     $v5ImageCount = count($v5Images);
-    $v5RawLocations = array_values(array_filter((array) ($offering['locations'] ?? [])));
+    // V3 carries full venue records separately from the simple `locations`
+    // labels used by older renderers.  Prefer those records so the public
+    // page preserves the real in-person venue instead of treating an empty
+    // simple-label list as an online session.
+    $v5VenueLocations = (array) ($offering['venue_locations'] ?? []);
+    $v5SimpleLocations = (array) ($offering['locations'] ?? []);
+    $v5RawLocations = array_values(array_filter($v5VenueLocations ?: $v5SimpleLocations, static function ($location): bool {
+        if (is_array($location)) {
+            return ! empty($location);
+        }
+
+        return trim((string) $location) !== '';
+    }));
+    $v5RawVariantText = strtolower(implode(' ', array_map(static function ($variant): string {
+        if (! is_array($variant)) {
+            return '';
+        }
+
+        return implode(' ', array_filter([
+            (string) ($variant['channel'] ?? ''),
+            (string) ($variant['format'] ?? ''),
+            (string) ($variant['meta'] ?? ''),
+            implode(' ', array_map('strval', (array) ($variant['selection'] ?? $variant['options'] ?? []))),
+        ]));
+    }, (array) ($offering['booking_variants'] ?? $offering['variants'] ?? []))));
+    $v5HasInPerson = str_contains($v5RawVariantText, 'in_person')
+        || str_contains($v5RawVariantText, 'in-person')
+        || str_contains($v5RawVariantText, 'in person')
+        || strtolower(trim((string) ($offering['mode'] ?? ''))) === 'in-person';
+    $v5HasOnline = str_contains($v5RawVariantText, 'online')
+        || strtolower(trim((string) ($offering['mode'] ?? ''))) === 'online';
     $v5Locations = [];
     foreach ($v5RawLocations as $i => $location) {
-        if (!is_array($location)) continue;
-        $online = (bool) ($location['online'] ?? false) || str_contains(strtolower((string) ($location['label'] ?? $location['name'] ?? '')), 'online');
+        if (! is_array($location)) {
+            $location = ['label' => (string) $location];
+        }
+        $locationLabel = trim((string) ($location['label'] ?? $location['name'] ?? ''));
+        $online = (bool) ($location['online'] ?? false) || str_contains(strtolower($locationLabel), 'online');
+        $locationAddress = trim((string) ($location['full_address'] ?? $location['address'] ?? $location['notes'] ?? ''));
+        if ($locationAddress === '') {
+            $locationAddress = trim(implode(', ', array_filter([
+                $location['address_line_1'] ?? null,
+                $location['address_line_2'] ?? null,
+                $location['city'] ?? null,
+                $location['county'] ?? null,
+                $location['postcode'] ?? null,
+            ], static fn ($value): bool => trim((string) $value) !== '')));
+        }
         $v5Locations[] = [
             'id' => (string) ($location['id'] ?? ($online ? 'online' : 'location-'.$i)),
-            'label' => trim((string) ($location['label'] ?? $location['name'] ?? ($online ? 'Online' : 'Location'))),
-            'short_label' => trim((string) ($location['city'] ?? $location['town'] ?? $location['locality'] ?? $location['label'] ?? $location['name'] ?? ($online ? 'Online' : 'Location'))),
-            'address' => trim((string) ($location['full_address'] ?? $location['address'] ?? $location['notes'] ?? ($online ? 'Join from anywhere' : ''))),
+            'label' => $locationLabel !== '' ? $locationLabel : ($online ? 'Online' : 'In person'),
+            'short_label' => trim((string) ($location['city'] ?? $location['town'] ?? $location['locality'] ?? '')) ?: ($locationLabel !== '' ? $locationLabel : ($online ? 'Online' : 'In person')),
+            'address' => $locationAddress !== '' ? $locationAddress : ($online ? 'Join from anywhere' : 'Location details are confirmed after booking.'),
             'lat' => $location['lat'] ?? $location['latitude'] ?? null,
             'lng' => $location['lng'] ?? $location['longitude'] ?? null,
             'online' => $online,
         ];
     }
     if (!$v5Locations) {
-        $v5Locations[] = ['id' => 'online', 'label' => 'Online', 'short_label' => 'Online', 'address' => 'Join from anywhere', 'lat' => null, 'lng' => null, 'online' => true];
+        // Do not invent Online when the bookable variants are in person. A
+        // legacy offering can legitimately omit a venue record, but its
+        // delivery channel is still authoritative for the customer-facing UI.
+        $v5Locations[] = $v5HasOnline && ! $v5HasInPerson
+            ? ['id' => 'online', 'label' => 'Online', 'short_label' => 'Online', 'address' => 'Join from anywhere', 'lat' => null, 'lng' => null, 'online' => true]
+            : ['id' => 'in-person', 'label' => 'In person', 'short_label' => 'In person', 'address' => 'Location details are confirmed after booking.', 'lat' => null, 'lng' => null, 'online' => false];
     }
     $v5Variants = [];
     foreach ((array) ($offering['booking_variants'] ?? $offering['variants'] ?? []) as $i => $variant) {
         if (!is_array($variant)) continue;
         $audienceType = strtolower(trim((string) ($variant['audience_type'] ?? '')));
         $pricingType = strtolower(trim((string) ($variant['pricing_type'] ?? '')));
-        $selection = array_values(array_filter(array_map('strval', (array) ($variant['selection'] ?? []))));
+        $selection = array_values(array_unique(array_filter(array_map('strval', (array) ($variant['selection'] ?? [])))));
         $text = strtolower(implode(' ', $selection));
         $kind = $audienceType === 'couple' || str_contains($text, 'couple') || str_contains($text, '2 person') ? 'couple' : ($audienceType === 'group' || str_contains($text, 'group') ? 'group' : 'single');
         $label = trim((string) ($variant['label'] ?? $variant['title'] ?? $variant['name'] ?? ''));
@@ -188,6 +236,23 @@
         }
         $priceOptionId = $variant['price_option_id'] ?? $variant['priceOptionId'] ?? null;
         if (!$priceOptionId && preg_match('/^po_(\d+)/', (string) ($variant['id'] ?? ''), $priceOptionMatch)) $priceOptionId = (int) $priceOptionMatch[1];
+        // Delivery is selected in its own Location control.  Do not repeat it
+        // in the Session control: the latter is for the actual people mode or
+        // configured session package only.
+        $sessionSelection = array_values(array_filter($selection, static function (string $value): bool {
+            $value = strtolower(trim($value));
+
+            return $value !== 'online' && $value !== 'in person' && $value !== 'in-person';
+        }));
+        $sessionMetaParts = array_values(array_filter($sessionSelection, static fn (string $value): bool => strcasecmp(trim($value), $label) !== 0));
+        $sessionMeta = trim(implode(' · ', $sessionMetaParts));
+        if ($sessionMeta === '') {
+            $sessionMeta = match ($kind) {
+                'couple' => 'For two people',
+                'group' => 'Group session',
+                default => 'Private session',
+            };
+        }
         $channels = array_values(array_unique(array_filter([
             (bool) ($variant['online'] ?? false) ? 'online' : null,
             (bool) ($variant['in_person'] ?? false) ? 'in_person' : null,
@@ -197,7 +262,7 @@
         $v5Variants[] = [
             'id' => (string) ($variant['id'] ?? $i),
             'label' => $label,
-            'meta' => trim(implode(' · ', $selection)),
+            'meta' => $sessionMeta,
             'price' => $v5BuyerPrice($variant['price'] ?? $variant['amount'] ?? $offering['selectedVariantPrice'] ?? $offering['price_min'] ?? $offering['price'] ?? 0),
             'price_option_id' => $priceOptionId ? (int) $priceOptionId : null,
             'kind' => $kind,
@@ -205,6 +270,11 @@
             'group_min' => $kind === 'group' ? max(3, (int) ($variant['group_min'] ?? 3)) : null,
             'group_max' => is_numeric($variant['group_max'] ?? null) ? (int) $variant['group_max'] : null,
             'channels' => $channels,
+            'location_ids' => array_values(array_filter(array_map('strval', (array) ($variant['location_ids'] ?? [])))),
+            'session_package_id' => is_numeric($variant['session_package_id'] ?? null) ? (int) $variant['session_package_id'] : null,
+            'session_package_key' => trim((string) ($variant['session_package_key'] ?? '')) ?: null,
+            'session_count' => is_numeric($variant['session_count'] ?? null) ? (int) $variant['session_count'] : null,
+            'session_duration_minutes' => is_numeric($variant['session_duration_minutes'] ?? null) ? (int) $variant['session_duration_minutes'] : null,
             'active' => !array_key_exists('available', $variant) || (bool) $variant['available'],
         ];
     }
@@ -247,7 +317,9 @@
         if ($hasSolo) return 'Solo or '.$groupRange.' people';
         return $groupRange.' people';
     };
-    $v5InitialLocation = $v5Locations[0];
+    $v5SelectedVariant = collect($v5Variants)->first(fn (array $variant): bool => (string) $variant['id'] === (string) ($offering['selectedVariantId'] ?? ''));
+    $v5SelectedLocationIds = (array) ($v5SelectedVariant['location_ids'] ?? []);
+    $v5InitialLocation = collect($v5Locations)->first(fn (array $location): bool => in_array((string) $location['id'], $v5SelectedLocationIds, true)) ?? $v5Locations[0];
     $v5InitialVariants = $v5VariantsForLocation($v5ActiveVariants, $v5InitialLocation);
     $v5OnlineLocations = array_values(array_filter($v5Locations, fn (array $location): bool => !empty($location['online'])));
     $v5PhysicalLocations = array_values(array_filter($v5Locations, fn (array $location): bool => empty($location['online'])));
@@ -303,6 +375,7 @@
     $v5Config = [
         'id' => (int) ($offering['id'] ?? 0), 'title' => $v5Title, 'source' => $v5Source, 'currency' => $v5Currency,
         'duration' => max(15, $v5Duration ?? 60), 'locations' => $v5Locations, 'variants' => $v5Variants,
+        'selectedLocationId' => (string) ($v5InitialLocation['id'] ?? ''),
         'selectedVariantId' => (string) ($offering['selectedVariantId'] ?? $v5Variants[0]['id']),
         'groupMax' => $v5GroupMax, 'mapboxToken' => (string) config('services.mapbox.token'),
         'practitionerProfileUrl' => $v5PractitionerProfileUrl,
@@ -545,7 +618,7 @@
 @push('scripts')
 <script data-cfasync="false" src="https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.js"></script>
 <script>
-(()=>{const page=document.querySelector('#wowOfferingV5');if(!page)return;const cfg=JSON.parse(page.dataset.config),$=(s,r=page)=>r.querySelector(s),$$=(s,r=page)=>[...r.querySelectorAll(s)],money=n=>new Intl.NumberFormat('en-GB',{style:'currency',currency:cfg.currency||'GBP'}).format(Number(n||0)),holdKey=`wow-offering-hold:${cfg.source}:${cfg.id}`;let location=cfg.locations[0],variant=cfg.variants.find(x=>x.id===cfg.selectedVariantId)||cfg.variants[0],group=Math.max(3,Number((cfg.variants.find(x=>x.id===cfg.selectedVariantId)||cfg.variants[0]).group_min||3)),qty=1,availability={},date=null,time=null,slotEnd=null,reservation=null,expires=null,timer=null;try{const saved=JSON.parse(sessionStorage.getItem(holdKey)||'null');if(saved&&new Date(saved.expires)>new Date()){reservation=saved.reservation;expires=saved.expires;date=saved.date;time=saved.time;slotEnd=saved.slot_end||null;}}catch(e){}
+(()=>{const page=document.querySelector('#wowOfferingV5');if(!page)return;const cfg=JSON.parse(page.dataset.config),$=(s,r=page)=>r.querySelector(s),$$=(s,r=page)=>[...r.querySelectorAll(s)],money=n=>new Intl.NumberFormat('en-GB',{style:'currency',currency:cfg.currency||'GBP'}).format(Number(n||0)),holdKey=`wow-offering-hold:${cfg.source}:${cfg.id}`;let location=cfg.locations.find(item=>item.id===cfg.selectedLocationId)||cfg.locations[0],variant=cfg.variants.find(x=>x.id===cfg.selectedVariantId)||cfg.variants[0],group=Math.max(3,Number((cfg.variants.find(x=>x.id===cfg.selectedVariantId)||cfg.variants[0]).group_min||3)),qty=1,availability={},date=null,time=null,slotEnd=null,reservation=null,expires=null,timer=null;try{const saved=JSON.parse(sessionStorage.getItem(holdKey)||'null');if(saved&&new Date(saved.expires)>new Date()){reservation=saved.reservation;expires=saved.expires;date=saved.date;time=saved.time;slotEnd=saved.slot_end||null;}}catch(e){}
 const setMenu=(trigger,menu)=>{trigger.onclick=e=>{e.stopPropagation();const open=trigger.getAttribute('aria-expanded')==='true';$$('.wow-v5__menu').forEach(x=>x.classList.remove('open'));$$('.wow-v5__trigger').forEach(x=>x.setAttribute('aria-expanded','false'));menu.classList.toggle('open',!open);trigger.setAttribute('aria-expanded',String(!open))}};document.addEventListener('click',()=>{$$('.wow-v5__menu').forEach(x=>x.classList.remove('open'));$$('.wow-v5__trigger').forEach(x=>x.setAttribute('aria-expanded','false'))});setMenu($('#v5LocationTrigger'),$('#v5LocationMenu'));setMenu($('#v5VariantTrigger'),$('#v5VariantMenu'));
 const reviewLink=$('a[href="#reviews"]');if(reviewLink&&cfg.reviewUrl)reviewLink.href=cfg.reviewUrl;
 let map=null,mapMarker=null;function syncMap(){const mapBox=$('#v5Map');if(!mapBox)return;mapBox.classList.toggle('is-physical',!location.online);if(location.online){if(map)mapBox.querySelector('.wow-v5__map-canvas')?.remove();return}if(!cfg.mapboxToken||!window.mapboxgl||!Number.isFinite(Number(location.lng))||!Number.isFinite(Number(location.lat)))return;let canvas=mapBox.querySelector('.wow-v5__map-canvas');if(!canvas){canvas=document.createElement('div');canvas.className='wow-v5__map-canvas';mapBox.prepend(canvas);window.mapboxgl.accessToken=cfg.mapboxToken;map=new window.mapboxgl.Map({container:canvas,style:'mapbox://styles/mapbox/standard',center:[Number(location.lng),Number(location.lat)],zoom:13});map.addControl(new window.mapboxgl.NavigationControl(),'top-right')}if(map){map.flyTo({center:[Number(location.lng),Number(location.lat)],zoom:13});if(mapMarker)mapMarker.remove();mapMarker=new window.mapboxgl.Marker().setLngLat([Number(location.lng),Number(location.lat)]).addTo(map)}}
@@ -553,10 +626,11 @@ page.addEventListener('click',event=>{if(event.target.closest('[data-location]')
 function live(){return Object.values(availability.slotsByDay||{}).some(x=>(x.slots||[]).length)}
 function unitPrice(){return variant.per_person&&variant.kind==='group'?variant.price*group:variant.price}
 function price(){return unitPrice()*qty}
-function variantsForLocation(){const channel=location.online?'online':'in_person',variants=cfg.variants.filter(item=>!item.channels?.length||item.channels.includes(channel));return variants.length?variants:cfg.variants}
+function variantsForLocation(){const channel=location.online?'online':'in_person',variants=cfg.variants.filter(item=>{const channelMatches=!item.channels?.length||item.channels.includes(channel),locationIds=item.location_ids||[];return channelMatches&&(!locationIds.length||locationIds.includes(location.id))});return variants.length?variants:cfg.variants}
 function peopleSummary(variants){const kinds=[...new Set(variants.map(item=>item.kind).filter(Boolean))],solo=kinds.includes('single'),couple=kinds.includes('couple'),groups=variants.filter(item=>item.kind==='group');if(!solo&&!couple&&!groups.length)return null;if(!groups.length)return solo&&couple?'1–2 people':couple?'Couple':'Solo';const min=Math.min(...groups.map(item=>Math.max(1,Number(item.group_min||3)))),maxValues=groups.map(item=>Number(item.group_max)).filter(Number.isFinite),max=maxValues.length?Math.max(...maxValues):null,range=max?`${min}–${max}`:`${min}+`;if(solo&&couple)return max?`1–${max} people`:'1+ people';if(couple)return max?`2–${max} people`:'2+ people';if(solo)return `Solo or ${range} people`;return `${range} people`}
 function updateQuickInfo(){const root=$('[data-quick-info]');if(!root)return;const variants=variantsForLocation(),prices=[...new Set(variants.map(item=>Number(item.price||0)))].sort((a,b)=>a-b),priceFact=root.querySelector('[data-quick-fact="price"]'),peopleFact=root.querySelector('[data-quick-fact="people"]');if(priceFact&&prices.length){priceFact.querySelector('[data-quick-label]').textContent=prices.length===1?'Price':'From';priceFact.querySelector('[data-quick-value]').textContent=money(prices[0])}if(peopleFact){const people=peopleSummary(variants);peopleFact.hidden=!people;if(people)peopleFact.querySelector('[data-quick-value]').textContent=people}const availabilityFact=root.querySelector('[data-quick-fact="availability"]');if(availabilityFact)availabilityFact.hidden=!live();const items=[...root.querySelectorAll('[data-quick-fact]')];let visible=0;items.forEach(item=>{if(item.dataset.quickFact==='availability'&&!live()){item.hidden=true;delete item.dataset.quickPosition;return}if(item.dataset.quickFact==='people'&&item.hidden){delete item.dataset.quickPosition;return}item.hidden=visible>=5;if(item.hidden){delete item.dataset.quickPosition;return}visible++;item.dataset.quickPosition=String(visible)});root.dataset.factCount=String(visible)}
-function sync(){const p=price();$('#v5Price').textContent=money(p);$('#v5MobilePrice').textContent=money(p);$('#v5LocationTitle').textContent=location.label;$('#v5LocationSub').textContent=location.address;$('#v5SummaryLocation').textContent=location.label;$('#v5VariantTitle').textContent=variant.label;$('#v5VariantMeta').textContent=variant.meta||'';$('#v5SummaryVariant').textContent=variant.kind==='group'?`${variant.label} · ${group} people`:variant.label;$('#v5Qty').textContent=qty;$('#v5Group').classList.toggle('show',variant.kind==='group');$('#v5GroupInput').value=group;$('#v5GroupUnit').textContent=variant.per_person?`${money(variant.price)} pp`:money(variant.price);$('#v5Status').textContent=live()?'Live availability':'Flexible booking';$('#v5Note').textContent=live()?'Book now opens the live calendar.':'The practitioner will arrange the date with you after booking.';$('#v5SummaryDate').textContent=date&&time?`${date} · ${time}`:'Choose after clicking Book now';updateQuickInfo()}
+function syncVariantUrl(){if(!variant?.id||variant.id==='default')return;const url=new URL(window.location.href);if(url.searchParams.get('variant')===variant.id)return;url.searchParams.set('variant',variant.id);window.history.replaceState(window.history.state,'',url)}
+function sync(){syncVariantUrl();const p=price();$('#v5Price').textContent=money(p);$('#v5MobilePrice').textContent=money(p);$('#v5LocationTitle').textContent=location.label;$('#v5LocationSub').textContent=location.address;$('#v5SummaryLocation').textContent=location.label;$('#v5VariantTitle').textContent=variant.label;$('#v5VariantMeta').textContent=variant.meta||'';$('#v5SummaryVariant').textContent=variant.kind==='group'?`${variant.label} · ${group} people`:variant.label;$('#v5Qty').textContent=qty;$('#v5Group').classList.toggle('show',variant.kind==='group');$('#v5GroupInput').value=group;$('#v5GroupUnit').textContent=variant.per_person?`${money(variant.price)} pp`:money(variant.price);$('#v5Status').textContent=live()?'Live availability':'Flexible booking';$('#v5Note').textContent=live()?'Book now opens the live calendar.':'The practitioner will arrange the date with you after booking.';$('#v5SummaryDate').textContent=date&&time?`${date} · ${time}`:'Choose after clicking Book now';updateQuickInfo()}
 async function load(){if(!reservation){date=null;time=null;}availability={};const p=new URLSearchParams();if(variant.price_option_id)p.set('price_option_id',variant.price_option_id);if(variant.label)p.set('variant_label',variant.label);if(reservation)p.set('reservation_id',reservation);try{const r=await fetch(`${cfg.bookingEndpoint}?${p}`,{headers:{Accept:'application/json'},credentials:'same-origin'});const data=await r.json();availability=data.bookingPayload||{};const first=Object.keys(availability.slotsByDay||{}).filter(k=>(availability.slotsByDay[k].slots||[]).length).sort()[0];if(first&&!date){date=first}}catch(e){}sync()}
 function renderCalendar(){const old=$('.wow-v5__calendar');if(old)old.remove();if(!live())return;const box=document.createElement('section');box.className='wow-v5__calendar';box.style.cssText='display:block;position:fixed;inset:0;z-index:50;padding:20px;background:#0a17148c;overflow:auto';box.innerHTML=`<div style="width:min(900px,100%);margin:auto;background:#fff;border-radius:4px"><div style="display:flex;justify-content:space-between;padding:18px;border-bottom:1px solid #dce4e0"><div><small>Pick Date & Time</small><h3 style="margin:4px 0">${cfg.title||'Choose your session'}</h3></div><button type="button" data-close>×</button></div><div style="display:grid;grid-template-columns:1fr 1fr"><div style="padding:20px"><b>Available dates</b><div data-days style="display:flex;flex-wrap:wrap;gap:8px;margin-top:14px"></div></div><div style="padding:20px"><b>Available times</b><div data-times style="display:flex;flex-wrap:wrap;gap:8px;margin-top:14px"></div><div data-hold style="display:none;margin-top:16px;padding:10px;border:1px solid #cfe1da;background:#f4faf7">⌛ Your selected time is being held for <b></b></div></div></div><div style="display:flex;justify-content:flex-end;gap:8px;padding:15px;border-top:1px solid #dce4e0"><button type="button" data-close>Cancel</button><button type="button" data-confirm style="background:#4f9482;color:#fff;border:0;padding:0 15px">Continue</button></div></div>`;document.body.append(box);const days=$('[data-days]',box),times=$('[data-times]',box);Object.keys(availability.slotsByDay||{}).sort().forEach(key=>{const b=document.createElement('button');b.textContent=key;b.disabled=!(availability.slotsByDay[key].slots||[]).length;b.style.cssText='height:40px;border:1px solid #dce4e0;background:#fff';if(key===date)b.style.cssText+=';border-color:#4f9482;background:#eef6f3';b.onclick=()=>{date=key;time=null;renderCalendar();sync()};days.append(b)});(availability.slotsByDay?.[date]?.slots||[]).forEach(slot=>{const b=document.createElement('button');b.textContent=slot.start;b.style.cssText='height:40px;border:1px solid #dce4e0;background:#fff';if(time===slot.start)b.style.cssText+=';border-color:#4f9482;background:#eef6f3';b.onclick=()=>{time=slot.start;sync();renderCalendar()};times.append(b)});$$('[data-close]',box).forEach(b=>b.onclick=()=>box.remove());$('[data-confirm]',box).onclick=async()=>{if(!date||!time)return;await hold();if(reservation){box.remove();await add()}};if(expires){const h=$('[data-hold]',box);h.style.display='block';$('b',h).textContent=remaining()}}
 renderCalendar=()=>{const old=document.querySelector('.wow-v5__calendar');if(old)old.remove();if(!live())return;const box=document.createElement('section');box.className='wow-v5__calendar';box.setAttribute('role','dialog');box.setAttribute('aria-modal','true');const dates=Object.keys(availability.slotsByDay||{}).sort();const label=value=>new Intl.DateTimeFormat('en-GB',{weekday:'short',day:'numeric',month:'short'}).format(new Date(`${value}T12:00:00`));box.innerHTML=`<div class="wow-v5__calendar-card"><div class="wow-v5__calendar-head"><div><small>Pick Date &amp; Time</small><h3>${cfg.title||'Choose your session'}</h3></div><button class="wow-v5__calendar-close" type="button" data-close aria-label="Close calendar">×</button></div><div class="wow-v5__calendar-grid"><div class="wow-v5__calendar-pane"><h4>Available dates</h4><div class="wow-v5__calendar-days" data-days></div></div><div class="wow-v5__calendar-pane"><h4>◷ Available times</h4><div class="wow-v5__calendar-hold" data-hold><span class="wow-v5__calendar-hourglass">⌛</span><span><strong>Your selected time is being held for <b></b></strong><small>Complete booking before the timer ends.</small></span></div><div class="wow-v5__calendar-times" data-times></div></div></div><div class="wow-v5__calendar-foot"><span>Selected: <b data-selected-date>${date?label(date):'choose a date'}</b> · <b data-selected-time>${time||'choose a time'}</b></span><div><button class="wow-v5__calendar-action" type="button" data-close>Cancel</button><button class="wow-v5__calendar-action wow-v5__calendar-confirm" type="button" data-confirm>Continue</button></div></div></div>`;document.body.append(box);const days=box.querySelector('[data-days]'),times=box.querySelector('[data-times]');dates.forEach(key=>{const button=document.createElement('button');const available=(availability.slotsByDay[key].slots||[]).length>0;button.className=`wow-v5__calendar-slot${key===date?' is-selected':''}`;button.textContent=label(key);button.disabled=!available;button.onclick=()=>{date=key;time=null;renderCalendar();sync()};days.append(button)});(availability.slotsByDay?.[date]?.slots||[]).forEach(slot=>{const button=document.createElement('button');button.className=`wow-v5__calendar-slot${slot.start===time?' is-selected':''}`;button.textContent=slot.start;button.onclick=()=>{time=slot.start;renderCalendar();sync()};times.append(button)});box.querySelectorAll('[data-close]').forEach(button=>button.onclick=()=>box.remove());box.querySelector('[data-confirm]').onclick=async()=>{if(!date||!time)return;await hold();if(reservation){box.remove();await add()}};if(expires){const hold=box.querySelector('[data-hold]');hold.classList.add('show');hold.querySelector('b').textContent=remaining()}};

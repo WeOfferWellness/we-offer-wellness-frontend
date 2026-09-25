@@ -2195,6 +2195,7 @@ class LandingController extends Controller
                 ->orderBy('sort_order')
                 ->orderBy('id')
                 ->get([
+                    'id',
                     'label',
                     'address_line_1',
                     'address_line_2',
@@ -2235,6 +2236,7 @@ class LandingController extends Controller
                     }
 
                     return [
+                        'id' => is_numeric($row->id ?? null) ? 'loc_'.(int) $row->id : null,
                         'label' => $label !== '' ? $label : trim(implode(', ', array_filter([$addressLine1, $city]))),
                         'address_line_1' => $addressLine1,
                         'address_line_2' => $addressLine2,
@@ -2260,6 +2262,15 @@ class LandingController extends Controller
             ->where('is_active', true)
             ->orderBy('sort_order')
             ->get();
+        $sessionPackagesById = collect();
+        if (Schema::hasTable('offering_session_packages')) {
+            $sessionPackagesById = DB::table('offering_session_packages')
+                ->where('offering_id', $offering->id)
+                ->where('is_active', true)
+                ->orderBy('sort_order')
+                ->get(['id', 'public_key', 'name', 'session_count', 'session_duration_minutes'])
+                ->keyBy('id');
+        }
         $priceTiers = DB::table('offering_price_tiers')
             ->whereIn('price_option_id', $priceOptions->pluck('id'))
             ->get();
@@ -2319,6 +2330,7 @@ class LandingController extends Controller
                 ->orderBy('sort_order')
                 ->orderBy('id')
                 ->get([
+                    'id',
                     'label',
                     'address_line_1',
                     'address_line_2',
@@ -2359,6 +2371,7 @@ class LandingController extends Controller
                     }
 
                     return [
+                        'id' => is_numeric($row->id ?? null) ? 'loc_'.(int) $row->id : null,
                         'label' => $label !== '' ? $label : trim(implode(', ', array_filter([$city, $county, $postcode]))),
                         'address_line_1' => $addressLine1,
                         'address_line_2' => $addressLine2,
@@ -2694,6 +2707,16 @@ class LandingController extends Controller
         foreach ($priceOptions as $option) {
             $audienceType = strtolower(trim((string) ($option->audience_type ?? '')));
             $pricingType = strtolower(trim((string) ($option->pricing_type ?? '')));
+            $sessionPackage = $sessionPackagesById->get((int) ($option->session_package_id ?? 0));
+            $sessionCount = is_numeric($sessionPackage?->session_count ?? null) ? (int) $sessionPackage->session_count : null;
+            $configuredOptionName = trim((string) ($option->name ?? ''));
+            if (strtolower($configuredOptionName) === 'option') {
+                $configuredOptionName = '';
+            }
+            $sessionLabel = trim((string) ($sessionPackage?->name ?? '')) ?: $configuredOptionName;
+            if ($sessionLabel === '' && $sessionCount && $sessionCount > 1) {
+                $sessionLabel = $sessionCount.' sessions';
+            }
             $formatLabel = $formatLabelForOption($option);
             if ($formatLabel === null && count($formatValues) === 1) {
                 $formatLabel = $formatValues[0];
@@ -2714,6 +2737,9 @@ class LandingController extends Controller
                     if ($formatLabel !== null) {
                         $variantOptions[] = $formatLabel;
                     }
+                    if ($sessionLabel !== '') {
+                        $variantOptions[] = $sessionLabel;
+                    }
                     if ($peopleLabel !== null) {
                         $variantOptions[] = $peopleLabel;
                     }
@@ -2726,6 +2752,12 @@ class LandingController extends Controller
                         'pricing_type' => $pricingType,
                         'group_min' => (int) ($tierRow->min_qty ?? 3),
                         'group_max' => $tierRow->max_qty === null ? null : (int) $tierRow->max_qty,
+                        'label' => $sessionLabel !== '' ? $sessionLabel : ($peopleLabel ?? 'Group'),
+                        'session_package_id' => $sessionPackage?->id ? (int) $sessionPackage->id : null,
+                        'session_package_key' => trim((string) ($sessionPackage?->public_key ?? '')) ?: null,
+                        'session_count' => $sessionCount,
+                        'session_duration_minutes' => is_numeric($sessionPackage?->session_duration_minutes ?? null) ? (int) $sessionPackage->session_duration_minutes : null,
+                        'location_ids' => is_numeric($option->offering_location_id ?? null) ? ['loc_'.(int) $option->offering_location_id] : [],
                         'options' => $variantOptions,
                         'selection' => $variantOptions,
                         'price' => (float) ($tierRow->price_amount ?? $option->price_amount ?? 0),
@@ -2749,8 +2781,14 @@ class LandingController extends Controller
                 'pricing_type' => $pricingType,
                 'group_min' => $audienceType === 'group' ? max(3, (int) ($option->min_qty ?? 3)) : null,
                 'group_max' => null,
-                'options' => array_values(array_filter([$formatLabel, $basePeopleLabel], fn ($v) => $v !== null && $v !== '')),
-                'selection' => array_values(array_filter([$formatLabel, $basePeopleLabel], fn ($v) => $v !== null && $v !== '')),
+                'label' => $sessionLabel !== '' ? $sessionLabel : ($basePeopleLabel ?? '1 Person'),
+                'session_package_id' => $sessionPackage?->id ? (int) $sessionPackage->id : null,
+                'session_package_key' => trim((string) ($sessionPackage?->public_key ?? '')) ?: null,
+                'session_count' => $sessionCount,
+                'session_duration_minutes' => is_numeric($sessionPackage?->session_duration_minutes ?? null) ? (int) $sessionPackage->session_duration_minutes : null,
+                'location_ids' => is_numeric($option->offering_location_id ?? null) ? ['loc_'.(int) $option->offering_location_id] : [],
+                'options' => array_values(array_filter([$formatLabel, $sessionLabel, $basePeopleLabel], fn ($v) => $v !== null && $v !== '')),
+                'selection' => array_values(array_filter([$formatLabel, $sessionLabel, $basePeopleLabel], fn ($v) => $v !== null && $v !== '')),
                 'price' => (float) ($option->price_amount ?? 0),
                 'compare' => null,
                 'available' => (bool) ($option->is_active ?? true),
