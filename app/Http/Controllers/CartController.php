@@ -448,6 +448,16 @@ class CartController extends Controller
                 'qty' => max(1, (int) ($line['qty'] ?? 1)),
                 'image' => $line['image'] ?? null,
                 'url' => $line['url'] ?? '#',
+                // A booking hold has to survive the cart redirect and a
+                // normal page refresh.  Keep only the checkout-critical
+                // selection metadata in the encrypted cart cookie.
+                'booking' => $line['booking'] ?? [],
+                'selected' => $line['selected'] ?? [],
+                'group_count' => $line['group_count'] ?? null,
+                'reservation_id' => $line['reservation_id'] ?? null,
+                'hold_expires_at' => $line['hold_expires_at'] ?? null,
+                'location' => $line['location'] ?? null,
+                'source_version' => $line['source_version'] ?? null,
             ];
         }
 

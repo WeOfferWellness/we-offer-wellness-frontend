@@ -20,15 +20,20 @@ use App\Http\Controllers\StoreProductsController;
 
 Route::post('/stripe/webhook', [StripeWebhookController::class, 'handle']);
 
-// Cart APIs
-Route::post('/cart/promo', [CartController::class, 'promo']);
-Route::get('/cart/count', [CartController::class, 'count']);
-Route::get('/cart/mini', [CartController::class, 'mini']);
-Route::post('/cart/add', [CartController::class, 'add']);
-Route::post('/cart/remove', [CartController::class, 'remove']);
-Route::post('/cart/update', [CartController::class, 'update']);
-Route::post('/cart/clear', [CartController::class, 'clear']);
-Route::post('/cart/gift', [CartController::class, 'gift']);
+// Cart data belongs to the storefront session.  These endpoints retain their
+// established /api/cart/* URLs, but must run through the web middleware so an
+// add survives the redirect to /cart and the encrypted cart cookie can be read
+// by the cart and checkout pages.
+Route::middleware('web')->group(function () {
+    Route::post('/cart/promo', [CartController::class, 'promo']);
+    Route::get('/cart/count', [CartController::class, 'count']);
+    Route::get('/cart/mini', [CartController::class, 'mini']);
+    Route::post('/cart/add', [CartController::class, 'add']);
+    Route::post('/cart/remove', [CartController::class, 'remove']);
+    Route::post('/cart/update', [CartController::class, 'update']);
+    Route::post('/cart/clear', [CartController::class, 'clear']);
+    Route::post('/cart/gift', [CartController::class, 'gift']);
+});
 Route::middleware('web')->group(function () {
     Route::post('/store/abandoned-cart', [StoreAbandonedCartController::class, 'track']);
     Route::post('/store/abandoned-cart/identify', [StoreAbandonedCartController::class, 'identify']);

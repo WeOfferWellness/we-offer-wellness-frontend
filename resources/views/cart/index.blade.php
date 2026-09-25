@@ -10,6 +10,7 @@
       $serverCart[] = [
           'id'    => (string)$id,
           'product_id' => $lineProductId,
+          'vendor_id' => $it['vendor_id'] ?? null,
           'variant_id' => $it['variant_id'] ?? null,
           'variant_label' => (string)($it['variant_label'] ?? ''),
           'title' => (string)($it['title'] ?? 'Item'),
@@ -17,6 +18,16 @@
           'img'   => (string)($it['image'] ?? ''),
           'unit'  => round($p, 2),
           'qty'   => (int)($it['qty'] ?? 1),
+          // Keep the booking selection intact until CheckoutController has
+          // validated the reservation and created the Stripe line item.
+          'meta' => is_array($it['meta'] ?? null) ? $it['meta'] : [],
+          'booking' => is_array($it['booking'] ?? null) ? $it['booking'] : [],
+          'selected' => is_array($it['selected'] ?? null) ? $it['selected'] : [],
+          'group_count' => $it['group_count'] ?? null,
+          'reservation_id' => $it['reservation_id'] ?? null,
+          'hold_expires_at' => $it['hold_expires_at'] ?? null,
+          'location' => $it['location'] ?? null,
+          'source_version' => $it['source_version'] ?? null,
       ];
   }
 @endphp
@@ -228,8 +239,10 @@
     return [];
   }
 
-  var cart = readLocalCart();
-  try{ if(!cart.length){ cart = @json($serverCart) } }catch(_){ }
+  // The server session is authoritative after a V5 slot hold is added.  Do
+  // not let an unrelated/stale localStorage cart hide it on the cart page.
+  var cart = @json($serverCart);
+  try{ if(!cart.length){ cart = readLocalCart() } }catch(_){ }
   var promo = { code:"", pct:0 };
   trackViewCart();
 
@@ -286,28 +299,9 @@
       var bag = { items: items };
       items.forEach(function(it){ bag[String(it.id)] = it; });
       localStorage.setItem('wow_cart', JSON.stringify(bag));
-      var cookieItems = items.map(function(it){
-        return {
-          id: String(it.id),
-          product_id: it.product_id || null,
-          variant_id: it.variant_id || null,
-          variant_label: it.variant_label || '',
-          title: it.title || '',
-          price: Number(it.price || it.unit || 0),
-          qty: Number(it.qty || 1) || 1,
-          image: it.image || it.img || '',
-          url: it.url || '#'
-        };
-      });
-      try{
-        if (cookieItems.length) {
-          document.cookie = 'wow_cart=; Path=/; Max-Age=0; SameSite=Lax';
-          document.cookie = 'wow_cart='+encodeURIComponent(JSON.stringify(cookieItems))+'; Domain=.weofferwellness.co.uk; Path=/; Max-Age='+(60*60*24*30)+'; SameSite=Lax';
-        } else {
-          document.cookie = 'wow_cart=; Path=/; Max-Age=0; SameSite=Lax';
-          document.cookie = 'wow_cart=; Domain=.weofferwellness.co.uk; Path=/; Max-Age=0; SameSite=Lax';
-        }
-      }catch(_){ }
+      // CartController owns the encrypted wow_cart cookie. Writing a plain
+      // JavaScript cookie here overwrote it and made a successful V5 add look
+      // empty after the next request. Local storage remains a client fallback.
       try { window.dispatchEvent(new CustomEvent('wow:cart:change', { detail:{ items: items, source:'cart:page' } })); } catch(_){ }
     }catch(_){ }
   }

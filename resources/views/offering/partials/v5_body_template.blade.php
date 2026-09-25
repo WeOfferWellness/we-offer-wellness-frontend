@@ -101,9 +101,45 @@
     }
     $v5Currency = (string) ($offering['currency'] ?? 'GBP');
     $v5Source = strtolower((string) ($offering['source_version'] ?? 'legacy'));
-    $v5Price = (float) ($offering['selectedVariantPrice'] ?? $offering['price_min'] ?? $offering['price'] ?? 0);
+    // The catalogue cards, cart and Stripe checkout all use the marketplace
+    // customer price.  V5 must use that exact same value at the first point a
+    // customer sees a price; the raw offering payload is supplier pricing.
+    $v5Pricing = app(\App\Services\MarketplacePricingService::class);
+    $v5PricingVendor = [
+        'vendor_name' => $offering['vendor_name'] ?? data_get($offering, 'vendor.name', data_get($offering, 'vendor_details.name', '')),
+        'user' => [
+            'name' => data_get($offering, 'vendor.user.name', ''),
+            'email' => data_get($offering, 'vendor.user.email', ''),
+        ],
+    ];
+    // Legacy sources sometimes expose a selected price as an option array.
+    // Resolve only explicit numeric price keys; never cast an array to text.
+    $v5NumericPrice = static function ($amount): float {
+        if (is_numeric($amount)) return (float) $amount;
+        if (is_array($amount)) {
+            foreach (['price', 'amount', 'price_amount', 'value', 'unit_amount'] as $key) {
+                if (is_numeric($amount[$key] ?? null)) return (float) $amount[$key];
+            }
+        }
+        return 0.0;
+    };
+    $v5BuyerPrice = static fn ($amount): float => $v5Pricing->buyerPrice(
+        $v5NumericPrice($amount),
+        $v5PricingVendor,
+        is_numeric($offering['vendor_id'] ?? null) ? (int) $offering['vendor_id'] : null,
+        true,
+    );
+    $v5RawPrice = $offering['selectedVariantPrice'] ?? $offering['price_min'] ?? $offering['price'] ?? 0;
+    if (!is_numeric($v5RawPrice) && !is_array($v5RawPrice)) $v5RawPrice = 0;
+    $v5Price = $v5BuyerPrice($v5RawPrice);
     $v5MediaBase = rtrim((string) config('services.backend_url', 'https://studio.weofferwellness.co.uk'), '/');
     $v5NormaliseMediaUrl = static function ($image) use ($v5MediaBase): string {
+        // Legacy product media can be objects/arrays while v3 supplies URLs.
+        // Choose only explicit URL/path fields and discard unknown shapes.
+        if (is_array($image)) {
+            $image = $image['url'] ?? $image['src'] ?? $image['path'] ?? $image['image_url'] ?? $image['media_url'] ?? '';
+        }
+        if (!is_scalar($image)) return '';
         $image = trim((string) $image);
         if ($image === '') return '';
 
@@ -162,7 +198,7 @@
             'id' => (string) ($variant['id'] ?? $i),
             'label' => $label,
             'meta' => trim(implode(' · ', $selection)),
-            'price' => (float) ($variant['price'] ?? $variant['amount'] ?? $v5Price),
+            'price' => $v5BuyerPrice($variant['price'] ?? $variant['amount'] ?? $offering['selectedVariantPrice'] ?? $offering['price_min'] ?? $offering['price'] ?? 0),
             'price_option_id' => $priceOptionId ? (int) $priceOptionId : null,
             'kind' => $kind,
             'per_person' => (bool) ($variant['per_person'] ?? $variant['price_per_person'] ?? ($pricingType === 'per_person')),
