@@ -245,6 +245,10 @@
     $v5Format = trim((string) ($offering['modality'] ?? data_get($offering, 'category.name') ?? $type ?? 'Wellness'));
     $v5AboutType = strtolower(trim((string) ($offering['type'] ?? $type ?? 'offering')));
     if ($v5AboutType === '') $v5AboutType = 'offering';
+    $v5BackendUrl = rtrim((string) config('services.backend_url', 'https://studio.weofferwellness.co.uk'), '/');
+    $v5BookingBaseUrl = $v5Source === 'v3'
+        ? $v5BackendUrl.'/api/booking/offering/'.(int) ($offering['id'] ?? 0)
+        : url('/api/booking/product/'.(int) ($offering['id'] ?? 0));
     $v5Config = [
         'id' => (int) ($offering['id'] ?? 0), 'title' => $v5Title, 'source' => $v5Source, 'currency' => $v5Currency,
         'duration' => max(15, $v5Duration ?? 60), 'locations' => $v5Locations, 'variants' => $v5Variants,
@@ -252,8 +256,8 @@
         'groupMax' => $v5GroupMax, 'mapboxToken' => (string) config('services.mapbox.token'),
         'practitionerProfileUrl' => $v5PractitionerProfileUrl,
         'reviewUrl' => trim((string) ($v5Practitioner['review_url'] ?? '')),
-        'bookingEndpoint' => url('/api/booking/'.($v5Source === 'v3' ? 'offering' : 'product').'/'.(int) ($offering['id'] ?? 0)),
-        'holdEndpoint' => url('/api/'.($v5Source === 'v3' ? 'booking/offering/'.(int) ($offering['id'] ?? 0).'/hold' : 'reservations/hold')), 'releaseEndpoint' => url('/api/reservations/release'),
+        'bookingEndpoint' => $v5BookingBaseUrl,
+        'holdEndpoint' => $v5Source === 'v3' ? $v5BookingBaseUrl.'/hold' : url('/api/reservations/hold'), 'releaseEndpoint' => url('/api/reservations/release'),
         'cartEndpoint' => url('/api/cart/add'), 'cartUrl' => url('/cart'),
     ];
 @endphp
@@ -301,7 +305,7 @@
 /* Keep quick-info values compact at every viewport; labels carry the hierarchy. */
 .wow-quick-info__value{font-size:16px}
 .wow-quick-info__index{top:5px;right:5px}
-.wow-v5__booking-sheet-action{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px}.wow-v5__booking-sheet-price{color:#0b3028;font-size:20px;font-weight:700;letter-spacing:-.025em;white-space:nowrap}.wow-v5__booking-sheet-action .btn-wow{flex:1;margin-top:0!important;border-radius:4px}
+.wow-v5__mobilebar b,.wow-v5__booking-sheet-price{color:var(--gd);font-size:19px;font-weight:700;letter-spacing:-.025em;line-height:1}.wow-v5__booking-sheet-action{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px}.wow-v5__booking-sheet-price{white-space:nowrap}.wow-v5__booking-sheet-action .btn-wow{flex:1;height:46px;margin-top:0!important;padding:0 18px;border:0;border-radius:4px;background:var(--g);color:#fff;font-weight:600}.wow-v5__booking-sheet-action .btn-wow:hover{background:var(--gh)}
 @media(max-width:991px){body:has(#wowOfferingV5){--wow-utility-rail-bottom:76px}}
 @media(max-width:700px){body:has(#wowOfferingV5){--wow-utility-rail-bottom:70px}.wow-quick-info__grid{border-left:1px solid var(--line);border-right:1px solid var(--line)}}
 @media(prefers-reduced-motion:reduce){.wow-live-dot:after{animation:none}}
