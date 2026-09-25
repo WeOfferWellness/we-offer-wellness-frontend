@@ -102,7 +102,22 @@
     $v5Currency = (string) ($offering['currency'] ?? 'GBP');
     $v5Source = strtolower((string) ($offering['source_version'] ?? 'legacy'));
     $v5Price = (float) ($offering['selectedVariantPrice'] ?? $offering['price_min'] ?? $offering['price'] ?? 0);
-    $v5Images = array_values(array_filter((array) ($offering['images'] ?? [$offering['image'] ?? '']), fn ($image) => is_string($image) && trim($image) !== ''));
+    $v5MediaBase = rtrim((string) config('services.backend_url', 'https://studio.weofferwellness.co.uk'), '/');
+    $v5NormaliseMediaUrl = static function ($image) use ($v5MediaBase): string {
+        $image = trim((string) $image);
+        if ($image === '') return '';
+
+        // Offering uploads are owned by Studio.  Do not proxy them back
+        // through www, but leave genuinely external media unchanged.
+        if (preg_match('#^https?://(?:www\.)?weofferwellness\.co\.uk(/storage/.*)$#i', $image, $match)) {
+            return $v5MediaBase.$match[1];
+        }
+        if (str_starts_with($image, '/storage/')) return $v5MediaBase.$image;
+        if (str_starts_with($image, 'storage/')) return $v5MediaBase.'/'.$image;
+
+        return $image;
+    };
+    $v5Images = array_values(array_filter(array_map($v5NormaliseMediaUrl, (array) ($offering['images'] ?? [$offering['image'] ?? '']))));
     if (!$v5Images) $v5Images = [asset('images/default-social-preview.jpg')];
     $v5ImageCount = count($v5Images);
     $v5RawLocations = array_values(array_filter((array) ($offering['locations'] ?? [])));
