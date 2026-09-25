@@ -36,6 +36,26 @@
     if (!$v5DescriptionBlocks && trim(strip_tags($v5Summary)) !== '') $v5DescriptionBlocks[] = ['type' => 'p', 'text' => trim(strip_tags($v5Summary))];
     $v5DescriptionPreview = array_slice($v5DescriptionBlocks, 0, 2);
     $v5DescriptionMore = array_slice($v5DescriptionBlocks, 2);
+    $v5ExpectSource = (string) ($offering['what_to_expect'] ?? 'Your practitioner will explain the session and answer any questions before you begin.');
+    $v5ExpectSource = preg_replace('#<(script|style)[^>]*>.*?</\1>#is', '', $v5ExpectSource);
+    $v5ExpectSource = preg_replace('#</?(?:p|div|section|article|h[1-6]|li|ul|ol|br)[^>]*>#i', "\n", $v5ExpectSource);
+    $v5ExpectSource = html_entity_decode(strip_tags((string) $v5ExpectSource), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    $v5ExpectBlocks = [];
+    $v5ExpectList = null;
+    foreach (preg_split('/\R+/', (string) $v5ExpectSource) as $line) {
+        $line = trim(preg_replace('/\s{2,}/', ' ', $line));
+        if ($line === '') { $v5ExpectList = null; continue; }
+        $kind = null;
+        if (preg_match('/^(?:[•◦▪‣·\-*✓])\s*(.+)$/u', $line, $matches)) { $kind = 'ul'; $line = trim($matches[1]); }
+        elseif (preg_match('/^\d+[.)]\s*(.+)$/', $line, $matches)) { $kind = 'ol'; $line = trim($matches[1]); }
+        if ($kind) {
+            if ($v5ExpectList !== $kind) { $v5ExpectBlocks[] = ['type' => $kind, 'items' => []]; $v5ExpectList = $kind; }
+            $v5ExpectBlocks[array_key_last($v5ExpectBlocks)]['items'][] = $line;
+            continue;
+        }
+        $v5ExpectBlocks[] = ['type' => 'p', 'text' => $line];
+        $v5ExpectList = null;
+    }
     $v5IncludedSource = (string) ($offering['included'] ?? '');
     $v5IncludedSource = preg_replace('#<(script|style)[^>]*>.*?</\1>#is', '', $v5IncludedSource);
     $v5IncludedSource = preg_replace('#</?(?:p|div|li|ul|ol|br)[^>]*>#i', "\n", $v5IncludedSource);
@@ -145,6 +165,7 @@
 .wow-v5__map.is-physical .wow-v5__map-copy{display:none}
 .wow-v5__map.is-physical>div:not(.wow-v5__map-canvas){display:none}
 .wow-v5__aside{position:relative;height:100%}
+@media(min-width:992px){.wow-v5__buybox{top:100px}}
 .wow-v5 .wow-v5__eyebrow{display:block;margin:0 0 9px!important;color:#4f9482!important;font-family:"Instrument Sans",sans-serif!important;font-size:11px!important;font-weight:700!important;letter-spacing:.18em!important;line-height:1.2!important;text-transform:uppercase!important}
 .wow-v5__about-copy{max-width:760px}.wow-v5__about-copy p{margin:10px 0 0;color:var(--muted);font-size:14px;line-height:1.7}.wow-v5__about-list{display:grid;gap:9px;margin:15px 0 0;padding-left:22px;color:var(--ink);font-size:13px;line-height:1.55}.wow-v5__about-list li{padding-left:2px}.wow-v5__about-list:not(ol){list-style:none;padding-left:0}.wow-v5__about-list:not(ol) li{display:flex;gap:9px}.wow-v5__about-list:not(ol) li:before{content:'✓';color:var(--g);font-weight:700}.wow-v5__about-toggle{display:inline-flex;align-items:center;gap:6px;min-height:40px;margin-top:16px;padding:0;border:0;background:transparent;color:var(--gd);font-size:11px;font-weight:700}.wow-v5__about-toggle span{color:var(--g);font-size:16px;transition:transform .18s}.wow-v5__about-toggle[aria-expanded=true] span{transform:rotate(180deg)}
 .wow-v5__review-head{display:flex;align-items:end;justify-content:space-between;gap:18px;margin-bottom:22px}
@@ -272,7 +293,29 @@
                 @if($v5IncludedItems)<ul class="wow-v5__included">@foreach($v5IncludedItems as $item)<li>{{ $item }}</li>@endforeach</ul>@endif
             </section>
         @endif
-        <section class="wow-v5__block"><div id="v5Faq"><div class="wow-v5__faq-item open"><button type="button">What happens on the day?<b>−</b></button><div>{!! \App\Support\ContentFormatter::format((string) ($offering['what_to_expect'] ?? 'Your practitioner will explain the session and answer any questions before you begin.')) !!}</div></div><div class="wow-v5__faq-item"><button type="button">Participant guidelines<b>+</b></button><div>{!! \App\Support\ContentFormatter::format((string) ($offering['guidelines'] ?? $offering['suitability'] ?? 'Please review the offering information before booking.')) !!}</div></div><div class="wow-v5__faq-item"><button type="button">Cancellation &amp; changes<b>+</b></button><div>{!! \App\Support\ContentFormatter::format((string) ($offering['cancellation_policy'] ?? 'Terms are shown before checkout and in your confirmation email.')) !!}</div></div></div></section>
+        <section class="wow-v5__block wow-v5__expect">
+            <p class="wow-v5__eyebrow">What to expect</p><h2>What happens on the day?</h2>
+            <div class="wow-v5__about-copy">
+                @foreach($v5ExpectBlocks as $block)
+                    @if($block['type'] === 'p')
+                        <p>{{ $block['text'] }}</p>
+                    @elseif($block['type'] === 'ul')
+                        <ul class="wow-v5__about-list">
+                            @foreach($block['items'] as $item)
+                                <li>{{ $item }}</li>
+                            @endforeach
+                        </ul>
+                    @else
+                        <ol class="wow-v5__about-list">
+                            @foreach($block['items'] as $item)
+                                <li>{{ $item }}</li>
+                            @endforeach
+                        </ol>
+                    @endif
+                @endforeach
+            </div>
+        </section>
+        <section class="wow-v5__block"><div id="v5Faq"><div class="wow-v5__faq-item"><button type="button">Participant guidelines<b>+</b></button><div>{!! \App\Support\ContentFormatter::format((string) ($offering['guidelines'] ?? $offering['suitability'] ?? 'Please review the offering information before booking.')) !!}</div></div><div class="wow-v5__faq-item"><button type="button">Cancellation &amp; changes<b>+</b></button><div>{!! \App\Support\ContentFormatter::format((string) ($offering['cancellation_policy'] ?? 'Terms are shown before checkout and in your confirmation email.')) !!}</div></div></div></section>
         @if($v5Practitioner)<section class="wow-v5__block"><div class="wow-v5__person"><img src="{{ $v5PractitionerImage ?: 'https://studio.weofferwellness.co.uk/assets/img/icons/no-user-icon.jpg' }}" alt="{{ $v5Practitioner['name'] ?? 'Practitioner' }}"><div><p class="wow-v5__eyebrow">Meet the practitioner</p><h2>{{ $v5Practitioner['name'] ?? 'Your practitioner' }}</h2><p>{{ $v5Practitioner['bio'] ?? $v5Practitioner['description'] ?? '' }}</p>@if($v5PractitionerProfileUrl)<div class="wow-v5__person-actions"><a href="{{ $v5PractitionerProfileUrl }}">View profile</a></div>@endif</div></div></section>@endif
         <section class="wow-v5__block"><p class="wow-v5__eyebrow">Choose where</p><h2>{{ count($v5Locations) > 1 ? 'Available locations' : 'Available location' }}</h2><div class="wow-v5__locations"><div class="wow-v5__location-list" id="v5Locations">@foreach($v5Locations as $index => $location)<button class="wow-v5__location {{ $index === 0 ? 'active' : '' }}" type="button" data-location="{{ $location['id'] }}"><span>⌖</span><span><strong>{{ $location['label'] }}</strong><small>{{ $location['address'] }}</small></span><span>→</span></button>@endforeach</div><div class="wow-v5__map" id="v5Map"><div><div style="font-size:28px;color:#4f9482">◎</div><h3 id="v5MapTitle">{{ $v5Locations[0]['online'] ? 'Join online' : $v5Locations[0]['label'] }}</h3><p id="v5MapCopy">{{ $v5Locations[0]['online'] ? 'Your joining link is sent after booking.' : $v5Locations[0]['address'] }}</p></div></div></div></section>
         <section class="wow-v5__block" id="reviews"><div class="wow-v5__review-head"><div><p class="wow-v5__eyebrow">Customer reviews</p><h2>What customers say</h2></div><div class="wow-v5__review-head-actions">
