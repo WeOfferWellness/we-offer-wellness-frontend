@@ -7,6 +7,7 @@ use App\Models\OfferingV3;
 use App\Models\Product;
 use App\Services\BookingContextBuilder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 
 class BookingLinkController extends Controller
 {
@@ -16,6 +17,35 @@ class BookingLinkController extends Controller
 
     public function availability(Request $request, OfferingV3 $offering)
     {
+        // Reservations are created by Backend, so it must also be the source
+        // of truth for what a customer may select.  A local availability
+        // snapshot can otherwise show a slot that the hold endpoint rejects.
+        $baseUrl = rtrim((string) env('BACKEND_URL', env('VITE_BACKEND_URL', '')), '/');
+        if ($baseUrl !== '') {
+            try {
+                $response = Http::acceptJson()
+                    ->withHeaders([
+                        'Origin' => (string) config('app.url'),
+                        'Referer' => rtrim((string) config('app.url'), '/').'/',
+                    ])
+                    ->timeout(10)
+                    ->get($baseUrl.'/api/booking/offering/'.$offering->getKey(), array_filter([
+                        'price_option_id' => $this->resolvePriceOptionId($request),
+                    ], static fn ($value) => $value !== null));
+
+                if ($response->successful()) {
+                    return response()->json($response->json() ?: ['bookingPayload' => []]);
+                }
+
+                return response()->json(
+                    $response->json() ?: ['message' => 'Booking service is unavailable.'],
+                    $response->status()
+                );
+            } catch (\Throwable) {
+                return response()->json(['message' => 'Booking service is unavailable.'], 503);
+            }
+        }
+
         $context = $this->contextBuilder->buildForOffering(
             $offering,
             $this->resolvePriceOptionId($request),
