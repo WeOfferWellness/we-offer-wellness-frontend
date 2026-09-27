@@ -3,19 +3,21 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\V3Subscriber;
 use App\Services\TransactionalMail;
-use Illuminate\Support\Str;
+use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class V3SubscriberController extends Controller
 {
     public function store(Request $request)
     {
+        $this->ensureBrowserSignupRequest($request);
+
         $validator = Validator::make($request->all(), [
             'email' => 'required|email',
             'name' => 'nullable|string|max:255',
@@ -48,19 +50,21 @@ class V3SubscriberController extends Controller
             'geo_accuracy' => 'nullable|numeric',
             'session_started_at' => 'nullable|date',
             'session_duration_seconds' => 'nullable|integer|min:0',
-            'website' => 'nullable|string|max:120',
-            'form_started_at' => 'nullable|integer|min:0',
+            // These values are injected only after the form has rendered.
+            // Requiring them keeps generic POST scanners from creating records.
+            'website' => 'required|string|max:120',
+            'form_started_at' => 'required|integer|min:1',
         ]);
 
         $validator->after(function ($validator) use ($request) {
             $isPractitioner = $this->normalizeBoolean($request->input('practitioner_interest'));
-            if (!$isPractitioner) {
+            if (! $isPractitioner) {
                 return;
             }
 
             $online = $this->normalizeBoolean($request->input('offers_online'));
             $inPerson = $this->normalizeBoolean($request->input('offers_in_person'));
-            if (!$online && !$inPerson) {
+            if (! $online && ! $inPerson) {
                 $validator->errors()->add('offers_online', 'Select at least one availability option.');
             }
 
@@ -78,16 +82,42 @@ class V3SubscriberController extends Controller
             abort(422, 'Invalid subscription request.');
         }
 
-        $formStartedAt = (int) ($data['form_started_at'] ?? 0);
-        if ($formStartedAt > 0 && ((microtime(true) * 1000) - $formStartedAt) < 1500) {
+        $elapsedMilliseconds = (microtime(true) * 1000) - (int) $data['form_started_at'];
+        if ($elapsedMilliseconds < 2000 || $elapsedMilliseconds > 86400000) {
             abort(422, 'Please take a moment before submitting the form.');
         }
 
-        $rateKey = 'subscriber-signup:' . sha1($request->ip() . '|' . strtolower((string) $data['email']));
-        if (RateLimiter::tooManyAttempts($rateKey, 5)) {
+        $subscriber = null;
+        $token = $data['session_token'] ?? null;
+        if ($token) {
+            $subscriber = V3Subscriber::where('session_token', $token)->first();
+        }
+        if (! $subscriber) {
+            $subscriber = V3Subscriber::where('email', $data['email'])->orderByDesc('id')->first();
+        }
+
+        $ipRateKey = 'subscriber-signup-ip:'.sha1((string) $request->ip());
+        if (RateLimiter::tooManyAttempts($ipRateKey, 8)) {
             return response()->json(['message' => 'Too many subscription attempts. Please try again later.'], 429);
         }
-        RateLimiter::hit($rateKey, 600);
+        RateLimiter::hit($ipRateKey, 3600);
+
+        // A genuine visitor occasionally corrects or resubmits an address; a
+        // scanner rotates addresses. Limit only new records so valid follow-up
+        // submissions are not penalised while repeated hourly spam is stopped.
+        if (! $subscriber) {
+            $newSubscriberRateKey = 'subscriber-new-ip:'.sha1((string) $request->ip());
+            if (RateLimiter::tooManyAttempts($newSubscriberRateKey, 2)) {
+                return response()->json(['message' => 'Too many new subscription attempts. Please try again tomorrow.'], 429);
+            }
+            RateLimiter::hit($newSubscriberRateKey, 86400);
+        }
+
+        $emailRateKey = 'subscriber-signup-email:'.sha1(strtolower((string) $data['email']));
+        if (RateLimiter::tooManyAttempts($emailRateKey, 3)) {
+            return response()->json(['message' => 'Too many subscription attempts for this email. Please try again later.'], 429);
+        }
+        RateLimiter::hit($emailRateKey, 86400);
         $hasOffersOnline = array_key_exists('offers_online', $data);
         $offersOnline = $hasOffersOnline ? $this->normalizeBoolean($data['offers_online']) : null;
         $hasOffersInPerson = array_key_exists('offers_in_person', $data);
@@ -97,16 +127,15 @@ class V3SubscriberController extends Controller
             ? $this->normalizeBoolean($data['practitioner_interest'])
             : null;
 
-        if ($hasLocationField && !$offersInPerson) {
+        if ($hasLocationField && ! $offersInPerson) {
             $data['in_person_locations'] = null;
         }
 
         $data['practitioner_interest'] = $isPractitioner;
-        if (empty($data['name']) && (!empty($data['first_name']) || !empty($data['last_name']))) {
-            $data['name'] = trim(($data['first_name'] ?? '') . ' ' . ($data['last_name'] ?? ''));
+        if (empty($data['name']) && (! empty($data['first_name']) || ! empty($data['last_name']))) {
+            $data['name'] = trim(($data['first_name'] ?? '').' '.($data['last_name'] ?? ''));
         }
 
-        $token = $data['session_token'] ?? null;
         $landingPath = $data['landing_path'] ?? null;
         $referrer = $data['referrer'] ?? null;
         $sessionStarted = isset($data['session_started_at']) ? Carbon::parse($data['session_started_at']) : null;
@@ -114,45 +143,37 @@ class V3SubscriberController extends Controller
         $meta = $this->extractMeta($data, $request);
         unset($data['practitioner_interest']);
 
-        $subscriber = null;
-        if ($token) {
-            $subscriber = V3Subscriber::where('session_token', $token)->first();
-        }
-        if (!$subscriber) {
-            $subscriber = V3Subscriber::where('email', $data['email'])->orderByDesc('id')->first();
-        }
-
         $isNew = false;
-        if (!$subscriber) {
-            $subscriber = new V3Subscriber();
+        if (! $subscriber) {
+            $subscriber = new V3Subscriber;
             $isNew = true;
         }
 
         $subscriber->email = $data['email'];
-        if (!empty($data['name'])) {
+        if (! empty($data['name'])) {
             $subscriber->name = $data['name'];
         }
-        if (!empty($data['first_name'])) {
+        if (! empty($data['first_name'])) {
             $subscriber->first_name = $data['first_name'];
         }
-        if (!empty($data['last_name'])) {
+        if (! empty($data['last_name'])) {
             $subscriber->last_name = $data['last_name'];
         }
-        if (!empty($data['business_name'])) {
+        if (! empty($data['business_name'])) {
             $subscriber->business_name = $data['business_name'];
         }
-        if (!empty($data['notes'])) {
+        if (! empty($data['notes'])) {
             $subscriber->notes = $data['notes'];
-        } elseif (!empty($data['team_size']) || !empty($data['interest'])) {
+        } elseif (! empty($data['team_size']) || ! empty($data['interest'])) {
             $notesParts = array_filter([
-                !empty($data['team_size']) ? 'Team size: ' . $data['team_size'] : null,
-                !empty($data['interest']) ? 'Interest: ' . $data['interest'] : null,
+                ! empty($data['team_size']) ? 'Team size: '.$data['team_size'] : null,
+                ! empty($data['interest']) ? 'Interest: '.$data['interest'] : null,
             ]);
             $subscriber->notes = implode(' | ', $notesParts);
         }
 
         $normalizedTags = $this->normalizeTags($data['tags'] ?? []);
-        if (!empty($normalizedTags)) {
+        if (! empty($normalizedTags)) {
             $subscriber->tags = $normalizedTags;
         }
 
@@ -166,17 +187,17 @@ class V3SubscriberController extends Controller
             $subscriber->in_person_locations = $data['in_person_locations'] ?? null;
         }
 
-        if ($landingPath && ($isNew || !$subscriber->landing_path)) {
+        if ($landingPath && ($isNew || ! $subscriber->landing_path)) {
             $subscriber->landing_path = $landingPath;
         }
-        if ($referrer && ($isNew || !$subscriber->referrer)) {
+        if ($referrer && ($isNew || ! $subscriber->referrer)) {
             $subscriber->referrer = $referrer;
         }
 
-        if ($sessionStarted && ($isNew || !$subscriber->session_started_at)) {
+        if ($sessionStarted && ($isNew || ! $subscriber->session_started_at)) {
             $subscriber->session_started_at = $sessionStarted;
         }
-        if (!$subscriber->session_started_at) {
+        if (! $subscriber->session_started_at) {
             $subscriber->session_started_at = now();
         }
         if ($duration !== null) {
@@ -186,7 +207,7 @@ class V3SubscriberController extends Controller
         }
 
         $subscriber->last_seen_at = now();
-        if (!empty($meta)) {
+        if (! empty($meta)) {
             $subscriber->fill($meta);
         }
 
@@ -199,13 +220,13 @@ class V3SubscriberController extends Controller
             $subscriber->session_token = $token;
         }
 
-        if (!$subscriber->status) {
+        if (! $subscriber->status) {
             $subscriber->status = $subscriber->confirmed_at ? 'confirmed' : 'pending';
         }
-        if (!$subscriber->confirmation_token) {
+        if (! $subscriber->confirmation_token) {
             $subscriber->confirmation_token = Str::random(64);
         }
-        if (!$subscriber->manage_token) {
+        if (! $subscriber->manage_token) {
             $subscriber->manage_token = Str::random(64);
         }
 
@@ -216,17 +237,22 @@ class V3SubscriberController extends Controller
         }
 
         $subscriber->save();
-        $this->syncBackendSubscriber(
-            $subscriber,
-            $this->buildBackendSubscriberPayload($subscriber, $isPractitioner === true, $data),
-            $isPractitioner === true
-        );
+        // Only confirmed addresses are marketing subscribers. Pending records
+        // stay solely in the frontend confirmation flow, so a bot cannot fill
+        // the backend list with random addresses.
+        if ($subscriber->confirmed_at) {
+            $this->syncBackendSubscriber(
+                $subscriber,
+                $this->buildBackendSubscriberPayload($subscriber, $isPractitioner === true, $data),
+                $isPractitioner === true
+            );
+        }
 
-        $requiresConfirmation = !$subscriber->confirmed_at;
+        $requiresConfirmation = ! $subscriber->confirmed_at;
         $message = 'Check your email to confirm your subscription.';
 
         if ($requiresConfirmation) {
-            $shouldSend = !$subscriber->confirmation_sent_at || $subscriber->confirmation_sent_at->lt(now()->subMinutes(10));
+            $shouldSend = ! $subscriber->confirmation_sent_at || $subscriber->confirmation_sent_at->lt(now()->subMinutes(10));
             if ($shouldSend) {
                 $subscriber->confirmation_sent_at = now();
                 $subscriber->save();
@@ -282,15 +308,15 @@ class V3SubscriberController extends Controller
             $existing = V3Subscriber::where('session_token', $token)->first();
             if ($existing) {
                 $updated = false;
-                if ($landingPath && !$existing->landing_path) {
+                if ($landingPath && ! $existing->landing_path) {
                     $existing->landing_path = $landingPath;
                     $updated = true;
                 }
-                if ($referrer && !$existing->referrer) {
+                if ($referrer && ! $existing->referrer) {
                     $existing->referrer = $referrer;
                     $updated = true;
                 }
-                if ($sessionStarted && !$existing->session_started_at) {
+                if ($sessionStarted && ! $existing->session_started_at) {
                     $existing->session_started_at = $sessionStarted;
                     $updated = true;
                 }
@@ -300,7 +326,7 @@ class V3SubscriberController extends Controller
                 }
                 $existing->last_seen_at = now();
                 $existing->fill($meta);
-                if ($updated || !empty($meta)) {
+                if ($updated || ! empty($meta)) {
                     $existing->save();
                 }
 
@@ -316,7 +342,7 @@ class V3SubscriberController extends Controller
             'session_started_at' => $sessionStarted ?? now(),
             'last_seen_at' => now(),
             'session_duration_seconds' => $duration ?? 0,
-        ], fn($value) => !is_null($value) && $value !== ''), $meta));
+        ], fn ($value) => ! is_null($value) && $value !== ''), $meta));
 
         return response()->json(['session_token' => $token]);
     }
@@ -338,12 +364,12 @@ class V3SubscriberController extends Controller
             'geo_accuracy' => $data['geo_accuracy'] ?? null,
         ];
 
-        return array_filter($meta, fn ($value) => !is_null($value) && $value !== '');
+        return array_filter($meta, fn ($value) => ! is_null($value) && $value !== '');
     }
 
     protected function buildBackendSubscriberPayload(V3Subscriber $subscriber, bool $isPractitioner, array $data): array
     {
-        $displayName = $subscriber->name ?: trim(($subscriber->first_name ?? '') . ' ' . ($subscriber->last_name ?? ''));
+        $displayName = $subscriber->name ?: trim(($subscriber->first_name ?? '').' '.($subscriber->last_name ?? ''));
 
         $payload = [
             'email' => $subscriber->email,
@@ -374,23 +400,23 @@ class V3SubscriberController extends Controller
             ]);
         }
 
-        if (!empty($data['notes']) && empty($payload['notes'])) {
+        if (! empty($data['notes']) && empty($payload['notes'])) {
             $payload['notes'] = trim((string) $data['notes']);
-        } elseif (empty($payload['notes']) && (!empty($data['team_size']) || !empty($data['interest']))) {
+        } elseif (empty($payload['notes']) && (! empty($data['team_size']) || ! empty($data['interest']))) {
             $notesParts = array_filter([
-                !empty($data['team_size']) ? 'Team size: ' . $data['team_size'] : null,
-                !empty($data['interest']) ? 'Interest: ' . $data['interest'] : null,
+                ! empty($data['team_size']) ? 'Team size: '.$data['team_size'] : null,
+                ! empty($data['interest']) ? 'Interest: '.$data['interest'] : null,
             ]);
             $payload['notes'] = implode(' | ', $notesParts);
         }
 
-        if (!empty($data['tags'])) {
+        if (! empty($data['tags'])) {
             $payload['tags'] = $this->normalizeTags($data['tags']);
-        } elseif (!empty($subscriber->tags)) {
+        } elseif (! empty($subscriber->tags)) {
             $payload['tags'] = $subscriber->tags;
         }
 
-        return array_filter($payload, fn ($value) => !is_null($value) && $value !== '');
+        return array_filter($payload, fn ($value) => ! is_null($value) && $value !== '');
     }
 
     protected function normalizeTags(mixed $value): array
@@ -399,7 +425,7 @@ class V3SubscriberController extends Controller
             $value = preg_split('/[,\s]+/', $value) ?: [];
         }
 
-        if (!is_array($value)) {
+        if (! is_array($value)) {
             return [];
         }
 
@@ -414,28 +440,43 @@ class V3SubscriberController extends Controller
 
     protected function syncBackendSubscriber(V3Subscriber $subscriber, array $payload, bool $isPractitioner): void
     {
-        $backendUrl = rtrim((string) env(
-            'BACKEND_URL',
-            'https://studio.weofferwellness.co.uk'
-        ), '/');
+        $backendUrl = rtrim((string) config('services.backend_url', 'https://studio.weofferwellness.co.uk'), '/');
         if ($backendUrl === '') {
-            return;
+            throw new \RuntimeException('The subscriber backend URL is not configured.');
+        }
+
+        $secret = trim((string) (
+            config('services.subscriber_sync.secret')
+            ?: config('services.mail_relay.token')
+            ?: config('services.studio_calendar_sync.secret')
+            ?: ''
+        ));
+        if ($secret === '') {
+            logger()->critical('subscriber.sync_secret_missing');
+            throw new \RuntimeException('The subscriber sync secret is not configured.');
         }
 
         $endpoint = $isPractitioner ? '/api/v3-subscribers/practitioner-interest' : '/api/v3-subscribers';
+        $timestamp = (string) time();
+        $body = json_encode(
+            $payload,
+            JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR
+        );
+        $signature = hash_hmac(
+            'sha256',
+            $timestamp."\n".$endpoint."\n".$body,
+            $secret
+        );
 
         try {
-            $http = Http::timeout(5)
+            $response = Http::timeout(5)
                 ->acceptJson()
-                ->asJson()
                 ->withHeaders([
-                    'Origin' => 'https://www.weofferwellness.co.uk',
-                    'Referer' => 'https://www.weofferwellness.co.uk/',
-                ]);
-            if (request()->headers->has('cookie')) {
-                $http = $http->withHeaders(['Cookie' => request()->headers->get('cookie')]);
-            }
-            $response = $http->post($backendUrl . $endpoint, $payload);
+                    'X-WOW-Subscriber-Timestamp' => $timestamp,
+                    'X-WOW-Subscriber-Signature' => $signature,
+                ])
+                ->withBody($body, 'application/json')
+                ->post($backendUrl.$endpoint);
             if ($response->failed()) {
                 logger()->error('subscriber.backend_sync_rejected', [
                     'email' => $subscriber->email,
@@ -454,6 +495,24 @@ class V3SubscriberController extends Controller
             ]);
 
             throw $e;
+        }
+    }
+
+    protected function ensureBrowserSignupRequest(Request $request): void
+    {
+        if (strtolower((string) $request->header('X-Requested-With')) !== 'xmlhttprequest') {
+            abort(403, 'Invalid subscription request.');
+        }
+
+        $sourceUrl = trim((string) ($request->header('Origin') ?: $request->header('Referer')));
+        $sourceScheme = strtolower((string) parse_url($sourceUrl, PHP_URL_SCHEME));
+        $sourceHost = rtrim(strtolower((string) parse_url($sourceUrl, PHP_URL_HOST)), '.');
+
+        $isWowHost = $sourceHost === 'weofferwellness.co.uk'
+            || str_ends_with($sourceHost, '.weofferwellness.co.uk');
+
+        if ($sourceScheme !== 'https' || ! $isWowHost) {
+            abort(403, 'Invalid subscription request.');
         }
     }
 

@@ -3,14 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Api\ArticleController as ApiArticleController;
-use App\Http\Controllers\Api\ProductController as ApiProductController;
 use App\Models\Product;
 use App\Models\V3Subscriber;
 use App\Services\TransactionalMail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class SubscriberController extends Controller
@@ -18,7 +17,7 @@ class SubscriberController extends Controller
     public function confirm(string $token): View
     {
         $subscriber = V3Subscriber::where('confirmation_token', $token)->first();
-        if (!$subscriber) {
+        if (! $subscriber) {
             return $this->messageView('Link expired', 'That confirmation link is no longer valid. Tap subscribe on the site to get a fresh one.');
         }
 
@@ -27,14 +26,14 @@ class SubscriberController extends Controller
         $subscriber->confirmed_at = now();
         $subscriber->unsubscribed_at = null;
         $subscriber->confirmation_token = Str::random(64);
-        if (!$subscriber->manage_token) {
+        if (! $subscriber->manage_token) {
             $subscriber->manage_token = Str::random(64);
         }
         $subscriber->save();
 
         $this->syncBackendSubscriber($subscriber);
 
-        if (!$wasConfirmed) {
+        if (! $wasConfirmed) {
             TransactionalMail::subscriberWelcome($subscriber);
             TransactionalMail::subscriberPreferencePrompt($subscriber);
         }
@@ -50,7 +49,7 @@ class SubscriberController extends Controller
     public function preferences(string $token): View
     {
         $subscriber = V3Subscriber::where('manage_token', $token)->first();
-        if (!$subscriber) {
+        if (! $subscriber) {
             return $this->messageView('Link expired', 'That manage link is no longer valid. Opt in again from any on-site form.');
         }
 
@@ -80,12 +79,12 @@ class SubscriberController extends Controller
         }
 
         $data = $request->validate([
-            'interests' => ['nullable','array'],
+            'interests' => ['nullable', 'array'],
             'interests.*' => ['in:online,in_person'],
-            'location' => ['nullable','string','max:255'],
-            'radius' => ['nullable','integer','min:5','max:250'],
-            'goals' => ['nullable','array'],
-            'goals.*' => ['string','max:120'],
+            'location' => ['nullable', 'string', 'max:255'],
+            'radius' => ['nullable', 'integer', 'min:5', 'max:250'],
+            'goals' => ['nullable', 'array'],
+            'goals.*' => ['string', 'max:120'],
         ]);
 
         $interests = $data['interests'] ?? [];
@@ -108,7 +107,7 @@ class SubscriberController extends Controller
     public function unsubscribe(string $token): View
     {
         $subscriber = V3Subscriber::where('manage_token', $token)->first();
-        if (!$subscriber) {
+        if (! $subscriber) {
             return $this->messageView('Link expired', 'That unsubscribe link is no longer valid.');
         }
 
@@ -135,7 +134,7 @@ class SubscriberController extends Controller
     public function resubscribe(string $token): View
     {
         $subscriber = V3Subscriber::where('manage_token', $token)->first();
-        if (!$subscriber) {
+        if (! $subscriber) {
             return $this->messageView('Link expired', 'That resubscribe link is no longer valid.');
         }
 
@@ -209,12 +208,24 @@ class SubscriberController extends Controller
 
     protected function syncBackendSubscriber(V3Subscriber $subscriber): void
     {
-        $backendUrl = rtrim((string) env('BACKEND_URL', env('VITE_BACKEND_URL', env('BACKEND_ASSET_URL', ''))), '/');
+        $backendUrl = rtrim((string) config('services.backend_url', ''), '/');
         if ($backendUrl === '') {
             return;
         }
 
-        $displayName = $subscriber->name ?: trim(($subscriber->first_name ?? '') . ' ' . ($subscriber->last_name ?? ''));
+        $secret = trim((string) (
+            config('services.subscriber_sync.secret')
+            ?: config('services.mail_relay.token')
+            ?: config('services.studio_calendar_sync.secret')
+            ?: ''
+        ));
+        if ($secret === '') {
+            logger()->critical('subscriber.sync_secret_missing');
+
+            return;
+        }
+
+        $displayName = $subscriber->name ?: trim(($subscriber->first_name ?? '').' '.($subscriber->last_name ?? ''));
         $payload = array_filter([
             'email' => $subscriber->email,
             'behaviour_visitor_public_id' => request()->cookie(env('BEHAVIOUR_VISITOR_COOKIE', 'wow_visitor_id')),
@@ -226,16 +237,29 @@ class SubscriberController extends Controller
             'tags' => $subscriber->tags ?? null,
             'source' => 'frontend:v3-subscribers',
             'status' => $subscriber->status ?: 'pending',
-        ], fn ($value) => !is_null($value) && $value !== '');
+        ], fn ($value) => ! is_null($value) && $value !== '');
+
+        $endpoint = '/api/v3-subscribers';
+        $timestamp = (string) time();
+        $body = json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
+        $signature = hash_hmac('sha256', $timestamp."\n".$endpoint."\n".$body, $secret);
 
         try {
-            $http = Http::timeout(5)
+            $response = Http::timeout(5)
                 ->acceptJson()
-                ->asJson();
-            if (request()->headers->has('cookie')) {
-                $http = $http->withHeaders(['Cookie' => request()->headers->get('cookie')]);
+                ->withHeaders([
+                    'X-WOW-Subscriber-Timestamp' => $timestamp,
+                    'X-WOW-Subscriber-Signature' => $signature,
+                ])
+                ->withBody($body, 'application/json')
+                ->post($backendUrl.$endpoint);
+
+            if ($response->failed()) {
+                logger()->warning('subscriber.backend_sync_rejected', [
+                    'email' => $subscriber->email,
+                    'status' => $response->status(),
+                ]);
             }
-            $http->post($backendUrl . '/api/v3-subscribers', $payload);
         } catch (\Throwable $e) {
             logger()->warning('subscriber.backend_sync_failed', [
                 'email' => $subscriber->email,

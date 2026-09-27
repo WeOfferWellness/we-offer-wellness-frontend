@@ -163,6 +163,7 @@ function initNewsletterModal() {
   let lastFocused = null;
   let originalOverflow = '';
   let autoOpened = false;
+  let formStartedAt = Date.now();
 
   const stopAutoTriggers = () => {
     window.removeEventListener('scroll', onScroll);
@@ -199,6 +200,7 @@ function initNewsletterModal() {
     if (!modal.hidden || isSubscribed() || isNavigationOpen()) return;
     lastFocused = document.activeElement;
     originalOverflow = document.body.style.overflow;
+    formStartedAt = Date.now();
     modal.hidden = false;
     document.body.style.overflow = 'hidden';
     document.dispatchEvent(new CustomEvent('wow:popup-opened', { detail: { key: 'newsletter-modal' } }));
@@ -254,6 +256,8 @@ function initNewsletterModal() {
         email: email.value.trim(),
         source: 'site:newsletter-modal',
         tags: ['wow_weekly_newsletter'],
+        website: '',
+        form_started_at: formStartedAt,
       });
       window.WOWAnalytics?.track?.('newsletter_signup', { source: 'site:newsletter-modal' });
       setCookie(SUBSCRIBED_COOKIE, '1', 365);

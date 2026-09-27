@@ -88,6 +88,13 @@ return [
         'token' => env('WOW_MAIL_RELAY_TOKEN'),
     ],
 
+    'subscriber_sync' => [
+        'secret' => env(
+            'WOW_SUBSCRIBER_SYNC_SECRET',
+            env('WOW_MAIL_RELAY_TOKEN', env('GOOGLE_CALENDAR_INTERNAL_SYNC_SECRET'))
+        ),
+    ],
+
     'studio_calendar_sync' => [
         'url' => env('STUDIO_CALENDAR_SYNC_URL', 'https://studio.weofferwellness.co.uk/api/internal/google-calendar/sync-bookings'),
         'secret' => env('GOOGLE_CALENDAR_INTERNAL_SYNC_SECRET'),

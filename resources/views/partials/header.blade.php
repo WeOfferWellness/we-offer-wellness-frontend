@@ -1736,6 +1736,7 @@
                 const sessionStartKey = 'wow_subscriber_session_started_at';
                 const overlay = modal.querySelector('.practitioner-modal__backdrop');
                 let sessionStart = loadNumber(sessionStartKey);
+                let formStartedAt = Date.now();
                 if (!sessionStart){
                     sessionStart = Date.now();
                     storeNumber(sessionStartKey, sessionStart);
@@ -1758,6 +1759,7 @@
                 };
 
                 const openModal = () => {
+                    formStartedAt = Date.now();
                     modal.classList.add('is-visible');
                     modal.setAttribute('aria-hidden', 'false');
                     body.style.overflow = 'hidden';
@@ -1892,6 +1894,8 @@
                         session_token: loadToken(),
                         session_started_at: new Date(sessionStart || Date.now()).toISOString(),
                         session_duration_seconds: durationSeconds(),
+                        website: '',
+                        form_started_at: formStartedAt,
                     }, collectMeta());
 
                     submitBtn.disabled = true;

@@ -65,7 +65,7 @@ Route::post('/reservations/hold', [ReservationController::class, 'hold'])->name(
 Route::post('/reservations/release', [ReservationController::class, 'release'])->name('api.reservations.release');
 
 // Browser subscriber forms require the Laravel session and CSRF token.
-Route::middleware(['web', 'throttle:6,10'])->group(function () {
+Route::middleware(['web', 'throttle:5,10'])->group(function () {
     Route::post('/v3-subscribers', [V3SubscriberController::class, 'store'])->name('api.v3-subscribers.store');
 });
 Route::post('/v3-subscribers/track', [V3SubscriberController::class, 'track'])

@@ -4,16 +4,10 @@ const DEFAULT_SUCCESS_MESSAGE = 'Check your email to confirm your subscription.'
 const SUBSCRIBER_FORM_SELECTOR = 'form[data-subscriber-form]';
 const EMAIL_INPUT_SELECTOR = 'input[type="email"], input[name="email"]';
 const FIRST_NAME_INPUT_SELECTOR = 'input[name="first_name"]';
-// Post through the frontend proxy by default so the browser keeps the same
-// Laravel session/CSRF context. A direct Studio URL is opt-in for integrations.
-const subscriberApiBase = String(
-  import.meta.env.VITE_SUBSCRIBER_API_URL
-    || import.meta.env.VITE_STUDIO_API_URL
-    || '',
-).replace(/\/$/, '');
-const subscriberEndpoint = subscriberApiBase
-  ? `${subscriberApiBase}/api/v3-subscribers`
-  : '/api/v3-subscribers';
+// Public subscriber forms must always post same-origin so Laravel's web
+// session + CSRF middleware are the browser security boundary. Studio is
+// server-to-server only and is signed separately by the frontend controller.
+const subscriberEndpoint = '/api/v3-subscribers';
 
 let sessionStart = loadNumber(SESSION_START_KEY);
 if (!sessionStart) {
@@ -148,14 +142,19 @@ function ensureAntiBotFields(form) {
 
 async function submitSubscriber(additionalPayload = {}) {
   const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+  if (!csrf) {
+    throw new Error('This form could not verify the website session. Please refresh and try again.');
+  }
+
   const payload = Object.assign({}, additionalPayload);
   const response = await fetch(subscriberEndpoint, {
     method: 'POST',
-    headers: Object.assign({
+    headers: {
       'Content-Type': 'application/json',
       'X-Requested-With': 'XMLHttpRequest',
-    }, csrf ? { 'X-CSRF-TOKEN': csrf } : {}),
-    credentials: subscriberApiBase ? 'include' : 'same-origin',
+      'X-CSRF-TOKEN': csrf,
+    },
+    credentials: 'same-origin',
     body: JSON.stringify(payload),
   });
   const bodyJson = await response.json().catch(() => ({}));
@@ -321,6 +320,7 @@ async function handleSubscriberSubmit(form) {
   try {
     const payload = Object.assign(basePayload(source), collectFormPayload(form), {
       email,
+      website: form.querySelector('[name="website"]')?.value || '',
       form_started_at: Number(form.dataset.subscriberStartedAt || Date.now()),
     });
     const result = await submitSubscriber(payload);
