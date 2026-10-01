@@ -92,6 +92,12 @@ class HomeController extends Controller
             ];
         });
 
+        // Do not retain an empty homepage for ten minutes after an upstream failure.
+        // The client keeps a short last-good response and retries failed requests.
+        if (empty($payload['live_offering_count']) || empty($payload['review_count'])) {
+            Cache::forget('home:index:v7:'.$cacheVersion);
+        }
+
         // Behaviour discovery has its own short-lived Backend cache. Keep it
         // outside the longer catalogue cache so the homepage can promote the
         // current highest-interest category into the lead card.

@@ -18,7 +18,12 @@ class BackendOfferingsClient
             return [];
         }
 
-        return Cache::remember('backend:review-stats:'.sha1($baseUrl), now()->addMinutes(10), function () use ($baseUrl): array {
+        $cacheKey = 'backend:review-stats:'.sha1($baseUrl);
+        $cached = Cache::get($cacheKey);
+        if (is_array($cached) && array_key_exists('review_count', $cached)) {
+            return $cached;
+        }
+        $load = function () use ($baseUrl): array {
             try {
                 $response = Http::acceptJson()->timeout(3)->withHeaders([
                     'Origin' => config('app.url'),
@@ -29,7 +34,15 @@ class BackendOfferingsClient
             }
 
             return $response->successful() && is_array($response->json()) ? $response->json() : [];
-        });
+        };
+        $stats = $load();
+        if (array_key_exists('review_count', $stats)) {
+            Cache::put($cacheKey, $stats, now()->addMinutes(10));
+            Cache::put($cacheKey.':last-good', $stats, now()->addMinutes(30));
+            return $stats;
+        }
+        Cache::forget($cacheKey);
+        return Cache::get($cacheKey.':last-good', []);
     }
 
     public function catalogue(array $filters = [], int $maxPages = 2, ?bool $personalised = null): Collection
@@ -56,7 +69,8 @@ class BackendOfferingsClient
             : ':public';
         $cacheKey = 'backend:offerings:'.sha1($baseUrl.'|'.json_encode($filters).'|'.$maxPages.'|'.($usePersonalisation ? 'personalised' : 'public')).$visitorScope;
 
-        $load = function () use ($baseUrl, $filters, $maxPages, $request, $usePersonalisation): Collection {
+        $loadFailed = false;
+        $load = function () use ($baseUrl, $filters, $maxPages, $request, $usePersonalisation, &$loadFailed): Collection {
             $items = collect();
             $page = max(1, (int) ($filters['page'] ?? 1));
 
@@ -79,20 +93,27 @@ class BackendOfferingsClient
                     }
                 } catch (\Throwable) {
                     if (! $usePersonalisation) {
+                        $loadFailed = true;
                         break;
                     }
                     try {
                         $response = $client->get($baseUrl.'/api/offerings', array_merge($filters, ['page' => $page]));
                     } catch (\Throwable) {
+                        $loadFailed = true;
                         break;
                     }
                 }
 
                 if (! $response->successful()) {
+                    $loadFailed = true;
                     break;
                 }
 
                 $payload = $response->json();
+                if (! is_array($payload) || ! is_array($payload['data'] ?? null)) {
+                    $loadFailed = true;
+                    break;
+                }
                 $vendorDetails = data_get($payload, 'included.vendor_details', []);
                 $rankingRequestId = trim((string) data_get($payload, 'meta.ranking_request_id', ''));
                 $rows = collect(data_get($payload, 'data', []))
@@ -125,11 +146,19 @@ class BackendOfferingsClient
                 ->values();
         };
 
-        return Cache::remember(
-            $cacheKey,
-            now()->addSeconds($usePersonalisation ? 45 : 180),
-            $load
-        );
+        $cached = Cache::get($cacheKey);
+        if ($cached instanceof Collection && $cached->isNotEmpty()) {
+            return $cached;
+        }
+        $items = $load();
+        if (! $loadFailed) {
+            Cache::put($cacheKey, $items, now()->addSeconds($usePersonalisation ? 45 : 180));
+            // Keep a short recovery copy under the same visitor/filter scope.
+            Cache::put($cacheKey.':last-good', $items, now()->addMinutes(30));
+            return $items;
+        }
+        Cache::forget($cacheKey);
+        return Cache::get($cacheKey.':last-good', $items);
     }
 
     public function reorder(Collection $items, array $filters = [], int $maxPages = 2): Collection

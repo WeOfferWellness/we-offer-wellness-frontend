@@ -193,6 +193,19 @@
         || strtolower(trim((string) ($offering['mode'] ?? ''))) === 'in-person';
     $v5HasOnline = str_contains($v5RawVariantText, 'online')
         || strtolower(trim((string) ($offering['mode'] ?? ''))) === 'online';
+    $v5DeliverySelections = collect((array) ($offering['booking_variants'] ?? $offering['variants'] ?? []))
+        ->filter(fn ($variant) => is_array($variant) && (!array_key_exists('available', $variant) || $variant['available']))
+        ->flatMap(fn ($variant) => (array) ($variant['selection'] ?? $variant['options'] ?? []))
+        ->map(fn ($value) => strtolower(trim((string) $value)));
+    $v5HasOnline = ($v5HasOnline ?? false) || $v5DeliverySelections->contains(fn ($value) => str_contains($value, 'online'))
+        || collect($v5SimpleLocations)->contains(fn ($value) => is_string($value) && str_contains(strtolower($value), 'online'));
+    $v5HasInPerson = ($v5HasInPerson ?? false) || $v5DeliverySelections->contains(fn ($value) => str_contains($value, 'in-person') || str_contains($value, 'in person'))
+        || collect($v5RawLocations)->contains(fn ($value) => is_array($value) ? empty($value['online']) : !str_contains(strtolower((string) $value), 'online'));
+    // Structured physical venues must not hide the separate online channel.
+    if ($v5HasOnline && !collect($v5RawLocations)->contains(fn ($value) => is_array($value) ? !empty($value['online']) : str_contains(strtolower((string) $value), 'online'))) {
+        $v5RawLocations[] = 'Online';
+    }
+
     $v5Locations = [];
     foreach ($v5RawLocations as $i => $location) {
         if (! is_array($location)) {
@@ -313,9 +326,11 @@
     };
     $v5VariantsForLocation = static function (array $variants, array $location): array {
         $channel = !empty($location['online']) ? 'online' : 'in_person';
-        $matches = array_values(array_filter($variants, static function (array $variant) use ($channel): bool {
+        $matches = array_values(array_filter($variants, static function (array $variant) use ($channel, $location): bool {
             $channels = (array) ($variant['channels'] ?? []);
-            return !$channels || in_array($channel, $channels, true);
+            $locationIds = (array) ($variant['location_ids'] ?? []);
+            return (!$channels || in_array($channel, $channels, true))
+                && (!$locationIds || in_array((string) $location['id'], $locationIds, true));
         }));
         return $matches ?: $variants;
     };
@@ -340,7 +355,10 @@
     };
     $v5SelectedVariant = collect($v5Variants)->first(fn (array $variant): bool => (string) $variant['id'] === (string) ($offering['selectedVariantId'] ?? ''));
     $v5SelectedLocationIds = (array) ($v5SelectedVariant['location_ids'] ?? []);
-    $v5InitialLocation = collect($v5Locations)->first(fn (array $location): bool => in_array((string) $location['id'], $v5SelectedLocationIds, true)) ?? $v5Locations[0];
+    $v5SelectedChannels = (array) ($v5SelectedVariant['channels'] ?? []);
+    $v5InitialLocation = collect($v5Locations)->first(fn (array $location): bool => $v5SelectedLocationIds
+        ? in_array((string) $location['id'], $v5SelectedLocationIds, true)
+        : in_array(!empty($location['online']) ? 'online' : 'in_person', $v5SelectedChannels, true)) ?? $v5Locations[0];
     $v5InitialVariants = $v5VariantsForLocation($v5ActiveVariants, $v5InitialLocation);
     $v5InitialVariant = collect($v5InitialVariants)->first(fn (array $variant): bool => (string) $variant['id'] === (string) ($offering['selectedVariantId'] ?? '')) ?? $v5InitialVariants[0] ?? $v5Variants[0];
     $v5InitialSessionKeys = collect($v5InitialVariants)
