@@ -22,21 +22,7 @@ class HomeRailsController extends Controller
         $section = Str::lower(trim((string) $request->input('section', '')));
 
         if ($section === 'matches') {
-            $filters = array_filter([
-                'type_id' => $request->integer('type_id') ?: null,
-                'type' => trim((string) $request->input('type', '')),
-                'category_id' => $request->integer('category_id') ?: null,
-                'category' => trim((string) $request->input('category', '')),
-                'subcategory_id' => $request->integer('subcategory_id') ?: null,
-                'subcategory' => trim((string) $request->input('subcategory', '')),
-                'need' => trim((string) $request->input('need', '')),
-                'marketplace_tag' => trim((string) $request->input('marketplace_tag', '')),
-                'occasion' => trim((string) $request->input('occasion', '')),
-                'audience' => trim((string) $request->input('audience', '')),
-                'min_price' => $request->filled('min_price') ? max(0, (float) $request->input('min_price')) : null,
-                'max_price' => $request->filled('max_price') ? max(0, (float) $request->input('max_price')) : null,
-            ], fn ($value) => $value !== null && $value !== '');
-            $items = $this->catalogue($filters, 4)->take(12)->values();
+            $items = $this->matchedCatalogue($request)->take(12)->values();
 
             return response($this->renderCards($items, true))
                 ->header('Content-Type', 'text/html; charset=UTF-8')
@@ -110,6 +96,117 @@ class HomeRailsController extends Controller
             ->filter(fn (array $item): bool => $this->isPublicOffering($item))
             ->reject(fn (array $item) => EventListing::isPast($item))
             ->values();
+    }
+
+    private function matchedCatalogue(Request $request): Collection
+    {
+        $catalogue = $this->catalogue([], 6);
+        if ($catalogue->isEmpty()) {
+            return $catalogue;
+        }
+
+        $signals = [
+            'type' => $this->csvValues($request->input('type_id', $request->input('type'))),
+            'category' => $this->csvValues($request->input('category_id', $request->input('category'))),
+            'subcategory' => $this->csvValues($request->input('subcategory_id', $request->input('subcategory'))),
+            'need' => $this->csvValues($request->input('need')),
+            'marketplace_tag' => $this->csvValues($request->input('marketplace_tag')),
+            'occasion' => $this->csvValues($request->input('occasion')),
+            'audience' => $this->csvValues($request->input('audience')),
+        ];
+        $format = Str::lower(trim((string) $request->input('format', '')));
+        $minimum = $request->filled('min_price') ? max(0, (float) $request->input('min_price')) : null;
+        $maximum = $request->filled('max_price') ? max(0, (float) $request->input('max_price')) : null;
+
+        $eligible = $catalogue->filter(function (array $item) use ($format, $minimum, $maximum): bool {
+            if (in_array($format, ['online', 'in-person'], true) && ! $this->matchesMode($item, $format)) {
+                return false;
+            }
+            $price = $this->price($item);
+            if ($minimum !== null && ($price === null || $price < $minimum)) {
+                return false;
+            }
+            if ($maximum !== null && ($price === null || $price > $maximum)) {
+                return false;
+            }
+
+            return true;
+        })->values();
+
+        // Format and price are preferences, not dead ends. If that combination
+        // has no live supply, continue with the live catalogue and rank by the
+        // available taxonomy signals instead of returning an empty page.
+        if ($eligible->isEmpty()) {
+            $eligible = $catalogue;
+        }
+
+        $position = 0;
+        $ranked = $eligible->map(function (array $item) use ($signals, &$position): array {
+            $item['_wellness_match_score'] = $this->matchScore($item, $signals);
+            $item['_wellness_match_position'] = $position++;
+
+            return $item;
+        })->sort(function (array $left, array $right): int {
+            return [$right['_wellness_match_score'], -$right['_wellness_match_position']]
+                <=> [$left['_wellness_match_score'], -$left['_wellness_match_position']];
+        })->values();
+
+        // Fill a sparse preference result with other live offerings. This keeps
+        // recommendations useful while still placing the strongest matches first.
+        return $ranked->concat($catalogue)
+            ->unique(fn (array $item) => (string) data_get($item, 'source_type', data_get($item, 'source_version', '')).':'.(string) data_get($item, 'id', ''))
+            ->values();
+    }
+
+    private function csvValues(mixed $value): array
+    {
+        return collect(explode(',', (string) $value))
+            ->map(fn (string $item): string => Str::lower(trim($item)))
+            ->filter()
+            ->unique()
+            ->take(12)
+            ->values()
+            ->all();
+    }
+
+    private function matchScore(array $item, array $signals): int
+    {
+        $dimensions = [
+            'type' => $this->dimensionValues(data_get($item, 'type')),
+            'category' => $this->dimensionValues(data_get($item, 'category')),
+            'subcategory' => $this->dimensionValues(data_get($item, 'subcategory')),
+            'need' => $this->dimensionValues(data_get($item, 'needs')),
+            'marketplace_tag' => $this->dimensionValues(data_get($item, 'marketplace_tags', data_get($item, 'tags'))),
+            'occasion' => $this->dimensionValues(data_get($item, 'occasions')),
+            'audience' => $this->dimensionValues(data_get($item, 'audiences')),
+        ];
+
+        $score = 0;
+        foreach ($signals as $dimension => $wanted) {
+            if ($wanted === []) {
+                continue;
+            }
+            $score += count(array_intersect($wanted, $dimensions[$dimension] ?? []));
+        }
+
+        return $score;
+    }
+
+    private function dimensionValues(mixed $dimension): array
+    {
+        $rows = is_array($dimension) && array_is_list($dimension) ? $dimension : [$dimension];
+
+        return collect($rows)->flatMap(function ($row): array {
+            if (is_array($row)) {
+                return array_filter([
+                    Str::lower(trim((string) ($row['id'] ?? ''))),
+                    Str::lower(trim((string) ($row['slug'] ?? ''))),
+                    Str::lower(trim((string) ($row['name'] ?? ''))),
+                ]);
+            }
+
+            return [Str::lower(trim((string) $row))];
+        })->filter()->unique()->values()->all();
     }
 
     private function renderCards(Collection $items, bool $forceNewCard = false): string
