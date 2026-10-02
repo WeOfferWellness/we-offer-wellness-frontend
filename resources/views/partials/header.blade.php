@@ -1349,6 +1349,88 @@
     .wow-mega-layer{ display:none !important; }
     .wow-nav-underline{ display:none; }
 }
+
+/* Flat editorial mega navigation: category-led, location-aware and deliberately square. */
+#mega-panel.wow-mega-shell{
+    width:min(1240px, calc(100vw - 32px)) !important;
+    background:#fff;
+    border:0;
+    border-top:1px solid #dfe7e3;
+    border-bottom:1px solid #cbd8d3;
+    border-radius:0 !important;
+    box-shadow:0 22px 44px rgba(16,24,40,.14);
+}
+#mega-panel.wow-mega-shell::after{
+    content:"";
+    position:absolute;
+    top:0;
+    left:0;
+    right:0;
+    height:3px;
+    background:linear-gradient(90deg,#3e7467 0%,#77ad9d 48%,#e8cfa9 100%);
+}
+.wow-mega-arrow{display:none !important;}
+.wow-mega-viewport{border-radius:0 !important;background:#fff;}
+#mega-panel .wow-mega-pane[data-menu]{padding:34px clamp(24px,4vw,54px) 38px;}
+.wow-mega-grid{gap:0;}
+.wow-mega-col{padding:0 28px;}
+.wow-mega-col:first-child{padding-left:0;}
+.wow-mega-col:last-child{padding-right:0;}
+.wow-mega-col--divider{padding-left:28px;border-left:1px solid #e2e9e6;}
+#mega-panel.wow-mega-shell .mega-kicker{
+    margin-bottom:16px;
+    color:#3e7467;
+    font-size:10px;
+    letter-spacing:.18em;
+}
+#mega-panel.wow-mega-shell .mega-label{
+    margin-bottom:10px;
+    color:#66736e;
+    font-size:10px;
+    letter-spacing:.14em;
+}
+.wow-menu-list{gap:0;}
+#mega-panel.wow-mega-shell .menu-link,
+#mega-panel.wow-mega-shell .wow-for-you-card .menu-link{
+    margin-left:0 !important;
+    padding:11px 28px 11px 0 !important;
+    border-radius:0 !important;
+    border-bottom:1px solid #e7eeeb;
+    background:transparent;
+    transform:none;
+    box-shadow:none;
+}
+#mega-panel.wow-mega-shell .menu-link:last-child{border-bottom:0;}
+#mega-panel.wow-mega-shell .menu-link strong{font-size:16px;}
+#mega-panel.wow-mega-shell .menu-link span{font-size:12px;}
+#mega-panel.wow-mega-shell .menu-link:hover,
+#mega-panel.wow-mega-shell .menu-link:focus-visible{
+    background:#f2f7f5;
+    padding-left:12px !important;
+    box-shadow:inset 3px 0 0 #549483;
+    outline:none;
+}
+.wow-soft-panel,
+.wow-image-card,
+.wow-feature-card,
+.wow-map-card,
+.wow-pill,
+.wow-mini-btn{
+    border-radius:0 !important;
+}
+.wow-soft-panel{padding:18px;background:#f5f8f7;border:1px solid #dfe8e4;}
+.wow-soft-panel--green{background:#edf6f3;border-color:#c7ddd5;}
+.wow-image-card,
+.wow-feature-card{box-shadow:none;}
+.wow-image-card:hover,
+.wow-feature-card:hover{transform:none;box-shadow:none;}
+.wow-mini-btn,
+.wow-pill{min-height:38px;border-radius:0 !important;}
+.wow-mini-btn:hover,
+.wow-pill:hover{transform:none;background:#edf6f3;border-color:#549483;}
+@media (max-width: 1080px){
+    #mega-panel.wow-mega-shell{width:100% !important;}
+}
 </style>
 
 
