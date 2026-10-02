@@ -1,0 +1,63 @@
+@extends('layouts.app')
+
+@section('body-class', 'wellness-match-results-page')
+
+@push('head')
+<meta name="robots" content="noindex,follow">
+<meta name="description" content="Your personalised We Offer Wellness recommendations.">
+@endpush
+
+@section('content')
+<main class="wellness-results" data-wellness-results>
+  <section class="wellness-results__hero">
+    <div class="wellness-results__orb wellness-results__orb--one" aria-hidden="true"></div>
+    <div class="wellness-results__orb wellness-results__orb--two" aria-hidden="true"></div>
+    <div class="wellness-results__hero-inner">
+      <p class="wellness-results__eyebrow">YOUR WELLNESS MATCH</p>
+      <h1>Ta-Da, Your Results!</h1>
+      <p class="wellness-results__lead">Explore our handpicked recommendations, tailored to your preferences</p>
+      <button class="wellness-results__reset" type="button" data-wellness-reset>Changed your mind? <strong>Reset and take the quiz again</strong></button>
+      <div class="wellness-results__preferences" data-wellness-preferences hidden></div>
+    </div>
+  </section>
+
+  <section class="wellness-results__content" aria-live="polite">
+    <div class="wellness-results__heading">
+      <div><p class="wellness-results__eyebrow">CHOSEN FOR YOU</p><h2>Your strongest matches</h2></div>
+      <p data-wellness-summary>We’re comparing your answers with live wellness experiences.</p>
+    </div>
+    <div class="wellness-results__grid" data-wellness-grid>
+      @for ($i = 0; $i < 6; $i++)
+        <div class="wellness-result-card wellness-result-card--loading" aria-hidden="true"><span></span><i></i><b></b></div>
+      @endfor
+    </div>
+    <div class="wellness-results__empty" data-wellness-empty hidden>
+      <h2>Let’s find your matches</h2>
+      <p>Complete the quick finder so we can tailor this page to you.</p>
+      <button class="btn-wow btn-wow--primary btn-wow--md" type="button" data-wellness-reset>Start the wellness finder</button>
+    </div>
+  </section>
+</main>
+
+<style>
+.wellness-match-results-page main{overflow:hidden}.wellness-results{--match-green:#549483;--match-dark:#101828;--match-copy:#475467;background:#fbfcfb;color:var(--match-dark);min-height:75vh}.wellness-results__hero{position:relative;isolation:isolate;overflow:hidden;padding:86px 24px 78px;background:linear-gradient(145deg,#f8f5ee 0%,#f2f8f5 48%,#fff 100%);border-bottom:1px solid #dfe8e4}.wellness-results__hero-inner{position:relative;z-index:1;width:min(900px,100%);margin:auto;text-align:center}.wellness-results__eyebrow{margin:0 0 16px;color:#3e7467;font-size:11px;font-weight:750;letter-spacing:.22em}.wellness-results h1{margin:0;font-family:"Playfair Display",Georgia,serif;font-size:clamp(44px,6vw,78px);font-weight:750;line-height:1;letter-spacing:-.045em}.wellness-results__lead{max-width:680px;margin:22px auto 0;color:var(--match-copy);font-size:clamp(16px,2vw,20px);line-height:1.6}.wellness-results__reset{margin-top:22px;padding:8px 0;border:0;border-bottom:1px solid transparent;background:transparent;color:#52635f;font-size:13px;cursor:pointer}.wellness-results__reset:hover,.wellness-results__reset:focus-visible{border-bottom-color:#3e7467;color:#254d43;outline:0}.wellness-results__preferences{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;margin:30px auto 0}.wellness-results__preference{padding:7px 11px;border:1px solid #cfe1db;border-radius:999px;background:rgba(255,255,255,.72);color:#315e53;font-size:12px;font-weight:650}.wellness-results__orb{position:absolute;border-radius:50%;filter:blur(1px);z-index:-1}.wellness-results__orb--one{width:430px;height:430px;right:-170px;top:-190px;background:rgba(84,148,131,.15)}.wellness-results__orb--two{width:330px;height:330px;left:-170px;bottom:-210px;background:rgba(218,195,155,.2)}.wellness-results__content{width:min(1240px,calc(100% - 40px));margin:auto;padding:64px 0 90px}.wellness-results__heading{display:flex;align-items:end;justify-content:space-between;gap:32px;margin-bottom:28px}.wellness-results__heading h2{margin:0;font-family:"Playfair Display",Georgia,serif;font-size:clamp(30px,4vw,45px);letter-spacing:-.03em}.wellness-results__heading>p{max-width:440px;margin:0;color:#667085;line-height:1.6}.wellness-results__grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}.wellness-result-card{display:flex;min-width:0;flex-direction:column;background:#fff;border:1px solid #dfe5e3;color:inherit;text-decoration:none;transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease}.wellness-result-card:hover{transform:translateY(-4px);border-color:#9cbdb4;box-shadow:0 20px 48px rgba(16,24,40,.1)}.wellness-result-card__image{position:relative;aspect-ratio:1.45;overflow:hidden;background:#edf2f0}.wellness-result-card__image img{width:100%;height:100%;object-fit:cover;transition:transform .35s ease}.wellness-result-card:hover .wellness-result-card__image img{transform:scale(1.035)}.wellness-result-card__match{position:absolute;left:12px;top:12px;padding:7px 9px;background:rgba(16,24,40,.86);color:#fff;font-size:10px;font-weight:750;letter-spacing:.08em;text-transform:uppercase}.wellness-result-card__body{display:flex;flex:1;flex-direction:column;padding:19px}.wellness-result-card__meta{display:flex;justify-content:space-between;gap:10px;color:#667085;font-size:11px}.wellness-result-card h3{margin:10px 0 6px;font-family:"Playfair Display",Georgia,serif;font-size:23px;line-height:1.16}.wellness-result-card__vendor{margin:0;color:#667085;font-size:12px}.wellness-result-card__reasons{display:flex;flex-wrap:wrap;gap:6px;margin:18px 0 0}.wellness-result-card__reason{padding:5px 8px;background:#eef6f3;color:#315e53;font-size:10px;font-weight:650}.wellness-result-card__footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:auto;padding-top:20px}.wellness-result-card__price{font-size:13px;font-weight:750}.wellness-result-card__arrow{color:#3e7467;font-size:20px}.wellness-result-card--loading{min-height:390px;overflow:hidden}.wellness-result-card--loading span{display:block;height:235px;background:#eef1f0}.wellness-result-card--loading i,.wellness-result-card--loading b{display:block;height:14px;margin:22px 18px 0;background:#eef1f0}.wellness-result-card--loading b{width:58%;margin-top:12px}.wellness-result-card--loading:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.75),transparent);animation:matchShimmer 1.25s infinite;transform:translateX(-100%)}.wellness-result-card--loading{position:relative}.wellness-results__empty{text-align:center;padding:70px 20px;background:#fff;border:1px solid #dfe5e3}.wellness-results__empty h2{font-family:"Playfair Display",Georgia,serif;font-size:38px;margin:0 0 10px}.wellness-results__empty p{color:#667085;margin:0 0 22px}@keyframes matchShimmer{to{transform:translateX(100%)}}@media(max-width:900px){.wellness-results__grid{grid-template-columns:repeat(2,minmax(0,1fr))}.wellness-results__heading{align-items:flex-start;flex-direction:column}}@media(max-width:600px){.wellness-results__hero{padding:62px 18px 56px}.wellness-results__content{width:calc(100% - 28px);padding:44px 0 68px}.wellness-results__grid{grid-template-columns:1fr}.wellness-results__heading{gap:12px}.wellness-results h1{font-size:45px}}
+</style>
+
+<script data-cfasync="false">
+(() => {
+  const root=document.querySelector('[data-wellness-results]');if(!root)return;
+  const grid=root.querySelector('[data-wellness-grid]'),empty=root.querySelector('[data-wellness-empty]'),summary=root.querySelector('[data-wellness-summary]'),preferences=root.querySelector('[data-wellness-preferences]');
+  const esc=(value='')=>String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]));
+  const uuid=()=>crypto.randomUUID?.()||'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,char=>{const value=Math.random()*16|0;return(char==='x'?value:(value&3|8)).toString(16)});
+  const trackBehaviour=(eventType,metadata={},offering=null)=>fetch('https://studio.weofferwellness.co.uk/api/behaviour/events',{method:'POST',credentials:'include',keepalive:true,headers:{Accept:'application/json','Content-Type':'application/json'},body:JSON.stringify({events:[{event_uuid:uuid(),event_type:eventType,occurred_at:new Date().toISOString(),sequence:Date.now(),page_context:location.pathname,metadata:{surface:'wellness_match_results',page_type:'wellness_match_results',device_class:matchMedia('(max-width:767px)').matches?'mobile':matchMedia('(max-width:1024px)').matches?'tablet':'desktop',...metadata},...(offering?{offering}: {})}]})}).catch(()=>{});
+  const stored=(()=>{try{return JSON.parse(sessionStorage.getItem('wowWellnessMatchResults')||'null')}catch{return null}})();
+  const openFinder=()=>{sessionStorage.removeItem('wowWellnessMatchResults');for(let index=localStorage.length-1;index>=0;index--){const key=localStorage.key(index);if(key?.startsWith('wowWellnessMatchProgress:'))localStorage.removeItem(key)}trackBehaviour('wellness_match_reset',{interaction:'results_start_again'});const open=()=>{const trigger=document.querySelector('[data-wow-popup-trigger="wellness-match"]');if(trigger&&!trigger.closest('[hidden]')){trigger.click();return true}return false};if(!open()){let count=0;const timer=setInterval(()=>{if(open()||count++>30)clearInterval(timer)},100)}};
+  root.querySelectorAll('[data-wellness-reset]').forEach(button=>button.addEventListener('click',openFinder));
+  const money=value=>value===null||value===undefined?'View details':new Intl.NumberFormat('en-GB',{style:'currency',currency:'GBP',maximumFractionDigits:value%1?2:0}).format(value);
+  const card=item=>`<a class="wellness-result-card" href="${esc(item.url)}" data-match-id="${esc(item.id)}" data-match-title="${esc(item.title)}" data-match-source="${esc(item.source)}" data-match-source-id="${esc(item.source_id)}"><div class="wellness-result-card__image"><img src="${esc(item.image)}" alt="" loading="lazy"><span class="wellness-result-card__match">Matched for you</span></div><div class="wellness-result-card__body"><div class="wellness-result-card__meta"><span>${esc(item.category||item.type)}</span><span>${esc((item.locations||[])[0]||item.mode||'')}</span></div><h3>${esc(item.title)}</h3>${item.vendor_name?`<p class="wellness-result-card__vendor">with ${esc(item.vendor_name)}</p>`:''}<div class="wellness-result-card__reasons">${(item.reasons||[]).map(reason=>`<span class="wellness-result-card__reason">${esc(reason)}</span>`).join('')}</div><div class="wellness-result-card__footer"><span class="wellness-result-card__price">${money(item.price)}</span><span class="wellness-result-card__arrow" aria-hidden="true">→</span></div></div></a>`;
+  if(!stored?.answers?.length){grid.hidden=true;empty.hidden=false;summary.textContent='Complete the finder to see recommendations selected around your needs.';return}
+  fetch('/api/wellness-match/results',{method:'POST',headers:{Accept:'application/json','Content-Type':'application/json'},body:JSON.stringify({answers:stored.answers})}).then(response=>{if(!response.ok)throw new Error('Unable to load matches');return response.json()}).then(payload=>{const items=payload.data||[],profile=payload.profile||{};preferences.innerHTML=(profile.preferences||[]).map(value=>`<span class="wellness-results__preference">${esc(value)}</span>`).join('');preferences.hidden=!preferences.children.length;summary.textContent=items.length?`${items.length} live recommendations ranked from your answers${profile.mode&&profile.mode!=='either'?` for ${profile.mode} experiences`:''}.`:'We could not find an exact match yet. Try the finder again with broader preferences.';grid.innerHTML=items.map(card).join('');grid.hidden=!items.length;empty.hidden=!!items.length;trackBehaviour('wellness_match_results_viewed',{result_count:items.length,delivery_mode:profile.mode||'either'})}).catch(()=>{grid.hidden=true;empty.hidden=false;empty.querySelector('h2').textContent='We couldn’t load your matches';empty.querySelector('p').textContent='Please try again. Your quiz answers are still saved in this browser.'});
+  grid.addEventListener('click',event=>{const card=event.target.closest('[data-match-id]');if(!card)return;const offering={source:card.dataset.matchSource,id:Number(card.dataset.matchSourceId)};trackBehaviour('wellness_match_recommendation_opened',{recommendation_id:card.dataset.matchId,recommendation_title:card.dataset.matchTitle,href:card.href},offering);trackBehaviour('offering_opened',{surface:'wellness_match_results',recommendation_id:card.dataset.matchId},offering)});
+})();
+</script>
+@endsection

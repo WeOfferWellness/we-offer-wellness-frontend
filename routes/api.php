@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ProductTypeController;
 use App\Http\Controllers\Api\ReservationController;
 use App\Http\Controllers\Api\ReviewStatsController;
+use App\Http\Controllers\Api\WellnessMatchResultsController;
 use App\Http\Controllers\Api\StripeWebhookController;
 use App\Http\Controllers\Api\BookingLinkController as BookingLinkApiController;
 use App\Http\Controllers\CartController;
@@ -53,6 +54,9 @@ Route::get('/catalog', [CatalogController::class, 'index']);
 Route::get('/product-types', [ProductTypeController::class, 'index']);
 Route::get('/locations', [LocationController::class, 'index']);
 Route::get('/review-stats', [ReviewStatsController::class, 'index']);
+Route::post('/wellness-match/results', WellnessMatchResultsController::class)
+    ->middleware('throttle:30,1')
+    ->name('api.wellness-match.results');
 
 // Booking availability for v3 offerings
 Route::get('/booking/offering/{offering}', [BookingLinkApiController::class, 'availability']);

@@ -275,6 +275,8 @@ Route::get('/v3', function () {
 })->name('v3.holding');
 
 Route::get('/search', [SearchController::class, 'index'])->name('search');
+Route::view('/wellness-match-finder/results', 'wellness-match.results')
+    ->name('wellness-match.results');
 // Stripe Checkout session (web POST with CSRF)
 Route::get('/checkout/session', [CartController::class, 'page'])->name('checkout.session.get');
 Route::post('/checkout/session', [CheckoutController::class, 'createSession'])->name('checkout.session');

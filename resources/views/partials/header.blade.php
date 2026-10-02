@@ -936,10 +936,14 @@
 .wow-desktop-nav{
     position:absolute;
     left:50%;
+    right:auto;
     top:0;
+    width:max-content;
+    margin:0;
     transform:translateX(-50%);
     height:100%;
     align-items:center;
+    justify-content:center;
     gap:18px !important;
 }
 .wow-desktop-nav .nav-item > a.link-wow--nav{
@@ -1003,10 +1007,10 @@
     height:auto;
     min-height:0;
     max-width:none !important;
-    background:rgba(255,255,255,.98);
-    border:1px solid rgba(229,231,235,.95);
-    border-radius:22px !important;
-    box-shadow:0 24px 70px rgba(17,24,39,.16);
+    background:rgba(255,255,255,.985);
+    border:1px solid rgba(208,213,221,.9);
+    border-radius:12px !important;
+    box-shadow:0 26px 70px rgba(16,24,40,.14),0 4px 14px rgba(16,24,40,.05);
     overflow:visible;
     opacity:0;
     transform:translate3d(-50%, -10px, 0) scale(.985) !important;
@@ -1047,7 +1051,7 @@
     height:auto;
     overflow:hidden;
     border-radius:inherit;
-    background:rgba(255,255,255,.98);
+    background:rgba(255,255,255,.985);
 }
 .wow-mega-track{
     display:flex;
@@ -1061,11 +1065,11 @@
     flex:0 0 100%;
     min-width:100%;
     height:auto;
-    padding:42px 46px;
+    padding:36px 40px 40px;
 }
 .wow-mega-grid{
     display:grid;
-    gap:34px;
+    gap:30px;
 }
 .wow-mega-grid--3{ grid-template-columns:1.1fr 1.1fr .9fr; }
 .wow-mega-grid--2{ grid-template-columns:.95fr 1.05fr; }
@@ -1073,13 +1077,13 @@
 .wow-mega-col{ min-width:0; }
 .wow-mega-col--wide{ grid-column:span 2; }
 .wow-mega-col--divider{
-    padding-left:34px;
-    border-left:1px solid #e5e7eb;
+    padding-left:30px;
+    border-left:1px solid #e4e7ec;
 }
 #mega-panel.wow-mega-shell .mega-kicker{
-    margin:0 0 24px;
-    color:#126c45;
-    font-size:14px;
+    margin:0 0 20px;
+    color:#3e7467;
+    font-size:11px;
     line-height:1;
     font-weight:700;
     letter-spacing:.18em;
@@ -1099,10 +1103,11 @@
     gap:9px;
 }
 #mega-panel.wow-mega-shell .menu-link{
+    position:relative;
     display:block;
-    padding:12px;
+    padding:11px 34px 11px 12px;
     margin-left:-12px;
-    border-radius:0px;
+    border-radius:8px;
     color:#273142;
     text-decoration:none;
     transition:background 180ms ease, transform 180ms ease;
@@ -1110,7 +1115,7 @@
 #mega-panel.wow-mega-shell .menu-link strong{
     display:block;
     color:#273142;
-    font-size:20px;
+    font-size:18px;
     line-height:1.25;
     font-weight:700;
     letter-spacing:-.03em;
@@ -1119,22 +1124,24 @@
     display:block;
     margin-top:4px;
     color:#6b7280;
-    font-size:14px;
+    font-size:13px;
     line-height:1.4;
 }
 #mega-panel.wow-mega-shell .menu-link:hover,
 #mega-panel.wow-mega-shell .menu-link:focus-visible{
-    background:#f6f8f7;
-    transform:translateX(4px);
-    box-shadow:none;
+    background:#f2f7f5;
+    transform:translateX(2px);
+    box-shadow:inset 3px 0 0 #549483;
     outline:none;
 }
+#mega-panel.wow-mega-shell .menu-link::after{content:"→";position:absolute;right:12px;top:50%;color:#3e7467;font-size:16px;opacity:0;transform:translate(-5px,-50%);transition:opacity 160ms ease,transform 160ms ease}
+#mega-panel.wow-mega-shell .menu-link:hover::after,#mega-panel.wow-mega-shell .menu-link:focus-visible::after{opacity:1;transform:translate(0,-50%)}
 .wow-soft-panel{
     margin-top:24px;
     background:#f6f8f7;
     border:1px solid #e5e7eb;
-    border-radius:20px;
-    padding:22px;
+    border-radius:10px;
+    padding:20px;
 }
 .wow-soft-panel--green{
     margin-top:0;
@@ -1217,7 +1224,7 @@
 .wow-feature-card{
     position:relative;
     overflow:hidden;
-    border-radius:20px;
+    border-radius:10px;
     background:#dfe8e5;
     isolation:isolate;
     padding:18px;
@@ -1265,7 +1272,7 @@
 .wow-image-card--sound::before{ background-image:url("https://images.unsplash.com/photo-1515377905703-c4788e51af15?auto=format&fit=crop&w=900&q=80"); }
 .wow-feature-card{
     min-height:330px;
-    border-radius:24px;
+    border-radius:12px;
     padding:26px;
     flex-direction:column;
     justify-content:flex-end;
@@ -1285,7 +1292,7 @@
     min-height:38px;
     padding:0 14px;
     border:1px solid #e5e7eb;
-    border-radius:999px;
+    border-radius:6px;
     color:#273142;
     background:#fff;
     font-size:14px;
@@ -1300,7 +1307,7 @@
 .wow-map-card{
     position:relative;
     min-height:330px;
-    border-radius:24px;
+    border-radius:12px;
     overflow:hidden;
     background:radial-gradient(circle at 30% 35%, rgba(84,148,131,.5), transparent 16%), radial-gradient(circle at 54% 56%, rgba(84,148,131,.38), transparent 13%), radial-gradient(circle at 66% 28%, rgba(84,148,131,.3), transparent 11%), #e9f1ef;
     border:1px solid rgba(84,148,131,.22);
@@ -1313,7 +1320,7 @@
     content:"";
     position:absolute;
     inset:22px;
-    border-radius:20px;
+    border-radius:8px;
     border:1px dashed rgba(50,111,97,.35);
     pointer-events:none;
 }
