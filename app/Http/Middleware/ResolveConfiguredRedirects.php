@@ -59,6 +59,16 @@ class ResolveConfiguredRedirects
             $path = '/';
         }
 
+        // /collections is now resolved dynamically by CollectionController.
+        // That controller renders a live Backend collection when one exists,
+        // then deliberately falls back to the legacy collection redirect map
+        // for taxonomy/type aliases that are not collections. Skipping the
+        // historical configured redirects here keeps the exact old aliases
+        // working without preventing a mapped collection from becoming live.
+        if ($path === '/collections' || preg_match('#^/collections/[^/]+/?$#i', $path) === 1) {
+            return $next($request);
+        }
+
         $redirects = PageRedirect::query()
             ->where('platform_id', $platform->id)
             ->when(Schema::hasColumn((new PageRedirect())->getTable(), 'is_active'), fn ($query) => $query->where('is_active', true))

@@ -43,6 +43,7 @@ class SitemapService
         'types',
         'modalities',
         'near-me',
+        'collections',
         'offerings',
         'locations',
         'online',
@@ -156,6 +157,8 @@ class SitemapService
     private ?array $sitemapRouteCache = null;
 
     private ?array $canonicalUrlsCache = null;
+
+    private ?array $collectionCanonicalPathIndex = null;
 
     private int $sitemapThrottleCounter = 0;
 
@@ -533,6 +536,7 @@ class SitemapService
             'types' => $this->buildTypeEntries(),
             'modalities' => $this->buildModalityEntries(),
             'near-me' => $this->buildNearMeEntries(),
+            'collections' => $this->buildCollectionEntries(),
             'offerings' => $this->buildOfferingEntries(),
             'locations' => $this->buildLocationEntries(),
             'online' => $this->buildOnlineEntries(),
@@ -540,6 +544,48 @@ class SitemapService
             'practitioners' => $this->buildPractitionerEntries(),
             'guides' => $this->buildGuideEntries(),
         ];
+    }
+
+    /**
+     * @return array<int, array{loc:string,lastmod:string}>
+     */
+    private function buildCollectionEntries(): array
+    {
+        $entries = [];
+        $now = now()->toAtomString();
+
+        foreach (app(BackendCollectionsClient::class)->indexableCollections() as $collection) {
+            $path = trim((string) data_get($collection, 'canonical_path', ''));
+            if ($path === '') {
+                $slug = trim((string) data_get($collection, 'slug', ''));
+                if ($slug === '') {
+                    continue;
+                }
+                $path = '/collections/' . $slug;
+            }
+
+            if (! str_starts_with($path, '/')) {
+                $path = '/' . $path;
+            }
+
+            $lastmod = trim((string) data_get($collection, 'updated_at', '')) ?: $now;
+            $loc = $this->publicUrl($path);
+
+            // Backend live/indexable collection records are the new canonical
+            // source. Historical PageRedirect rows still describe the legacy
+            // Shopify redirects for these exact paths, so they must not suppress
+            // a collection that now resolves as a first-class Frontend route.
+            if (preg_match('~^https?://[^/]+(?:/[^?#]*)?$~i', $loc) === 1
+                && ! preg_match('~(?:^|/)(?:null|undefined)(?:/|$)~i', $path)
+                && ! str_contains($path, '//')) {
+                $entries[$loc] = [
+                    'loc' => $loc,
+                    'lastmod' => $lastmod,
+                ];
+            }
+        }
+
+        return array_values($entries);
     }
 
     /**
@@ -1910,6 +1956,39 @@ XSL;
         return $this->redirectSourcePatterns = $patterns;
     }
 
+    /**
+     * Live/indexable Backend collection paths override only their own stale
+     * legacy redirect records. Other /collections aliases continue to behave
+     * exactly as before.
+     *
+     * @return array<string, bool>
+     */
+    private function canonicalCollectionPaths(): array
+    {
+        if ($this->collectionCanonicalPathIndex !== null) {
+            return $this->collectionCanonicalPathIndex;
+        }
+
+        $paths = [];
+        foreach (app(BackendCollectionsClient::class)->indexableCollections() as $collection) {
+            $path = trim((string) data_get($collection, 'canonical_path', ''));
+            if ($path === '') {
+                $slug = trim((string) data_get($collection, 'slug', ''));
+                if ($slug === '') {
+                    continue;
+                }
+                $path = '/collections/' . $slug;
+            }
+
+            $path = $this->normalizeSitemapPath($path);
+            if ($path !== '') {
+                $paths[$path] = true;
+            }
+        }
+
+        return $this->collectionCanonicalPathIndex = $paths;
+    }
+
     private function redirectPatternMatchesPath(string $path, string $pattern): bool
     {
         $path = $this->normalizeSitemapPath($path);
@@ -1986,16 +2065,17 @@ XSL;
             self::CANONICAL_FORMATS
         );
         $isCanonicalType = in_array($path, $canonicalTypePaths, true);
+        $isCanonicalCollection = isset($this->canonicalCollectionPaths()[$path]);
 
         if ($this->redirectExactPaths === null && $this->redirectPathMatchers === null) {
             $this->redirectPathMatchers();
         }
 
-        if (! $isCanonicalType && isset($this->redirectExactPaths[$path])) {
+        if (! $isCanonicalType && ! $isCanonicalCollection && isset($this->redirectExactPaths[$path])) {
             return false;
         }
 
-        if (! $isCanonicalType) {
+        if (! $isCanonicalType && ! $isCanonicalCollection) {
             foreach ($this->redirectPathMatchers() as $pattern) {
                 if ($this->redirectPatternMatchesPath($path, (string) $pattern)) {
                     return false;

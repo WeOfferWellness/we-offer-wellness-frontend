@@ -46,6 +46,7 @@ use App\Http\Controllers\HelpPagesController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\RedirectsController;
+use App\Http\Controllers\CollectionController;
 use App\Http\Controllers\CustomerAccountController;
 use App\Http\Controllers\AiDiscoveryController;
 use App\Http\Controllers\SubscriberController;
@@ -256,7 +257,7 @@ Route::get('/{prefix}/custom/{pixel}/sandbox/modern/products/{handle}', [Redirec
         'pixel' => '[^/]+',
         'handle' => '[^/]+',
     ]);
-Route::get('/collections/{slug?}', [RedirectsController::class, 'shopifyCollection'])
+Route::get('/collections/{slug?}', [CollectionController::class, 'show'])
     ->where('slug', '[^/]*');
 Route::get('/pages/{path}', [RedirectsController::class, 'shopifyPage'])
     ->where('path', '.*');
