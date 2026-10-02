@@ -21,6 +21,28 @@ class HomeRailsController extends Controller
     {
         $section = Str::lower(trim((string) $request->input('section', '')));
 
+        if ($section === 'matches') {
+            $filters = array_filter([
+                'type_id' => $request->integer('type_id') ?: null,
+                'type' => trim((string) $request->input('type', '')),
+                'category_id' => $request->integer('category_id') ?: null,
+                'category' => trim((string) $request->input('category', '')),
+                'subcategory_id' => $request->integer('subcategory_id') ?: null,
+                'subcategory' => trim((string) $request->input('subcategory', '')),
+                'need' => trim((string) $request->input('need', '')),
+                'marketplace_tag' => trim((string) $request->input('marketplace_tag', '')),
+                'occasion' => trim((string) $request->input('occasion', '')),
+                'audience' => trim((string) $request->input('audience', '')),
+                'min_price' => $request->filled('min_price') ? max(0, (float) $request->input('min_price')) : null,
+                'max_price' => $request->filled('max_price') ? max(0, (float) $request->input('max_price')) : null,
+            ], fn ($value) => $value !== null && $value !== '');
+            $items = $this->catalogue($filters, 4)->take(12)->values();
+
+            return response($this->renderCards($items, true))
+                ->header('Content-Type', 'text/html; charset=UTF-8')
+                ->header('Cache-Control', 'private, max-age=30');
+        }
+
         if ($section === 'latest') {
             return response($this->renderCards($this->catalogue()->sortByDesc(fn (array $item) => $this->timestamp($item))->take(12), true))
                 ->header('Content-Type', 'text/html; charset=UTF-8')
