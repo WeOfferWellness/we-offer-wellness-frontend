@@ -447,6 +447,7 @@
                     <div class="nav-item"><a class="link-wow--nav" data-no-mega="true" tabindex="0" href="/online">Online</a></div>
                     <div class="nav-item"><a class="link-wow--nav" data-no-mega="true" tabindex="0" href="https://times.weofferwellness.co.uk">Mindful
                         Times</a></div>
+                   <div class="nav-item" data-wellness-match-nav hidden><a class="link-wow--nav wellness-match-link" data-no-mega="true" data-wow-popup-trigger="wellness-match" tabindex="0" href="#wellness-match" aria-controls="wow-wellness-match-modal" aria-haspopup="dialog" aria-expanded="false">Find your wellness match</a></div>
                     <span class="wow-nav-underline" id="navUnderline" aria-hidden="true"></span>
                 </nav>
             </div>
@@ -933,42 +934,55 @@
 }
 
 .wow-desktop-nav{
-    position:relative;
+    position:absolute;
+    left:50%;
+    top:0;
+    transform:translateX(-50%);
     height:100%;
     align-items:center;
+    gap:18px !important;
 }
 .wow-desktop-nav .nav-item > a.link-wow--nav{
     position:relative;
     display:inline-flex;
     align-items:center;
     justify-content:center;
-    padding:13px 18px;
-    border-radius:18px;
+    padding:13px 0 11px;
+    border-radius:0;
     color:#172033;
-    font-size:18px;
+    font-size:14px;
+    font-weight:600;
     line-height:1;
-    transition:background 220ms ease, color 220ms ease, transform 220ms ease;
+    white-space:nowrap;
+    transition:color 180ms ease;
 }
-.wow-desktop-nav .nav-item > a.link-wow--nav::after{ content:none !important; }
+.wow-desktop-nav .nav-item > a.link-wow--nav::after{
+    content:"" !important;
+    position:absolute;
+    left:0;
+    right:0;
+    bottom:4px;
+    height:2px;
+    background:#549483;
+    transform:scaleX(0);
+    transform-origin:center;
+    transition:transform 180ms ease;
+}
 .wow-desktop-nav .nav-item > a.link-wow--nav:hover,
 .wow-desktop-nav .nav-item > a.link-wow--nav:focus-visible,
 .wow-desktop-nav .nav-item > a.link-wow--nav.is-active{
-    background:#f1f2f4;
-    color:#111827;
+    background:transparent;
+    color:#3e7467;
     outline:none;
 }
+.wow-desktop-nav .nav-item > a.link-wow--nav:hover::after,
+.wow-desktop-nav .nav-item > a.link-wow--nav:focus-visible::after,
+.wow-desktop-nav .nav-item > a.link-wow--nav.is-active::after{transform:scaleX(1)}
+.wow-desktop-nav .nav-item > a.wellness-match-link{color:#3e7467;gap:7px}
+.wow-desktop-nav .nav-item > a.wellness-match-link::before{content:"→";order:2;font-size:14px;transition:transform 180ms ease}
+.wow-desktop-nav .nav-item > a.wellness-match-link:hover::before{transform:translateX(3px)}
 .wow-nav-underline{
-    position:absolute;
-    left:0;
-    bottom:7px;
-    width:0;
-    height:4px;
-    border-radius:999px;
-    background:#549483;
-    opacity:0;
-    transform:translateX(0);
-    transition:transform 360ms cubic-bezier(.2,.9,.2,1), width 360ms cubic-bezier(.2,.9,.2,1), opacity 180ms ease;
-    pointer-events:none;
+    display:none !important;
 }
 .wow-mega-layer{
     --mega-max-width:1160px;

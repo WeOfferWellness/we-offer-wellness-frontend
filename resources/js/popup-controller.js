@@ -149,7 +149,11 @@ function openPopup(config, element, layer) {
     }
     if (config.key === 'newsletter-modal' && window.WOWNewsletterModal?.open) window.WOWNewsletterModal.open(true);
     else if (config.key === 'cookie-banner' && window.WOWCookieBanner?.open) window.WOWCookieBanner.open();
-    else { locationController(element); showElement(element); }
+    else {
+        locationController(element);
+        showElement(element);
+        if (config.key === 'wellness-match') window.WOWWellnessMatch?.open?.(config);
+    }
     markServed(config);
     track(config, 'open');
 }
@@ -163,6 +167,40 @@ function initPopupController() {
     const firstVisit = !readStorage(localStorage, 'has_visited');
     const queue = [];
     const configs = new Map();
+    const pendingManual = new Set();
+    const closeActive = (key) => {
+        if (!key) return;
+        const element = elements.get(key);
+        if (element) hideElement(element);
+        document.dispatchEvent(new CustomEvent('wow:popup-closed', { detail: { key } }));
+    };
+    const openManual = (key) => {
+        const config = configs.get(key);
+        const element = elements.get(key);
+        if (!config || !element) return false;
+        if (active.key && active.key !== key) closeActive(active.key);
+        active.key = key;
+        openPopup(config, element, layer);
+        return true;
+    };
+
+    document.addEventListener('click', (event) => {
+        const trigger = event.target.closest?.('[data-wow-popup-trigger]');
+        if (!trigger) return;
+        const key = trigger.dataset.wowPopupTrigger;
+        if (!key || !elements.has(key)) return;
+        event.preventDefault();
+        if (!openManual(key)) pendingManual.add(key);
+    });
+
+    document.addEventListener('click', (event) => {
+        const close = event.target.closest?.('[data-wow-popup-close]');
+        if (!close) return;
+        const popup = close.closest('[data-wow-popup]');
+        if (!popup?.dataset?.wowPopup) return;
+        closeActive(popup.dataset.wowPopup);
+    });
+
     document.addEventListener('wow:popup-opened', (event) => {
         const key = event.detail?.key;
         if (!key || !layer) return;
@@ -207,15 +245,18 @@ function initPopupController() {
     layer?.addEventListener('click', (event) => {
         if (!event.target.closest('[data-wow-popup-backdrop]')) return;
         if (active.key === 'newsletter-modal') window.WOWNewsletterModal?.close?.();
-        if (active.key === 'cookie-banner') window.WOWCookieBanner?.close?.();
+        else if (active.key === 'cookie-banner') window.WOWCookieBanner?.close?.();
+        else if (active.key) closeActive(active.key);
     });
     fetch(`${backendUrl}/api/popups?${new URLSearchParams({ page_url: window.location.href })}`, { credentials: 'include', headers: { Accept: 'application/json' } })
         .then((response) => response.ok ? response.json() : { data: [] })
         .then((payload) => {
             (payload.data || []).forEach((config) => {
                 configs.set(config.key, config);
+                if (config.key === 'wellness-match') document.querySelector('[data-wellness-match-nav]')?.removeAttribute('hidden');
                 const element = elements.get(config.key);
                 if (!element || !frequencyAllows(config)) return;
+                if (pendingManual.delete(config.key)) openManual(config.key);
                 const triggers = config.triggers || {};
                 if (triggers.first_time_user && !firstVisit) return;
                 if (triggers.on_load || readStorage(sessionStorage, `${config.key}:pending`)) enqueue(config);
