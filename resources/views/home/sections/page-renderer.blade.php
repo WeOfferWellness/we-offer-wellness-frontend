@@ -9,13 +9,21 @@
     @push('styles')
         <style>
             .wow-site-page-layout {
+                box-sizing: border-box;
                 display: flex;
                 flex-direction: column;
                 width: 100%;
+                max-width: 100%;
+                min-width: 0;
+                overflow-x: hidden;
+                overflow-x: clip;
             }
 
             .wow-site-page-section {
+                box-sizing: border-box;
                 width: 100%;
+                max-width: 100%;
+                min-width: 0;
                 order: var(--wow-desktop-order, 0);
             }
 
