@@ -302,8 +302,9 @@ body.wow-search-pane-open .wow-ultra{
     <x-home-searchbar-v4 :search-url="url('/search?view=list')" />
   </div>
 
+  @php($searchOfferingFilterOptions = get_defined_vars())
   <div class="wow-search-mobile-shell">
-    @include('search.partials.mobile')
+    <x-marketplace.offering-filters mode="mobile" :options="$searchOfferingFilterOptions" />
   </div>
 
   @include('partials.breadcrumbs', [
@@ -322,7 +323,7 @@ body.wow-search-pane-open .wow-ultra{
 
   <div class="search-content-wrapper">
       <div class="wow-search-desktop-shell">
-        @include('search.partials.desktop')
+        <x-marketplace.offering-filters mode="desktop" :options="$searchOfferingFilterOptions" />
       </div>
   </div>
 </div>

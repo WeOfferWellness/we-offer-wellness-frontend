@@ -280,7 +280,7 @@
       }
     </style>
 
-    @include('search.partials.mobile', [
+    <x-marketplace.offering-filters mode="mobile" :options="[
       'products' => collect(),
       'mobileResultsCount' => $eventCount,
       'mobileFullNavigation' => true,
@@ -290,10 +290,10 @@
       'searchRecommendationsHtml' => '',
       'searchAsyncBoot' => false,
       'searchUrl' => url('/events'),
-    ])
+    ]" />
     <div class="events-results-layout">
       <div class="events-results-filters">
-        @include('search.partials.desktop', [
+        <x-marketplace.offering-filters mode="desktop" :options="[
           'products' => collect(),
           'desktopResultsCount' => $eventCount,
           'desktopFullNavigation' => true,
@@ -303,7 +303,7 @@
           'searchRecommendationsHtml' => '',
           'searchAsyncBoot' => false,
           'searchUrl' => url('/events'),
-        ])
+        ]" />
       </div>
 
       <div class="events-results-content">

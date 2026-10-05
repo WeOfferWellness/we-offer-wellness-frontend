@@ -107,7 +107,7 @@
         $online->isNotEmpty() ? 'Online sessions' : null,
       ])),
     ])
-    @include('partials.offering-tabs', [
+    <x-marketplace.offering-tabs :options="[
       'id' => 'location-offering-tabs',
       'eyebrow' => 'Local wellness discovery',
       'title' => 'Explore wellness in '.$label,
@@ -119,7 +119,7 @@
       'newOfferings' => $new,
       'onlineOfferings' => $online,
       'preferredLocation' => $label,
-    ])
+    ]" />
     <div class="location-landing__container">
       @if($categories->isNotEmpty())
         @php

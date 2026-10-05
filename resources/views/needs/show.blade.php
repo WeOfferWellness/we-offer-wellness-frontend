@@ -56,7 +56,7 @@
   <div class="container-page">
 
     <div class="wow-search-mobile-shell">
-      @include('search.partials.mobile', [
+      <x-marketplace.offering-filters mode="mobile" :options="[
         'products' => $items,
         'mobileResultsCount' => $results['meta']['total'] ?? $items->count(),
         'mobileFullNavigation' => true,
@@ -65,11 +65,11 @@
         'searchRecommendationsHtml' => '',
         'searchAsyncBoot' => false,
         'searchUrl' => url('/needs/' . $slug),
-      ])
+      ]" />
     </div>
 
     <div class="wow-search-desktop-shell">
-      @include('search.partials.desktop', [
+      <x-marketplace.offering-filters mode="desktop" :options="[
         'products' => $items,
         'desktopResultsCount' => $results['meta']['total'] ?? $items->count(),
         'desktopFullNavigation' => true,
@@ -78,7 +78,7 @@
         'searchRecommendationsHtml' => '',
         'searchAsyncBoot' => false,
         'searchUrl' => url('/needs/' . $slug),
-      ])
+      ]" />
     </div>
   </div>
 </section>

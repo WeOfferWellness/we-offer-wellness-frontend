@@ -304,7 +304,7 @@
 
     <div class="therapy-results-layout wow410-filter-layout">
       <div class="therapy-results-filters">
-        @include('search.partials.desktop', [
+        <x-marketplace.offering-filters mode="desktop" :options="[
           'products' => $items,
           'desktopResultsCount' => $items->count(),
           'desktopFullNavigation' => true,
@@ -314,11 +314,11 @@
           'searchRecommendationsHtml' => '',
           'searchAsyncBoot' => false,
           'searchUrl' => url('/therapies/' . $slug),
-        ])
+        ]" />
       </div>
       <div class="therapy-results-content">
 
-    @include('search.partials.mobile', [
+    <x-marketplace.offering-filters mode="mobile" :options="[
       'products' => $items,
       'mobileResultsCount' => $items->count(),
       'mobileFullNavigation' => true,
@@ -328,7 +328,7 @@
       'searchRecommendationsHtml' => '',
       'searchAsyncBoot' => false,
       'searchUrl' => url('/therapies/' . $slug),
-    ])
+    ]" />
     {{-- Results --}}
     @if($items->count())
       <div class="wow410-grid">

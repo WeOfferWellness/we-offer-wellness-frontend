@@ -996,21 +996,21 @@
 
       @if(isset($products) && $products->count())
         <div class="wow-location-desktop-results">
-          @include('search.partials.desktop', [
+          <x-marketplace.offering-filters mode="desktop" :options="[
             'resultsHeading' => 'Offerings near ' . ($resolved['town'] ?? $resolved['place'] ?? $resolved['county'] ?? $resolved['country'] ?? 'your location'),
             'products' => $products,
             'resultCount' => $resultCount ?? $products->total(),
             'showMap' => false,
-          ])
+          ]" />
         </div>
         <div class="wow-location-mobile-results">
-          @include('search.partials.mobile', [
+          <x-marketplace.offering-filters mode="mobile" :options="[
             'products' => $products,
             'resultCount' => $resultCount ?? $products->total(),
             'searchMapData' => $offeringMapItems,
             'mobileFullNavigation' => true,
             'mobileShowMap' => false,
-          ])
+          ]" />
         </div>
       @endif
 

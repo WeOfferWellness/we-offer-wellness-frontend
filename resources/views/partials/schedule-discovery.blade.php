@@ -21,8 +21,8 @@
    @foreach($scheduleDates as $date)<a class="wow-schedule-date {{ $date['key'] === $selectedScheduleDate ? 'is-active' : '' }}" href="{{ $scheduleUrl(['date'=>$date['key']]) }}" aria-current="{{ $date['key'] === $selectedScheduleDate ? 'date' : 'false' }}"><span class="wow-schedule-date__day">{{ $date['day'] }}</span><span class="wow-schedule-date__number">{{ $date['date'] }}</span><span class="wow-schedule-date__count">{{ $date['count'] }} available</span></a>@endforeach
   </div>
   <div class="wow-schedule-discovery__toolbar"><div><h3 id="schedule-results-title">{{ $scheduleOfferings->count() }} offerings on {{ \Carbon\Carbon::parse($selectedScheduleDate)->format('l, j F') }}</h3><p>Live practitioner availability for the selected date.</p></div></div>
-  @include('search.partials.mobile', ['products' => $scheduleOfferings, 'mobileResultsCount' => $scheduleOfferings->count(), 'searchUrl' => url('/schedule-discovery').'?date='.$selectedScheduleDate, 'mobileFullNavigation' => true, 'mobileShowMap' => false, 'filterOnly' => false, 'resultsHeading' => 'Available on this date'])
-  @include('search.partials.desktop', ['products' => $scheduleOfferings, 'desktopResultsCount' => $scheduleOfferings->count(), 'searchUrl' => url('/schedule-discovery').'?date='.$selectedScheduleDate, 'desktopFullNavigation' => true, 'showMap' => false, 'filterOnly' => false, 'resultsHeading' => 'Available on this date'])
+  <x-marketplace.offering-filters mode="mobile" :options="['products' => $scheduleOfferings, 'mobileResultsCount' => $scheduleOfferings->count(), 'searchUrl' => url('/schedule-discovery').'?date='.$selectedScheduleDate, 'mobileFullNavigation' => true, 'mobileShowMap' => false, 'filterOnly' => false, 'resultsHeading' => 'Available on this date']" />
+  <x-marketplace.offering-filters mode="desktop" :options="['products' => $scheduleOfferings, 'desktopResultsCount' => $scheduleOfferings->count(), 'searchUrl' => url('/schedule-discovery').'?date='.$selectedScheduleDate, 'desktopFullNavigation' => true, 'showMap' => false, 'filterOnly' => false, 'resultsHeading' => 'Available on this date']" />
  </div>
 </section>
 @once

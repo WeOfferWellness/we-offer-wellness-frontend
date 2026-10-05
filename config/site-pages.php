@@ -22,11 +22,14 @@ return [
     ],
 
     'components' => [
+        'legacy_content' => ['view' => null],
         'hero-slider' => ['view' => 'home.sections.hero-slider'],
         'popular_searches' => ['view' => 'home.sections.popular_searches'],
         'schedule' => ['view' => 'home.sections.schedule', 'condition' => 'hasClassesThisWeek'],
         'latest_catalogue' => ['view' => 'home.sections.latest_catalogue'],
         'collection_rail' => ['view' => 'home.sections.collection_rail'],
+        'offering_tabs' => ['view' => 'home.sections.offering_tabs'],
+        'offering_filters' => ['view' => 'home.sections.offering_filters'],
         'discover_category' => ['view' => 'home.sections.discover_category'],
         'gift_cards_occasion' => ['view' => 'home.sections.gift_cards_occasion'],
         'no-travel-needed' => ['view' => 'home.sections.no-travel-needed'],

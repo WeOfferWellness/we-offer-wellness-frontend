@@ -46,8 +46,8 @@
 ])
 
 <div class="search-content-wrapper">
-  @include('search.partials.desktop', [
+  <x-marketplace.offering-filters mode="desktop" :options="[
       'resultsHeading' => $locationTitle.' results',
-  ])
+  ]" />
 </div>
 @endsection

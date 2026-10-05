@@ -1,4 +1,4 @@
-@include('partials.offering-tabs', [
+<x-marketplace.offering-tabs :options="[
     'id' => 'home-online-offering-tabs',
     'eyebrow' => 'Online support when you need it',
     'title' => 'Support From the comfort of your own home',
@@ -16,4 +16,4 @@
         'new' => ['min' => 50, 'max' => 99],
         'online' => ['min' => 100, 'max' => 999999],
     ],
-])
+]" />

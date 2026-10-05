@@ -98,7 +98,7 @@
     @endif
 
     @if($isMobile)
-      @include('search.partials.mobile', [
+      <x-marketplace.offering-filters mode="mobile" :options="[
         'products' => $items,
         'mobileResultsCount' => $items->count(),
         'mobileFullNavigation' => true,
@@ -109,9 +109,9 @@
         'searchRecommendationsHtml' => '',
         'searchAsyncBoot' => false,
         'searchUrl' => $pageUrl ?? url('/online'),
-      ])
+      ]" />
     @else
-      @include('search.partials.desktop', [
+      <x-marketplace.offering-filters mode="desktop" :options="[
         'products' => $items,
         'desktopResultsCount' => $items->count(),
         'desktopFullNavigation' => true,
@@ -122,7 +122,7 @@
         'searchRecommendationsHtml' => '',
         'searchAsyncBoot' => false,
         'searchUrl' => $pageUrl ?? url('/online'),
-      ])
+      ]" />
     @endif
 
   </div>

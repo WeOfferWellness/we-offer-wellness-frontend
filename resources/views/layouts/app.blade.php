@@ -14,7 +14,9 @@ antialiased @yield('body-class')
 <div class="text-ink-800">
       @include('partials.header')
       <main>
-          @yield('content')
+          <x-marketplace.managed-page>
+              @yield('content')
+          </x-marketplace.managed-page>
       </main>
       @include('partials.footer')
   </div>

@@ -7,9 +7,10 @@ use Illuminate\Support\Facades\Http;
 
 class BackendPageLayoutClient
 {
-    public function page(string $key): array
+    public function page(string $key, string $platformKey = 'wow-marketplace'): array
     {
         $key = trim($key);
+        $platformKey = trim($platformKey) ?: 'wow-marketplace';
         $default = $this->defaultLayout($key);
 
         if ($key === '') {
@@ -21,7 +22,7 @@ class BackendPageLayoutClient
             return $default;
         }
 
-        $cacheKey = 'backend:site-page:v1:'.sha1($baseUrl.'|'.$key);
+        $cacheKey = 'backend:site-page:v2:'.sha1($baseUrl.'|'.$platformKey.'|'.$key);
 
         try {
             $response = Http::acceptJson()
@@ -31,7 +32,9 @@ class BackendPageLayoutClient
                     'Cache-Control' => 'no-cache',
                 ])
                 ->timeout(4)
-                ->get($baseUrl.'/api/site-pages/'.rawurlencode($key));
+                ->get(
+                    $baseUrl.'/api/platforms/'.rawurlencode($platformKey).'/site-pages/'.rawurlencode($key)
+                );
 
             $payload = $response->successful() && is_array($response->json())
                 ? $response->json()
@@ -59,9 +62,9 @@ class BackendPageLayoutClient
         return $result;
     }
 
-    public function sections(string $key): array
+    public function sections(string $key, string $platformKey = 'wow-marketplace'): array
     {
-        return (array) ($this->page($key)['sections'] ?? []);
+        return (array) ($this->page($key, $platformKey)['sections'] ?? []);
     }
 
     private function defaultLayout(string $key): array
