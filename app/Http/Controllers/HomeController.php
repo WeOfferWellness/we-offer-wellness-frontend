@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Services\BackendDiscoveryClient;
 use App\Services\BackendOfferingsClient;
+use App\Services\BackendPageLayoutClient;
 use App\Support\EventListing;
 use App\Support\ProductRanking;
 use Illuminate\Support\Carbon;
@@ -13,8 +14,11 @@ use Illuminate\Support\Str;
 
 class HomeController extends Controller
 {
-    public function index(BackendOfferingsClient $offeringsClient, BackendDiscoveryClient $discoveryClient)
-    {
+    public function index(
+        BackendOfferingsClient $offeringsClient,
+        BackendDiscoveryClient $discoveryClient,
+        BackendPageLayoutClient $pageLayoutClient
+    ) {
         $cacheVersion = $this->homeCacheVersion();
 
         if (request()->boolean('fresh')) {
@@ -106,6 +110,10 @@ class HomeController extends Controller
         $payload['onlineUnder50'] = $this->selectRotatingOnlineRow($payload['onlineUnder50']);
         $payload['onlineUnder100'] = $this->selectRotatingOnlineRow($payload['onlineUnder100']);
         $payload['online100Plus'] = $this->selectRotatingOnlineRow($payload['online100Plus']);
+
+        // Page structure is owned by Studio and rendered server-side here.
+        // The client falls back to the current homepage order if Studio is unavailable.
+        $payload['homePageSections'] = $pageLayoutClient->sections('home');
 
         if (app()->environment('local') || auth()->check()) {
             return view('home.index', $payload);

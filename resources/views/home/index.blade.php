@@ -1017,32 +1017,6 @@
 
 @section('content')
 
-@include('home.sections.hero-slider')
-
-@include('home.sections.popular_searches')
-
-@if (!empty($hasClassesThisWeek))
-@include('home.sections.schedule')
-@endif
-
-@include('home.sections.latest_catalogue')
-
-@include('home.sections.discover_category')
-
-@include('home.sections.gift_cards_occasion')
-
-@include('home.sections.no-travel-needed')
-
-@include('home.sections.gifts')
-
-@include('home.sections.trust-feel-safe')
-
-@include('home.sections.mindfultimes_guides_interviews')
-
-@include('home.sections.practitioner_chats_converstions')
-
-<div class="container">
-    @include('home.sections.our_approach')
-</div>
+@include('home.sections.page-renderer')
 
 @endsection
