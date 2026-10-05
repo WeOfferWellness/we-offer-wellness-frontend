@@ -24,23 +24,18 @@ class BackendPageLayoutClient
         $cacheKey = 'backend:site-page:v1:'.sha1($baseUrl.'|'.$key);
 
         try {
-            $payload = Cache::remember($cacheKey, now()->addSeconds(30), function () use ($baseUrl, $key) {
-                $response = Http::acceptJson()
-                    ->withHeaders([
-                        'Origin' => config('app.url'),
-                        'Referer' => rtrim((string) config('app.url'), '/').'/',
-                    ])
-                    ->timeout(4)
-                    ->get($baseUrl.'/api/site-pages/'.rawurlencode($key));
+            $response = Http::acceptJson()
+                ->withHeaders([
+                    'Origin' => config('app.url'),
+                    'Referer' => rtrim((string) config('app.url'), '/').'/',
+                    'Cache-Control' => 'no-cache',
+                ])
+                ->timeout(4)
+                ->get($baseUrl.'/api/site-pages/'.rawurlencode($key));
 
-                if (! $response->successful()) {
-                    return null;
-                }
-
-                $json = $response->json();
-
-                return is_array($json) ? $json : null;
-            });
+            $payload = $response->successful() && is_array($response->json())
+                ? $response->json()
+                : null;
         } catch (\Throwable) {
             $payload = null;
         }
