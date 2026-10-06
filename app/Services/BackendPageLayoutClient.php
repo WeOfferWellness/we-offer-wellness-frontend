@@ -47,14 +47,23 @@ class BackendPageLayoutClient
             return $this->safeCacheGet($cacheKey.':last-good', $default);
         }
 
-        $sections = $this->sanitizeSections($key, $payload['sections']);
-        if ($sections === []) {
+        $sections = $this->sanitizeSections($key, $payload['sections'], true);
+        $managedSections = $this->sanitizeSections(
+            $key,
+            is_array($payload['managed_sections'] ?? null)
+                ? $payload['managed_sections']
+                : $payload['sections'],
+            false
+        );
+
+        if ($sections === [] && $managedSections === []) {
             return $default;
         }
 
         $result = [
             'page' => is_array($payload['page'] ?? null) ? $payload['page'] : ['key' => $key],
             'sections' => $sections,
+            'managed_sections' => $managedSections,
         ];
 
         $this->safeCachePut($cacheKey.':last-good', $result, now()->addHours(6));
@@ -69,27 +78,32 @@ class BackendPageLayoutClient
 
     private function defaultLayout(string $key): array
     {
+        $sections = $this->sanitizeSections(
+            $key,
+            (array) config("site-pages.pages.{$key}.default_layout", [])
+        );
+
         return [
             'page' => ['key' => $key],
-            'sections' => $this->sanitizeSections(
-                $key,
-                (array) config("site-pages.pages.{$key}.default_layout", [])
-            ),
+            'sections' => $sections,
+            'managed_sections' => $sections,
         ];
     }
 
-    private function sanitizeSections(string $key, array $sections): array
+    private function sanitizeSections(string $key, array $sections, bool $activeOnly = true): array
     {
         $components = (array) config('site-pages.components', []);
 
         return collect($sections)
             ->filter(fn ($section): bool => is_array($section))
-            ->filter(function (array $section) use ($components): bool {
+            ->filter(function (array $section) use ($components, $activeOnly): bool {
                 $component = trim((string) ($section['component'] ?? ''));
 
-                return $component !== ''
-                    && isset($components[$component])
-                    && (bool) ($section['enabled'] ?? true);
+                if ($component === '' || ! isset($components[$component])) {
+                    return false;
+                }
+
+                return ! $activeOnly || (bool) ($section['active'] ?? $section['enabled'] ?? true);
             })
             ->values()
             ->map(function (array $section, int $index): array {
@@ -98,6 +112,7 @@ class BackendPageLayoutClient
                     'component' => (string) $section['component'],
                     'label' => (string) ($section['label'] ?? ''),
                     'enabled' => (bool) ($section['enabled'] ?? true),
+                    'active' => (bool) ($section['active'] ?? $section['enabled'] ?? true),
                     'show_desktop' => (bool) ($section['show_desktop'] ?? true),
                     'show_mobile' => (bool) ($section['show_mobile'] ?? true),
                     'desktop_order' => max(0, (int) ($section['desktop_order'] ?? $index)),
@@ -105,6 +120,12 @@ class BackendPageLayoutClient
                     'starts_at' => $section['starts_at'] ?? null,
                     'ends_at' => $section['ends_at'] ?? null,
                     'config' => is_array($section['config'] ?? null) ? $section['config'] : [],
+                    'platform_component_id' => isset($section['platform_component_id'])
+                        ? (int) $section['platform_component_id']
+                        : null,
+                    'platform_component' => is_array($section['platform_component'] ?? null)
+                        ? $section['platform_component']
+                        : null,
                 ];
             })
             ->values()

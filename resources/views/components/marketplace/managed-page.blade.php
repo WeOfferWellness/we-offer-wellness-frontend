@@ -21,9 +21,9 @@
         $managedPayload = app('App\\Services\\BackendPageLayoutClient')
             ->page('route-'.$routeKey, 'wow-marketplace');
 
-        $managedSections = is_array($managedPayload['sections'] ?? null)
-            ? $managedPayload['sections']
-            : [];
+        $managedSections = is_array($managedPayload['managed_sections'] ?? null)
+            ? $managedPayload['managed_sections']
+            : (is_array($managedPayload['sections'] ?? null) ? $managedPayload['sections'] : []);
     }
 
     $slotHtml = (string) $slot;
@@ -45,10 +45,12 @@
 
             $desktopOrder = max(0, (int) data_get($managedSection, 'desktop_order', $managedIndex));
             $mobileOrder = max(0, (int) data_get($managedSection, 'mobile_order', $managedIndex));
-            $showDesktop = (bool) data_get($managedSection, 'show_desktop', true);
-            $showMobile = (bool) data_get($managedSection, 'show_mobile', true);
+            $active = (bool) data_get($managedSection, 'active', data_get($managedSection, 'enabled', true));
+            $showDesktop = $active && (bool) data_get($managedSection, 'show_desktop', true);
+            $showMobile = $active && (bool) data_get($managedSection, 'show_mobile', true);
 
             $replacement = $needle
+                .' data-managed-active="'.($active ? '1' : '0').'"'
                 .' data-managed-show-desktop="'.($showDesktop ? '1' : '0').'"'
                 .' data-managed-show-mobile="'.($showMobile ? '1' : '0').'"'
                 .' style="--wow-managed-desktop-order:'.$desktopOrder.';--wow-managed-mobile-order:'.$mobileOrder.'"';
@@ -64,7 +66,11 @@
             $componentKey = (string) data_get($managedSection, 'component', '');
             $sectionId = trim((string) data_get($managedSection, 'id', ''));
 
-            if ($componentKey === '' || $sectionId === '') {
+            if (
+                $componentKey === ''
+                || $sectionId === ''
+                || ! (bool) data_get($managedSection, 'active', data_get($managedSection, 'enabled', true))
+            ) {
                 continue;
             }
 
@@ -154,13 +160,15 @@
             @php
                 $desktopOrder = max(0, (int) data_get($singlePageContentSection, 'desktop_order', 0));
                 $mobileOrder = max(0, (int) data_get($singlePageContentSection, 'mobile_order', 0));
-                $showDesktop = (bool) data_get($singlePageContentSection, 'show_desktop', true);
-                $showMobile = (bool) data_get($singlePageContentSection, 'show_mobile', true);
+                $active = (bool) data_get($singlePageContentSection, 'active', data_get($singlePageContentSection, 'enabled', true));
+                $showDesktop = $active && (bool) data_get($singlePageContentSection, 'show_desktop', true);
+                $showMobile = $active && (bool) data_get($singlePageContentSection, 'show_mobile', true);
             @endphp
             <div
                 class="wow-managed-page-fragment"
                 data-page-section-id="{{ data_get($singlePageContentSection, 'id', 'page-content') }}"
                 data-page-component="{{ data_get($singlePageContentSection, 'component', 'page_content') }}"
+                data-managed-active="{{ $active ? '1' : '0' }}"
                 data-managed-show-desktop="{{ $showDesktop ? '1' : '0' }}"
                 data-managed-show-mobile="{{ $showMobile ? '1' : '0' }}"
                 style="--wow-managed-desktop-order:{{ $desktopOrder }};--wow-managed-mobile-order:{{ $mobileOrder }}"
