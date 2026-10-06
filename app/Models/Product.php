@@ -190,6 +190,7 @@ class Product extends Model
         try {
             if (Schema::hasTable('vendor_locations')) {
                 $select = array_values(array_filter([
+                    'id',
                     'label',
                     'city',
                     'county',
@@ -213,6 +214,42 @@ class Product extends Model
                     $rows = (clone $locationQuery)
                         ->where('vendor_id', $this->vendor_id)
                         ->get($select);
+                }
+
+                $referencedLocationIds = $this->options()
+                    ->where('meta_name', 'locations')
+                    ->with('values:id,option_id,vendor_location_id')
+                    ->first()?->values
+                    ?->pluck('vendor_location_id')
+                    ->filter()
+                    ->map(fn ($id): int => (int) $id)
+                    ->unique()
+                    ->values()
+                    ?? collect();
+
+                $countryOnlyLabels = [
+                    'uk', 'u.k.', 'gb', 'great britain', 'united kingdom',
+                    'england', 'scotland', 'wales', 'northern ireland',
+                ];
+
+                $isSpecific = static fn ($row): bool => collect([
+                    $row->line1 ?? null,
+                    $row->line2 ?? null,
+                    $row->street_address ?? null,
+                    $row->address_line2 ?? null,
+                    $row->city ?? null,
+                    $row->county ?? null,
+                    $row->postcode ?? null,
+                ])->contains(fn ($value): bool => trim((string) $value) !== '');
+
+                if ($rows->contains($isSpecific)) {
+                    $rows = $rows->reject(function ($row) use ($countryOnlyLabels, $referencedLocationIds, $isSpecific): bool {
+                        if ($isSpecific($row) || $referencedLocationIds->contains((int) ($row->id ?? 0))) {
+                            return false;
+                        }
+
+                        return in_array(strtolower(trim((string) ($row->label ?? ''))), $countryOnlyLabels, true);
+                    })->values();
                 }
 
                 $normalizeCountryShort = static function (string $country): string {

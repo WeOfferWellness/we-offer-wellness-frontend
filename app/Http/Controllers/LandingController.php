@@ -1516,13 +1516,39 @@ class LandingController extends Controller
 
             return $location;
         }, $legacyVenueLocations);
-        $knownLegacyVenueLabels = array_fill_keys(array_map(
-            static fn (array $location): string => strtolower(trim((string) ($location['label'] ?? ''))),
-            $legacyVenueLocations
-        ), true);
+        $normaliseLegacyLocationKey = static function (string $value): string {
+            $value = mb_strtolower(trim(preg_replace('/\s+/u', ' ', $value) ?? ''));
+            $value = str_replace(['united kingdom', 'great britain'], 'uk', $value);
+
+            return trim($value, " ,");
+        };
+
+        $knownLegacyVenueLabels = [];
+        foreach ($legacyVenueLocations as $location) {
+            $rawLabel = trim((string) ($location['label'] ?? ''));
+            $city = trim((string) ($location['city'] ?? ''));
+            $county = trim((string) ($location['county'] ?? ''));
+            $country = trim((string) ($location['country'] ?? ''));
+            $countryShort = in_array(strtolower($country), ['united kingdom', 'great britain', 'england', 'scotland', 'wales', 'northern ireland', 'gb', 'uk'], true)
+                ? 'UK'
+                : $country;
+            $publicLabel = implode(', ', array_values(array_filter([
+                $city !== '' ? $city : null,
+                $county !== '' && strcasecmp($county, $city) !== 0 ? $county : null,
+                $countryShort !== '' ? $countryShort : null,
+            ])));
+
+            foreach ([$rawLabel, $publicLabel] as $candidate) {
+                $key = $normaliseLegacyLocationKey((string) $candidate);
+                if ($key !== '') {
+                    $knownLegacyVenueLabels[$key] = true;
+                }
+            }
+        }
+
         foreach ($phys as $locationLabel) {
             $locationLabel = trim((string) $locationLabel);
-            $locationKey = strtolower($locationLabel);
+            $locationKey = $normaliseLegacyLocationKey($locationLabel);
             if ($locationLabel === '' || isset($knownLegacyVenueLabels[$locationKey])) {
                 continue;
             }

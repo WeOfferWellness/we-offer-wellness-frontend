@@ -47,49 +47,177 @@
     $gift = (bool) preg_match('/gift\s*card|giftcard|voucher|e-?gift/i', strtolower(implode(' ', [$title, $categoryRaw, $typeRaw, (string) $value('slug', '')])));
     $eventStyle = in_array($kind, ['event', 'workshop', 'retreat'], true);
     $provider = trim((string) $value('vendor_name', $value('practitioner_name', $value('vendor.name', $value('vendor_details.name', '')))));
-    $locations = is_object($product) && method_exists($product, 'getLocations') ? $product->getLocations() : (array) $value('locations', [$value('location', $value('location_name', $value('venue', '')))]);
-    $locations = collect($locations)->map(function ($location) {
-        return is_object($location) || is_array($location)
-            ? trim((string) data_get($location, 'formatted_address', data_get($location, 'label', data_get($location, 'name', data_get($location, 'city', '')))))
-            : trim((string) $location);
-    })->filter()->values();
-    $channels = collect((array) $value('channels', []))
-        ->map(fn ($channel) => strtolower(trim((string) $channel)));
-    $online = (bool) $value('online_only', false)
-        || $channels->contains('online')
-        || $locations->contains(fn ($location) => strtolower($location) === 'online')
-        || str_contains(strtolower((string) $value('format', '')), 'online');
-    $onlineOnly = $online && ($locations->isEmpty() || $locations->every(fn ($item) => strtolower($item) === 'online'));
-    $location = $locations->first(fn ($item) => strtolower($item) !== 'online') ?: ($onlineOnly ? 'Online Exclusive' : ($online ? 'Online' : 'In person'));
     $countryFallback = trim((string) $value('country', $value('vendor.country', $value('vendor.user.country', $value('vendor_details.country', '')))));
     $countryCode = function (string $country): string {
-        return match (strtolower(trim($country))) {
-            'gb', 'uk', 'u.k.', 'united kingdom', 'great britain', 'england', 'scotland', 'wales', 'northern ireland' => 'UK',
-            'us', 'u.s.', 'usa', 'u.s.a.', 'united states', 'united states of america' => 'USA',
-            'au', 'australia' => 'AU',
-            'ca', 'canada' => 'CA',
-            'ie', 'ireland' => 'IE',
-            'nz', 'new zealand' => 'NZ',
+        $country = trim($country);
+        $upper = strtoupper($country);
+        if (preg_match('/^[A-Z]{2}$/', $upper)) {
+            return in_array($upper, ['GB', 'UK'], true) ? 'UK' : $upper;
+        }
+
+        return match (strtolower($country)) {
+            'united kingdom', 'great britain', 'england', 'scotland', 'wales', 'northern ireland' => 'UK',
+            'united states', 'united states of america', 'usa' => 'US',
+            'australia' => 'AU',
+            'canada' => 'CA',
+            'ireland' => 'IE',
+            'new zealand' => 'NZ',
             default => '',
         };
     };
-    if ($location === 'Online' || $location === 'In person') {
-        $locationLabel = $location;
-    } else {
-        $parts = collect(preg_split('/\\s*,\\s*/', $location) ?: [])
+
+    $countryOnlyLabels = collect([
+        'uk', 'u.k.', 'gb', 'great britain', 'united kingdom',
+        'england', 'scotland', 'wales', 'northern ireland',
+        'in person', 'in-person',
+    ]);
+
+    $parsePublicLocation = function ($location) use ($countryCode, $countryFallback, $countryOnlyLabels): ?array {
+        if (is_array($location) || is_object($location)) {
+            $online = (bool) data_get($location, 'online', false)
+                || str_contains(strtolower((string) data_get($location, 'label', '')), 'online');
+            if ($online) {
+                return ['label' => 'Online', 'city' => '', 'online' => true, 'generic' => false];
+            }
+
+            $city = trim((string) data_get($location, 'city', data_get($location, 'town', data_get($location, 'locality', ''))));
+            $county = trim((string) data_get($location, 'county', data_get($location, 'region', '')));
+            $country = $countryCode((string) data_get($location, 'country', $countryFallback));
+            $rawLabel = trim((string) data_get($location, 'public_label', data_get($location, 'label', data_get($location, 'formatted_address', ''))));
+
+            $place = $city !== '' ? $city : $county;
+            $label = implode(', ', array_values(array_filter([
+                $place !== '' ? $place : null,
+                $country !== '' ? $country : null,
+            ])));
+
+            if ($label === '' && $rawLabel !== '') {
+                $label = $rawLabel;
+            }
+
+            $generic = $place === '' && $countryOnlyLabels->contains(strtolower($label));
+
+            return $label !== '' ? [
+                'label' => $label,
+                'city' => $city !== '' ? $city : ($generic ? '' : $place),
+                'online' => false,
+                'generic' => $generic,
+            ] : null;
+        }
+
+        $raw = trim((string) $location);
+        if ($raw === '') {
+            return null;
+        }
+        if (str_contains(strtolower($raw), 'online')) {
+            return ['label' => 'Online', 'city' => '', 'online' => true, 'generic' => false];
+        }
+
+        $parts = collect(preg_split('/\s*,\s*/', $raw) ?: [])
             ->map(fn ($part) => trim((string) $part))
-            ->reject(fn ($part) => preg_match('/^(?:[A-Z]{1,2}\\d[A-Z\\d]?\\s*\\d[A-Z]{2}|\\d{5}(?:-\\d{4})?)$/i', $part) === 1)
-            ->filter()
+            ->reject(fn ($part) => $part === '')
             ->values();
-        $country = $countryCode((string) $parts->last());
-        if ($country !== '') {
-            $parts->pop();
-        } else {
+
+        $country = '';
+        if ($parts->isNotEmpty()) {
+            $last = (string) $parts->last();
+            $country = $countryCode($last);
+            if ($country !== '') {
+                $parts->pop();
+            }
+        }
+        if ($country === '') {
             $country = $countryCode($countryFallback);
         }
-        $place = (string) $parts->first();
-        $locationLabel = implode(', ', array_filter([$place ?: $location, $country]));
+
+        $city = trim((string) ($parts->first() ?? ''));
+        $generic = $countryOnlyLabels->contains(strtolower($raw))
+            || ($city === '' && $country !== '');
+
+        if ($generic) {
+            return [
+                'label' => $country !== '' ? $country : 'In person',
+                'city' => '',
+                'online' => false,
+                'generic' => true,
+            ];
+        }
+
+        $label = implode(', ', array_values(array_filter([
+            $city !== '' ? $city : $raw,
+            $country !== '' ? $country : null,
+        ])));
+
+        return [
+            'label' => $label !== '' ? $label : $raw,
+            'city' => $city !== '' ? $city : $raw,
+            'online' => false,
+            'generic' => false,
+        ];
+    };
+
+    $structuredLocationItems = collect((array) $value('location_details', []))
+        ->map($parsePublicLocation)
+        ->filter()
+        ->values();
+
+    $rawLocations = is_object($product) && method_exists($product, 'getLocations')
+        ? collect($product->getLocations())
+        : collect((array) $value('locations', [$value('location', $value('location_name', $value('venue', '')))]));
+
+    $locationItems = $structuredLocationItems->isNotEmpty()
+        ? $structuredLocationItems
+        : $rawLocations->map($parsePublicLocation)->filter()->values();
+
+    $channels = collect((array) $value('channels', []))
+        ->map(fn ($channel) => strtolower(trim((string) $channel)));
+
+    $online = (bool) $value('online_only', false)
+        || $channels->contains('online')
+        || $locationItems->contains(fn (array $item) => (bool) ($item['online'] ?? false))
+        || str_contains(strtolower((string) $value('format', '')), 'online');
+
+    $physicalItems = $locationItems
+        ->filter(fn (array $item) => empty($item['online']) && empty($item['generic']))
+        ->unique(fn (array $item) => strtolower(trim((string) ($item['label'] ?? ''))))
+        ->values();
+
+    $genericPhysicalItems = $locationItems
+        ->filter(fn (array $item) => empty($item['online']) && !empty($item['generic']))
+        ->values();
+
+    // A country-only value is a fallback. Use it only when there are no
+    // genuine locality records for the offering.
+    if ($physicalItems->isEmpty() && $genericPhysicalItems->isNotEmpty()) {
+        $physicalItems = $genericPhysicalItems->take(1)->values();
     }
+
+    $physicalCount = $physicalItems->count();
+    $onlineOnly = $online && $physicalCount === 0;
+    $firstPhysicalCity = trim((string) data_get($physicalItems->first(), 'city', ''));
+    if ($firstPhysicalCity === '') {
+        $firstPhysicalCity = trim((string) data_get($physicalItems->first(), 'label', ''));
+    }
+
+    if ($onlineOnly) {
+        $locationLabel = 'Online exclusive';
+    } elseif ($online && $physicalCount === 1) {
+        $locationLabel = 'Online + '.($firstPhysicalCity !== '' ? $firstPhysicalCity : '1 location');
+    } elseif ($online && $physicalCount > 1) {
+        $locationLabel = 'Online + '.$physicalCount.' locations';
+    } elseif ($physicalCount === 1) {
+        $locationLabel = $firstPhysicalCity !== '' ? $firstPhysicalCity : 'In person';
+    } elseif ($physicalCount > 1) {
+        $locationLabel = $firstPhysicalCity !== '' ? $firstPhysicalCity : 'In person';
+    } else {
+        $locationLabel = 'In person';
+    }
+
+    $locations = $physicalItems
+        ->pluck('label')
+        ->filter()
+        ->when($online, fn ($items) => $items->push('Online'))
+        ->values();
     $planKey = strtolower(trim((string) $value('plan_key', $value('plan_label', $value('vendor.plan_key', $value('vendor.plan_label', $value('vendor.plan.slug', $value('vendor.plan.name', $value('vendor_details.plan_key', $value('vendor_details.plan_label', $value('vendor.tier.tier', $value('vendor.user.tier.tier', $value('vendor.user.account_type', '')))))))))))));
     $businessAccelerator = in_array(str_replace(['_', ' '], '-', $planKey), ['business-accelerator', 'businessaccelerator', 'business-accelerator-package', 'core'], true);
     $rating = (float) $value('rating', $value('reviews_avg_rating', 0));
