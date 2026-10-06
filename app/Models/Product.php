@@ -217,9 +217,10 @@ class Product extends Model
                 }
 
                 $referencedLocationIds = $this->options()
-                    ->where('meta_name', 'locations')
+                    ->whereIn('meta_name', ['location', 'locations'])
                     ->with('values:id,option_id,vendor_location_id')
-                    ->first()?->values
+                    ->get()
+                    ->flatMap(fn ($option) => $option->values)
                     ?->pluck('vendor_location_id')
                     ->filter()
                     ->map(fn ($id): int => (int) $id)
@@ -365,15 +366,21 @@ class Product extends Model
             // Fall back to option values below.
         }
 
-        $locationsOption = $this->relationLoaded('options')
-            ? $this->options->firstWhere('meta_name', 'locations')
-            : $this->options()->where('meta_name', 'locations')->with('values')->first();
+        $locationOptions = $this->relationLoaded('options')
+            ? $this->options->filter(
+                fn ($option) => in_array((string) $option->meta_name, ['location', 'locations'], true)
+            )
+            : $this->options()
+                ->whereIn('meta_name', ['location', 'locations'])
+                ->with('values')
+                ->get();
 
-        if (!$locationsOption) {
+        if ($locationOptions->isEmpty()) {
             return [];
         }
 
-        return $locationsOption->values
+        return $locationOptions
+            ->flatMap(fn ($option) => $option->values)
             ->pluck('value')
             ->filter()
             ->map(function ($value) {
