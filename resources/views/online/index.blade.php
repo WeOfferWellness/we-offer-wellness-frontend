@@ -9,6 +9,7 @@
 @endpush
 
 @section('content')
+<x-marketplace.page-section id="breadcrumbs" component="breadcrumbs" label="Breadcrumbs">
 @include('partials.breadcrumbs', [
   'crumbs' => [
     ['label' => 'Home', 'url' => url('/')],
@@ -16,7 +17,9 @@
   ],
   'schemaUrl' => $pageUrl ?? url('/online'),
 ])
+</x-marketplace.page-section>
 
+<x-marketplace.page-section id="landing-hero" component="landing_hero" label="Landing hero">
 @include('partials.landing-hero', [
   'heroEyebrow' => 'Online support when you need it',
   'heroTitle' => $modalityLabel ?? 'Online wellness',
@@ -28,6 +31,8 @@
   'heroAsideTitle' => 'Support from the comfort of home',
   'heroAsideText' => 'Find online therapies, classes and one-to-one sessions that fit around your day.',
 ])
+</x-marketplace.page-section>
+<x-marketplace.page-section id="hero-meta" component="hero_meta" label="Hero details">
 @include('partials.hero-meta', [
   'items' => array_values(array_filter([
     isset($results['meta']['total']) ? number_format((int) $results['meta']['total']).' live offerings' : null,
@@ -35,6 +40,7 @@
     'Join from anywhere',
   ])),
 ])
+</x-marketplace.page-section>
 
 @php
   $items = collect($results['items'] ?? []);
@@ -89,14 +95,19 @@
     : [];
 @endphp
 
+@if(!empty($modality))
+  <div class="container-page">
+    <x-marketplace.page-section id="guide-panel" component="guide_panel" label="Guide panel">
+@include('partials.guide_panel', [
+      'guidePanelModality' => $modality,
+    ])
+</x-marketplace.page-section>
+  </div>
+@endif
+
+<x-marketplace.page-section id="offering-filters" component="offering_filters" label="Offering filters & results">
 <section class="section">
   <div class="container-page">
-    @if(!empty($modality))
-      @include('partials.guide_panel', [
-        'guidePanelModality' => $modality,
-      ])
-    @endif
-
     @if($isMobile)
       <x-marketplace.offering-filters mode="mobile" :options="[
         'products' => $items,
@@ -127,4 +138,5 @@
 
   </div>
 </section>
+</x-marketplace.page-section>
 @endsection

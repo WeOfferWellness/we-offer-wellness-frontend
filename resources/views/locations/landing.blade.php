@@ -86,10 +86,13 @@
     if ($isCounty) $crumbs[] = ['label' => $label];
     elseif ($isTown) $crumbs[] = ['label' => $label];
   @endphp
-  @include('partials.breadcrumbs', ['crumbs' => $crumbs, 'schemaUrl' => $seo['canonical'] ?? url()->current(), 'currentIcon' => 'location'])
+  <x-marketplace.page-section id="breadcrumbs" component="breadcrumbs" label="Breadcrumbs">
+@include('partials.breadcrumbs', ['crumbs' => $crumbs, 'schemaUrl' => $seo['canonical'] ?? url()->current(), 'currentIcon' => 'location'])
+</x-marketplace.page-section>
 
   <main class="location-landing">
-    @include('partials.landing-hero', [
+    <x-marketplace.page-section id="landing-hero" component="landing_hero" label="Landing hero">
+@include('partials.landing-hero', [
       'heroEyebrow' => 'Local wellness discovery',
       'heroTitle' => 'Wellness in '.$label,
       'heroIntro' => 'Discover therapies, classes, events and wellness experiences from practitioners across '.$label.'.',
@@ -100,14 +103,18 @@
       'heroAsideText' => '',
       'heroActions' => [['label' => 'Search all', 'href' => url('/search?where='.urlencode($label))]],
     ])
-    @include('partials.hero-meta', [
+</x-marketplace.page-section>
+    <x-marketplace.page-section id="hero-meta" component="hero_meta" label="Hero details">
+@include('partials.hero-meta', [
       'items' => array_values(array_filter([
         $nearby->isNotEmpty() ? ['label' => 'Local listings', 'strong' => true] : null,
         ($nearby->isNotEmpty() || $places->isNotEmpty()) ? 'Nearby options' : null,
         $online->isNotEmpty() ? 'Online sessions' : null,
       ])),
     ])
-    <x-marketplace.offering-tabs :options="[
+</x-marketplace.page-section>
+    <x-marketplace.page-section id="offering-tabs" component="offering_tabs" label="Offering tabs">
+<x-marketplace.offering-tabs :options="[
       'id' => 'location-offering-tabs',
       'eyebrow' => 'Local wellness discovery',
       'title' => 'Explore wellness in '.$label,
@@ -120,6 +127,7 @@
       'onlineOfferings' => $online,
       'preferredLocation' => $label,
     ]" />
+</x-marketplace.page-section>
     <div class="location-landing__container">
       @if($categories->isNotEmpty())
         @php
@@ -131,17 +139,20 @@
               ]);
           });
         @endphp
-        @include('partials.modality-board', [
+        <x-marketplace.page-section id="modality-board" component="modality_board" label="Modality board">
+@include('partials.modality-board', [
           'items' => $modalityBoardItems,
           'eyebrow' => 'Discover',
           'heading' => 'Top wellness modalities in '.$label,
           'intro' => 'Modalities with genuine local marketplace supply.',
           'browseHref' => url('/therapies'),
         ])
+</x-marketplace.page-section>
       @endif
 
       @if($places->isNotEmpty())
-        @include('partials.location-explorer', [
+        <x-marketplace.page-section id="location-explorer" component="location_explorer" label="Location explorer">
+@include('partials.location-explorer', [
           'eyebrow' => 'Explore nearby',
           'heading' => $isTown ? 'Explore nearby locations' : 'Explore '.$label.' towns',
           'intro' => 'Discover wellness experiences, therapies and practitioners across '.$label.' and nearby areas.',
@@ -149,9 +160,11 @@
           'items' => $places->all(),
           'id' => 'location-explorer-heading',
         ])
+</x-marketplace.page-section>
       @endif
 
-      @include('partials.popular-price', [
+      <x-marketplace.page-section id="popular-price" component="popular_price" label="Popular price points">
+@include('partials.popular-price', [
         'id' => 'location-price-discovery-heading',
         'eyebrow' => 'Explore by budget',
         'heading' => 'Wellness by price',
@@ -159,6 +172,7 @@
         'location' => $label,
         'items' => $prices,
       ])
+</x-marketplace.page-section>
     </div>
   </main>
   @if($locationImage)

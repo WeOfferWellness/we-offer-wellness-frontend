@@ -43,6 +43,7 @@
 </style>
 
 <div class="partners-page">
+  <x-marketplace.page-section id="partners-hero" component="partners_hero" label="Partner hero">
   <section class="partners-hero">
     <div class="container-page partners-hero__grid">
       <div class="partners-hero__copy">
@@ -66,7 +67,9 @@
       </div>
     </div>
   </section>
+  </x-marketplace.page-section>
 
+  <x-marketplace.page-section id="partners-model" component="partners_model" label="Partner model">
   <section class="partners-section partners-section--soft">
     <div class="container-page">
       <div class="partners-intro"><div class="partners-kicker">The partner model</div><h2>What does it mean to be a Partner?</h2><p>A Partner is a practitioner or wellness business with something valuable to offer. Your profile gives people a trusted place to understand your work, discover your offerings and take the next step.</p></div>
@@ -78,21 +81,27 @@
       </div>
     </div>
   </section>
+  </x-marketplace.page-section>
 
+  <x-marketplace.page-section id="partners-marketplace" component="partners_marketplace" label="Marketplace positioning">
   <section class="partners-section partners-section--dark">
     <div class="container-page partners-marketplace__grid">
       <div><div class="partners-kicker">A marketplace for wellness</div><h2>Think Booking.com, but for wellness.</h2><p>We are building a dedicated marketplace for holistic therapies, classes, events, retreats and experiences. People can browse what is available, compare the right fit and book with confidence.</p><div class="partners-tags"><span class="partners-tag">Therapies</span><span class="partners-tag">Classes</span><span class="partners-tag">Events</span><span class="partners-tag">Retreats</span><span class="partners-tag">Workshops</span></div></div>
       <div class="partners-marketplace__visual" aria-hidden="true"><div class="partners-discovery"><small>Search discovery</small><strong>“Breathwork near me”</strong><span>Relevant local and online offerings</span></div><div class="partners-discovery"><small>Your profile</small><strong>Your story, clearly told</strong><span>One place for your work and links</span></div><div class="partners-discovery"><small>Booking cues</small><strong>Ready when they are</strong><span>Availability and next steps made clear</span></div><div class="partners-discovery"><small>GEO ready</small><strong>Useful context</strong><span>Structured information people can trust</span></div></div>
     </div>
   </section>
+  </x-marketplace.page-section>
 
+  <x-marketplace.page-section id="partners-profile" component="partners_profile" label="Partner profile">
   <section class="partners-section">
     <div class="container-page partners-profile">
       <div class="partners-profile__copy"><div class="partners-kicker">Your free foundation</div><h2>A dedicated home for your work.</h2><p>Your Partner profile brings your business story and offerings together. It helps a new client understand your approach before they decide to enquire or book.</p><div class="partners-feature-list"><div class="partners-feature"><div class="partners-feature__icon">✓</div><div><strong>One trusted profile</strong><span>Share your practice, location, online options, specialisms and social proof.</span></div></div><div class="partners-feature"><div class="partners-feature__icon">✓</div><div><strong>Offerings that make sense</strong><span>Present each service with clear details, pricing and booking information.</span></div></div><div class="partners-feature"><div class="partners-feature__icon">✓</div><div><strong>Made for discovery</strong><span>Build a stronger digital footprint without needing to become an SEO expert.</span></div></div></div></div>
       <div class="partners-profile-card"><div class="partners-profile-card__head"><div class="partners-profile-card__avatar">A</div><div><strong>Amara Wellness</strong><span>Somatic therapy · Online and in-person</span></div><div class="partners-profile-card__verified">● Verified</div></div><div class="partners-profile-card__body"><h3>Feel more at home in yourself</h3><p>A calm, practical space for nervous-system support, embodied movement and one-to-one care.</p><div class="partners-profile-card__chips"><span>Online</span><span>In-person</span><span>From £45</span><span>Request a time</span></div></div><div class="partners-profile-card__footer"><span>4 offerings listed</span><strong>View profile →</strong></div></div>
     </div>
   </section>
+  </x-marketplace.page-section>
 
+  <x-marketplace.page-section id="partners-studio" component="partners_studio" label="WOW Studio">
   <section class="partners-studio">
     <div class="container-page">
       <div class="partners-studio__head"><div class="partners-intro"><div class="partners-kicker">For the next stage</div><h2>When you are ready to grow, meet WOW Studio.</h2></div><p>WOW Studio is the practitioner workspace behind We Offer Wellness. The Business Accelerator brings the practical tools and automations that help you spend less time stitching systems together and more time with clients.</p></div>
@@ -104,7 +113,10 @@
       </div>
     </div>
   </section>
+  </x-marketplace.page-section>
 
+  <x-marketplace.page-section id="partners-cta" component="partners_cta" label="Partner call to action">
   <section class="partners-final"><div class="container-page"><div class="partners-kicker">Start simply</div><h2>Your next client may already be looking for what you do.</h2><p>Join We Offer Wellness for free, create your Partner profile and put your offerings where wellness-minded people are already searching.</p><div class="partners-actions"><a class="partners-btn partners-btn--primary" href="https://studio.weofferwellness.co.uk/register" target="_blank" rel="noopener">Become a Partner — free <span aria-hidden="true">→</span></a><a class="partners-btn partners-btn--outline" href="https://studio.weofferwellness.co.uk/" target="_blank" rel="noopener">See WOW Studio</a></div></div></section>
+  </x-marketplace.page-section>
 </div>
 @endsection

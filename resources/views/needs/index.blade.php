@@ -258,6 +258,7 @@
 @endpush
 
 @section('content')
+<x-marketplace.page-section id="breadcrumbs" component="breadcrumbs" label="Breadcrumbs">
 @include('partials.breadcrumbs', [
   'crumbs' => [
     ['label' => 'Home', 'url' => url('/')],
@@ -265,12 +266,14 @@
   ],
   'schemaUrl' => url('/needs'),
 ])
+</x-marketplace.page-section>
 
 <main class="wow-needs-page">
   <div class="wow-page-grid" aria-hidden="true"></div>
 
   <div class="wow-needs-container">
-    @include('partials.landing-hero', [
+    <x-marketplace.page-section id="landing-hero" component="landing_hero" label="Landing hero">
+@include('partials.landing-hero', [
       'heroEyebrow' => 'Browse',
       'heroTitle' => 'By Need',
       'heroIntro' => 'Start with what you need most, then we’ll match you with therapies, classes and experiences that fit.',
@@ -278,14 +281,18 @@
       'heroAsideTitle' => 'A clearer place to start',
       'heroAsideText' => 'No clutter. Just clear pathways into the right support.',
     ])
-    @include('partials.hero-meta', [
+</x-marketplace.page-section>
+    <x-marketplace.page-section id="hero-meta" component="hero_meta" label="Hero details">
+@include('partials.hero-meta', [
       'items' => [
         ['label' => count($needs ?? []).' needs', 'strong' => true],
         ['label' => 'Therapies, classes and experiences'],
         ['label' => 'Clear starting points'],
       ],
     ])
+</x-marketplace.page-section>
 
+    <x-marketplace.page-section id="needs-grid" component="needs_grid" label="Needs grid">
     <section class="wow-needs-grid" aria-label="Need modalities">
       @foreach(($needs ?? []) as $need)
         <article class="wow-need-card">
@@ -303,7 +310,9 @@
         </article>
       @endforeach
     </section>
+    </x-marketplace.page-section>
 
+    <x-marketplace.page-section id="quick-browse" component="quick_browse" label="Quick browse">
     <section class="wow-quick-browse" aria-label="Quick browse links">
       <a href="{{ url('/therapies') }}" class="wow-quick-card">
         <div>
@@ -337,7 +346,9 @@
         <span>Browse under £50 →</span>
       </a>
     </section>
+    </x-marketplace.page-section>
 
+    <x-marketplace.page-section id="trust-panel" component="trust_panel" label="Trust panel">
     <section class="wow-trust-panel">
       <div>
         <p class="wow-kicker">Before you book</p>
@@ -347,6 +358,7 @@
 
       <a href="{{ url('/safety-and-contraindications') }}" class="btn-wow btn-wow--soft">Read safety guidance</a>
     </section>
+    </x-marketplace.page-section>
   </div>
 </main>
 @endsection

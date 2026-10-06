@@ -1300,6 +1300,7 @@
   @endonce
 @endpush
 
+<x-marketplace.page-section id="breadcrumbs" component="breadcrumbs" label="Breadcrumbs">
 @include('partials.breadcrumbs', [
   'schemaEnabled' => ! $isEventOffering,
   'crumbs' => [
@@ -1321,7 +1322,9 @@
     $breadcrumbPrice !== null ? 'From £' . number_format((float) $breadcrumbPrice, 2) : null,
   ]),
 ])
+</x-marketplace.page-section>
 
+<x-marketplace.page-section id="offering-body" component="offering_body" label="Offering details & booking">
 <section class="section product-page">
   <div class="container-page">
     @if($isEventOffering)
@@ -1416,6 +1419,7 @@
     @endif
   </div>
 </section>
+</x-marketplace.page-section>
 
 @endsection
 

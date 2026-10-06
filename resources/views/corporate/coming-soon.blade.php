@@ -193,6 +193,7 @@
 @endpush
 
 @section('content')
+<x-marketplace.page-section id="corporate-hero" component="corporate_hero" label="Corporate hero">
 <section class="corporate-hero">
   <div class="container-page">
     <div class="corporate-hero__grid">
@@ -273,7 +274,9 @@
     </div>
   </div>
 </section>
+</x-marketplace.page-section>
 
+<x-marketplace.page-section id="corporate-content" component="corporate_content" label="Corporate content">
 <section class="corporate-sections">
   <div class="container-page">
     <div class="corporate-card-grid">
@@ -331,4 +334,5 @@
     </div>
   </div>
 </section>
+</x-marketplace.page-section>
 @endsection

@@ -12,6 +12,7 @@
   $locationTitle = (string) ($location['title'] ?? 'Location');
 @endphp
 
+<x-marketplace.page-section id="breadcrumbs" component="breadcrumbs" label="Breadcrumbs">
 @include('partials.breadcrumbs', [
   'crumbs' => [
     ['label' => 'Home', 'url' => url('/')],
@@ -21,7 +22,9 @@
   'schemaUrl' => $seo['canonical'] ?? url('/locations/' . ($location['slug'] ?? request()->route('slug'))),
   'currentIcon' => 'location',
 ])
+</x-marketplace.page-section>
 
+<x-marketplace.page-section id="landing-hero" component="landing_hero" label="Landing hero">
 @include('partials.landing-hero', [
   'heroEyebrow' => 'Locations',
   'heroTitle' => $locationTitle,
@@ -36,7 +39,9 @@
   'heroAsideTitle' => null,
   'heroAsideText' => '',
 ])
+</x-marketplace.page-section>
 
+<x-marketplace.page-section id="hero-meta" component="hero_meta" label="Hero details">
 @include('partials.hero-meta', [
   'items' => [
     ['label' => 'Local listings', 'strong' => true],
@@ -44,10 +49,13 @@
     'Online sessions',
   ],
 ])
+</x-marketplace.page-section>
 
+<x-marketplace.page-section id="offering-filters" component="offering_filters" label="Offering filters & results">
 <div class="search-content-wrapper">
   <x-marketplace.offering-filters mode="desktop" :options="[
       'resultsHeading' => $locationTitle.' results',
   ]" />
 </div>
+</x-marketplace.page-section>
 @endsection

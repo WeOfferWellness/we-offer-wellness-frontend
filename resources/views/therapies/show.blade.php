@@ -254,6 +254,7 @@
   ]));
 @endphp
 
+<x-marketplace.page-section id="breadcrumbs" component="breadcrumbs" label="Breadcrumbs">
 @include('partials.breadcrumbs', [
   'crumbs' => [
     ['label' => 'Home', 'url' => url('/')],
@@ -262,7 +263,9 @@
   ],
   'schemaUrl' => url('/therapies/' . $slug),
 ])
+</x-marketplace.page-section>
 
+<x-marketplace.page-section id="landing-hero" component="landing_hero" label="Landing hero">
 @include('partials.landing-hero', [
   'heroEyebrow' => 'Therapies',
   'heroTitle' => $therapy['title'] ?? 'Therapy',
@@ -272,7 +275,9 @@
   'heroAsideTitle' => 'A calmer way to choose',
   'heroAsideText' => 'Compare live offerings, formats and locations from trusted practitioners.',
 ])
+</x-marketplace.page-section>
 
+<x-marketplace.page-section id="hero-meta" component="hero_meta" label="Hero details">
 @include('partials.hero-meta', [
   'items' => [
     ['label' => 'Live availability', 'strong' => true],
@@ -280,7 +285,9 @@
     'Compare practitioners',
   ],
 ])
+</x-marketplace.page-section>
 
+<x-marketplace.page-section id="offering-filters" component="offering_filters" label="Offering filters & results">
 <section class="section">
   <div class="container-page">
     <style>
@@ -368,12 +375,15 @@
     </div>
   </div>
 </section>
+</x-marketplace.page-section>
 
 <div class="container-page">
-  @include('partials.guide_panel', [
+  <x-marketplace.page-section id="guide-panel" component="guide_panel" label="Guide panel">
+@include('partials.guide_panel', [
     'guidePanelModality' => $slug,
     'guidePanelFormat' => 'therapies',
   ])
+</x-marketplace.page-section>
 </div>
 @endsection
 

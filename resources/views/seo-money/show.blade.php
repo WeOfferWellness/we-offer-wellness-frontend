@@ -598,12 +598,15 @@
   }
 @endphp
 
+<x-marketplace.page-section id="breadcrumbs" component="breadcrumbs" label="Breadcrumbs">
 @include('partials.breadcrumbs', [
   'crumbs' => $pageCrumbs ?? [],
   'schemaUrl' => $pageCanonical ?? url()->current(),
   'currentIcon' => !empty($savedLocation['label']) ? 'location' : '',
 ])
+</x-marketplace.page-section>
 
+<x-marketplace.page-section id="landing-hero" component="landing_hero" label="Landing hero">
 @include('partials.landing-hero', [
   'heroEyebrow' => $page['kicker'] ?? 'Local wellness discovery',
   'heroTitle' => $page['h1'] ?? ($page['title'] ?? 'Wellness near you'),
@@ -618,7 +621,9 @@
   'heroAsideTitle' => null,
   'heroAsideText' => '',
 ])
+</x-marketplace.page-section>
 
+<x-marketplace.page-section id="hero-meta" component="hero_meta" label="Hero details">
 @include('partials.hero-meta', [
   'items' => array_values(array_filter([
     $products->isNotEmpty() ? ['label' => 'Local listings', 'strong' => true] : null,
@@ -626,9 +631,11 @@
     $hasOnlineSessions ? 'Online sessions' : null,
   ])),
 ])
+</x-marketplace.page-section>
 
 <section class="show-structured-near-me-page">
   <div class="container-page">
+<x-marketplace.page-section id="seo-location-search" component="seo_location_search" label="Location search">
     <div class="show-structured-near-me-grid">
       <div class="show-structured-near-me-copy">
         <div class="show-structured-near-me-kicker">{{ $page['kicker'] ?? 'Search' }}</div>
@@ -685,7 +692,9 @@
         </div>
       </aside>
     </div>
+</x-marketplace.page-section>
 
+<x-marketplace.page-section id="seo-results" component="seo_results" label="Offering results">
     <section class="location-landing__section" data-money-section="results">
       <div class="location-landing__head">
         <div>
@@ -706,9 +715,11 @@
         </div>
       @endif
     </section>
+</x-marketplace.page-section>
 
     @if($locationExplorerFeatured !== null)
-      @include('partials.location-explorer', [
+      <x-marketplace.page-section id="location-explorer" component="location_explorer" label="Location explorer">
+@include('partials.location-explorer', [
         'eyebrow' => 'Explore nearby',
         'heading' => $locationSectionTitle,
         'intro' => $locationSectionIntro,
@@ -716,9 +727,11 @@
         'items' => $locationExplorerItems,
         'id' => 'nearby-location-heading',
       ])
+</x-marketplace.page-section>
     @endif
 
-    @include('partials.related-pages', [
+    <x-marketplace.page-section id="related-pages" component="related_pages" label="Related pages">
+@include('partials.related-pages', [
       'id' => 'related-pages',
       'heading' => $relatedLinksTitle,
       'intro' => $relatedLinksIntro,
@@ -729,17 +742,22 @@
         'copy' => 'Open the canonical landing page.',
       ])->all(),
     ])
+</x-marketplace.page-section>
 
-    @include('partials.faq-section', [
+    <x-marketplace.page-section id="faq" component="faq" label="Frequently asked questions">
+@include('partials.faq-section', [
       'id' => 'faq',
       'intro' => 'Useful answers about finding and booking '.($page['modality_label'] ?? 'wellness').' in '.($page['location_label'] ?? 'your area').'.',
       'faqs' => $page['faqs'] ?? [],
     ])
+</x-marketplace.page-section>
 
-    @include('partials.guide_panel', [
+    <x-marketplace.page-section id="guide-panel" component="guide_panel" label="Guide panel">
+@include('partials.guide_panel', [
       'guidePanelModality' => data_get($page, 'modality', data_get($page, 'category_slug', request()->route('modality'))),
       'guidePanelFormat' => data_get($page, 'format', null),
     ])
+</x-marketplace.page-section>
   </div>
 </section>
 @endsection

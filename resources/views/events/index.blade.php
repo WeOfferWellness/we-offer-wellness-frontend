@@ -8,6 +8,7 @@
 @endpush
 
 @section('content')
+<x-marketplace.page-section id="breadcrumbs" component="breadcrumbs" label="Breadcrumbs">
 @include('partials.breadcrumbs', [
   'crumbs' => [
     ['label' => 'Home', 'url' => url('/')],
@@ -15,6 +16,7 @@
   ],
   'schemaUrl' => $pageCanonicalPath ?? url('/events'),
 ])
+</x-marketplace.page-section>
 
 @php
   $pageHeading = (string) ($pageHeading ?? 'Events');
@@ -256,6 +258,7 @@
   };
 @endphp
 
+<x-marketplace.page-section id="landing-hero" component="landing_hero" label="Landing hero">
 @include('partials.landing-hero', [
   'heroEyebrow' => 'Browse',
   'heroTitle' => $pageHeading,
@@ -263,7 +266,9 @@
   'heroAsideTitle' => null,
   'heroAsideText' => '',
 ])
+</x-marketplace.page-section>
 
+<x-marketplace.page-section id="offering-filters" component="offering_filters" label="Event filters & results">
 <section class="section">
   <div class="container-page">
     <style>
@@ -360,4 +365,5 @@
     </div>
   </div>
 </section>
+</x-marketplace.page-section>
 @endsection

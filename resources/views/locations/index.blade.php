@@ -934,16 +934,19 @@
   }
 @endphp
 
+<x-marketplace.page-section id="breadcrumbs" component="breadcrumbs" label="Breadcrumbs">
 @include('partials.breadcrumbs', [
   'crumbs' => $locationCrumbs,
   'schemaUrl' => $seo['canonical'] ?? url()->full(),
   'currentIcon' => 'location',
 ])
+</x-marketplace.page-section>
 
 <main class="wow-locations-page">
   <div class="wow-page-grid" aria-hidden="true"></div>
 
-  @include('partials.landing-hero', [
+  <x-marketplace.page-section id="landing-hero" component="landing_hero" label="Landing hero">
+@include('partials.landing-hero', [
     'heroEyebrow' => 'Find',
     'heroTitle' => $resolved ? 'Wellness in '.($resolved['place'] ?? $resolved['label'] ?? $locationQuery) : 'Find wellness by location',
     'heroIntro' => $resolved ? 'Browse therapies, classes, events and practitioners available in this area, with online options included when they are the better fit.' : 'Start typing a town, city or region and we will rank therapies, classes, events and practitioners by distance, with online shown when it is the better fit.',
@@ -953,23 +956,29 @@
     'heroAsideTitle' => null,
     'heroAsideText' => '',
   ])
-  @include('partials.hero-meta', [
+</x-marketplace.page-section>
+  <x-marketplace.page-section id="hero-meta" component="hero_meta" label="Hero details">
+@include('partials.hero-meta', [
     'items' => [
       ['label' => 'Local listings', 'strong' => true],
       'Nearby options',
       'Online sessions',
     ],
   ])
+</x-marketplace.page-section>
   <div class="wow-locations-container">
     <div class="wow-search-panel" style="margin:0 0 24px;">
-      <x-home-searchbar-v4
+      <x-marketplace.page-section id="search-bar" component="search_bar" label="Search bar">
+<x-home-searchbar-v4
         id-prefix="locations-search-v4"
         :search-url="url('/search')"
         initial-where="{{ $locationQuery ?? '' }}"
       />
+</x-marketplace.page-section>
     </div>
 
     @if($resolved)
+      <x-marketplace.page-section id="location-search-summary" component="location_search_summary" label="Location search summary">
       <section class="wow-search-summary">
         <strong>Showing results for {{ $resolved['label'] ?? $locationQuery }}</strong>
         <p>
@@ -988,7 +997,9 @@
           @if(!empty($resolved['country']))<span class="wow-pill">{{ $resolved['country'] }}</span>@endif
         </div>
       </section>
+      </x-marketplace.page-section>
 
+      <x-marketplace.page-section id="offering-filters" component="offering_filters" label="Offering filters & results">
       <section class="wow-locations-section">
         <h2>Offerings in this area</h2>
         <p class="wow-locations-section__copy">Live therapies, classes, workshops and retreats available in this area.</p>
@@ -1013,7 +1024,9 @@
           ]" />
         </div>
       @endif
+      </x-marketplace.page-section>
 
+      <x-marketplace.page-section id="nearby-locations" component="nearby_locations" label="Nearby practitioner locations">
       <section class="wow-locations-section wow-locations-secondary">
         <h2>Nearest results</h2>
         <p class="wow-locations-section__copy">Explore nearby areas if you are happy to travel.</p>
@@ -1043,7 +1056,9 @@
           @endforeach
         </div>
       </section>
+      </x-marketplace.page-section>
     @else
+      <x-marketplace.page-section id="featured-locations" component="featured_locations" label="Featured locations">
       <section class="wow-locations-section">
         <h2>Trending destinations</h2>
         <p class="wow-locations-section__copy">Our most searched places. Online stays first, then the strongest local destinations.</p>
@@ -1071,7 +1086,9 @@
           @endforeach
         </div>
       </section>
+      </x-marketplace.page-section>
 
+      <x-marketplace.page-section id="location-directory" component="location_directory" label="Location directory">
       <section class="wow-locations-section">
         <h2>Browse by country and county</h2>
         <p class="wow-locations-section__copy">Grouped so the page feels structured instead of a long flat list. Tap a country to open its counties and towns.</p>
@@ -1116,9 +1133,12 @@
           @endforeach
         </div>
       </section>
+      </x-marketplace.page-section>
     @endif
 
-    @include('home.sections.gift_cards_occasion')
+    <x-marketplace.page-section id="gift-cards-occasion" component="gift_cards_occasion" label="Gift cards by occasion">
+@include('home.sections.gift_cards_occasion')
+</x-marketplace.page-section>
   </div>
 </main>
 

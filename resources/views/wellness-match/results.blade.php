@@ -9,19 +9,45 @@
 
 @section('content')
 <main class="wellness-results" data-wellness-results>
-  <section class="wellness-results__hero">
-    <div class="wellness-results__orb wellness-results__orb--one" aria-hidden="true"></div>
-    <div class="wellness-results__orb wellness-results__orb--two" aria-hidden="true"></div>
-    <div class="wellness-results__hero-inner">
-      <p class="wellness-results__eyebrow">YOUR WELLNESS MATCH</p>
-      <h1>Ta-Da, Your Results!</h1>
-      <p class="wellness-results__lead">Explore our handpicked recommendations, tailored to your preferences</p>
-      <button class="wellness-results__reset" type="button" data-wellness-reset>Changed your mind? <strong>Reset and take the quiz again</strong></button>
-      <div class="wellness-results__preferences" data-wellness-preferences hidden></div>
-    </div>
-  </section>
+  <x-marketplace.page-section id="breadcrumbs" component="breadcrumbs" label="Breadcrumbs">
+@include('partials.breadcrumbs', [
+    'crumbs' => [
+      ['label' => 'Home', 'url' => url('/')],
+      ['label' => 'Your wellness match'],
+    ],
+    'schemaUrl' => url('/wellness-match-finder/results'),
+  ])
+</x-marketplace.page-section>
 
+  <x-marketplace.page-section id="landing-hero" component="landing_hero" label="Landing hero">
+@include('partials.landing-hero', [
+    'heroEyebrow' => 'Your wellness match',
+    'heroTitle' => 'Ta-Da, Your Results!',
+    'heroIntro' => 'Explore live therapies, classes and experiences selected around the preferences you shared.',
+    'heroAsideLabel' => 'Tailored to you',
+    'heroAsideTitle' => 'A clearer place to begin',
+    'heroAsideText' => 'Your answers guide the order of these recommendations. When a very narrow combination has limited availability, we broaden it slightly so you still have useful choices.',
+    'heroActions' => [
+      ['label' => 'Take the finder again', 'href' => '#wellness-match', 'style' => 'outline'],
+    ],
+  ])
+</x-marketplace.page-section>
+
+  <x-marketplace.page-section id="hero-meta" component="hero_meta" label="Hero details">
+@include('partials.hero-meta', [
+    'items' => [
+      ['label' => 'Live unified catalogue', 'strong' => true],
+      ['label' => 'Personalised ordering'],
+      ['label' => 'Online and in-person options'],
+      ['label' => 'Availability shown on every offering'],
+    ],
+  ])
+</x-marketplace.page-section>
+
+  <x-marketplace.page-section id="wellness-match-results" component="wellness_match_results" label="Wellness match results">
   <section class="wellness-results__content" aria-live="polite">
+    <button class="wellness-results__reset" type="button" data-wellness-reset>Changed your mind? <strong>Reset and take the quiz again</strong></button>
+    <div class="wellness-results__preferences" data-wellness-preferences hidden></div>
     <div class="product-showcase-heading wellness-results__heading">
       <div class="product-showcase-heading__copy"><div class="kicker">Chosen for you</div><h2>Your strongest matches</h2>
       <p data-wellness-summary>We’re comparing your answers with live wellness experiences.</p>
@@ -34,6 +60,37 @@
       <button class="btn-wow btn-wow--primary btn-wow--md" type="button" data-wellness-reset>Start the wellness finder</button>
     </div>
   </section>
+  </x-marketplace.page-section>
+
+  <x-marketplace.page-section id="faq" component="faq" label="Frequently asked questions">
+@include('partials.faq-section', [
+    'id' => 'wellness-match-faq',
+    'eyebrow' => 'How your matches work',
+    'heading' => 'Useful things to know',
+    'intro' => 'Your matches come from live offerings in the We Offer Wellness catalogue.',
+    'faqs' => [
+      ['q' => 'How are my recommendations chosen?', 'a' => 'Your answers are used to rank live offerings by need, type, category, format and price where those links are available.'],
+      ['q' => 'Why might I see a broader recommendation?', 'a' => 'If an exact combination would leave you with no useful choices, the page relaxes the narrowest filters and keeps your strongest preferences as ranking signals.'],
+      ['q' => 'Can I change my answers?', 'a' => 'Yes. Choose Take the finder again to clear the saved answers and reopen the wellness finder from the beginning.'],
+      ['q' => 'Are prices and availability current?', 'a' => 'The cards use the live unified catalogue and show the same pricing, availability and practitioner details used elsewhere on the website.'],
+    ],
+  ])
+</x-marketplace.page-section>
+
+  <x-marketplace.page-section id="related-pages" component="related_pages" label="Related pages">
+@include('partials.related-pages', [
+    'id' => 'wellness-match-related',
+    'eyebrow' => 'Keep exploring',
+    'heading' => 'Browse wellness your way',
+    'intro' => 'Explore the marketplace directly whenever you want a wider view.',
+    'items' => [
+      ['href' => '/needs', 'type' => 'By need', 'title' => 'Start with how you feel', 'copy' => 'Explore support organised around the outcome you need.'],
+      ['href' => '/therapies', 'type' => 'Therapies', 'title' => 'Browse every therapy', 'copy' => 'Compare trusted modalities and practitioners.'],
+      ['href' => '/events', 'type' => 'Events', 'title' => 'Upcoming experiences', 'copy' => 'Find live gatherings, classes and workshops.'],
+      ['href' => '/online', 'type' => 'Online', 'title' => 'Join from home', 'copy' => 'Explore sessions available wherever you are.'],
+    ],
+  ])
+</x-marketplace.page-section>
 </main>
 
 <style>

@@ -222,6 +222,7 @@
 @endpush
 
 @section('content')
+<x-marketplace.page-section id="breadcrumbs" component="breadcrumbs" label="Breadcrumbs">
 @include('partials.breadcrumbs', [
   'crumbs' => [
     ['label' => 'Home', 'url' => url('/')],
@@ -233,6 +234,7 @@
     'Live catalogue',
   ]),
 ])
+</x-marketplace.page-section>
 
 <section class="offerings-page">
   <div class="container-page offerings-shell">

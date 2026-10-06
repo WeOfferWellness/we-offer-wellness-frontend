@@ -124,6 +124,7 @@
 @endpush
 
 @section('content')
+<x-marketplace.page-section id="breadcrumbs" component="breadcrumbs" label="Breadcrumbs">
 @include('partials.breadcrumbs', [
   'crumbs' => [
     ['label' => 'Home', 'url' => url('/')],
@@ -131,6 +132,7 @@
   ],
   'schemaUrl' => $pageCanonicalPath ?? url('/'),
 ])
+</x-marketplace.page-section>
 
 <style>
   :root {
@@ -307,6 +309,7 @@
   }
 </style>
 
+<x-marketplace.page-section id="landing-hero" component="landing_hero" label="Landing hero">
 @include('partials.landing-hero', [
   'heroEyebrow' => 'Live wellness schedule',
   'heroTitle' => $pageHeading,
@@ -316,6 +319,8 @@
   'heroAsideTitle' => $rangeLabel !== '' ? $rangeLabel : 'Find your next event',
   'heroAsideText' => 'Live listings, useful timing and clear routes into wellness experiences.',
 ])
+</x-marketplace.page-section>
+<x-marketplace.page-section id="hero-meta" component="hero_meta" label="Hero details">
 @include('partials.hero-meta', [
   'items' => array_values(array_filter([
     $rangeLabel !== '' ? $rangeLabel : null,
@@ -323,7 +328,9 @@
     'Online and in-person options',
   ])),
 ])
+</x-marketplace.page-section>
 
+<x-marketplace.page-section id="schedule-links" component="schedule_links" label="Schedule quick links">
 <section class="schedule-section pt-0">
   <div class="container">
     <div class="d-flex flex-wrap gap-2 mb-3">
@@ -333,7 +340,9 @@
     </div>
   </div>
 </section>
+</x-marketplace.page-section>
 
+<x-marketplace.page-section id="schedule-days" component="schedule_days" label="Day-by-day schedule">
 <section class="schedule-section pt-0">
   <div class="container">
     <div class="d-flex align-items-end justify-content-between gap-3 mb-3">
@@ -398,7 +407,9 @@
     </div>
   </div>
 </section>
+</x-marketplace.page-section>
 
+<x-marketplace.page-section id="schedule-featured" component="schedule_featured" label="Featured events">
 <section class="schedule-section">
   <div class="container">
     <div class="row g-4">
@@ -493,7 +504,9 @@
     </div>
   </div>
 </section>
+</x-marketplace.page-section>
 
+<x-marketplace.page-section id="schedule-online" component="schedule_online" label="Online events">
 <section class="schedule-section">
   <div class="container">
     <div class="schedule-card p-4">
@@ -534,7 +547,9 @@
     </div>
   </div>
 </section>
+</x-marketplace.page-section>
 
+<x-marketplace.page-section id="schedule-upcoming" component="schedule_upcoming" label="Upcoming events">
 <section class="schedule-section">
   <div class="container">
     <div class="schedule-card p-4">
@@ -576,7 +591,9 @@
     </div>
   </div>
 </section>
+</x-marketplace.page-section>
 
+<x-marketplace.page-section id="schedule-discovery-cards" component="schedule_discovery_cards" label="Schedule discovery cards">
 <section class="schedule-section">
   <div class="container">
     <div class="row g-4">
@@ -623,7 +640,9 @@
     </div>
   </div>
 </section>
+</x-marketplace.page-section>
 
+<x-marketplace.page-section id="schedule-content" component="schedule_content" label="Schedule guidance">
 <section class="schedule-section">
   <div class="container">
     <div class="schedule-card p-4">
@@ -660,7 +679,9 @@
     </div>
   </div>
 </section>
+</x-marketplace.page-section>
 
+<x-marketplace.page-section id="faq" component="faq" label="Frequently asked questions">
 @include('partials.faq-section', [
   'id' => 'schedule-faq',
   'eyebrow' => 'Helpful to know',
@@ -668,7 +689,9 @@
   'intro' => 'Useful answers about discovering and booking upcoming wellness events.',
   'faqs' => $faqs,
 ])
+</x-marketplace.page-section>
 
+<x-marketplace.page-section id="related-pages" component="related_pages" label="Related schedule pages">
 <section class="schedule-section pb-5">
   <div class="container">
     <div class="schedule-card p-4">
@@ -684,4 +707,5 @@
     </div>
   </div>
 </section>
+</x-marketplace.page-section>
 @endsection

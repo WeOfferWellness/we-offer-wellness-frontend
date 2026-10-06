@@ -57,9 +57,12 @@
 @section('content')
   <section class="guide-page">
     <div class="guide-wrap">
-      @include('partials.breadcrumbs', ['crumbs' => $page['breadcrumbs'] ?? [], 'schemaEnabled' => false])
+      <x-marketplace.page-section id="breadcrumbs" component="breadcrumbs" label="Breadcrumbs">
+@include('partials.breadcrumbs', ['crumbs' => $page['breadcrumbs'] ?? [], 'schemaEnabled' => false])
+</x-marketplace.page-section>
 
-      @include('partials.landing-hero', [
+      <x-marketplace.page-section id="landing-hero" component="landing_hero" label="Landing hero">
+@include('partials.landing-hero', [
         'heroEyebrow' => 'We Offer Wellness® Guide',
         'heroTitle' => $page['h1'],
         'heroIntro' => $page['intro'],
@@ -72,9 +75,11 @@
         'heroAsideTitle' => 'Start with what matters',
         'heroAsideText' => $page['quick_answer'],
       ])
+</x-marketplace.page-section>
 
       <div class="guide-grid">
         <div class="guide-main">
+          <x-marketplace.page-section id="guide-article-content" component="guide_article_content" label="Guide article">
           <div class="guide-box guide-section">
             <h2>Table of contents</h2>
             <div class="guide-toc-list">
@@ -114,13 +119,17 @@
             </div>
           @endif
 
-          @include('partials.faq-section', [
+          </x-marketplace.page-section>
+          <x-marketplace.page-section id="faq" component="faq" label="Frequently asked questions">
+@include('partials.faq-section', [
             'id' => 'guide-faq',
             'heading' => 'Frequently asked questions',
             'faqs' => $page['faqs'] ?? [],
           ])
+</x-marketplace.page-section>
         </div>
 
+        <x-marketplace.page-section id="guide-article-rail" component="guide_article_rail" label="Guide discovery rail">
         <aside class="guide-rail">
           <div class="guide-box guide-rail-card">
             <h3>Related offerings</h3>
@@ -181,6 +190,7 @@
             </div>
           </div>
         </aside>
+        </x-marketplace.page-section>
       </div>
     </div>
   </section>

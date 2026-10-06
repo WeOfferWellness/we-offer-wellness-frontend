@@ -42,6 +42,7 @@
 @endpush
 
 @section('content')
+<x-marketplace.page-section id="breadcrumbs" component="breadcrumbs" label="Breadcrumbs">
 @include('partials.breadcrumbs', [
     'crumbs' => [
         ['label' => 'Home', 'url' => url('/')],
@@ -49,7 +50,9 @@
     ],
     'schemaUrl' => url('/schedule-discovery'),
 ])
+</x-marketplace.page-section>
 
+<x-marketplace.page-section id="landing-hero" component="landing_hero" label="Landing hero">
 @include('partials.landing-hero', [
     'heroEyebrow' => 'Live wellness schedule',
     'heroTitle' => 'Find wellness sessions by date',
@@ -59,7 +62,9 @@
     'heroAsideTitle' => 'Find your next event',
     'heroAsideText' => 'Start with the schedule, then narrow your search by format, location or experience.',
 ])
+</x-marketplace.page-section>
 
+<x-marketplace.page-section id="hero-meta" component="hero_meta" label="Hero details">
 @include('partials.hero-meta', [
     'items' => [
         ['label' => 'Upcoming wellness events', 'strong' => true],
@@ -67,6 +72,9 @@
         ['label' => 'Clear timing and booking routes'],
     ],
 ])
+</x-marketplace.page-section>
 
+<x-marketplace.page-section id="schedule-discovery" component="schedule_discovery" label="Schedule discovery">
 @include('partials.schedule-discovery')
+</x-marketplace.page-section>
 @endsection

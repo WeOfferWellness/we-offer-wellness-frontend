@@ -7,7 +7,8 @@
 @section('content')
 <section class="section">
   <div class="container-page">
-    @include('partials.breadcrumbs', [
+    <x-marketplace.page-section id="breadcrumbs" component="breadcrumbs" label="Breadcrumbs">
+@include('partials.breadcrumbs', [
       'crumbs' => [
         ['label' => 'Home', 'url' => url('/')],
         ['label' => 'Help Centre', 'url' => url('/help')],
@@ -15,6 +16,7 @@
       ],
       'schemaUrl' => url('/help/faq'),
     ])
+</x-marketplace.page-section>
 
     <div class="mb-4">
       <p class="text-uppercase fw-bold text-muted mb-2" style="letter-spacing:.18em;font-size:.76rem;">Help Centre</p>
@@ -22,7 +24,8 @@
       <p class="lead text-muted mb-0">Answers to the most common booking, payment and account questions.</p>
     </div>
 
-    @include('partials.faq-section', [
+    <x-marketplace.page-section id="faq" component="faq" label="Frequently asked questions">
+@include('partials.faq-section', [
       'id' => 'help-faq',
       'eyebrow' => 'Help Centre',
       'heading' => 'Frequently asked questions',
@@ -35,6 +38,7 @@
         ['q' => 'How do I check whether a session is suitable?', 'a' => 'Read the listing details and our Safety & Contraindications guidance before booking if you are unsure.'],
       ],
     ])
+</x-marketplace.page-section>
   </div>
 </section>
 @endsection

@@ -94,6 +94,7 @@
 @endphp
 
 @section('content')
+<x-marketplace.page-section id="breadcrumbs" component="breadcrumbs" label="Breadcrumbs">
 @include('partials.breadcrumbs', [
     'crumbs' => [
         ['label' => 'Home', 'url' => url('/')],
@@ -101,6 +102,7 @@
     ],
     'schemaUrl' => $pageCanonical,
 ])
+</x-marketplace.page-section>
 
 <style>
     :root{
@@ -319,6 +321,7 @@
     <div class="wrap">
 
         {{-- HERO --}}
+        <x-marketplace.page-section id="about-hero" component="about_hero" label="About hero">
         <section class="hero" aria-label="About We Offer Wellness®">
             <div class="heroGrid">
                 <div>
@@ -355,8 +358,10 @@
                 </aside>
             </div>
         </section>
+        </x-marketplace.page-section>
 
         {{-- OUR STORY --}}
+        <x-marketplace.page-section id="about-story" component="about_story" label="Our story">
         <section class="section" aria-label="Our story">
             <div class="grid two">
                 <div class="card">
@@ -454,8 +459,10 @@
                 </div>
             </div>
         </section>
+        </x-marketplace.page-section>
 
         {{-- FOUNDERS --}}
+        <x-marketplace.page-section id="about-founders" component="about_founders" label="Founders">
         <section class="section founders" aria-label="The founders">
             <div class="card" style="padding:18px;">
                 <div class="cardHd">
@@ -527,8 +534,10 @@
                 @endforeach
             </div>
         </section>
+        </x-marketplace.page-section>
 
         {{-- VISION + MISSION --}}
+        <x-marketplace.page-section id="about-vision-mission" component="about_vision_mission" label="Vision & mission">
         <section class="section" aria-label="Vision and mission">
             <div class="vision">
                 <div class="grid two">
@@ -575,6 +584,7 @@
                 </div>
             </div>
         </section>
+        </x-marketplace.page-section>
 
     </div>
 </main>

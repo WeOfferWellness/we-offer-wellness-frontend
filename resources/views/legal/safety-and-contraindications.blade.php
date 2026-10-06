@@ -29,7 +29,6 @@ We review profiles for clarity and alignment with our wellness guidelines and ma
 
 @section('title', $pageTitle)
 
-{{-- If your layout supports a "head" section, this will populate meta safely --}}
 @section('head')
     <meta name="description" content="{{ $pageDescription }}">
     <link rel="canonical" href="{{ $pageCanonical }}">
@@ -38,7 +37,7 @@ We review profiles for clarity and alignment with our wellness guidelines and ma
 @section('content')
 <main class="section" aria-labelledby="page-title">
     <div class="container-page py-10 md:py-14">
-        {{-- Header --}}
+        <x-marketplace.page-section id="safety-content" component="safety_content" label="Safety guidance">
         <div class="max-w-3xl">
             <div class="kicker">Important information</div>
             <h1 id="page-title" class="mt-2 text-3xl md:text-4xl font-semibold tracking-tight">
@@ -54,8 +53,10 @@ We review profiles for clarity and alignment with our wellness guidelines and ma
                 </p>
             </div>
         </div>
+        </x-marketplace.page-section>
 
-        @include('partials.faq-section', [
+        <x-marketplace.page-section id="faq" component="faq" label="Frequently asked questions">
+@include('partials.faq-section', [
             'id' => 'safety-faq',
             'eyebrow' => 'Safety',
             'heading' => 'Frequently asked questions',
@@ -64,23 +65,13 @@ We review profiles for clarity and alignment with our wellness guidelines and ma
                 'a' => $item['a'] ?? '',
             ])->all(),
         ])
-                                        >
-                                            Email hello@weofferwellness.co.uk
-                                            <span aria-hidden="true">→</span>
-                                        </a>
-                                    </div>
-                                @endif
-                            </div>
-                        </details>
-                    @endforeach
-                </div>
+</x-marketplace.page-section>
 
-                {{-- Gentle disclaimer (kept minimal, not scary) --}}
-                <p class="mt-6 text-sm text-ink-600">
-                    This information is general guidance and doesn’t replace medical advice. If you’re unsure, speak to a qualified healthcare professional.
-                </p>
-            </div>
-        </section>
+        <x-marketplace.page-section id="safety-note" component="safety_note" label="Safety note">
+        <p class="mt-6 text-sm text-ink-600">
+            This information is general guidance and doesn’t replace medical advice. If you’re unsure, speak to a qualified healthcare professional.
+        </p>
+        </x-marketplace.page-section>
     </div>
 </main>
 @endsection

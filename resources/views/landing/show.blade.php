@@ -462,6 +462,7 @@
   ]));
 @endphp
 
+<x-marketplace.page-section id="breadcrumbs" component="breadcrumbs" label="Breadcrumbs">
 @include('partials.breadcrumbs', [
   'crumbs' => $landingCrumbs ?? [],
   'schemaUrl' => $pageCanonical ?? url()->current(),
@@ -470,8 +471,10 @@
     isset($items) ? $items->count() . ' live listings' : null,
   ]),
 ])
+</x-marketplace.page-section>
 
 <div class="landing-wow">
+<x-marketplace.page-section id="landing-hero" component="landing_hero" label="Landing hero">
 @include('partials.landing-hero', [
     'heroEyebrow' => $landing['kicker'] ?? 'Explore',
     'heroTitle' => $landing['title'] ?? 'Wellness',
@@ -484,20 +487,26 @@
     'heroAsideTitle' => data_get($landing, 'hero_aside.title', 'Find support that fits'),
     'heroAsideText' => data_get($landing, 'hero_aside.text', 'Explore relevant wellness experiences without the noise.'),
   ])
+</x-marketplace.page-section>
 
-  @include('partials.hero-meta', [
+  <x-marketplace.page-section id="hero-meta" component="hero_meta" label="Hero details">
+@include('partials.hero-meta', [
     'items' => array_values(array_filter([
       !empty($landing['kicker']) ? ['label' => $landing['kicker'], 'strong' => true] : null,
       isset($items) ? $items->count() . ' live listings' : null,
     ])),
   ])
+</x-marketplace.page-section>
 
-  @include('home.sections.discover_category', [
+  <x-marketplace.page-section id="discover-category" component="discover_category" label="Discover by modality">
+@include('home.sections.discover_category', [
     'discoveryCategories' => $discoveryCategories ?? [],
     'browseUrl' => url('/'.($type ?? 'therapies')),
     'modalityBasePath' => $type ?? 'therapies',
   ])
+</x-marketplace.page-section>
 
+  <x-marketplace.page-section id="offering-filters" component="offering_filters" label="Offering filters & results">
   <section class="landing-wow__results">
     <div class="container">
       <style>
@@ -524,7 +533,7 @@
       @endif
       <div class="landing-results-layout wow410-filter-layout">
         <div class="landing-results-filters">
-          @include('search.partials.desktop', [
+          <x-marketplace.offering-filters mode="desktop" :options="[
             'products' => $items,
             'desktopResultsCount' => $items->count(),
             'desktopFullNavigation' => true,
@@ -534,10 +543,10 @@
             'searchRecommendationsHtml' => '',
             'searchAsyncBoot' => false,
             'searchUrl' => url('/' . $slug . '/' . ($type ?? 'therapies') . '/'),
-          ])
+          ]" />
         </div>
         <div class="landing-results-content">
-          @include('search.partials.mobile', [
+          <x-marketplace.offering-filters mode="mobile" :options="[
             'products' => $items,
             'mobileResultsCount' => $items->count(),
             'mobileFullNavigation' => true,
@@ -547,7 +556,7 @@
             'searchRecommendationsHtml' => '',
             'searchAsyncBoot' => false,
             'searchUrl' => url('/' . $slug . '/' . ($type ?? 'therapies') . '/'),
-          ])
+          ]" />
 
           @php
             $featured = collect($featuredOfferings ?? [])->take(8)->values();
@@ -595,6 +604,7 @@
       </div>
     </div>
   </section>
+  </x-marketplace.page-section>
 
   @if(($type ?? '') === 'therapies')
     @php
@@ -620,14 +630,17 @@
       })->all();
     @endphp
 
-    @include('partials.popular-price', [
+    <x-marketplace.page-section id="popular-price" component="popular_price" label="Popular price points">
+@include('partials.popular-price', [
       'items' => $therapyPriceBands,
       'heading' => 'Wellness by price',
       'intro' => 'Explore price points across live therapy offerings ready to explore and book.',
       'id' => 'therapies-price-discovery',
     ])
+</x-marketplace.page-section>
 
-    @include('partials.faq-section', [
+    <x-marketplace.page-section id="faq" component="faq" label="Frequently asked questions">
+@include('partials.faq-section', [
       'id' => 'therapies-faqs',
       'eyebrow' => 'Helpful to know',
       'heading' => 'Frequently asked questions',
@@ -639,8 +652,10 @@
         ['q' => 'Are the offerings available to book now?', 'a' => 'Featured offerings are live listings from trusted practitioners, ready to explore and book.'],
       ],
     ])
+</x-marketplace.page-section>
 
-    @include('partials.related-pages', [
+    <x-marketplace.page-section id="related-pages" component="related_pages" label="Related pages">
+@include('partials.related-pages', [
       'id' => 'therapies-related-pages',
       'heading' => 'Keep exploring',
       'intro' => 'Continue discovering wellness experiences across the marketplace.',
@@ -650,13 +665,16 @@
         ['href' => '/online', 'type' => 'Online', 'title' => 'Online wellness', 'copy' => 'Explore sessions you can join from home.'],
       ],
     ])
+</x-marketplace.page-section>
   @endif
 
   <div class="container-page">
-    @include('partials.guide_panel', [
+    <x-marketplace.page-section id="guide-panel" component="guide_panel" label="Guide panel">
+@include('partials.guide_panel', [
       'guidePanelModality' => request()->route('modality'),
       'guidePanelFormat' => $type ?? null,
     ])
+</x-marketplace.page-section>
   </div>
 </div>
 @endsection

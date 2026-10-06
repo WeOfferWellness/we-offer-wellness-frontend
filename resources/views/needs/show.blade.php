@@ -26,6 +26,7 @@
   }
 @endphp
 
+<x-marketplace.page-section id="breadcrumbs" component="breadcrumbs" label="Breadcrumbs">
 @include('partials.breadcrumbs', [
   'crumbs' => [
     ['label' => 'Home', 'url' => url('/')],
@@ -34,7 +35,9 @@
   ],
   'schemaUrl' => url('/needs/' . $slug),
 ])
+</x-marketplace.page-section>
 
+<x-marketplace.page-section id="landing-hero" component="landing_hero" label="Landing hero">
 @include('partials.landing-hero', [
   'heroEyebrow' => 'By need',
   'heroTitle' => $need['title'] ?? 'Need',
@@ -44,6 +47,8 @@
   'heroAsideTitle' => 'Find support that fits',
   'heroAsideText' => 'Explore relevant therapies, classes and experiences without the noise.',
 ])
+</x-marketplace.page-section>
+<x-marketplace.page-section id="hero-meta" component="hero_meta" label="Hero details">
 @include('partials.hero-meta', [
   'items' => array_values(array_filter([
     isset($results['meta']['total']) ? number_format((int) $results['meta']['total']).' live offerings' : null,
@@ -51,7 +56,9 @@
     'Online and in-person options',
   ])),
 ])
+</x-marketplace.page-section>
 
+<x-marketplace.page-section id="offering-filters" component="offering_filters" label="Offering filters & results">
 <section class="section">
   <div class="container-page">
 
@@ -82,6 +89,7 @@
     </div>
   </div>
 </section>
+</x-marketplace.page-section>
 @endsection
 
 @push('scripts')

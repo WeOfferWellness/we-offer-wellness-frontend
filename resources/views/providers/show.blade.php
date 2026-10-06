@@ -2437,13 +2437,16 @@
 
 @section('content')
 <main class="wow-profile-page practitioner-page">
-    @include('partials.breadcrumbs', [
+    <x-marketplace.page-section id="breadcrumbs" component="breadcrumbs" label="Breadcrumbs">
+@include('partials.breadcrumbs', [
         'crumbs' => $breadcrumbs,
         'schemaUrl' => $seo['canonical'] ?? url()->current(),
         'mobileCurrent' => $displayName,
     ])
+</x-marketplace.page-section>
 
-    <header class="profile-hero-wrap">
+    <x-marketplace.page-section id="provider-hero" component="provider_hero" label="Practitioner hero">
+<header class="profile-hero-wrap">
         <section class="profile-hero">
             @foreach($heroSlides as $slideIndex => $slideImage)
                 <div class="hero-slide{{ $slideIndex === 0 ? ' is-active' : '' }}" style="background-image:url('{{ $slideImage }}');"></div>
@@ -2520,18 +2523,22 @@
             </div>
         </section>
     </header>
+</x-marketplace.page-section>
 
-    <nav class="profile-nav" aria-label="Profile sections">
+    <x-marketplace.page-section id="provider-navigation" component="provider_navigation" label="Profile navigation">
+<nav class="profile-nav" aria-label="Profile sections">
         <div class="profile-nav-inner">
             @foreach($navLinks as $navLink)
                 <a class="profile-nav-link{{ $loop->first ? ' is-active' : '' }}" href="{{ $navLink['href'] }}">{{ $navLink['label'] }}</a>
             @endforeach
         </div>
     </nav>
+</x-marketplace.page-section>
 
     <div class="content-wrap">
         <div class="content-main">
-            <section class="section" id="overview">
+            <x-marketplace.page-section id="provider-overview" component="provider_overview" label="Practitioner overview">
+<section class="section" id="overview">
                 <div class="section-heading">
                     <div>
                         <p class="eyebrow">Quick profile</p>
@@ -2571,8 +2578,10 @@
                     @endforeach
                 </div>
             </section>
+</x-marketplace.page-section>
 
-            <section class="section" id="about">
+            <x-marketplace.page-section id="provider-about" component="provider_about" label="Practitioner about">
+<section class="section" id="about">
                 <div class="section-heading">
                     <div>
                         <p class="eyebrow">About {{ $displayName }}</p>
@@ -2597,9 +2606,11 @@
                     @endif
                 </div>
             </section>
+</x-marketplace.page-section>
 
             @if($hasCredentialsSection)
-                <section class="section" id="credentials">
+                <x-marketplace.page-section id="provider-credentials" component="provider_credentials" label="Practitioner credentials">
+<section class="section" id="credentials">
                     <div class="section-heading">
                         <div>
                             <p class="eyebrow">Qualifications & trust</p>
@@ -2661,9 +2672,11 @@
                         </article>
                     </div>
                 </section>
+</x-marketplace.page-section>
             @endif
 
-            <section class="section" id="offerings">
+            <x-marketplace.page-section id="provider-offerings" component="provider_offerings" label="Practitioner offerings">
+<section class="section" id="offerings">
                 <div class="section-heading">
                     <div>
                         <p class="eyebrow">Practitioner offerings</p>
@@ -2736,8 +2749,10 @@
                     </div>
                 @endif
             </section>
+</x-marketplace.page-section>
 
-            <section class="section" id="locations">
+            <x-marketplace.page-section id="provider-locations" component="provider_locations" label="Practitioner locations">
+<section class="section" id="locations">
                 <div class="section-heading">
                     <div>
                         <p class="eyebrow">Locations</p>
@@ -2787,8 +2802,10 @@
                     </div>
                 @endif
             </section>
+</x-marketplace.page-section>
 
-            <section class="section" id="reviews">
+            <x-marketplace.page-section id="provider-reviews" component="provider_reviews" label="Practitioner reviews">
+<section class="section" id="reviews">
                 <div class="section-heading">
                     <div>
                         <p class="eyebrow">Reviews</p>
@@ -2907,6 +2924,7 @@
                     </div>
                 @endif
             </section>
+</x-marketplace.page-section>
         </div>
 
         <aside class="side-stack">

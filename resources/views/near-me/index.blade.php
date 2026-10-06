@@ -73,6 +73,7 @@
 @endpush
 
 @section('content')
+<x-marketplace.page-section id="breadcrumbs" component="breadcrumbs" label="Breadcrumbs">
 @include('partials.breadcrumbs', [
   'crumbs' => [
     ['label' => 'Home', 'url' => url('/')],
@@ -80,7 +81,9 @@
   ],
   'schemaUrl' => url('/near-me'),
 ])
+</x-marketplace.page-section>
 
+<x-marketplace.page-section id="landing-hero" component="landing_hero" label="Landing hero">
 @include('partials.landing-hero', [
   'heroEyebrow' => 'Find wellness near you',
   'heroTitle' => 'Near Me',
@@ -89,6 +92,8 @@
   'heroAsideTitle' => 'Find support nearby',
   'heroAsideText' => 'Explore relevant therapies, classes and experiences based on where you are.',
 ])
+</x-marketplace.page-section>
+<x-marketplace.page-section id="hero-meta" component="hero_meta" label="Hero details">
 @include('partials.hero-meta', [
   'items' => [
     ['label' => 'Location-based discovery', 'strong' => true],
@@ -96,7 +101,9 @@
     ['label' => 'Online options available'],
   ],
 ])
+</x-marketplace.page-section>
 
+<x-marketplace.page-section id="location-search" component="location_search" label="Location search">
 <section class="section">
   <div class="container-page" style="max-width:760px;">
     <div class="card p-4" style="border-radius:18px;">
@@ -121,6 +128,7 @@
     </div>
   </div>
 </section>
+</x-marketplace.page-section>
 @endsection
 
 @push('scripts')

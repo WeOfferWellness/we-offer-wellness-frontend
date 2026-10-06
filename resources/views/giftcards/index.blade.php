@@ -266,6 +266,7 @@
 @endpush
 
 @section('content')
+<x-marketplace.page-section id="breadcrumbs" component="breadcrumbs" label="Breadcrumbs">
 @include('partials.breadcrumbs', [
   'crumbs' => [
     ['label' => 'Home', 'url' => url('/')],
@@ -273,7 +274,9 @@
   ],
   'schemaUrl' => url('/giftcards'),
 ])
+</x-marketplace.page-section>
 
+<x-marketplace.page-section id="landing-hero" component="landing_hero" label="Landing hero">
 @include('partials.landing-hero', [
   'heroEyebrow' => 'Gift cards',
   'heroTitle' => 'Give wellness, your way',
@@ -286,7 +289,9 @@
   'heroAsideTitle' => 'More choice, less guesswork',
   'heroAsideText' => 'Let them choose the experience, format and amount that feels right for them.',
 ])
+</x-marketplace.page-section>
 
+<x-marketplace.page-section id="hero-meta" component="hero_meta" label="Hero details">
 @include('partials.hero-meta', [
   'items' => [
     ['label' => 'Digital gift cards', 'strong' => true],
@@ -294,7 +299,9 @@
     'Instant email delivery',
   ],
 ])
+</x-marketplace.page-section>
 
+<x-marketplace.page-section id="giftcards-catalogue" component="giftcards_catalogue" label="Gift cards catalogue">
 <section class="giftcards-page">
   <div class="container-page giftcards-shell">
     <div class="giftcards-section-title">
@@ -372,4 +379,5 @@
     @endif
   </div>
 </section>
+</x-marketplace.page-section>
 @endsection

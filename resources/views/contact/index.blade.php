@@ -244,6 +244,7 @@
   </style>
 @endpush
 
+<x-marketplace.page-section id="breadcrumbs" component="breadcrumbs" label="Breadcrumbs">
 @include('partials.breadcrumbs', [
   'crumbs' => [
     ['label' => 'Home', 'url' => url('/')],
@@ -251,9 +252,11 @@
   ],
   'schemaUrl' => $seo['canonical'] ?? url('/contact'),
 ])
+</x-marketplace.page-section>
 
 <main class="contact-page">
   <div class="container-page">
+    <x-marketplace.page-section id="contact-hero" component="contact_hero" label="Contact hero">
     <header class="contact-page__hero">
       <p class="contact-page__eyebrow">We’re here to help</p>
       <h1>Let’s find the right way forward.</h1>
@@ -262,7 +265,9 @@
         <div class="contact-page__selected">Enquiry: {{ $topicSubjects[$topic] }}</div>
       @endif
     </header>
+    </x-marketplace.page-section>
 
+    <x-marketplace.page-section id="contact-topics" component="contact_topics" label="Contact topics">
     <section aria-label="Contact topics">
       <div class="contact-page__topics">
         @foreach($topics as $card)
@@ -275,7 +280,9 @@
         @endforeach
       </div>
     </section>
+    </x-marketplace.page-section>
 
+    <x-marketplace.page-section id="contact-details" component="contact_details" label="Contact details">
     <section class="contact-page__lower" aria-label="Contact details">
       <div class="contact-page__email">
         <p class="contact-page__eyebrow" style="color:#bce2d3;">Prefer email?</p>
@@ -297,6 +304,7 @@
         </ul>
       </aside>
     </section>
+    </x-marketplace.page-section>
   </div>
 </main>
 @endsection

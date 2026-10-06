@@ -350,6 +350,7 @@
 @endsection
 
 @section('content')
+<x-marketplace.page-section id="breadcrumbs" component="breadcrumbs" label="Breadcrumbs">
 @include('partials.breadcrumbs', [
     'crumbs' => [
         ['label' => 'Home', 'url' => url('/')],
@@ -357,6 +358,7 @@
     ],
     'schemaUrl' => $pageCanonical,
 ])
+</x-marketplace.page-section>
 
 <style>
     :root{
@@ -540,6 +542,7 @@
     <div class="wrap">
 
         {{-- HERO --}}
+        <x-marketplace.page-section id="help-hero" component="help_hero" label="Help Centre hero">
         <section class="hero" aria-label="Help Centre">
             <div class="kicker">We Offer Wellness™ Support</div>
             <h1 id="hc-title">{{ $pageTitle }}</h1>
@@ -570,7 +573,9 @@
                 @endforeach
             </div>
         </section>
+        </x-marketplace.page-section>
 
+        <x-marketplace.page-section id="help-content" component="help_content" label="Help Centre content">
         <div class="grid" style="margin-top: 16px;">
 
             {{-- SIDEBAR --}}
@@ -743,6 +748,7 @@
 
             </section>
         </div>
+        </x-marketplace.page-section>
     </div>
 </main>
 

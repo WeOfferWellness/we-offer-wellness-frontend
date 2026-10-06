@@ -52,9 +52,12 @@
 @section('content')
   <section class="guide-hub">
     <div class="guide-shell">
-      @include('partials.breadcrumbs', ['crumbs' => $page['breadcrumbs'] ?? [], 'schemaEnabled' => false])
+      <x-marketplace.page-section id="breadcrumbs" component="breadcrumbs" label="Breadcrumbs">
+@include('partials.breadcrumbs', ['crumbs' => $page['breadcrumbs'] ?? [], 'schemaEnabled' => false])
+</x-marketplace.page-section>
 
-      @include('partials.landing-hero', [
+      <x-marketplace.page-section id="landing-hero" component="landing_hero" label="Landing hero">
+@include('partials.landing-hero', [
         'heroEyebrow' => 'We Offer Wellness® Guides',
         'heroTitle' => $page['h1'] ?? 'Guides',
         'heroIntro' => $page['intro'] ?? '',
@@ -62,14 +65,18 @@
         'heroAsideTitle' => count($page['popular_guides'] ?? []).' ways to begin',
         'heroAsideText' => 'Useful landing pages linking education into real discovery, nearby browsing and live offerings.',
       ])
-      @include('partials.hero-meta', [
+</x-marketplace.page-section>
+      <x-marketplace.page-section id="hero-meta" component="hero_meta" label="Hero details">
+@include('partials.hero-meta', [
         'items' => array_values(array_filter([
           count($page['popular_guides'] ?? []).' popular guides',
           count($page['what_is_guides'] ?? []).' explainers',
           'Practical wellness guidance',
         ])),
       ])
+</x-marketplace.page-section>
 
+      <x-marketplace.page-section id="guide-hub-content" component="guide_hub_content" label="Guide collections">
       <div class="guide-block guide-grid">
         <div class="guide-panel guide-card">
           <h3>Popular guides</h3>
@@ -169,6 +176,7 @@
           </div>
         </div>
       @endif
+      </x-marketplace.page-section>
     </div>
   </section>
 @endsection

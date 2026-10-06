@@ -65,6 +65,7 @@
   $pageQuery = request()->query();
 @endphp
 
+<x-marketplace.page-section id="breadcrumbs" component="breadcrumbs" label="Breadcrumbs">
 @include('partials.breadcrumbs', [
   'crumbs' => [
     ['label' => 'Home', 'url' => url('/')],
@@ -72,7 +73,9 @@
   ],
   'schemaUrl' => $canonical,
 ])
+</x-marketplace.page-section>
 
+<x-marketplace.page-section id="landing-hero" component="landing_hero" label="Landing hero">
 @include('partials.landing-hero', [
   'heroEyebrow' => 'Collection',
   'heroTitle' => $collectionHeading,
@@ -81,7 +84,9 @@
   'heroAsideTitle' => 'Find something that fits',
   'heroAsideText' => 'Explore live wellness offerings together in one useful place.',
 ])
+</x-marketplace.page-section>
 
+<x-marketplace.page-section id="hero-meta" component="hero_meta" label="Hero details">
 @include('partials.hero-meta', [
   'items' => array_values(array_filter([
     ['label' => number_format($total).' live '.($total === 1 ? 'listing' : 'listings'), 'strong' => true],
@@ -93,7 +98,9 @@
       : null,
   ])),
 ])
+</x-marketplace.page-section>
 
+<x-marketplace.page-section id="collection-results" component="collection_results" label="Collection offerings">
 <section class="wow-collection-results" id="collection-offerings">
   <div class="container-page">
     <div class="wow-collection-results__head">
@@ -156,6 +163,7 @@
     @endif
   </div>
 </section>
+</x-marketplace.page-section>
 
 <style>
   .wow-collection-results{padding:40px 0 72px}

@@ -299,15 +299,13 @@ body.wow-search-pane-open .wow-ultra{
 
 <div class="search-page-shell pt-4 pb-2 bg-transparent">
   <div class="wow-search-page-hero">
-    <x-home-searchbar-v4 :search-url="url('/search?view=list')" />
+    <x-marketplace.page-section id="search-bar" component="search_bar" label="Search bar">
+<x-home-searchbar-v4 :search-url="url('/search?view=list')" />
+</x-marketplace.page-section>
   </div>
 
-  @php($searchOfferingFilterOptions = get_defined_vars())
-  <div class="wow-search-mobile-shell">
-    <x-marketplace.offering-filters mode="mobile" :options="$searchOfferingFilterOptions" />
-  </div>
-
-  @include('partials.breadcrumbs', [
+  <x-marketplace.page-section id="breadcrumbs" component="breadcrumbs" label="Breadcrumbs">
+@include('partials.breadcrumbs', [
     'crumbs' => [
       ['label' => 'Home', 'url' => url('/')],
       ['label' => 'Search', 'url' => url('/search')],
@@ -320,12 +318,20 @@ body.wow-search-pane-open .wow-ultra{
       'Live listings',
     ]),
   ])
+</x-marketplace.page-section>
 
-  <div class="search-content-wrapper">
-      <div class="wow-search-desktop-shell">
-        <x-marketplace.offering-filters mode="desktop" :options="$searchOfferingFilterOptions" />
-      </div>
-  </div>
+  @php($searchOfferingFilterOptions = get_defined_vars())
+  <x-marketplace.page-section id="offering-filters" component="offering_filters" label="Offering filters & results">
+    <div class="wow-search-mobile-shell">
+      <x-marketplace.offering-filters mode="mobile" :options="$searchOfferingFilterOptions" />
+    </div>
+
+    <div class="search-content-wrapper">
+        <div class="wow-search-desktop-shell">
+          <x-marketplace.offering-filters mode="desktop" :options="$searchOfferingFilterOptions" />
+        </div>
+    </div>
+  </x-marketplace.page-section>
 </div>
 
 @endsection

@@ -380,6 +380,7 @@
 @endpush
 
 @section('content')
+<x-marketplace.page-section id="breadcrumbs" component="breadcrumbs" label="Breadcrumbs">
 @include('partials.breadcrumbs', [
   'crumbs' => [
     ['label' => 'Home', 'url' => url('/')],
@@ -387,7 +388,9 @@
   ],
   'schemaUrl' => url('/online-near-me'),
 ])
+</x-marketplace.page-section>
 
+<x-marketplace.page-section id="landing-hero" component="landing_hero" label="Landing hero">
 @include('partials.landing-hero', [
   'heroEyebrow' => 'Wellness discovery',
   'heroTitle' => 'Online & Near Me',
@@ -400,7 +403,9 @@
   'heroAsideTitle' => 'Simple, calm, and useful',
   'heroAsideText' => 'Two clear ways into the marketplace: flexible online support or wellness experiences close to you.',
 ])
+</x-marketplace.page-section>
 
+<x-marketplace.page-section id="hero-meta" component="hero_meta" label="Hero details">
 @include('partials.hero-meta', [
   'items' => [
     ['label' => 'Trusted wellness options', 'strong' => true],
@@ -408,11 +413,13 @@
     'Nearby practitioners',
   ],
 ])
+</x-marketplace.page-section>
 
 <main class="wow-online-near-page">
   <div class="wow-page-grid" aria-hidden="true"></div>
 
   <div class="wow-online-near-container">
+<x-marketplace.page-section id="route-options" component="route_options" label="Online or nearby choices">
     <section class="wow-route-grid" aria-label="Choose online or near me">
       <article class="wow-route-card">
         <div class="wow-route-card__inner">
@@ -464,7 +471,9 @@
         </footer>
       </article>
     </section>
+</x-marketplace.page-section>
 
+<x-marketplace.page-section id="quick-browse" component="quick_browse" label="Quick browse">
     <section class="wow-quick-browse" aria-label="Quick browse links">
       <a href="{{ url('/therapies') }}" class="wow-quick-card">
         <div>
@@ -498,7 +507,9 @@
         <span>Browse under £50 →</span>
       </a>
     </section>
+</x-marketplace.page-section>
 
+<x-marketplace.page-section id="trust-panel" component="trust_panel" label="Trust panel">
     <section class="wow-trust-panel">
       <div>
         <p class="wow-kicker">Before you book</p>
@@ -508,6 +519,7 @@
 
       <a href="{{ url('/safety-and-contraindications') }}" class="btn-wow btn-wow--soft">Read safety guidance</a>
     </section>
+</x-marketplace.page-section>
   </div>
 </main>
 @endsection

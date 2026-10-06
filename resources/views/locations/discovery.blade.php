@@ -57,9 +57,12 @@
 @endpush
 
 @section('content')
-  @include('partials.breadcrumbs', ['crumbs' => [['label' => 'Home', 'url' => url('/')], ['label' => 'Locations']], 'schemaUrl' => url('/locations'), 'currentIcon' => 'location'])
+  <x-marketplace.page-section id="breadcrumbs" component="breadcrumbs" label="Breadcrumbs">
+@include('partials.breadcrumbs', ['crumbs' => [['label' => 'Home', 'url' => url('/')], ['label' => 'Locations']], 'schemaUrl' => url('/locations'), 'currentIcon' => 'location'])
+</x-marketplace.page-section>
   <main class="locations-discovery">
-    @include('partials.landing-hero', [
+    <x-marketplace.page-section id="landing-hero" component="landing_hero" label="Landing hero">
+@include('partials.landing-hero', [
       'heroEyebrow' => 'Local wellness discovery',
       'heroTitle' => 'Find wellness near you',
       'heroIntro' => 'Discover therapies, classes, events and wellness experiences available near you.',
@@ -69,30 +72,41 @@
       'heroAsideTitle' => null,
       'heroAsideText' => '',
     ])
-    @include('partials.hero-meta', [
+</x-marketplace.page-section>
+    <x-marketplace.page-section id="hero-meta" component="hero_meta" label="Hero details">
+@include('partials.hero-meta', [
       'items' => array_values(array_filter([
         $nearby->isNotEmpty() ? ['label' => 'Local listings', 'strong' => true] : null,
         ($nearby->isNotEmpty() || $popularPlaces->isNotEmpty()) ? 'Nearby options' : null,
         $online->isNotEmpty() ? 'Online sessions' : null,
       ])),
     ])
+</x-marketplace.page-section>
     <div class="locations-discovery__container">
       <div class="locations-discovery__search-wrap">
-        <x-home-searchbar-v4
+        <x-marketplace.page-section id="search-bar" component="search_bar" label="Search bar">
+<x-home-searchbar-v4
           id-prefix="locations-discovery-search-v4"
           :search-url="url('/search')"
           initial-where="{{ $locationQuery ?? '' }}"
         />
+</x-marketplace.page-section>
       </div>
 
+<x-marketplace.page-section id="location-nearby-offerings" component="location_nearby_offerings" label="Wellness nearby">
       <section class="locations-discovery__section" aria-labelledby="nearby-title">
         <div class="locations-discovery__section-head"><div><h2 id="nearby-title">Wellness near {{ $locationLabel }}</h2><p class="locations-discovery__copy">Live marketplace offerings, ranked for local relevance and useful quality signals.</p></div>@if($nearby->isNotEmpty())@include('partials.wow-button',['href'=>url('/search?where='.urlencode($locationLabel)),'label'=>'View all','variant'=>'outline','size'=>'sm','arrow'=>true])@endif</div>
         @if($nearby->isNotEmpty())<div class="locations-discovery__grid">@foreach($nearby->take(8) as $product)@include('partials.product_card_v4_1', ['product' => $product, 'preferredLocation' => $locationLabel])@endforeach</div>@else<div class="locations-discovery__empty">We don't have anything listed in {{ $locationLabel }} yet. Try a nearby area or explore online options.</div>@endif
       </section>
+</x-marketplace.page-section>
 
-      @if($popularPlaces->isNotEmpty())<section class="locations-discovery__section"><div class="locations-discovery__section-head"><div><h2>Popular places</h2><p class="locations-discovery__copy">Places with useful live supply and sustained marketplace interest.</p></div></div><div class="locations-discovery__place-grid">@foreach($popularPlaces as $place)<a class="locations-discovery__place" href="{{ url($place['path'] ?? '/locations') }}"><strong>{{ $place['title'] ?? $place['label'] ?? 'Location' }}</strong><span>{{ number_format((int) ($place['supply_count'] ?? 0)) }} wellness offerings</span></a>@endforeach</div></section>@endif
+      @if($popularPlaces->isNotEmpty())<x-marketplace.page-section id="location-popular-places" component="location_popular_places" label="Popular places">
+<section class="locations-discovery__section"><div class="locations-discovery__section-head"><div><h2>Popular places</h2><p class="locations-discovery__copy">Places with useful live supply and sustained marketplace interest.</p></div></div><div class="locations-discovery__place-grid">@foreach($popularPlaces as $place)<a class="locations-discovery__place" href="{{ url($place['path'] ?? '/locations') }}"><strong>{{ $place['title'] ?? $place['label'] ?? 'Location' }}</strong><span>{{ number_format((int) ($place['supply_count'] ?? 0)) }} wellness offerings</span></a>@endforeach</div></section>
+</x-marketplace.page-section>@endif
 
-      @if($newNearby->isNotEmpty())<section class="locations-discovery__section"><div class="locations-discovery__section-head"><div><h2>New near {{ $locationLabel }}</h2><p class="locations-discovery__copy">Recently published offerings from the live marketplace.</p></div></div><div class="locations-discovery__grid">@foreach($newNearby->take(8) as $product)@include('partials.product_card_v4_1', ['product' => $product, 'preferredLocation' => $locationLabel])@endforeach</div></section>@endif
+      @if($newNearby->isNotEmpty())<x-marketplace.page-section id="location-new-nearby" component="location_new_nearby" label="New nearby">
+<section class="locations-discovery__section"><div class="locations-discovery__section-head"><div><h2>New near {{ $locationLabel }}</h2><p class="locations-discovery__copy">Recently published offerings from the live marketplace.</p></div></div><div class="locations-discovery__grid">@foreach($newNearby->take(8) as $product)@include('partials.product_card_v4_1', ['product' => $product, 'preferredLocation' => $locationLabel])@endforeach</div></section>
+</x-marketplace.page-section>@endif
 
       @if($categories->isNotEmpty())
         @php
@@ -100,20 +114,28 @@
             'description' => $category['description'] ?? (($category['count'] ?? 0).' local '.(((int) ($category['count'] ?? 0)) === 1 ? 'offering' : 'offerings')),
           ]));
         @endphp
-        @include('partials.modality-board', [
+        <x-marketplace.page-section id="modality-board" component="modality_board" label="Modality board">
+@include('partials.modality-board', [
           'items' => $discoveryModalityItems,
           'eyebrow' => 'Discover',
           'heading' => 'Explore wellness near '.$locationLabel,
           'intro' => 'Modalities chosen from real local supply and wider wellness demand.',
           'browseHref' => url('/therapies'),
         ])
+</x-marketplace.page-section>
       @endif
 
-      @if($priceBands->isNotEmpty())<section class="locations-discovery__section"><div class="locations-discovery__section-head"><div><h2>Explore by price</h2><p class="locations-discovery__copy">Useful price points with live local availability.</p></div></div><div class="locations-discovery__price-grid">@foreach($priceBands as $band)<a class="locations-discovery__price" href="{{ url('/search?where='.urlencode($locationLabel).'&price_max='.($band['max'] ?? 500)) }}"><strong>{{ $band['label'] }}</strong><span>{{ $band['count'] }} local options</span></a>@endforeach</div></section>@endif
+      @if($priceBands->isNotEmpty())<x-marketplace.page-section id="location-price-bands" component="location_price_bands" label="Explore by price">
+<section class="locations-discovery__section"><div class="locations-discovery__section-head"><div><h2>Explore by price</h2><p class="locations-discovery__copy">Useful price points with live local availability.</p></div></div><div class="locations-discovery__price-grid">@foreach($priceBands as $band)<a class="locations-discovery__price" href="{{ url('/search?where='.urlencode($locationLabel).'&price_max='.($band['max'] ?? 500)) }}"><strong>{{ $band['label'] }}</strong><span>{{ $band['count'] }} local options</span></a>@endforeach</div></section>
+</x-marketplace.page-section>@endif
 
-      @if($online->isNotEmpty())<section class="locations-discovery__section"><div class="locations-discovery__section-head"><div><h2>Also available online</h2><p class="locations-discovery__copy">Wellness experiences you can join from anywhere.</p></div>@include('partials.wow-button',['href'=>url('/online'),'label'=>'Browse online','variant'=>'outline','size'=>'sm','arrow'=>true])</div><div class="locations-discovery__grid">@foreach($online->take(4) as $product)@include('partials.product_card_v4_1', ['product' => $product, 'preferredLocation' => null])@endforeach</div></section>@endif
+      @if($online->isNotEmpty())<x-marketplace.page-section id="location-online-offerings" component="location_online_offerings" label="Online wellness">
+<section class="locations-discovery__section"><div class="locations-discovery__section-head"><div><h2>Also available online</h2><p class="locations-discovery__copy">Wellness experiences you can join from anywhere.</p></div>@include('partials.wow-button',['href'=>url('/online'),'label'=>'Browse online','variant'=>'outline','size'=>'sm','arrow'=>true])</div><div class="locations-discovery__grid">@foreach($online->take(4) as $product)@include('partials.product_card_v4_1', ['product' => $product, 'preferredLocation' => null])@endforeach</div></section>
+</x-marketplace.page-section>@endif
 
+<x-marketplace.page-section id="location-directory" component="location_directory" label="Location directory">
       <section class="locations-discovery__section locations-discovery__directory" aria-labelledby="directory-title"><div class="locations-discovery__section-head"><div><h2 id="directory-title">Explore wellness across the UK</h2><p class="locations-discovery__copy">Browse the location directory when you already know where you want to go.</p></div></div>@foreach(collect(data_get($locationCatalog, 'countries', []))->filter(fn ($country) => !($country['online'] ?? false))->take(8) as $country)<details><summary>{{ $country['label'] ?? 'United Kingdom' }}</summary><ul>@foreach(collect($country['counties'] ?? [])->take(18) as $county)<li><a href="{{ url($county['path'] ?? '/locations') }}">{{ $county['label'] ?? 'County' }}</a></li>@endforeach</ul></details>@endforeach</section>
+</x-marketplace.page-section>
     </div>
   </main>
 @endsection
