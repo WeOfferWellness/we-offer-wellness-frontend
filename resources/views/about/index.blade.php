@@ -16,6 +16,11 @@
         'twitter_card' => 'summary_large_image',
     ];
 
+    $aboutSections = collect(is_array($aboutPageSections ?? null) ? $aboutPageSections : [])
+        ->keyBy(fn (array $section): string => (string) ($section['id'] ?? ''));
+    $showAboutSection = static fn (string $id): bool => empty($componentPreviewId)
+        || hash_equals($id, (string) $componentPreviewId);
+
     $founders = [
         [
             'name' => 'Ian',
@@ -94,6 +99,7 @@
 @endphp
 
 @section('content')
+@if($showAboutSection('breadcrumbs'))
 <x-marketplace.page-section id="breadcrumbs" component="breadcrumbs" label="Breadcrumbs">
 @include('partials.breadcrumbs', [
     'crumbs' => [
@@ -103,6 +109,7 @@
     'schemaUrl' => $pageCanonical,
 ])
 </x-marketplace.page-section>
+@endif
 
 <style>
     :root{
@@ -321,46 +328,16 @@
     <div class="wrap">
 
         {{-- HERO --}}
+        @if($showAboutSection('about-hero'))
         <x-marketplace.page-section id="about-hero" component="about_hero" label="About hero">
-        <section class="hero" aria-label="About We Offer Wellness®">
-            <div class="heroGrid">
-                <div>
-                    <div class="kicker">About us</div>
-                    <h1 id="about-title">{{ $pageTitle }}</h1>
-
-                    <p>
-                        We Offer Wellness® began with a simple idea — born from the frustration of searching for the perfect gift
-                        for someone you love. Not another “I saw this in the aisle near the deodorant” gift… a real one. A gift of wellness.
-                    </p>
-
-                    <div class="chips" aria-label="The questions we kept asking">
-                        <span class="chip">What?</span>
-                        <span class="chip">Who?</span>
-                        <span class="chip">When?</span>
-                        <span class="chip">Where?</span>
-                    </div>
-                </div>
-
-                <aside class="heroCard" aria-label="Why we built the platform">
-                    <div class="cardHd">
-                        <strong style="font-size:14px; letter-spacing:-.01em;">Why it matters</strong>
-                        <span class="muted">In one place</span>
-                    </div>
-                    <p style="margin-top:8px;">
-                        When the internet search becomes endless and overwhelming, wellness shouldn’t feel harder to find than peace itself.
-                        We built one home for trusted holistic therapies — easy to browse, clear to understand, and designed around real needs.
-                    </p>
-
-                    <div class="ctaRow">
-                        <a class="btn primary" href="{{ url('/help') }}">Visit Help Centre <span aria-hidden="true">→</span></a>
-                        <a class="btn" href="{{ url('/safety-and-contraindications') }}">Safety info <span aria-hidden="true">→</span></a>
-                    </div>
-                </aside>
-            </div>
-        </section>
+        @include('about.sections.hero', [
+            'sectionConfig' => (array) data_get($aboutSections->get('about-hero'), 'config', []),
+        ])
         </x-marketplace.page-section>
+        @endif
 
         {{-- OUR STORY --}}
+        @if($showAboutSection('about-story'))
         <x-marketplace.page-section id="about-story" component="about_story" label="Our story">
         <section class="section" aria-label="Our story">
             <div class="grid two">
@@ -460,8 +437,10 @@
             </div>
         </section>
         </x-marketplace.page-section>
+        @endif
 
         {{-- FOUNDERS --}}
+        @if($showAboutSection('about-founders'))
         <x-marketplace.page-section id="about-founders" component="about_founders" label="Founders">
         <section class="section founders" aria-label="The founders">
             <div class="card" style="padding:18px;">
@@ -535,8 +514,10 @@
             </div>
         </section>
         </x-marketplace.page-section>
+        @endif
 
         {{-- VISION + MISSION --}}
+        @if($showAboutSection('about-vision-mission'))
         <x-marketplace.page-section id="about-vision-mission" component="about_vision_mission" label="Vision & mission">
         <section class="section" aria-label="Vision and mission">
             <div class="vision">
@@ -585,6 +566,7 @@
             </div>
         </section>
         </x-marketplace.page-section>
+        @endif
 
     </div>
 </main>
