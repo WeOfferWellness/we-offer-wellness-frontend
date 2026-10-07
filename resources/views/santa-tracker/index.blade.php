@@ -222,7 +222,7 @@
     top: calc(82px + var(--safe-top));
     right: 14px;
     bottom: 190px;
-    z-index: 16;
+    z-index: 30;
     width: min(340px, calc(100vw - 28px));
     display: flex;
     flex-direction: column;
@@ -241,7 +241,8 @@
   }
 
   .santa-side-head {
-    padding: 18px 18px 13px;
+    position: relative;
+    padding: 18px 54px 13px 18px;
     border-bottom: 1px solid var(--santa-border);
     background: #fff;
   }
@@ -465,7 +466,7 @@
 
   .santa-kindness-prompt {
     position: absolute;
-    z-index: 15;
+    z-index: 28;
     top: calc(188px + var(--safe-top));
     left: 14px;
     width: min(290px, calc(100vw - 28px));
@@ -477,10 +478,21 @@
     box-shadow: var(--santa-shadow);
     text-align: left;
     cursor: pointer;
-    transition: transform .16s ease, box-shadow .16s ease;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(10px);
+    transition: transform .2s ease, opacity .2s ease, visibility .2s ease, box-shadow .16s ease;
   }
 
-  .santa-kindness-prompt:hover {
+  .santa-kindness-prompt.is-visible {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  .santa-kindness-prompt.is-visible:hover {
     transform: translateY(-1px);
   }
 
@@ -510,7 +522,8 @@
     font-weight: 700;
   }
 
-  .santa-kindness-backdrop {
+  .santa-kindness-backdrop,
+  .santa-route-backdrop {
     position: absolute;
     inset: 0;
     z-index: 29;
@@ -520,7 +533,8 @@
     transition: opacity .2s ease;
   }
 
-  .santa-kindness-backdrop.is-visible {
+  .santa-kindness-backdrop.is-visible,
+  .santa-route-backdrop.is-visible {
     opacity: 1;
     pointer-events: auto;
   }
@@ -582,7 +596,8 @@
     line-height: 1.45;
   }
 
-  .santa-kindness-close {
+  .santa-kindness-close,
+  .santa-route-close {
     position: absolute;
     top: 14px;
     right: 14px;
@@ -859,23 +874,27 @@
       top: auto;
       left: 8px;
       right: 8px;
-      bottom: calc(154px + var(--safe-bottom));
+      bottom: calc(8px + var(--safe-bottom));
       width: auto;
-      height: min(56dvh, 470px);
+      height: min(74dvh, 640px);
       border-radius: 18px;
-      transform: translateY(calc(100% + 180px));
+      transform: translateY(calc(100% + 24px));
       opacity: 0;
+      visibility: hidden;
       pointer-events: none;
     }
     .santa-side.is-mobile-open {
-      z-index: 19;
+      z-index: 30;
       transform: translateY(0);
       opacity: 1;
+      visibility: visible;
       pointer-events: auto;
     }
     .santa-side.is-hidden {
-      transform: translateY(calc(100% + 180px));
+      transform: translateY(calc(100% + 24px));
       opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
     }
 
     .santa-bottom {
@@ -969,10 +988,20 @@
     .santa-countdown-card p { display: none; }
 
     .santa-kindness-prompt {
-      display: none;
+      display: block;
+      position: fixed !important;
+      top: auto !important;
+      right: 8px;
+      bottom: calc(154px + env(safe-area-inset-bottom, 0px)) !important;
+      left: 8px;
+      width: auto;
+      max-width: none;
+      border-radius: 16px;
+      box-shadow: 0 8px 28px rgba(11,43,83,.24);
     }
 
-    .santa-kindness-backdrop {
+    .santa-kindness-backdrop,
+    .santa-route-backdrop {
       position: fixed !important;
     }
 
@@ -1124,10 +1153,17 @@
     .santa-side {
       position: fixed !important;
       top: auto !important;
-      bottom: calc(145px + env(safe-area-inset-bottom, 0px)) !important;
+      bottom: calc(6px + env(safe-area-inset-bottom, 0px)) !important;
       left: 6px;
       right: 6px;
-      border-radius: 16px;
+      border-radius: 18px;
+      transition: opacity .2s ease, visibility .2s ease !important;
+    }
+    .santa-side.is-mobile-open {
+      transform: translateY(0) !important;
+      opacity: 1 !important;
+      visibility: visible !important;
+      pointer-events: auto !important;
     }
     .mapboxgl-ctrl-bottom-left,
     .mapboxgl-ctrl-bottom-right { bottom: 144px !important; }
@@ -1177,7 +1213,7 @@
         </svg>
       </button>
       <button class="santa-icon-btn" type="button" id="followBtn" aria-label="Follow Santa" title="Follow Santa">◎</button>
-      <button class="santa-icon-btn" type="button" id="routeBtn" aria-label="Open Santa route" title="Route">☰</button>
+      <button class="santa-icon-btn" type="button" id="routeBtn" aria-label="Open Santa route" aria-expanded="false" title="Route">☰</button>
     </div>
   </div>
 
@@ -1236,9 +1272,12 @@
     <div class="santa-kindness-foot">Small acts count. Christmas generosity can be a gift, a helping hand, patience, forgiveness or simply making time for someone.</div>
   </aside>
 
-  <aside class="santa-side" id="routePanel" aria-label="Santa route">
+  <div class="santa-route-backdrop" id="routeBackdrop" aria-hidden="true"></div>
+
+  <aside class="santa-side is-hidden" id="routePanel" aria-label="Santa route" aria-hidden="true">
     <div class="santa-side-head">
       <div class="santa-side-kicker">Around the world</div>
+      <button class="santa-route-close" type="button" id="routeCloseBtn" aria-label="Close Santa route">×</button>
       <h2 class="santa-side-title">Santa’s route</h2>
       <div style="margin-top:8px;color:#5f6368;font-size:11px;line-height:1.4;">
         <strong style="color:#202124;">24 Dec 10:00 UTC → 25 Dec 11:00 UTC</strong><br>
@@ -1313,6 +1352,8 @@
   var routePanel = document.getElementById('routePanel');
   var routeList = document.getElementById('routeList');
   var routeBtn = document.getElementById('routeBtn');
+  var routeCloseBtn = document.getElementById('routeCloseBtn');
+  var routeBackdrop = document.getElementById('routeBackdrop');
   var musicBtn = document.getElementById('musicBtn');
   var christmasAudio = document.getElementById('christmasAudio');
   var christmasPlaylist = @json(json_decode(file_get_contents(public_path('audio/santa-tracker/playlist.json')), true));
@@ -1384,6 +1425,8 @@
   var lastJourneyProgress = 0;
   var currentTravelMode = 'flight';
   var kindnessPromptIndex = -1;
+  var kindnessPromptTimer = null;
+  var kindnessPromptHideTimer = null;
   var christmasTrackIndex = 0;
   var christmasMusicStarted = false;
   var christmasMusicMuted = false;
@@ -2777,7 +2820,6 @@
     }
 
     journeyProgressEl.style.width = (progress * 100).toFixed(2) + '%';
-    updateKindnessPrompt(progress);
 
     var deliveryOnlyPresents = calculateDeliveryOnlyPresents(state);
     giftCountEl.textContent = deliveryOnlyPresents.toLocaleString('en-GB');
@@ -2802,18 +2844,51 @@
     requestAnimationFrame(animate);
   }
 
-  function updateKindnessPrompt(progress) {
+  function setKindnessPrompt(index) {
     if (!kindnessMoments.length || !kindnessPromptText || !kindnessPromptRef) return;
-    var bounded = Math.max(0, Math.min(.9999, Number(progress) || 0));
-    var index = Math.min(kindnessMoments.length - 1, Math.floor(bounded * kindnessMoments.length));
-    if (index === kindnessPromptIndex) return;
-    kindnessPromptIndex = index;
-    kindnessPromptText.textContent = kindnessMoments[index].text;
-    kindnessPromptRef.textContent = kindnessMoments[index].ref;
+    var next = Math.max(0, Math.min(kindnessMoments.length - 1, Number(index) || 0));
+    kindnessPromptIndex = next;
+    kindnessPromptText.textContent = kindnessMoments[next].text;
+    kindnessPromptRef.textContent = kindnessMoments[next].ref;
+  }
+
+  function randomKindnessIndex() {
+    if (kindnessMoments.length <= 1) return 0;
+    var next = kindnessPromptIndex;
+    while (next === kindnessPromptIndex) {
+      next = Math.floor(Math.random() * kindnessMoments.length);
+    }
+    return next;
+  }
+
+  function hideKindnessPrompt() {
+    if (kindnessPrompt) kindnessPrompt.classList.remove('is-visible');
+    if (kindnessPromptHideTimer) {
+      clearTimeout(kindnessPromptHideTimer);
+      kindnessPromptHideTimer = null;
+    }
+  }
+
+  function scheduleKindnessPrompt(firstRun) {
+    if (kindnessPromptTimer) clearTimeout(kindnessPromptTimer);
+    var delay = firstRun
+      ? (12000 + Math.random() * 18000)
+      : (38000 + Math.random() * 72000);
+
+    kindnessPromptTimer = setTimeout(function () {
+      if (!kindnessPanel?.classList.contains('is-open') && !routePanel?.classList.contains('is-mobile-open') && routePanel?.classList.contains('is-hidden')) {
+        setKindnessPrompt(randomKindnessIndex());
+        kindnessPrompt.classList.add('is-visible');
+        kindnessPromptHideTimer = setTimeout(hideKindnessPrompt, 7000 + Math.random() * 5000);
+      }
+      scheduleKindnessPrompt(false);
+    }, delay);
   }
 
   function openKindnessPanel() {
     if (!kindnessPanel) return;
+    hideKindnessPrompt();
+    closeRoutePanel();
     kindnessPanel.classList.add('is-open');
     kindnessPanel.setAttribute('aria-hidden', 'false');
     if (kindnessBackdrop) kindnessBackdrop.classList.add('is-visible');
@@ -2934,7 +3009,8 @@
   }
 
   function setupKindnessPanel() {
-    updateKindnessPrompt(0);
+    setKindnessPrompt(Math.floor(Math.random() * Math.max(1, kindnessMoments.length)));
+    scheduleKindnessPrompt(true);
     if (kindnessBtn) kindnessBtn.addEventListener('click', function () {
       if (kindnessPanel && kindnessPanel.classList.contains('is-open')) closeKindnessPanel();
       else openKindnessPanel();
@@ -2943,8 +3019,39 @@
     if (kindnessCloseBtn) kindnessCloseBtn.addEventListener('click', closeKindnessPanel);
     if (kindnessBackdrop) kindnessBackdrop.addEventListener('click', closeKindnessPanel);
     document.addEventListener('keydown', function (event) {
-      if (event.key === 'Escape') closeKindnessPanel();
+      if (event.key === 'Escape') {
+        closeKindnessPanel();
+        closeRoutePanel();
+      }
     });
+  }
+
+  function openRoutePanel() {
+    if (!routePanel) return;
+    hideKindnessPrompt();
+    closeKindnessPanel();
+    routePanel.classList.remove('is-hidden');
+    if (window.innerWidth <= 900) {
+      routePanel.classList.add('is-mobile-open');
+    }
+    routePanel.setAttribute('aria-hidden', 'false');
+    if (routeBackdrop) {
+      routeBackdrop.classList.add('is-visible');
+      routeBackdrop.setAttribute('aria-hidden', 'false');
+    }
+    if (routeBtn) routeBtn.setAttribute('aria-expanded', 'true');
+  }
+
+  function closeRoutePanel() {
+    if (!routePanel) return;
+    routePanel.classList.remove('is-mobile-open');
+    routePanel.classList.add('is-hidden');
+    routePanel.setAttribute('aria-hidden', 'true');
+    if (routeBackdrop) {
+      routeBackdrop.classList.remove('is-visible');
+      routeBackdrop.setAttribute('aria-hidden', 'true');
+    }
+    if (routeBtn) routeBtn.setAttribute('aria-expanded', 'false');
   }
 
   function setupRoutePanel() {
@@ -2955,18 +3062,18 @@
       if (!btn) return;
       var index = Number(btn.getAttribute('data-stop'));
       if (Number.isFinite(index)) focusStop(index);
-      if (window.innerWidth <= 900) routePanel.classList.remove('is-mobile-open');
+      if (window.innerWidth <= 900) closeRoutePanel();
     });
 
-    routeBtn.addEventListener('click', function () {
-      closeKindnessPanel();
-      if (window.innerWidth <= 900) {
-        routePanel.classList.toggle('is-mobile-open');
-        routePanel.classList.remove('is-hidden');
-      } else {
-        routePanel.classList.toggle('is-hidden');
-      }
+    if (routeBtn) routeBtn.addEventListener('click', function () {
+      var isOpen = routePanel
+        && !routePanel.classList.contains('is-hidden')
+        && (window.innerWidth > 900 || routePanel.classList.contains('is-mobile-open'));
+      if (isOpen) closeRoutePanel();
+      else openRoutePanel();
     });
+    if (routeCloseBtn) routeCloseBtn.addEventListener('click', closeRoutePanel);
+    if (routeBackdrop) routeBackdrop.addEventListener('click', closeRoutePanel);
 
     followBtn.addEventListener('click', function () {
       followSanta = !followSanta;
