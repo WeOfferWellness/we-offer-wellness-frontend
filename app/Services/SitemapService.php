@@ -607,6 +607,7 @@ class SitemapService
             '/partners',
             '/plan',
             '/reviews',
+            '/santa-tracker',
             '/safety-and-contraindications',
             '/corporate',
             '/holistic-therapies-uk',
@@ -1252,7 +1253,7 @@ class SitemapService
         }
 
         return $this->liveProducts = Product::query()
-            ->select(['id', 'title', 'product_type', 'tags_list', 'updated_at', 'category_id', 'subcategory_id', 'product_status_id', 'vendor_id'])
+            ->select(['id', 'title', 'handle', 'product_type', 'tags_list', 'updated_at', 'category_id', 'subcategory_id', 'product_status_id', 'vendor_id'])
             ->with([
                 'category:id,name',
                 'subcategory:id,category_id,name,slug,status',
@@ -1277,7 +1278,7 @@ class SitemapService
         }
 
         return $this->liveOfferings = OfferingV3::query()
-            ->select(['id', 'title', 'updated_at', 'status', 'category_id', 'subcategory_id', 'type_id', 'vendor_id'])
+            ->select(['id', 'title', 'slug', 'updated_at', 'status', 'category_id', 'subcategory_id', 'type_id', 'vendor_id'])
             ->with(['category:id,name', 'subcategory:id,category_id,name,slug,status', 'vendor.locations'])
             ->whereIn('status', ['live', 'approved'])
             ->get();

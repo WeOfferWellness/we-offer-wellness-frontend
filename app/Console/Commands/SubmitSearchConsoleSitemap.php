@@ -19,6 +19,7 @@ class SubmitSearchConsoleSitemap extends Command
         'types',
         'modalities',
         'near-me',
+        'collections',
         'offerings',
         'locations',
         'online',
@@ -37,7 +38,7 @@ class SubmitSearchConsoleSitemap extends Command
         {--client-secret= : Google OAuth client secret}
         {--refresh-token= : Google OAuth refresh token}';
 
-    protected $description = 'Submit the generated sitemap index and child sitemap files to Google Search Console via the Sitemaps API using OAuth.';
+    protected $description = 'Submit the canonical generated sitemap index to Google Search Console via the Sitemaps API using OAuth.';
 
     public function handle(): int
     {
@@ -222,8 +223,9 @@ class SubmitSearchConsoleSitemap extends Command
             return false;
         }
 
-        if (count($submissionUrls) < (count(self::REQUIRED_SEGMENTS) + 1)) {
-            $this->error('Critical sitemap failure: submission URL list is incomplete.');
+        $indexUrl = trim((string) data_get($manifest, 'index_url', ''));
+        if ($indexUrl === '' || ! in_array($indexUrl, $submissionUrls, true)) {
+            $this->error('Critical sitemap failure: canonical sitemap index is missing from the submission URL list.');
             return false;
         }
 
