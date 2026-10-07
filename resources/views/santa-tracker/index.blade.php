@@ -1152,18 +1152,46 @@
 
     .santa-side {
       position: fixed !important;
+      z-index: 30 !important;
       top: auto !important;
+      right: 6px !important;
       bottom: calc(6px + env(safe-area-inset-bottom, 0px)) !important;
-      left: 6px;
-      right: 6px;
+      left: 6px !important;
+      width: auto !important;
+      height: auto !important;
+      max-height: min(74dvh, 640px);
       border-radius: 18px;
-      transition: opacity .2s ease, visibility .2s ease !important;
+      transform: translateY(calc(100% + 32px)) !important;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: transform .24s ease, opacity .2s ease, visibility .2s ease !important;
     }
     .santa-side.is-mobile-open {
       transform: translateY(0) !important;
       opacity: 1 !important;
       visibility: visible !important;
       pointer-events: auto !important;
+    }
+    .santa-side.is-hidden {
+      transform: translateY(calc(100% + 32px)) !important;
+      opacity: 0 !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
+    }
+    .santa-side-head {
+      flex: 0 0 auto;
+      padding: 16px 50px 14px 16px;
+    }
+    .santa-route-list {
+      min-height: 0;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+    }
+    .santa-route-close {
+      z-index: 2;
+      top: 12px;
+      right: 12px;
     }
     .mapboxgl-ctrl-bottom-left,
     .mapboxgl-ctrl-bottom-right { bottom: 144px !important; }
@@ -2871,15 +2899,17 @@
 
   function scheduleKindnessPrompt(firstRun) {
     if (kindnessPromptTimer) clearTimeout(kindnessPromptTimer);
+    // Keep the reminders pleasantly unpredictable: the first can arrive fairly
+    // quickly, then later verses use a much wider random interval.
     var delay = firstRun
-      ? (12000 + Math.random() * 18000)
-      : (38000 + Math.random() * 72000);
+      ? (9000 + Math.random() * 26000)
+      : (30000 + Math.random() * 120000);
 
     kindnessPromptTimer = setTimeout(function () {
       if (!kindnessPanel?.classList.contains('is-open') && !routePanel?.classList.contains('is-mobile-open') && routePanel?.classList.contains('is-hidden')) {
         setKindnessPrompt(randomKindnessIndex());
         kindnessPrompt.classList.add('is-visible');
-        kindnessPromptHideTimer = setTimeout(hideKindnessPrompt, 7000 + Math.random() * 5000);
+        kindnessPromptHideTimer = setTimeout(hideKindnessPrompt, 6500 + Math.random() * 6500);
       }
       scheduleKindnessPrompt(false);
     }, delay);
