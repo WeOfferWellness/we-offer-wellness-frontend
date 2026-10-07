@@ -846,6 +846,7 @@
       pointer-events: none;
     }
     .santa-side.is-mobile-open {
+      z-index: 19;
       transform: translateY(0);
       opacity: 1;
       pointer-events: auto;
