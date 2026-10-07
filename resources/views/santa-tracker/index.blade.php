@@ -177,6 +177,22 @@
     font-size: 20px;
   }
 
+  .santa-music-icon {
+    width: 19px;
+    height: 19px;
+    display: block;
+  }
+
+  .santa-music-off { display: none; }
+
+  .santa-icon-btn.is-muted {
+    background: #f1f3f4;
+    color: var(--santa-muted);
+  }
+
+  .santa-icon-btn.is-muted .santa-music-on { display: none; }
+  .santa-icon-btn.is-muted .santa-music-off { display: block; }
+
   .santa-chip {
     min-height: 44px;
     display: inline-flex;
@@ -829,7 +845,13 @@
     color: var(--santa-muted);
     background: #fff;
     font-size: 9px;
-    line-height: 1.35;
+    line-height: 1.45;
+  }
+
+  .santa-data-credit a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
   }
 
   @media (max-width: 900px) {
@@ -1146,6 +1168,14 @@
         <span id="modeChipText">Preview live</span>
       </button>
       <button class="santa-icon-btn is-kindness" type="button" id="kindnessBtn" aria-label="Open Giving and kindness" aria-expanded="false" title="Giving &amp; kindness">♥</button>
+      <button class="santa-icon-btn" type="button" id="musicBtn" aria-label="Mute Christmas music" aria-pressed="false" title="Mute Christmas music">
+        <svg class="santa-music-icon santa-music-on" aria-hidden="true" viewBox="0 0 24 24" fill="none">
+          <path d="M9 9v6H5a2 2 0 0 1-2-2v-2a2 2 0 0 1 2-2h4Zm0 0 5-4v14l-5-4V9Zm8.5 1a3 3 0 0 1 0 4m2-6a6 6 0 0 1 0 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <svg class="santa-music-icon santa-music-off" aria-hidden="true" viewBox="0 0 24 24" fill="none">
+          <path d="M9 9v6H5a2 2 0 0 1-2-2v-2a2 2 0 0 1 2-2h4Zm0 0 5-4v14l-5-4V9m3.5-1.5 5 5m0-5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
       <button class="santa-icon-btn" type="button" id="followBtn" aria-label="Follow Santa" title="Follow Santa">◎</button>
       <button class="santa-icon-btn" type="button" id="routeBtn" aria-label="Open Santa route" title="Route">☰</button>
     </div>
@@ -1216,7 +1246,11 @@
       </div>
     </div>
     <div class="santa-route-list" id="routeList"></div>
-    <div class="santa-data-credit">Town &amp; city data: GeoNames · CC BY 4.0</div>
+    <div class="santa-data-credit">
+      Town &amp; city data: GeoNames · CC BY 4.0<br>
+      Christmas music: <a href="https://incompetech.com/" target="_blank" rel="noopener">Kevin MacLeod / Incompetech</a> ·
+      <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>
+    </div>
   </aside>
 
   <section class="santa-bottom" aria-live="polite">
@@ -1256,6 +1290,7 @@
   </section>
 
   <div class="santa-toast" id="santaToast" role="status"></div>
+  <audio id="christmasAudio" preload="metadata" playsinline aria-hidden="true"></audio>
 </div>
 
 <script>
@@ -1278,6 +1313,9 @@
   var routePanel = document.getElementById('routePanel');
   var routeList = document.getElementById('routeList');
   var routeBtn = document.getElementById('routeBtn');
+  var musicBtn = document.getElementById('musicBtn');
+  var christmasAudio = document.getElementById('christmasAudio');
+  var christmasPlaylist = @json(json_decode(file_get_contents(public_path('audio/santa-tracker/playlist.json')), true));
   var kindnessBtn = document.getElementById('kindnessBtn');
   var kindnessPanel = document.getElementById('kindnessPanel');
   var kindnessCloseBtn = document.getElementById('kindnessCloseBtn');
@@ -1346,6 +1384,13 @@
   var lastJourneyProgress = 0;
   var currentTravelMode = 'flight';
   var kindnessPromptIndex = -1;
+  var christmasTrackIndex = 0;
+  var christmasMusicStarted = false;
+  var christmasMusicMuted = false;
+  try {
+    christmasMusicMuted = window.localStorage.getItem('wowSantaMusicMuted') === '1';
+  } catch (_err) {}
+
   var kindnessMoments = [
     { ref: 'Acts 20:35', text: '“It is more blessed to give than to receive.”' },
     { ref: '2 Corinthians 9:7', text: '“For God loves a cheerful giver.”' },
@@ -2784,6 +2829,110 @@
     if (kindnessBtn) kindnessBtn.setAttribute('aria-expanded', 'false');
   }
 
+  function persistChristmasMusicPreference() {
+    try {
+      window.localStorage.setItem('wowSantaMusicMuted', christmasMusicMuted ? '1' : '0');
+    } catch (_err) {}
+  }
+
+  function updateChristmasMusicButton() {
+    if (!musicBtn) return;
+    musicBtn.classList.toggle('is-muted', christmasMusicMuted);
+    musicBtn.setAttribute('aria-pressed', christmasMusicMuted ? 'true' : 'false');
+
+    var track = christmasPlaylist[christmasTrackIndex] || null;
+    var trackName = track && track.title ? ' · ' + track.title : '';
+    var action = christmasMusicMuted ? 'Play Christmas music' : 'Mute Christmas music';
+    musicBtn.setAttribute('aria-label', action + trackName);
+    musicBtn.setAttribute('title', action + trackName);
+  }
+
+  function playChristmasTrack(index) {
+    if (!christmasAudio || !Array.isArray(christmasPlaylist) || !christmasPlaylist.length) {
+      return Promise.resolve(false);
+    }
+
+    christmasTrackIndex = ((Number(index) || 0) % christmasPlaylist.length + christmasPlaylist.length) % christmasPlaylist.length;
+    var track = christmasPlaylist[christmasTrackIndex];
+
+    if (!track || !track.file) {
+      return Promise.resolve(false);
+    }
+
+    christmasAudio.src = track.file;
+    christmasAudio.load();
+    christmasAudio.muted = christmasMusicMuted;
+    christmasAudio.volume = .32;
+    updateChristmasMusicButton();
+
+    return christmasAudio.play()
+      .then(function () {
+        christmasMusicStarted = true;
+        return true;
+      })
+      .catch(function () {
+        return false;
+      });
+  }
+
+  function advanceChristmasTrack() {
+    if (!christmasPlaylist.length) return;
+    playChristmasTrack((christmasTrackIndex + 1) % christmasPlaylist.length);
+  }
+
+  function startChristmasMusic() {
+    if (!christmasAudio || !christmasPlaylist.length || christmasMusicMuted) return;
+
+    if (!christmasMusicStarted || !christmasAudio.src) {
+      playChristmasTrack(christmasTrackIndex);
+      return;
+    }
+
+    christmasAudio.muted = false;
+    christmasAudio.play().catch(function () {});
+  }
+
+  function setupChristmasMusic() {
+    if (!christmasAudio || !musicBtn || !Array.isArray(christmasPlaylist) || !christmasPlaylist.length) return;
+
+    christmasAudio.volume = .32;
+    christmasAudio.muted = christmasMusicMuted;
+    christmasAudio.addEventListener('ended', advanceChristmasTrack);
+    christmasAudio.addEventListener('error', function () {
+      window.setTimeout(advanceChristmasTrack, 250);
+    });
+
+    musicBtn.addEventListener('click', function () {
+      christmasMusicMuted = !christmasMusicMuted;
+      christmasAudio.muted = christmasMusicMuted;
+      persistChristmasMusicPreference();
+      updateChristmasMusicButton();
+
+      if (!christmasMusicMuted) {
+        startChristmasMusic();
+        showToast('Christmas music on');
+      } else {
+        showToast('Christmas music muted');
+      }
+    });
+
+    updateChristmasMusicButton();
+
+    if (!christmasMusicMuted) {
+      // Browsers normally block audible autoplay. Start immediately when allowed,
+      // otherwise the first user interaction unlocks the soundtrack.
+      startChristmasMusic();
+
+      var unlock = function (event) {
+        if (event && event.target && event.target.closest && event.target.closest('#musicBtn')) return;
+        startChristmasMusic();
+      };
+
+      document.addEventListener('pointerdown', unlock, { once: true, capture: true });
+      document.addEventListener('keydown', unlock, { once: true, capture: true });
+    }
+  }
+
   function setupKindnessPanel() {
     updateKindnessPrompt(0);
     if (kindnessBtn) kindnessBtn.addEventListener('click', function () {
@@ -2889,6 +3038,7 @@
     updateMode();
     updateCountdown();
     setupKindnessPanel();
+    setupChristmasMusic();
     setupRoutePanel();
     setupSnow();
     setInterval(updateCountdown, 1000);
