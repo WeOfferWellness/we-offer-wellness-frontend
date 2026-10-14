@@ -242,8 +242,31 @@
   // The server session is authoritative after a V5 slot hold is added.  Do
   // not let an unrelated/stale localStorage cart hide it on the cart page.
   var cart = @json($serverCart);
-  try{ if(!cart.length){ cart = readLocalCart() } }catch(_){ }
-  var promo = { code:"", pct:0 };
+  try {
+    var localEntries = readLocalCart();
+    if (!cart.length) {
+      cart = localEntries;
+    } else {
+      var localStoreItems = localEntries.filter(function(it) {
+        return String(it.source_version || it.meta?.source_version || '').toLowerCase() === 'store';
+      });
+      if (localStoreItems.length) {
+        var replacesLocalProduct = function(serverEntry) {
+          return localStoreItems.some(function(local) {
+            var matchingId = String(serverEntry.id) === String(local.id);
+            var matchingStoreId = String(serverEntry.meta?.store_product_id || '') !== ''
+              && String(serverEntry.meta.store_product_id) === String(local.meta?.store_product_id || local.product_id || '');
+            var sameOriginalLink = String(serverEntry.url || '').split('?')[0] !== ''
+              && String(serverEntry.url || '').split('?')[0] === String(local.url || '').split('?')[0]
+              && String(serverEntry.title || '').toLowerCase() === String(local.title || '').toLowerCase();
+            return matchingId || matchingStoreId || sameOriginalLink;
+          });
+        };
+        cart = cart.filter(function(it) { return !replacesLocalProduct(it); }).concat(localStoreItems);
+      }
+    }
+  } catch (_) {}
+  var promo = { code:@json(session('cart_promo_code', '')), amount:0 };
   trackViewCart();
 
   var grid = document.getElementById('cartGrid');
@@ -260,9 +283,23 @@
   var viewCartTracked = false;
 
   function subtotal(){ return cart.reduce(function(s,it){ return s + (Number(it.unit||0) * Number(it.qty||1)); }, 0); }
-  function discountAmount(){ return subtotal() * (promo.pct||0); }
+  function discountAmount(){ return Math.min(subtotal(), Math.max(0, Number(promo.amount||0))); }
   function feeBase(){ return Math.max(0, subtotal() - discountAmount()); }
     function total(){ return feeBase(); }
+  function discountQuoteItems(){
+    return cart.map(function(it){
+      var meta = (it && typeof it.meta === 'object') ? it.meta : {};
+      var source = String(it.source_version || meta.source_version || '').toLowerCase();
+      var targetId = Number(it.product_id || meta.store_product_id || meta.product_id || 0);
+      if(!Number.isFinite(targetId) || targetId < 1) return null;
+      return {
+        target_type: source === 'store' ? 'product' : 'offering',
+        target_id: Math.trunc(targetId),
+        unit_amount: Math.max(0, Math.round(Number(it.unit || it.price || 0) * 100)),
+        quantity: Math.max(1, Math.trunc(Number(it.qty || 1)))
+      };
+    }).filter(Boolean);
+  }
   function trackViewCart(){
     if (viewCartTracked) return;
     viewCartTracked = true;
@@ -286,6 +323,7 @@
         return {
           id:String(it.id),
           product_id: it.product_id || meta.product_id || null,
+          source_version: it.source_version || meta.source_version || null,
           variant_id: it.variant_id || meta.variant_id || null,
           variant_label: it.variant_label || meta.variant_label || '',
           title:String(it.title||''),
@@ -316,6 +354,7 @@
         map[id] = {
           id: it.id,
           product_id: it.product_id || meta.product_id || null,
+          source_version: it.source_version || meta.source_version || null,
           variant_id: it.variant_id || meta.variant_id || null,
           variant_label: it.variant_label || meta.variant_label || '',
           title: it.title || '',
@@ -346,6 +385,36 @@
     checkoutBtn.disabled = cart.length === 0;
     checkoutBtn.style.opacity = cart.length === 0 ? '.55' : '1';
     checkoutBtn.style.cursor = cart.length === 0 ? 'not-allowed' : 'pointer';
+  }
+  function applyPromoCode(code, quiet){
+    var normalized = String(code||'').trim().toUpperCase();
+    var msg = document.getElementById('promo-msg');
+    var button = document.getElementById('apply-promo');
+    if(button){ button.disabled=true; button.textContent=normalized ? 'Checking…' : 'Removing…'; }
+    return post('/api/cart/promo', {
+      code: normalized,
+      subtotal: Math.max(1, Math.round(subtotal() * 100)),
+      items: discountQuoteItems()
+    }).then(function(res){
+      if(res && res.valid){
+        promo.code = String(res.code||'');
+        promo.amount = Number(res.discount_amount||0) / 100;
+        var input = document.getElementById('promo-code');
+        if(input) input.value=promo.code;
+        if(msg && !quiet) msg.textContent=res.message || (promo.code ? "Code '"+promo.code+"' applied" : 'Discount code removed.');
+      } else {
+        promo = { code:'', amount:0 };
+        if(msg) msg.textContent=(res && res.message) ? res.message : 'This discount code is not valid.';
+      }
+      renderSummary();
+      return res;
+    }).catch(function(){
+      promo = { code:'', amount:0 };
+      if(msg) msg.textContent='Could not check this discount code. Please try again.';
+      renderSummary();
+    }).finally(function(){
+      if(button){ button.disabled=false; button.textContent='Apply'; }
+    });
   }
   function escapeHtml(str){ return String(str||"").replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;'); }
   function renderUpsellTarget(target, list){
@@ -502,6 +571,7 @@
     guestSubmitBtn.textContent='Redirecting…';
       post('/checkout/session', {
         items: serializeCartForCheckout(),
+        discount_code: promo.code,
         first_name: firstName,
         last_name: lastName,
         email: email
@@ -517,6 +587,7 @@
         else if(code==='invalid_email'){ guestError.textContent='That email looks invalid. Please try again.'; }
         else if(code==='email_required'){ guestError.textContent='We need an email to send your receipt.'; }
         else if(code==='order_failed'){ guestError.textContent='Checkout is temporarily unavailable. Please try again in a moment.'; }
+        else if(code==='discount_invalid'){ guestError.textContent='This discount code is no longer valid. Close this window and apply it again.'; }
         else if(code==='stripe_failed'){ guestError.textContent='Secure payment is unavailable right now. Please try again.'; }
         else { guestError.textContent='Could not start checkout. Try again.'; }
         trackCommerce('wow_v3_checkout_failed', {
@@ -543,6 +614,7 @@
       if (nextQty === previousQty) return;
       item.qty=nextQty;
       suppressChange=true; renderCart(); suppressChange=false;
+      if(promo.code) applyPromoCode(promo.code, true);
       trackCommerce('wow_v3_update_cart_quantity', {
         items: analyticsItems([item]),
         currency: 'GBP',
@@ -563,6 +635,7 @@
       if (!removedItem) return;
       cart=cart.filter(function(x){return String(x.id)!==String(id)});
       suppressChange=true; renderCart(); suppressChange=false;
+      if(promo.code && cart.length) applyPromoCode(promo.code, true);
       trackCommerce('wow_v3_remove_from_cart', {
         items: analyticsItems([removedItem]),
         currency: 'GBP',
@@ -593,6 +666,7 @@
         source: 'blade-cart',
       });
       cart = [];
+      promo = { code:'', amount:0 };
       suppressChange=true; renderCart(); suppressChange=false;
       // Update server (best-effort)
       post('/api/cart/clear',{}).catch(function(_){});
@@ -603,7 +677,10 @@
       }catch(_){ }
       return;
     }
-    if(e.target && e.target.id==='apply-promo'){ var code=(document.getElementById('promo-code')?.value||'').trim(); var msg=document.getElementById('promo-msg'); post('/api/cart/promo',{code:code}).then(function(){ msg.textContent=code?("Code '"+code+"' applied"):'Code cleared'; }).catch(function(){ msg.textContent='Could not apply code'; }); return; }
+    if(e.target && e.target.id==='apply-promo'){
+      applyPromoCode(document.getElementById('promo-code')?.value||'', false);
+      return;
+    }
 
     // Checkout via Stripe Checkout Session
     if(e.target && e.target.id==='checkoutBtn'){
@@ -621,7 +698,7 @@
         checkout_type: 'account',
         source: 'blade-cart',
       });
-      post('/checkout/session', { items: serializeCartForCheckout() })
+      post('/checkout/session', { items: serializeCartForCheckout(), discount_code: promo.code })
         .then(function(res){
           if(res && res.url){ window.location.assign(res.url); return; }
           if(res && res.error){ throw new Error(res.error); }
@@ -633,9 +710,11 @@
             ? 'Please update your account email before checking out.'
             : (code === 'order_failed'
               ? 'Checkout is temporarily unavailable. Please try again in a moment.'
+              : (code === 'discount_invalid'
+                ? 'This discount code is no longer valid. Please apply it again.'
               : (code === 'stripe_failed'
                 ? 'Secure payment is unavailable right now. Please try again.'
-                : 'Could not start checkout. Please try again.'));
+                : 'Could not start checkout. Please try again.')));
           alert(msg);
           btn.disabled=false; btn.style.opacity='1'; btn.textContent=prev;
         });
@@ -674,13 +753,15 @@
       });
       add.classList.add('is-added'); add.textContent='Added'; setTimeout(function(){ add.textContent='Add'; add.classList.remove('is-added'); }, 700);
       renderCart();
+      if(promo.code) applyPromoCode(promo.code, true);
       return;
     }
   });
-  document.addEventListener('input', function(e){ var inp=e.target.closest('.qty-input'); if(!inp) return; var row=e.target.closest('.cart-row'); if(!row) return; var id=row.getAttribute('data-id'); var item=cart.find(function(x){return String(x.id)===String(id)}); if(!item) return; var v=parseInt(inp.value||'1',10); if(!Number.isFinite(v)||v<1) v=1; item.qty=v; renderCart(); post('/api/cart/update',{id:id,qty:v}); });
+  document.addEventListener('input', function(e){ var inp=e.target.closest('.qty-input'); if(!inp) return; var row=e.target.closest('.cart-row'); if(!row) return; var id=row.getAttribute('data-id'); var item=cart.find(function(x){return String(x.id)===String(id)}); if(!item) return; var v=parseInt(inp.value||'1',10); if(!Number.isFinite(v)||v<1) v=1; item.qty=v; renderCart(); if(promo.code) applyPromoCode(promo.code, true); post('/api/cart/update',{id:id,qty:v}); });
 
   loadUpsell();
   renderCart();
+  if(promo.code && cart.length) applyPromoCode(promo.code, true);
 })();
 </script>
 

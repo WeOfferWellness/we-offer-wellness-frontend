@@ -43,7 +43,7 @@ class CheckoutOrderService
             }
 
             if (! $order) {
-                $order = Order::create([
+                $orderPayload = [
                     'user_id' => $fresh->user_id,
                     'email' => $fresh->email,
                     'currency' => strtoupper((string) $fresh->currency),
@@ -52,7 +52,14 @@ class CheckoutOrderService
                     'status' => 'pending',
                     'stripe_session_id' => $context['stripe_session_id'] ?? $fresh->stripe_session_id,
                     'stripe_payment_intent_id' => $context['stripe_payment_intent_id'] ?? $fresh->stripe_payment_intent_id,
-                ]);
+                ];
+                if (Schema::hasColumn('orders', 'discount_code')) {
+                    $orderPayload['discount_code'] = $fresh->meta['discount_code'] ?? null;
+                }
+                if (Schema::hasColumn('orders', 'discount_amount')) {
+                    $orderPayload['discount_amount'] = (int) ($fresh->meta['discount_amount'] ?? 0);
+                }
+                $order = Order::create($orderPayload);
 
                 foreach ($fresh->items ?? [] as $id => $item) {
                     OrderItem::create($this->buildOrderItemPayload($order, $id, is_array($item) ? $item : []));

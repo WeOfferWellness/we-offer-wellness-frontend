@@ -3,18 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Models\CheckoutAttempt;
+use App\Models\OfferingV3;
 use App\Models\Order;
 use App\Models\OrderCustomer;
 use App\Models\OrderItem;
-use App\Models\OfferingV3;
 use App\Models\Product;
+use App\Services\DiscountCodeClient;
 use App\Services\MarketplacePricingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
-use Stripe\Stripe;
-use Stripe\Checkout\Session as StripeSession;
+use Stripe\StripeClient;
 
 class CheckoutController extends Controller
 {
@@ -23,36 +23,40 @@ class CheckoutController extends Controller
         $items = [];
 
         $payload = $request->input('items');
-        if (is_array($payload) && !empty($payload)) {
+        if (is_array($payload) && ! empty($payload)) {
             $normalized = [];
             $isList = array_is_list($payload);
             foreach ($payload as $key => $entry) {
-                if (!is_array($entry)) continue;
+                if (! is_array($entry)) {
+                    continue;
+                }
                 $id = $entry['id'] ?? ($isList ? null : $key);
-                if (!$id) continue;
+                if (! $id) {
+                    continue;
+                }
                 $incomingMeta = is_array($entry['meta'] ?? null) ? $entry['meta'] : [];
                 $incomingSelected = $entry['selected'] ?? ($incomingMeta['selected'] ?? []);
-                if (!is_array($incomingSelected)) {
+                if (! is_array($incomingSelected)) {
                     $incomingSelected = [];
                 }
                 $incomingBooking = $entry['booking'] ?? ($incomingMeta['booking'] ?? []);
-                if (!is_array($incomingBooking)) {
+                if (! is_array($incomingBooking)) {
                     $incomingBooking = [];
                 }
                 $incomingOptions = $entry['options'] ?? ($incomingMeta['variant_options'] ?? []);
-                if (!is_array($incomingOptions)) {
+                if (! is_array($incomingOptions)) {
                     $incomingOptions = [];
                 }
-                $normalized[(string)$id] = [
+                $normalized[(string) $id] = [
                     'id' => $id,
                     'product_id' => $entry['product_id'] ?? $entry['productId'] ?? null,
                     'vendor_id' => $entry['vendor_id'] ?? $entry['vendorId'] ?? null,
                     'variant_id' => $entry['variant_id'] ?? $entry['variantId'] ?? ($incomingMeta['variant_id'] ?? null),
                     'variant_label' => $entry['variant_label'] ?? $entry['options_label'] ?? null,
                     'source_version' => strtolower(trim((string) ($entry['source_version'] ?? ($incomingMeta['source_version'] ?? '')))),
-                    'title' => (string)($entry['title'] ?? ('Item '.$id)),
-                    'price' => (float)($entry['price'] ?? $entry['unit'] ?? 0),
-                    'qty' => max(1, (int)($entry['qty'] ?? $entry['quantity'] ?? 1)),
+                    'title' => (string) ($entry['title'] ?? ('Item '.$id)),
+                    'price' => (float) ($entry['price'] ?? $entry['unit'] ?? 0),
+                    'qty' => max(1, (int) ($entry['qty'] ?? $entry['quantity'] ?? 1)),
                     'image' => $entry['image'] ?? $entry['img'] ?? null,
                     'url' => $entry['url'] ?? '#',
                     'meta' => $incomingMeta,
@@ -66,22 +70,22 @@ class CheckoutController extends Controller
                 ];
 
                 if (
-                    $normalized[(string)$id]['source_version'] === ''
-                    && ! empty($normalized[(string)$id]['product_id'])
+                    $normalized[(string) $id]['source_version'] === ''
+                    && ! empty($normalized[(string) $id]['product_id'])
                 ) {
                     try {
-                        $legacyExists = Product::query()->where('id', (int) $normalized[(string)$id]['product_id'])->exists();
-                        $v3Exists = OfferingV3::query()->where('id', (int) $normalized[(string)$id]['product_id'])->exists();
+                        $legacyExists = Product::query()->where('id', (int) $normalized[(string) $id]['product_id'])->exists();
+                        $v3Exists = OfferingV3::query()->where('id', (int) $normalized[(string) $id]['product_id'])->exists();
                         if (! $legacyExists && $v3Exists) {
-                            $normalized[(string)$id]['source_version'] = 'v3';
-                            $normalized[(string)$id]['meta']['source_version'] = 'v3';
+                            $normalized[(string) $id]['source_version'] = 'v3';
+                            $normalized[(string) $id]['meta']['source_version'] = 'v3';
                         }
                     } catch (\Throwable $e) {
                         Log::warning('checkout.create.source_version_infer_failed', ['e' => $e->getMessage()]);
                     }
                 }
             }
-            if (!empty($normalized)) {
+            if (! empty($normalized)) {
                 $items = $normalized;
                 session(['cart.items' => $items]);
             }
@@ -95,7 +99,7 @@ class CheckoutController extends Controller
             $cookieRaw = $request->cookie('wow_cart');
             if ($cookieRaw) {
                 $restored = json_decode($cookieRaw, true) ?: [];
-                if (is_array($restored) && !empty($restored)) {
+                if (is_array($restored) && ! empty($restored)) {
                     $items = $restored;
                     session(['cart.items' => $items]);
                 } else {
@@ -112,7 +116,8 @@ class CheckoutController extends Controller
                 'session_has' => session()->has('cart.items'),
                 'cookie_present' => (bool) $request->cookie('wow_cart'),
             ]);
-            return response()->json(['ok'=>false,'error'=>'empty_cart'], 400);
+
+            return response()->json(['ok' => false, 'error' => 'empty_cart'], 400);
         }
 
         // Cart prices are customer-facing prices. Older/local carts may not
@@ -140,9 +145,12 @@ class CheckoutController extends Controller
             $source = strtolower(trim((string) ($item['source_version'] ?? ($meta['source_version'] ?? ''))));
             $kind = strtolower(trim((string) ($meta['product_kind'] ?? $meta['type'] ?? '')));
             $id = strtolower(trim((string) ($item['id'] ?? '')));
+            $deliveryRequired = filter_var($meta['requires_shipping'] ?? $meta['delivery_required'] ?? false, FILTER_VALIDATE_BOOLEAN);
+
             return $source === 'store'
                 || str_starts_with($id, 'store-')
-                || in_array($kind, ['physical', 'physical_product', 'store_product'], true);
+                || $deliveryRequired
+                || in_array($kind, ['physical', 'physical_product', 'store_product', 'shippable_product'], true);
         });
 
         // Build line items and compute totals
@@ -150,19 +158,19 @@ class CheckoutController extends Controller
         $lineItems = [];
         $amountTotal = 0;
         foreach ($items as $id => $it) {
-            $title = (string)($it['title'] ?? ('Item '.$id));
-            $qty = max(1, (int)($it['qty'] ?? 1));
-            $raw = (float)($it['price'] ?? 0);
+            $title = (string) ($it['title'] ?? ('Item '.$id));
+            $qty = max(1, (int) ($it['qty'] ?? 1));
+            $raw = (float) ($it['price'] ?? 0);
             // Normalise to integer minor units (pence)
             // Cart prices are canonical major currency units. Explicit minor
             // units are converted at the boundary before they enter the cart.
             $unit = (int) round($raw * 100);
             $amountTotal += ($unit * $qty);
             $image = $it['image'] ?? $it['img'] ?? null;
-            if ($image && !str_starts_with($image, 'http')) {
+            if ($image && ! str_starts_with($image, 'http')) {
                 $image = url($image);
             }
-            $productData = [ 'name' => $title ];
+            $productData = ['name' => $title];
             if ($image) {
                 $productData['images'] = [$image];
             }
@@ -176,23 +184,47 @@ class CheckoutController extends Controller
             ];
         }
 
+        $cartSubtotal = $amountTotal;
+        $discountCode = strtoupper(trim((string) $request->input('discount_code', session('cart_promo_code', ''))));
+        $discountAmount = 0;
+        if ($discountCode !== '') {
+            $discountQuote = app(DiscountCodeClient::class)->quote(
+                $discountCode,
+                $cartSubtotal,
+                $this->discountQuoteItems($items)
+            );
+            if (empty($discountQuote['valid'])) {
+                session()->forget('cart_promo_code');
+
+                return response()->json([
+                    'ok' => false,
+                    'error' => 'discount_invalid',
+                    'message' => $discountQuote['message'] ?? 'This discount code is no longer valid.',
+                ], 422);
+            }
+            $discountCode = (string) $discountQuote['code'];
+            $discountAmount = min($cartSubtotal, max(0, (int) $discountQuote['discount_amount']));
+            $amountTotal = max(0, $cartSubtotal - $discountAmount);
+            session(['cart_promo_code' => $discountCode]);
+        }
+
         // Prepare checkout attempt (used to create the order only after payment succeeds)
         $attempt = null;
         $order = null;
         $guestFirstName = trim((string) $request->input('first_name', ''));
         $guestLastName = trim((string) $request->input('last_name', ''));
-        $guestEmail = trim((string)$request->input('email', ''));
+        $guestEmail = trim((string) $request->input('email', ''));
         $isGuestCheckout = ! $request->user();
 
         if ($isGuestCheckout && $guestFirstName === '') {
             return response()->json(['ok' => false, 'error' => 'first_name_required'], 422);
         }
-        if ($guestEmail !== '' && !filter_var($guestEmail, FILTER_VALIDATE_EMAIL)) {
-            return response()->json(['ok'=>false,'error'=>'invalid_email'], 422);
+        if ($guestEmail !== '' && ! filter_var($guestEmail, FILTER_VALIDATE_EMAIL)) {
+            return response()->json(['ok' => false, 'error' => 'invalid_email'], 422);
         }
         $resolvedEmail = optional($request->user())->email ?: $guestEmail;
-        if (!$resolvedEmail) {
-            return response()->json(['ok'=>false,'error'=>'email_required'], 422);
+        if (! $resolvedEmail) {
+            return response()->json(['ok' => false, 'error' => 'email_required'], 422);
         }
         if ($this->hasCheckoutAttemptsTable()) {
             try {
@@ -207,12 +239,16 @@ class CheckoutController extends Controller
                         'first_name' => $guestFirstName,
                         'last_name' => $guestLastName,
                         'ip' => $request->ip(),
-                        'user_agent' => substr((string)$request->userAgent(), 0, 255),
+                        'user_agent' => substr((string) $request->userAgent(), 0, 255),
+                        'cart_subtotal' => $cartSubtotal,
+                        'discount_code' => $discountCode !== '' ? $discountCode : null,
+                        'discount_amount' => $discountAmount,
                     ],
                 ]);
             } catch (\Throwable $e) {
                 Log::error('checkout.create.attempt_failed', ['e' => $e->getMessage()]);
-                return response()->json(['ok'=>false,'error'=>'order_failed'], 500);
+
+                return response()->json(['ok' => false, 'error' => 'order_failed'], 500);
             }
         } else {
             try {
@@ -223,41 +259,69 @@ class CheckoutController extends Controller
                     $amountTotal,
                     $resolvedEmail,
                     $guestFirstName,
-                    $guestLastName
+                    $guestLastName,
+                    $discountCode,
+                    $discountAmount
                 );
             } catch (\Throwable $e) {
                 Log::error('checkout.create.order_fallback_failed', ['e' => $e->getMessage()]);
-                return response()->json(['ok'=>false,'error'=>'order_failed'], 500);
+
+                return response()->json(['ok' => false, 'error' => 'order_failed'], 500);
             }
         }
 
         // Create Stripe Checkout Session
         try {
-            Stripe::setApiKey(config('services.stripe.secret'));
+            $stripe = new StripeClient((string) config('services.stripe.secret'));
             $metadata = [];
             if ($attempt) {
-                $metadata['attempt_id'] = (string)$attempt->id;
+                $metadata['attempt_id'] = (string) $attempt->id;
             }
             if ($order) {
-                $metadata['order_id'] = (string)$order->id;
+                $metadata['order_id'] = (string) $order->id;
+            }
+            if ($discountCode !== '') {
+                $metadata['discount_code'] = $discountCode;
+                $metadata['discount_amount'] = (string) $discountAmount;
             }
 
             $sessionPayload = [
                 'mode' => 'payment',
-                'payment_method_types' => ['card'],
                 'line_items' => $lineItems,
                 'metadata' => $metadata,
-                'client_reference_id' => (string)($attempt?->id ?? $order?->id ?? ''),
+                'client_reference_id' => (string) ($attempt?->id ?? $order?->id ?? ''),
                 'customer_email' => $resolvedEmail,
                 'success_url' => route('checkout.success', [], true).'?session_id={CHECKOUT_SESSION_ID}',
                 'cancel_url' => route('checkout.cancel', [], true).'?session_id={CHECKOUT_SESSION_ID}',
             ];
+            // Stripe collects a number on its hosted payment page even for guests.
+            // Contact details are strictly for the practitioner/customer booking/order.
+            $sessionPayload['phone_number_collection'] = ['enabled' => true];
+            $sessionPayload['custom_text'] = [
+                'submit' => [
+                    'message' => 'Contact number is for practitioner/customer purposes only and not for marketing purposes.',
+                ],
+            ];
             if ($hasPhysicalProduct) {
+                $sessionPayload['billing_address_collection'] = 'required';
                 $sessionPayload['shipping_address_collection'] = [
                     'allowed_countries' => ['GB'],
                 ];
             }
-            $session = StripeSession::create($sessionPayload);
+            if ($discountAmount > 0) {
+                $coupon = $stripe->coupons->create([
+                    'duration' => 'once',
+                    'amount_off' => $discountAmount,
+                    'currency' => $currency,
+                    'name' => 'Discount code '.$discountCode,
+                    'metadata' => [
+                        'discount_code' => $discountCode,
+                        'checkout_reference' => (string) ($attempt?->id ?? $order?->id ?? ''),
+                    ],
+                ]);
+                $sessionPayload['discounts'] = [['coupon' => $coupon->id]];
+            }
+            $session = $stripe->checkout->sessions->create($sessionPayload);
 
             if ($attempt) {
                 $attempt->stripe_session_id = $session->id ?? null;
@@ -268,7 +332,7 @@ class CheckoutController extends Controller
                 $order->save();
             }
 
-            return response()->json(['ok'=>true,'url'=>$session->url]);
+            return response()->json(['ok' => true, 'url' => $session->url]);
         } catch (\Throwable $e) {
             Log::error('checkout.create.stripe_failed', ['e' => $e->getMessage()]);
             if ($attempt) {
@@ -279,7 +343,8 @@ class CheckoutController extends Controller
                 $order->status = 'failed';
                 $order->save();
             }
-            return response()->json(['ok'=>false,'error'=>'stripe_failed'], 500);
+
+            return response()->json(['ok' => false, 'error' => 'stripe_failed'], 500);
         }
     }
 
@@ -291,7 +356,7 @@ class CheckoutController extends Controller
         }
 
         try {
-            $hasTable = Schema::hasTable((new CheckoutAttempt())->getTable());
+            $hasTable = Schema::hasTable((new CheckoutAttempt)->getTable());
         } catch (\Throwable $e) {
             Log::warning('checkout.create.attempt_table_check_failed', ['e' => $e->getMessage()]);
             $hasTable = false;
@@ -316,15 +381,42 @@ class CheckoutController extends Controller
             return null;
         }
 
+        if ($source === 'store') {
+            // Product V3 catalogue IDs are external to offerings; never
+            // resolve a matching numeric ID to an unrelated practitioner.
+            return null;
+        }
         try {
             $model = $source === 'legacy'
                 ? Product::query()->with('vendor')->find((int) $productId)
                 : OfferingV3::query()->with('vendor')->find((int) $productId);
+
             return $model?->vendor;
         } catch (\Throwable $e) {
             Log::warning('checkout.vendor_resolution_failed', ['e' => $e->getMessage()]);
+
             return null;
         }
+    }
+
+    protected function discountQuoteItems(array $items): array
+    {
+        return collect($items)->map(function (array $item): ?array {
+            $meta = is_array($item['meta'] ?? null) ? $item['meta'] : [];
+            $source = strtolower(trim((string) ($item['source_version'] ?? ($meta['source_version'] ?? ''))));
+            $targetId = $item['product_id'] ?? ($meta['store_product_id'] ?? ($meta['product_id'] ?? null));
+
+            if (! is_numeric($targetId) || (int) $targetId < 1) {
+                return null;
+            }
+
+            return [
+                'target_type' => $source === 'store' ? 'product' : 'offering',
+                'target_id' => (int) $targetId,
+                'unit_amount' => max(0, (int) round(((float) ($item['price'] ?? 0)) * 100)),
+                'quantity' => max(1, (int) ($item['qty'] ?? 1)),
+            ];
+        })->filter()->values()->all();
     }
 
     protected function createPendingOrderFromItems(
@@ -334,9 +426,11 @@ class CheckoutController extends Controller
         int $amountTotal,
         string $resolvedEmail,
         string $guestFirstName = '',
-        string $guestLastName = ''
+        string $guestLastName = '',
+        string $discountCode = '',
+        int $discountAmount = 0
     ): Order {
-        return DB::transaction(function () use ($request, $items, $currency, $amountTotal, $resolvedEmail, $guestFirstName, $guestLastName) {
+        return DB::transaction(function () use ($request, $items, $currency, $amountTotal, $resolvedEmail, $guestFirstName, $guestLastName, $discountCode, $discountAmount) {
             $orderPayload = [
                 'user_id' => optional($request->user())->id,
                 'email' => $resolvedEmail,
@@ -347,6 +441,12 @@ class CheckoutController extends Controller
             try {
                 if (Schema::hasColumn('orders', 'total_price')) {
                     $orderPayload['total_price'] = round($amountTotal / 100, 2);
+                }
+                if (Schema::hasColumn('orders', 'discount_code')) {
+                    $orderPayload['discount_code'] = $discountCode !== '' ? $discountCode : null;
+                }
+                if (Schema::hasColumn('orders', 'discount_amount')) {
+                    $orderPayload['discount_amount'] = max(0, $discountAmount);
                 }
             } catch (\Throwable $e) {
                 Log::warning('checkout.create.orders_schema_check_failed', ['e' => $e->getMessage()]);
@@ -365,28 +465,28 @@ class CheckoutController extends Controller
             }
 
             foreach ($items as $id => $it) {
-                $title = (string)($it['title'] ?? ('Item '.$id));
-                $qty = max(1, (int)($it['qty'] ?? 1));
-                $raw = (float)($it['price'] ?? 0);
+                $title = (string) ($it['title'] ?? ('Item '.$id));
+                $qty = max(1, (int) ($it['qty'] ?? 1));
+                $raw = (float) ($it['price'] ?? 0);
                 $unit = (int) round($raw * 100);
                 $linePrice = round($unit / 100, 2);
                 $image = $it['image'] ?? $it['img'] ?? null;
                 $productId = $it['product_id'] ?? $it['productId'] ?? null;
-                if (!$productId && isset($it['id'])) {
-                    $itemId = (string)$it['id'];
+                if (! $productId && isset($it['id'])) {
+                    $itemId = (string) $it['id'];
                     if (is_numeric($itemId)) {
-                        $productId = (int)$itemId;
+                        $productId = (int) $itemId;
                     } elseif (str_starts_with($itemId, 'p:') && is_numeric(substr($itemId, 2))) {
-                        $productId = (int)substr($itemId, 2);
+                        $productId = (int) substr($itemId, 2);
                     }
                 }
-                if (!$productId && is_string((string)$id) && str_starts_with((string)$id, 'p:') && is_numeric(substr((string)$id, 2))) {
-                    $productId = (int)substr((string)$id, 2);
+                if (! $productId && is_string((string) $id) && str_starts_with((string) $id, 'p:') && is_numeric(substr((string) $id, 2))) {
+                    $productId = (int) substr((string) $id, 2);
                 }
                 $vendorId = $it['vendor_id'] ?? $it['vendorId'] ?? null;
                 $variantLabel = $it['variant_label'] ?? null;
                 $variantOptions = $it['options'] ?? [];
-                if (!is_array($variantOptions)) {
+                if (! is_array($variantOptions)) {
                     $variantOptions = [];
                 }
                 $incomingMeta = is_array($it['meta'] ?? null) ? $it['meta'] : [];
@@ -398,7 +498,7 @@ class CheckoutController extends Controller
                 $location = $it['location'] ?? ($incomingMeta['location'] ?? null);
                 $variantId = $it['variant_id'] ?? $it['variantId'] ?? ($incomingMeta['variant_id'] ?? null);
                 $sourceVersion = strtolower(trim((string) ($it['source_version'] ?? ($incomingMeta['source_version'] ?? ''))));
-                if ($sourceVersion !== 'v3' && $productId) {
+                if (! in_array($sourceVersion, ['v3', 'store'], true) && $productId) {
                     try {
                         if (! Product::query()->where('id', (int) $productId)->exists() && OfferingV3::query()->where('id', (int) $productId)->exists()) {
                             $sourceVersion = 'v3';
@@ -416,28 +516,28 @@ class CheckoutController extends Controller
                     'vendor_id' => $vendorId ?? ($incomingMeta['vendor_id'] ?? null),
                     'source_version' => $sourceVersion ?: ($incomingMeta['source_version'] ?? null),
                 ]);
-                if (!empty($variantOptions)) {
+                if (! empty($variantOptions)) {
                     $meta['variant_options'] = $variantOptions;
                 }
-                if (!empty($bookingMeta)) {
-                    $meta['booking'] = array_filter($bookingMeta, fn ($value) => !is_null($value) && $value !== '');
+                if (! empty($bookingMeta)) {
+                    $meta['booking'] = array_filter($bookingMeta, fn ($value) => ! is_null($value) && $value !== '');
                 }
-                if (!empty($selected)) {
+                if (! empty($selected)) {
                     $meta['selected'] = $selected;
                 }
-                if (!is_null($groupCount) && $groupCount !== '') {
+                if (! is_null($groupCount) && $groupCount !== '') {
                     $meta['group_count'] = (int) $groupCount;
                 }
-                if (!is_null($reservationId) && $reservationId !== '') {
+                if (! is_null($reservationId) && $reservationId !== '') {
                     $meta['reservation_id'] = (int) $reservationId;
                 }
-                if (!is_null($holdExpiresAt) && $holdExpiresAt !== '') {
+                if (! is_null($holdExpiresAt) && $holdExpiresAt !== '') {
                     $meta['hold_expires_at'] = (string) $holdExpiresAt;
                 }
-                if (!is_null($location) && $location !== '') {
+                if (! is_null($location) && $location !== '') {
                     $meta['location'] = (string) $location;
                 }
-                if (!is_null($variantId) && $variantId !== '') {
+                if (! is_null($variantId) && $variantId !== '') {
                     $meta['variant_id'] = $variantId;
                 }
                 if ($sourceVersion === 'v3') {
@@ -448,13 +548,13 @@ class CheckoutController extends Controller
                 }
 
                 $meta = array_filter($meta, function ($value) {
-                    return !is_null($value) && $value !== '' && $value !== [];
+                    return ! is_null($value) && $value !== '' && $value !== [];
                 });
 
                 $payload = [
                     'order_id' => $order->id,
                     'name' => $title,
-                    'sku' => (string)$id,
+                    'sku' => (string) $id,
                     'unit_amount' => $unit,
                     'quantity' => $qty,
                     'meta' => $meta,

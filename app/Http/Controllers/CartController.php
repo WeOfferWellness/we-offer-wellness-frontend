@@ -5,18 +5,20 @@ namespace App\Http\Controllers;
 use App\Models\OfferingV3;
 use App\Models\Product;
 use App\Models\ProductVariant;
-use App\Services\SeoStructureService;
+use App\Services\DiscountCodeClient;
 use App\Services\MarketplacePricingService;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Http\Request;
-use Illuminate\Support\Str;
+use App\Services\SeoStructureService;
 use App\Services\StoreAbandonedCartService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+
 class CartController extends Controller
 {
     public function page(Request $request)
     {
         $items = $this->getCartItems();
-        if (!empty($items) && ($request->user()?->email || $request->user())) {
+        if (! empty($items) && ($request->user()?->email || $request->user())) {
             try {
                 app(StoreAbandonedCartService::class)->record(
                     array_values($items),
@@ -25,24 +27,55 @@ class CartController extends Controller
                     $request->user()?->name,
                     $request->session()->getId()
                 );
-            } catch (\Throwable $e) { report($e); }
+            } catch (\Throwable $e) {
+                report($e);
+            }
         }
 
         return view('cart.index');
     }
 
-    public function promo(Request $request)
+    public function promo(Request $request, DiscountCodeClient $discounts)
     {
-        $code = strtoupper(trim((string)$request->input('code', '')));
-        if ($code !== '') session(['cart_promo_code' => $code]); else session()->forget('cart_promo_code');
-        return response()->json(['ok' => true, 'code' => $code]);
+        $code = strtoupper(trim((string) $request->input('code', '')));
+        if ($code === '') {
+            session()->forget('cart_promo_code');
+
+            return response()->json([
+                'ok' => true,
+                'valid' => true,
+                'code' => '',
+                'discount_amount' => 0,
+                'message' => 'Discount code removed.',
+            ])->header('Cache-Control', 'no-store, private');
+        }
+
+        $validated = $request->validate([
+            'subtotal' => ['required', 'integer', 'min:1', 'max:100000000'],
+            'items' => ['nullable', 'array', 'max:100'],
+            'items.*.target_type' => ['required', 'string', 'in:offering,product'],
+            'items.*.target_id' => ['required', 'integer', 'min:1'],
+            'items.*.unit_amount' => ['required', 'integer', 'min:0', 'max:100000000'],
+            'items.*.quantity' => ['required', 'integer', 'min:1', 'max:1000'],
+        ]);
+        $quote = $discounts->quote($code, (int) $validated['subtotal'], (array) ($validated['items'] ?? []));
+
+        if (! empty($quote['valid'])) {
+            session(['cart_promo_code' => $quote['code']]);
+        } else {
+            session()->forget('cart_promo_code');
+        }
+
+        return response()->json(['ok' => ! empty($quote['valid']), ...$quote], ! empty($quote['valid']) ? 200 : 422)
+            ->header('Cache-Control', 'no-store, private');
     }
 
     public function count()
     {
         $items = $this->listCartItems();
-        $count = array_sum(array_map(fn($it)=> (int)($it['qty'] ?? 0), $items));
-        return response()->json(['count'=>$count])->header('Cache-Control','no-store, no-cache, must-revalidate')->header('Pragma','no-cache')->header('Vary','Cookie');
+        $count = array_sum(array_map(fn ($it) => (int) ($it['qty'] ?? 0), $items));
+
+        return response()->json(['count' => $count])->header('Cache-Control', 'no-store, no-cache, must-revalidate')->header('Pragma', 'no-cache')->header('Vary', 'Cookie');
     }
 
     public function mini(Request $request)
@@ -75,9 +108,9 @@ class CartController extends Controller
                 'count' => $count,
                 'total' => $total,
                 'currency' => 'GBP',
-            ])->header('Cache-Control','no-store, no-cache, must-revalidate')
-              ->header('Pragma','no-cache')
-              ->header('Vary','Cookie');
+            ])->header('Cache-Control', 'no-store, no-cache, must-revalidate')
+                ->header('Pragma', 'no-cache')
+                ->header('Vary', 'Cookie');
         }
 
         return response(view('partials.mini_cart', [
@@ -85,10 +118,10 @@ class CartController extends Controller
             'count' => $count,
             'total' => $total,
         ])->render(), 200)
-            ->header('Content-Type','text/html')
-            ->header('Cache-Control','no-store, no-cache, must-revalidate')
-            ->header('Pragma','no-cache')
-            ->header('Vary','Cookie');
+            ->header('Content-Type', 'text/html')
+            ->header('Cache-Control', 'no-store, no-cache, must-revalidate')
+            ->header('Pragma', 'no-cache')
+            ->header('Vary', 'Cookie');
     }
 
     public function add(Request $request)
@@ -97,9 +130,9 @@ class CartController extends Controller
         $id = $request->input('id');
         $sourceVersion = strtolower(trim((string) $request->input('source_version', '')));
         $variantId = $request->input('variant_id');
-        $qty = max(1, (int)$request->input('qty', 1));
-        if (!is_numeric($id) || (int) $id <= 0) {
-            return response()->json(['ok'=>false,'error'=>'invalid'], 400);
+        $qty = max(1, (int) $request->input('qty', 1));
+        if (! is_numeric($id) || (int) $id <= 0) {
+            return response()->json(['ok' => false, 'error' => 'invalid'], 400);
         }
 
         $normalizeArray = static function ($value): array {
@@ -109,7 +142,7 @@ class CartController extends Controller
         $incomingMeta = $normalizeArray($request->input('meta', []));
         $incomingBooking = $normalizeArray($request->input('booking', $incomingMeta['booking'] ?? []));
         $incomingSelected = $request->input('selected', $incomingMeta['selected'] ?? []);
-        if (!is_array($incomingSelected)) {
+        if (! is_array($incomingSelected)) {
             $incomingSelected = [];
         }
         $incomingOptions = $normalizeArray($request->input('options', $incomingMeta['variant_options'] ?? []));
@@ -127,7 +160,7 @@ class CartController extends Controller
         );
         $locationValue = $request->input('location', $incomingMeta['location'] ?? null);
 
-        $variantLabel = trim((string)$request->input('variant_label', '')) ?: null;
+        $variantLabel = trim((string) $request->input('variant_label', '')) ?: null;
         $variantOptions = [];
         $image = null;
         $url = '#';
@@ -144,13 +177,13 @@ class CartController extends Controller
             $offering = OfferingV3::query()->with(['vendor', 'type', 'category', 'media', 'coverMedia'])->find((int) $id);
         }
         if (! $offering) {
-            $product = Product::query()->with(['variants'])->withMin('variants','price')->find((int) $id);
+            $product = Product::query()->with(['variants'])->withMin('variants', 'price')->find((int) $id);
         }
         if (! $product && ! $offering) {
             $offering = OfferingV3::query()->with(['vendor', 'type', 'category', 'media', 'coverMedia'])->find((int) $id);
         }
         if (! $product && ! $offering) {
-            return response()->json(['ok'=>false,'error'=>'not_found'], 404);
+            return response()->json(['ok' => false, 'error' => 'not_found'], 404);
         }
 
         if ($product) {
@@ -171,7 +204,7 @@ class CartController extends Controller
                 if (is_string($opts)) {
                     $decoded = json_decode($opts, true);
                     $opts = is_array($decoded) ? array_values($decoded) : [];
-                } elseif (!is_array($opts)) {
+                } elseif (! is_array($opts)) {
                     $opts = [];
                 }
                 $variantOptions = array_values(array_filter(array_unique(array_merge($opts, $incomingOptions))));
@@ -181,7 +214,7 @@ class CartController extends Controller
             }
 
             $url = app(SeoStructureService::class)->canonicalProductUrl($product);
-            $image = method_exists($product,'getFirstImageUrl') ? $product->getFirstImageUrl() : null;
+            $image = method_exists($product, 'getFirstImageUrl') ? $product->getFirstImageUrl() : null;
             $vendorId = $product->vendor_id ?? null;
             $key = $this->cartKey($product->id, $variant?->id);
             $productId = (int) $product->id;
@@ -242,9 +275,9 @@ class CartController extends Controller
                     } elseif ($minQty === 2) {
                         $peopleLabel = '2 Persons';
                     } elseif ($maxQty === null || $maxQty <= $minQty) {
-                        $peopleLabel = $minQty === 3 ? '3+ Group' : ($minQty . ' People');
+                        $peopleLabel = $minQty === 3 ? '3+ Group' : ($minQty.' People');
                     } elseif ($minQty > 0) {
-                        $peopleLabel = $minQty . '-' . $maxQty . ' Group';
+                        $peopleLabel = $minQty.'-'.$maxQty.' Group';
                     }
                 } elseif ($audienceType === 'solo') {
                     $peopleLabel = '1 Person';
@@ -297,10 +330,12 @@ class CartController extends Controller
             return $value !== null && $value !== '';
         });
 
-        if(isset($items[$key])){
-            $items[$key]['qty'] = (int)($items[$key]['qty'] ?? 1) + $qty;
+        if (isset($items[$key])) {
+            $items[$key]['qty'] = (int) ($items[$key]['qty'] ?? 1) + $qty;
             $items[$key]['price'] = $price;
-            if($variantLabel){ $items[$key]['variant_label'] = $variantLabel; }
+            if ($variantLabel) {
+                $items[$key]['variant_label'] = $variantLabel;
+            }
             $items[$key]['options'] = $variantOptions;
             $items[$key]['meta'] = array_merge((array) ($items[$key]['meta'] ?? []), $metaPayload);
             $items[$key]['booking'] = $incomingBooking;
@@ -310,8 +345,7 @@ class CartController extends Controller
             $items[$key]['hold_expires_at'] = $holdExpiresAt ?? ($items[$key]['hold_expires_at'] ?? null);
             $items[$key]['location'] = $locationValue ?? ($items[$key]['location'] ?? null);
             $items[$key]['source_version'] = $resolvedSourceVersion;
-        }
-        else {
+        } else {
             $items[$key] = [
                 'id' => $key,
                 'product_id' => $productId,
@@ -335,41 +369,59 @@ class CartController extends Controller
             ];
         }
         session(['cart.items' => $items]);
-        $cookie = cookie('wow_cart', $this->cartCookiePayload($items), 60*24*30);
-        $count = array_sum(array_map(fn($it)=> (int)($it['qty'] ?? 0), $items));
-        return response()->json(['ok'=>true,'count'=>$count,'key'=>$key])->withCookie($cookie);
+        $cookie = cookie('wow_cart', $this->cartCookiePayload($items), 60 * 24 * 30);
+        $count = array_sum(array_map(fn ($it) => (int) ($it['qty'] ?? 0), $items));
+
+        return response()->json(['ok' => true, 'count' => $count, 'key' => $key])->withCookie($cookie);
     }
 
     public function remove(Request $request)
     {
         $items = $this->getCartItems();
-        $id = (string) $request->input('id'); unset($items[$id]); session(['cart.items'=>$items]);
-        $cookie = cookie('wow_cart', $this->cartCookiePayload($items), 60*24*30);
-        return response()->json(['ok'=>true])->withCookie($cookie);
+        $id = (string) $request->input('id');
+        unset($items[$id]);
+        session(['cart.items' => $items]);
+        $cookie = cookie('wow_cart', $this->cartCookiePayload($items), 60 * 24 * 30);
+
+        return response()->json(['ok' => true])->withCookie($cookie);
     }
 
     public function update(Request $request)
     {
         $items = $this->getCartItems();
-        $id = (string)$request->input('id'); $qty = max(0,(int)$request->input('qty',1));
-        if(!isset($items[$id])) return response()->json(['ok'=>false],404);
-        if($qty===0){ unset($items[$id]); } else { $items[$id]['qty']=$qty; }
-        session(['cart.items'=>$items]);
-        $cookie = cookie('wow_cart', $this->cartCookiePayload($items), 60*24*30);
-        return response()->json(['ok'=>true])->withCookie($cookie);
+        $id = (string) $request->input('id');
+        $qty = max(0, (int) $request->input('qty', 1));
+        if (! isset($items[$id])) {
+            return response()->json(['ok' => false], 404);
+        }
+        if ($qty === 0) {
+            unset($items[$id]);
+        } else {
+            $items[$id]['qty'] = $qty;
+        }
+        session(['cart.items' => $items]);
+        $cookie = cookie('wow_cart', $this->cartCookiePayload($items), 60 * 24 * 30);
+
+        return response()->json(['ok' => true])->withCookie($cookie);
     }
 
     public function clear(Request $request)
     {
-        session()->forget('cart.items');
-        $cookie = cookie('wow_cart', '[]', 60*24*30);
+        session()->forget(['cart.items', 'cart_promo_code']);
+        $cookie = cookie('wow_cart', '[]', 60 * 24 * 30);
+
         return response()->json(['ok' => true])->withCookie($cookie);
     }
 
     public function gift(Request $request)
     {
-        $code = strtoupper(trim((string)$request->input('code', '')));
-        if ($code !== '') session(['cart_gift_code' => $code]); else session()->forget('cart_gift_code');
+        $code = strtoupper(trim((string) $request->input('code', '')));
+        if ($code !== '') {
+            session(['cart_gift_code' => $code]);
+        } else {
+            session()->forget('cart_gift_code');
+        }
+
         return response()->json(['ok' => true, 'code' => $code]);
     }
 
@@ -390,17 +442,17 @@ class CartController extends Controller
             session(['cart.items' => $items]);
         }
 
-        if (!is_array($items)) {
+        if (! is_array($items)) {
             return [];
         }
 
         $normalized = [];
         foreach ($items as $key => $row) {
-            if (!is_array($row)) {
+            if (! is_array($row)) {
                 continue;
             }
             $line = $this->mapLineItem($row);
-            $productId = $line['product_id'] ?? (is_numeric($key) ? (int)$key : null);
+            $productId = $line['product_id'] ?? (is_numeric($key) ? (int) $key : null);
             $variantId = $line['variant_id'] ?? null;
             $cartKey = $this->cartKey($productId ?? $key, $variantId);
             $line['id'] = $cartKey;
@@ -416,13 +468,14 @@ class CartController extends Controller
         $store = $this->getCartItems();
         $list = [];
         foreach ($store as $id => $row) {
-            if (!is_array($row)) {
+            if (! is_array($row)) {
                 continue;
             }
             $line = $row;
             $line['id'] = $line['id'] ?? $id;
             $list[] = $line;
         }
+
         return $list;
     }
 
@@ -430,7 +483,7 @@ class CartController extends Controller
     {
         $payload = [];
         foreach ($items as $key => $row) {
-            if (!is_array($row)) {
+            if (! is_array($row)) {
                 continue;
             }
             $line = $this->mapLineItem($row);
@@ -474,11 +527,11 @@ class CartController extends Controller
 
         $normalized = [];
         foreach ($payload as $key => $entry) {
-            if (!is_array($entry)) {
+            if (! is_array($entry)) {
                 continue;
             }
             $line = $this->mapLineItem($entry);
-            $productId = $line['product_id'] ?? (is_numeric($key) ? (int)$key : null);
+            $productId = $line['product_id'] ?? (is_numeric($key) ? (int) $key : null);
             $cartKey = $this->cartKey($productId ?? $key, $line['variant_id'] ?? null);
             $line['id'] = $cartKey;
             $normalized[$cartKey] = $line;
@@ -494,16 +547,16 @@ class CartController extends Controller
         $variantId = $entry['variant_id'] ?? null;
         $variantLabel = $entry['variant_label'] ?? $entry['options_label'] ?? null;
         $options = $entry['options'] ?? [];
-        if (!is_array($options)) {
+        if (! is_array($options)) {
             $options = [];
         }
         $meta = is_array($entry['meta'] ?? null) ? $entry['meta'] : [];
         $booking = $entry['booking'] ?? ($meta['booking'] ?? []);
-        if (!is_array($booking)) {
+        if (! is_array($booking)) {
             $booking = [];
         }
         $selected = $entry['selected'] ?? ($meta['selected'] ?? []);
-        if (!is_array($selected)) {
+        if (! is_array($selected)) {
             $selected = [];
         }
         $groupCount = $entry['group_count'] ?? $entry['groupCount'] ?? ($meta['group_count'] ?? ($meta['groupCount'] ?? null));
@@ -513,7 +566,7 @@ class CartController extends Controller
         $sourceVersion = strtolower(trim((string) ($entry['source_version'] ?? ($meta['source_version'] ?? ''))));
         $rawProductId = $entry['product_id'] ?? $entry['productId'] ?? null;
         if ($rawProductId === null && isset($entry['id'])) {
-            $rawProductId = str_starts_with((string)$entry['id'], 'p:') ? substr((string)$entry['id'], 2) : $entry['id'];
+            $rawProductId = str_starts_with((string) $entry['id'], 'p:') ? substr((string) $entry['id'], 2) : $entry['id'];
         }
         $meta = array_merge($meta, [
             'booking' => $booking,
@@ -531,6 +584,7 @@ class CartController extends Controller
         $meta = array_filter($meta, static function ($value) {
             return $value !== null && $value !== '';
         });
+
         return [
             'product_id' => $rawProductId,
             'vendor_id' => $entry['vendor_id'] ?? $entry['vendorId'] ?? null,
@@ -560,7 +614,7 @@ class CartController extends Controller
 
     protected function buildVariantLabel(?string $title, array $options = []): ?string
     {
-        $cleanTitle = trim((string)$title);
+        $cleanTitle = trim((string) $title);
         if ($cleanTitle !== '' && stripos($cleanTitle, 'default') === false) {
             return $cleanTitle;
         }
@@ -569,24 +623,27 @@ class CartController extends Controller
                 return trim($value);
             }
             if (is_scalar($value)) {
-                return trim((string)$value);
+                return trim((string) $value);
             }
+
             return '';
-        }, $options), fn($v) => $v !== ''));
-        if (!empty($values)) {
+        }, $options), fn ($v) => $v !== ''));
+        if (! empty($values)) {
             return implode(' • ', $values);
         }
+
         return null;
     }
 
     protected function cartKey($productId, $variantId = null): string
     {
         if ($variantId) {
-            return 'v:' . (string)$variantId;
+            return 'v:'.(string) $variantId;
         }
         if (is_string($productId) && (str_starts_with($productId, 'v:') || str_starts_with($productId, 'p:'))) {
             return $productId;
         }
-        return 'p:' . (string)$productId;
+
+        return 'p:'.(string) $productId;
     }
 }
