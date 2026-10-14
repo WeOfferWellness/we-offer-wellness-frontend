@@ -50,6 +50,8 @@ function pageIsEligible(config) {
 
 function frequencyAllows(config) {
     const key = config.key;
+    const path = window.location.pathname.replace(/\/+$/, '') || '/';
+    if (key === 'cookie-banner' && (path === '/cart' || path.startsWith('/checkout'))) return false;
     const frequency = config.frequency || 'once_session';
     const last = Number(readStorage(localStorage, `${key}:last`) || 0);
     const cooldown = Number(config.cooldown_hours || 0) * 3600000;
