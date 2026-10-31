@@ -26,6 +26,9 @@
   }
   $analyticsTotal = round((float) ($order?->amount_total ?? 0) / 100, 2);
   $analyticsCount = array_sum(array_map(static fn ($item) => (int) ($item['qty'] ?? 1), $analyticsItems));
+  $purchaseAcknowledgementUrl = !empty($purchaseAnalytics) && $order
+      ? URL::temporarySignedRoute('checkout.analytics.purchase.acknowledge', now()->addHour(), ['order' => $order->id])
+      : null;
 @endphp
 <section class="section">
   <div class="container-page">
@@ -69,7 +72,24 @@
         source: 'checkout-success',
       };
       if (@json((bool) ($purchaseAnalytics ?? false)) && window.WOWAnalytics && typeof window.WOWAnalytics.trackPurchase === 'function') {
-        window.WOWAnalytics.trackPurchase(payload);
+        window.WOWAnalytics.trackPurchase(payload, {
+          onAcknowledged: function () {
+            var url = @json($purchaseAcknowledgementUrl);
+            if (!url) return false;
+            return fetch(url, {
+              method: 'POST',
+              credentials: 'same-origin',
+              keepalive: true,
+              headers: {
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': @json(csrf_token()),
+              },
+            }).then(function (response) {
+              if (!response.ok) throw new Error('purchase_acknowledgement_failed');
+              return true;
+            });
+          }
+        });
       }
     } catch (_) {}
     try { localStorage.removeItem('wow_cart'); } catch (_) {}

@@ -538,6 +538,9 @@ Route::get('/checkout', [CartController::class, 'page'])->name('checkout.index')
 Route::post('/checkout', [CheckoutController::class, 'create']);
 Route::get('/checkout/success', [CheckoutResultController::class, 'success'])->name('checkout.success');
 Route::get('/checkout/cancel', [CheckoutResultController::class, 'cancel'])->name('checkout.cancel');
+Route::post('/checkout/analytics/purchase/{order}/acknowledge', [\App\Http\Controllers\PurchaseAnalyticsController::class, 'acknowledge'])
+    ->middleware('signed')
+    ->name('checkout.analytics.purchase.acknowledge');
 
 // API routes moved to routes/api.php
 

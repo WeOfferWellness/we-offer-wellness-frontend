@@ -9,11 +9,11 @@ use Illuminate\Support\Facades\Schema;
 class PurchaseAnalyticsService
 {
     /**
-     * Claim the one browser purchase dispatch for an order.
+     * Claim a browser delivery attempt for an order.
      *
-     * The conditional update is deliberately performed in the database: page
-     * refreshes, back/forward navigation and duplicate payment callbacks all
-     * observe the same claim rather than relying on browser storage alone.
+     * A claim expires so an ad blocker, failed script or closed tab cannot
+     * permanently suppress the purchase. Only acknowledge() marks delivery as
+     * complete.
      */
     public function claim(Order $order): bool
     {
@@ -26,7 +26,11 @@ class PurchaseAnalyticsService
             ->whereKey($order->getKey())
             ->whereIn('status', ['paid', 'completed', 'complete', 'confirmed'])
             ->whereNull('analytics_purchase_emitted_at')
-            ->update(['analytics_purchase_emitted_at' => now()]);
+            ->where(function ($query): void {
+                $query->whereNull('analytics_purchase_claimed_at')
+                    ->orWhere('analytics_purchase_claimed_at', '<=', now()->subMinutes(15));
+            })
+            ->update(['analytics_purchase_claimed_at' => now()]);
 
         if ($claimed === 0) {
             Log::info('analytics.purchase.duplicate_suppressed', [
@@ -36,6 +40,26 @@ class PurchaseAnalyticsService
         }
 
         return $claimed === 1;
+    }
+
+    public function acknowledge(Order $order): bool
+    {
+        if (! $this->available()) {
+            Log::warning('analytics.purchase.acknowledgement_unavailable', ['order_id' => $order->getKey()]);
+            return false;
+        }
+
+        $acknowledged = Order::query()
+            ->whereKey($order->getKey())
+            ->whereIn('status', ['paid', 'completed', 'complete', 'confirmed'])
+            ->whereNotNull('analytics_purchase_claimed_at')
+            ->whereNull('analytics_purchase_emitted_at')
+            ->update([
+                'analytics_purchase_emitted_at' => now(),
+                'analytics_purchase_claimed_at' => null,
+            ]);
+
+        return $acknowledged === 1;
     }
 
     public function transactionId(Order $order): string
@@ -85,7 +109,10 @@ class PurchaseAnalyticsService
     private function available(): bool
     {
         try {
-            return Schema::hasColumn((new Order())->getTable(), 'analytics_purchase_emitted_at');
+            $table = (new Order())->getTable();
+
+            return Schema::hasColumn($table, 'analytics_purchase_emitted_at')
+                && Schema::hasColumn($table, 'analytics_purchase_claimed_at');
         } catch (\Throwable $exception) {
             Log::warning('analytics.purchase.schema_check_failed', ['message' => $exception->getMessage()]);
             return false;

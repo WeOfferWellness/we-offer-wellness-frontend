@@ -10,6 +10,7 @@ const GA4_EVENT_ALIASES = {
 }
 
 const PURCHASE_STORAGE_PREFIX = 'wow_purchase_sent:'
+const pendingPurchases = new Set()
 
 function getWindow() {
   return typeof window !== 'undefined' ? window : null
@@ -156,7 +157,7 @@ function trackCommerce(eventName, params = {}) {
   }))
 }
 
-function trackPurchase(params = {}) {
+function trackPurchase(params = {}, options = {}) {
   const transactionId = String(params.transaction_id || '').trim()
   if (!transactionId) return false
 
@@ -164,12 +165,41 @@ function trackPurchase(params = {}) {
   const key = `${PURCHASE_STORAGE_PREFIX}${transactionId}`
   try {
     if (win?.sessionStorage?.getItem(key) === '1') return false
-    win?.sessionStorage?.setItem(key, '1')
   } catch (_) {
-    // Server-side claim remains the authoritative idempotency boundary.
+    // The server acknowledgement remains the authoritative boundary.
+  }
+  if (pendingPurchases.has(transactionId)) return false
+
+  pendingPurchases.add(transactionId)
+  const originalCallback = typeof params.event_callback === 'function' ? params.event_callback : null
+  const eventCallback = () => {
+    try { originalCallback?.() } catch (_) {}
+    let acknowledgement
+    try {
+      acknowledgement = options.onAcknowledged?.()
+    } catch (_) {
+      pendingPurchases.delete(transactionId)
+      return
+    }
+
+    Promise.resolve(acknowledgement)
+      .then((acknowledged) => {
+        if (acknowledged === false) return
+        try { win?.sessionStorage?.setItem(key, '1') } catch (_) {}
+      })
+      .catch(() => {})
+      .finally(() => pendingPurchases.delete(transactionId))
   }
 
-  return trackCommerce('purchase', params)
+  const tracked = trackCommerce('purchase', {
+    ...params,
+    event_callback: eventCallback,
+    event_timeout: params.event_timeout || 5000,
+  })
+
+  if (!tracked) pendingPurchases.delete(transactionId)
+
+  return tracked
 }
 
 function readAnalyticsItem(element) {
