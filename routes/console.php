@@ -280,3 +280,9 @@ Schedule::command('search-console:submit-sitemap')
     ->dailyAt('00:20')
     ->withoutOverlapping()
     ->runInBackground();
+
+Schedule::command('analytics:health-check')
+    ->dailyAt('08:15')
+    ->timezone('Europe/London')
+    ->withoutOverlapping()
+    ->runInBackground();

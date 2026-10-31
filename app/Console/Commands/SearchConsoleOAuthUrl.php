@@ -17,7 +17,10 @@ class SearchConsoleOAuthUrl extends Command
     public function handle(): int
     {
         [$clientId, $redirectUri] = $this->loadClientDetails();
-        $scope = trim((string) ($this->option('scope') ?: 'https://www.googleapis.com/auth/webmasters'));
+        $scope = trim((string) ($this->option('scope') ?: implode(' ', [
+            'https://www.googleapis.com/auth/webmasters',
+            'https://www.googleapis.com/auth/analytics.readonly',
+        ])));
 
         if ($clientId === '') {
             $this->error('Missing Google OAuth client ID. Set GOOGLE_SEARCH_CONSOLE_CLIENT_ID or pass --client-id=');
