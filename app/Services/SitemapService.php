@@ -1390,6 +1390,7 @@ class SitemapService
 
             foreach ([
                 $countrySlug . '|' . $countySlug . '|' . $townSlug,
+                $countrySlug . '||' . $townSlug,
                 $countrySlug . '|' . $countySlug . '|',
                 $countrySlug . '||',
             ] as $key) {
@@ -1445,6 +1446,7 @@ class SitemapService
                     $townSlug = $this->normalizeLocationSegment((string) ($segments[2] ?? ''));
                     if ($townCountry !== '' && $townCounty !== '' && $townSlug !== '') {
                         $index[$townCountry . '|' . $townCounty . '|' . $townSlug] = $path;
+                        $index[$townCountry . '||' . $townSlug] ??= $path;
                     }
                 }
             }
@@ -1489,7 +1491,12 @@ class SitemapService
 
     private function normalizeLocationSegment(string $value): string
     {
-        return Str::slug(trim($value));
+        $slug = Str::slug(trim($value));
+
+        return match ($slug) {
+            'greater-london' => 'london',
+            default => $slug,
+        };
     }
 
     private function validLocationPath(mixed $value): bool

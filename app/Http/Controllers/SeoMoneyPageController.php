@@ -76,8 +76,9 @@ class SeoMoneyPageController extends Controller
             });
 
         $products = ProductRanking::sortCollection($products)->values();
+        $hasLocationListings = ! $hasExplicitLocation || $products->isNotEmpty();
 
-        if ($products->isEmpty()) {
+        if ($products->isEmpty() && ! $hasExplicitLocation) {
             $fallbackProducts = $this->queryListings($page)
                 ->take(12)
                 ->values()
@@ -128,11 +129,12 @@ class SeoMoneyPageController extends Controller
             $isFiltered,
             $canonicalPath,
             url($canonicalPath),
-            $page['breadcrumb_trail'] ?? []
+            $page['breadcrumb_trail'] ?? [],
+            $hasLocationListings
         );
     }
 
-    private function renderPage(Request $request, string $slug, array $page, Collection $products, array $locationContext = [], bool $isFiltered = false, ?string $canonicalPath = null, ?string $searchAction = null, array $crumbs = [])
+    private function renderPage(Request $request, string $slug, array $page, Collection $products, array $locationContext = [], bool $isFiltered = false, ?string $canonicalPath = null, ?string $searchAction = null, array $crumbs = [], bool $isIndexable = true)
     {
         $locationLabel = trim((string) data_get($locationContext, 'label', ''));
         $preserveTitle = filter_var($page['seo_preserve_title'] ?? false, FILTER_VALIDATE_BOOL);
@@ -148,7 +150,7 @@ class SeoMoneyPageController extends Controller
             'seo' => [
                 'title' => $page['title'],
                 'description' => $page['description'],
-                'robots' => $isFiltered ? 'noindex,follow' : 'index,follow',
+                'robots' => ($isFiltered || ! $isIndexable) ? 'noindex,follow' : 'index,follow',
                 'canonical' => url($canonicalPath),
             ],
             'page' => $page,
@@ -176,9 +178,7 @@ class SeoMoneyPageController extends Controller
             str_contains($slug, 'circle'),
             str_contains($slug, 'ceremony'),
             str_contains($slug, 'festival'),
-            str_contains($slug, 'gong-bath'),
-            str_contains($slug, 'gong-baths'),
-            str_contains($slug, 'sound-bath') => 'events',
+            str_contains($slug, 'event') => 'events',
             str_contains($slug, 'retreat') => 'retreats',
             default => 'therapies',
         };
@@ -694,7 +694,7 @@ class SeoMoneyPageController extends Controller
             return $items->values();
         }
 
-        if (!$fallbackMode) {
+        if (!$fallbackMode || $strictLocation) {
             return collect();
         }
 
@@ -969,19 +969,32 @@ class SeoMoneyPageController extends Controller
             ];
         }
 
+        $nodeCity = trim((string) ($node['town'] ?? $node['city'] ?? ''));
+        $nodeRegion = trim((string) ($node['county'] ?? $node['district'] ?? $node['region'] ?? ''));
+        $nodeCountry = trim((string) ($node['country'] ?? ''));
+        if ($nodeCity === '' && $town !== null) {
+            $nodeCity = Str::headline($town);
+        }
+        if ($nodeRegion === '' && $county !== null) {
+            $nodeRegion = Str::headline($county);
+        }
+        if ($nodeCountry === '') {
+            $nodeCountry = Str::headline($country ?: '');
+        }
+
         return [
             'label' => (string) ($node['title'] ?? $node['label'] ?? ''),
-            'city' => (string) ($node['town'] ?? $node['city'] ?? ''),
-            'region' => (string) ($node['county'] ?? $node['district'] ?? $node['region'] ?? ''),
-            'country' => (string) ($node['country'] ?? ''),
+            'city' => $nodeCity,
+            'region' => $nodeRegion,
+            'country' => $nodeCountry,
             'image_path' => (string) ($node['image_path'] ?? ''),
             'lat' => is_numeric($node['lat'] ?? null) ? (float) $node['lat'] : null,
             'lng' => is_numeric($node['lng'] ?? null) ? (float) $node['lng'] : null,
             'path' => (string) ($node['path'] ?? $path),
             'terms' => $this->locationContextTerms([
-                'city' => (string) ($node['town'] ?? $node['city'] ?? ''),
-                'region' => (string) ($node['county'] ?? $node['district'] ?? $node['region'] ?? ''),
-                'country' => (string) ($node['country'] ?? ''),
+                'city' => $nodeCity,
+                'region' => $nodeRegion,
+                'country' => $nodeCountry,
             ]),
         ];
     }
